@@ -1,0 +1,6 @@
+181 Fremont — Resident Events  ·  181residents.com
+
+  site/     Deploy this folder to Cloudflare Pages. Nothing else.
+  source/   The Python that generates it. Keep, do not deploy.
+
+Full instructions are in site/README.md.
