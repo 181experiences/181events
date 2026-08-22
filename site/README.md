@@ -4,7 +4,11 @@ The resident calendar for 181residents.com. Static site, no build step, no depen
 
 ---
 
-## Deploying to Cloudflare Pages
+## Deploying
+
+See `DEPLOY.md` at the root of the repository. The short version: the site is built by Cloudflare Pages from the GitHub repository, the admin at `/admin.html` edits events in Airtable, and saving a Live event rebuilds the calendar by itself.
+
+## Deploying by hand, the fallback
 
 1. Cloudflare dashboard → **Workers & Pages** → **Create** → **Pages** → **Upload assets**
 2. Name the project `181residents`
@@ -23,7 +27,8 @@ To update later, drag the folder in again. Every deploy keeps the previous one, 
 | File | What it is |
 |---|---|
 | `index.html` | The whole resident site. Every screen, every event, self-contained. |
-| `admin.html` | The admin prototype. Not linked from the resident site. |
+| `admin.html` | The staff admin: dashboard, events, assets, messages, instructions. Reads and writes through `/api/*`. Not linked from the resident site; protected by Cloudflare Access. |
+| `q/` | One copy of the calendar per QR standee, so scans are counted by source. |
 | `manifest.webmanifest` | Name, colours, and icons for the home-screen install. |
 | `icon.svg`, `icon-512.png`, `icon-192.png` | App icons, the bay mark. |
 | `icon-maskable-512.png` | Android variant, inset for circular cropping. |
@@ -47,7 +52,7 @@ To add an event, add a row in Airtable and run `python source/publish.py` (see `
 
 - `airtable_fields.py`: the column contract between Airtable and the generator.
 - `airtable_export.py`: writes `airtable/events_import.csv` for the one-time import.
-- `publish.py`: pulls Published rows from Airtable into `events_live.json` and rebuilds. When that file exists it replaces the series and one-offs in `events_data.py`; delete it to fall back.
+- `publish.py`: pulls Live rows from Airtable into `events_live.json` and rebuilds. When that file exists it replaces the series and one-offs in `events_data.py`; delete it to fall back.
 
 ### Why there is no framework
 
@@ -61,10 +66,12 @@ The site is complete as a calendar. These need accounts and a backend:
 
 | Piece | Needs |
 |---|---|
-| Event editing | Airtable base, see `airtable/SETUP.md`. Publishing is a manual script run until the GitHub Action exists. |
+| Event editing | Built. The admin page writes to Airtable through Pages Functions in `functions/`, and a deploy hook rebuilds the calendar. Needs the accounts in `DEPLOY.md`. |
+| Admin dashboard | Built. Reads Cloudflare Web Analytics through `functions/api/analytics.js`: visits by day, by source, by device. RSVP and attendance figures join once sign-ups exist. |
 | RSVP submission | Airtable, same base as the events. |
 | Message form | Done for now: posts to `mailto:leonardo@181sf.com` with topic, message, optional name, unit, and email. Replace with an Airtable form once login exists. |
-| Resident login | Cloudflare Access, one-time email PIN. Free to 50 users. |
+| Staff login | Cloudflare Access in front of `admin.html` and `api/*`, one-time email PIN, three addresses. Steps in `DEPLOY.md`. |
+| Resident login | Cloudflare Access on the calendar itself, one-time email PIN. Free to 50 users. |
 | Payment ($75 dinner) | Stripe, in the building's name rather than a personal account. |
 | Analytics | Cloudflare Web Analytics (free, no cookies) or Plausible. Either is a script beacon, so it only counts residents with JavaScript on, which is the honest trade for a no-JS site. Each QR standee links with its own tag, e.g. `181residents.com/?from=lobby`, so scans are attributable. Views, RSVPs, and scans by source feed the monthly report and the admin dashboard. |
 
