@@ -271,6 +271,10 @@ HTML = f'''<!DOCTYPE html>
   .check{{display:flex;gap:12px;align-items:center;font-size:15px;color:var(--ink-body)}}
   .check input{{width:20px;height:20px;accent-color:var(--red)}}
   .picks .pick.on{{background:var(--ink);color:var(--paper-2);border-color:var(--ink)}}
+  .edates{{grid-column:1/-1;padding:6px 22px 16px;background:#faf7f2;border-top:1px dashed var(--line-2)}}
+  .edrow{{display:flex;align-items:center;gap:12px;padding:8px 0;border-top:1px solid var(--line-2);flex-wrap:wrap}}
+  .edrow:first-child{{border-top:none}}
+  .edwhen{{font-size:15px;color:var(--ink);flex:0 0 220px}}
   .fmtbar{{display:flex;gap:6px;margin-bottom:8px}}
   .fmtbar .mini{{min-width:44px;justify-content:center;background:var(--paper-2)}}
   .chart{{width:100%;height:auto;display:block}}

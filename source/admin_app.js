@@ -152,7 +152,13 @@
         <div class="ecell"><span class="pill ${cls(g.status)}">${esc(g.mixed ? "Mixed" : g.status)}</span></div>
         <div class="ecell"><span class="lbl">RSVPs</span>${rsvp}</div>
         <div class="ecell"><span class="lbl">Asset kit</span>0 of 6</div>
-        <div class="ecell eact"><button class="mini" data-edit="${esc(g.key)}">Edit</button>${g.status !== "Archived" ? `<button class="mini ghost" data-archive="${esc(g.key)}">Archive</button>` : ""}</div>
+        <div class="ecell eact">${g.series ? `<button class="mini ghost" data-dates="${esc(g.key)}">${g.rows.length} dates</button>` : ""}<button class="mini" data-edit="${esc(g.key)}">Edit</button>${g.status !== "Archived" ? `<button class="mini ghost" data-archive="${esc(g.key)}">Archive</button>` : ""}</div>
+      </div>
+      <div class="edates" data-dates-for="${esc(g.key)}" style="display:none">${g.rows.map(r => `
+        <div class="edrow"><span class="edwhen">${esc(fmt(r.Date))} &middot; ${esc(r.Start)}</span>
+          <span class="pill ${cls(r.Status)}">${esc(r.Status || "Draft")}</span>
+          ${r.Moved ? '<span class="badge2">moved</span>' : ""}
+          <button class="mini" data-editrow="${esc(g.key)}|${esc(r.id)}">Edit this date</button></div>`).join("")}
       </div>`;
     }).join("");
     $("#evcount").textContent = `${gs.length} listings, ${events.filter(e => e.Status === "Live" && e.Date >= today()).length} live upcoming dates. Nothing appears on the resident site until its status is Live.`;
@@ -364,8 +370,19 @@
   }
 
   document.addEventListener("click", ev => {
-    const b = ev.target.closest("[data-edit],[data-archive],[data-new],[data-save],[data-period],[data-publish],[data-fmt]");
+    const b = ev.target.closest("[data-edit],[data-archive],[data-new],[data-save],[data-period],[data-publish],[data-fmt],[data-dates],[data-editrow]");
     if (!b) return;
+    if (b.dataset.dates) {
+      const d = document.querySelector(`[data-dates-for="${CSS.escape(b.dataset.dates)}"]`);
+      if (d) d.style.display = d.style.display === "none" ? "" : "none";
+      return;
+    }
+    if (b.dataset.editrow) {
+      const [k, id] = b.dataset.editrow.split("|");
+      openEditor(k, id);
+      $("#f-scope").checked = false;   // editing one chosen date: default to just that date
+      return;
+    }
     if (b.dataset.fmt) {
       const ta = $("#f-desc"), t = b.dataset.fmt, a = ta.selectionStart, z = ta.selectionEnd;
       ta.value = ta.value.slice(0, a) + `<${t}>` + ta.value.slice(a, z) + `</${t}>` + ta.value.slice(z);
