@@ -210,7 +210,10 @@ open(f"{SITE}/manifest.webmanifest", "w", encoding="utf-8").write(json.dumps(man
 open(f"{SITE}/robots.txt", "w", encoding="utf-8").write("User-agent: *\nDisallow: /\n")
 open(f"{SITE}/_headers", "w", encoding="utf-8").write(
     "/*\n  X-Frame-Options: SAMEORIGIN\n  X-Content-Type-Options: nosniff\n"
-    "  Referrer-Policy: strict-origin-when-cross-origin\n")
+    "  Referrer-Policy: strict-origin-when-cross-origin\n"
+    # Pages labels .ics as text/html by default; iPhones only open calendar files
+    # in Calendar when the label is right.
+    "/ics/*\n  Content-Type: text/calendar; charset=utf-8\n")
 
 size = sum(os.path.getsize(os.path.join(SITE, f)) for f in os.listdir(SITE))
 print("site built:", len(os.listdir(SITE)), "files,", round(size / 1024), "KB")
