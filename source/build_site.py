@@ -157,6 +157,16 @@ PROMPT_JS = '''
 
 # ---------------------------------------------------------------- resident site
 html = open(os.path.join(HERE, "181fremont_residents_prototype.html"), encoding="utf-8").read()
+
+# calendar files: build_proto collects them while rendering, we place them
+sys.path.insert(0, HERE)
+import build_proto as _bp
+os.makedirs(f"{SITE}/ics", exist_ok=True)
+for _old in os.listdir(f"{SITE}/ics"):
+    os.remove(os.path.join(f"{SITE}/ics", _old))
+for _fname, _body in _bp.ICS_FILES.items():
+    open(os.path.join(f"{SITE}/ics", _fname), "w", encoding="utf-8", newline="").write(_body)
+print("ics files:", len(_bp.ICS_FILES))
 html = html.replace('<div class="mocknote">Prototype &middot; real calendar, nothing here is live yet</div>\n\n', "")
 html = html.replace("</head>", HEAD + "</head>")
 html = html.replace("</style>", PROMPT_CSS + "</style>", 1)

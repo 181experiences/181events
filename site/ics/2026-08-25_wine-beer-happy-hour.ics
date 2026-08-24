@@ -1,0 +1,13 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//181 Fremont//Resident Experiences//EN
+BEGIN:VEVENT
+UID:181fremont-wine-beer-happy-hour-20260825@181residents.com
+DTSTAMP:20260825T000000Z
+DTSTART:20260825T173000
+DTEND:20260825T193000
+SUMMARY:Wine & Beer Happy Hour
+LOCATION:181 Fremont - Level 39, Residents' Club
+DESCRIPTION:Every Tuesday on Level 39, from 5:30 to 7:30. A rotating selection of wine and beer in good company. Come as you are, and stay as long as you like.
+END:VEVENT
+END:VCALENDAR

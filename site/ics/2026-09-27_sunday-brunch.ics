@@ -1,0 +1,13 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//181 Fremont//Resident Experiences//EN
+BEGIN:VEVENT
+UID:181fremont-sunday-brunch-20260927@181residents.com
+DTSTAMP:20260927T000000Z
+DTSTART:20260927T100000
+DTEND:20260927T140000
+SUMMARY:Sunday Brunch
+LOCATION:181 Fremont - Level 39, Residents' Club
+DESCRIPTION:Brunch on Level 39, from 10:00 to 2:00. A wider window than before, so you can come when it suits you.
+END:VEVENT
+END:VCALENDAR

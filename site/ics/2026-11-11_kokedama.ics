@@ -1,0 +1,13 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//181 Fremont//Resident Experiences//EN
+BEGIN:VEVENT
+UID:181fremont-kokedama-20261111@181residents.com
+DTSTAMP:20261111T000000Z
+DTSTART:20261111T183000
+DTEND:20261111T200000
+SUMMARY:Kokedama
+LOCATION:181 Fremont - Level 39, Residents' Club
+DESCRIPTION:The Japanese art of moss ball gardening. You'll wrap a living plant in nutrient-rich soil and soft moss to make a kokedama, a sculptural piece that sits on a shelf or hangs by a window.
+END:VEVENT
+END:VCALENDAR

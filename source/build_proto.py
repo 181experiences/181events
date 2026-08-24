@@ -22,19 +22,26 @@ def plain(s):
 def slug(e):
     return plain(e["title"]).lower().replace(" ", "-").replace(":", "").replace("'", "")
 
+ICS_FILES = {}   # filename -> file body; build_site writes these into site/ics/
+
 def ics_href(e):
-    m = MONTH_BY_KEY[e["m"]]["num"]
+    """A real .ics file served from the site. A data: URL looks the same on a laptop
+    but does nothing at all on an iPhone, which is most of the audience."""
     eh = e["end"].split(":")[0]
     ehm = e["end"].split(":")[1].split(" ")[0]
     h24 = str((int(eh) % 12) + (12 if "PM" in e["end"] else 0)).zfill(2)
+    d = e["on"].strftime("%Y%m%d")
     body = "\r\n".join([
         "BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//181 Fremont//Resident Experiences//EN",
-        "BEGIN:VEVENT", f"UID:181fremont-{e['id']}@181residents.com", "DTSTAMP:20260821T170000Z",
-        f"DTSTART:2026{m:02d}{e['d']:02d}T{e['t24']}00",
-        f"DTEND:2026{m:02d}{e['d']:02d}T{h24}{ehm}00",
+        "BEGIN:VEVENT", f"UID:181fremont-{e['slug']}-{d}@181residents.com",
+        f"DTSTAMP:{d}T000000Z",
+        f"DTSTART:{d}T{e['t24']}00",
+        f"DTEND:{d}T{h24}{ehm}00",
         f"SUMMARY:{plain(e['title'])}", f"LOCATION:181 Fremont - {plain(e['loc'])}",
-        f"DESCRIPTION:{plain(e['desc'][0])}", "END:VEVENT", "END:VCALENDAR"])
-    return "data:text/calendar;charset=utf-8," + quote(body)
+        f"DESCRIPTION:{plain(e['desc'][0])}", "END:VEVENT", "END:VCALENDAR"]) + "\r\n"
+    fname = f"{e['on'].isoformat()}_{e['slug']}.ics"
+    ICS_FILES[fname] = body
+    return f"/ics/{fname}"
 
 def tag_for(e):
     if e["rsvp"] == "guest":
@@ -66,10 +73,7 @@ for m in MONTHS:
 for e in EVENTS:
     if e["rsvp"]:
         i = e["id"]
-        rules.append(f'#rsvp{i}:checked ~ .ebody .rsvpbox{{display:block}}')
-        rules.append(f'#rsvp{i}:checked ~ .ebody .rsvpbtn{{background:var(--ink);border-color:var(--ink)}}')
-        rules.append(f'#rsvp{i}:checked ~ .ebody .rsvpbtn .s-off{{display:none}}')
-        rules.append(f'#rsvp{i}:checked ~ .ebody .rsvpbtn .s-on{{display:inline}}')
+        pass  # RSVP state CSS retired: RSVPs travel by email until resident sign-in exists
         if e["rsvp"] == "guest":
             for gi, _ in enumerate(GUEST_COUNTS):
                 rules.append(f'#g{i}-{gi}:checked ~ .ebody label[for="g{i}-{gi}"]'
@@ -155,47 +159,50 @@ def event_screen(e):
         facts += f'<div class="fact"><dt>Repeats</dt><dd>{e["series"]}</dd></div>'
     facts += f'<div class="fact"><dt>Hosted by</dt><dd>{e["host"]}</dd></div></dl>'
 
-    checkbox = f'<input type="checkbox" class="state" id="rsvp{i}">' if e["rsvp"] else ''
+    # RSVPs travel by email for now: the button opens the resident's own mail app with
+    # the note started, so every RSVP arrives with a reply address attached and no
+    # login is needed. On-page RSVPs arrive together with resident sign-in.
+    checkbox = ""
     guest_radios = ""
     guest_ui = ""
     box = ""
     cta = '<div class="cta">'
+    when = f"{dow_of(e['m'], e['d'])}, {short_month(e['m'])} {e['d']}"
+    note = ""
+
+    def mailto(subject, body):
+        return "mailto:leonardo@181sf.com?subject=" + quote(subject) + "&body=" + quote(body)
 
     if e["rsvp"] == "guest":
-        guest_radios = "".join(
-            f'<input class="state" type="radio" name="g{i}" id="g{i}-{gi}"{" checked" if gi==0 else ""}>'
-            for gi, _ in enumerate(GUEST_COUNTS))
-        chips = "".join(f'<label class="gchip" for="g{i}-{gi}">{c}</label>'
-                        for gi, c in enumerate(GUEST_COUNTS))
         guest_ui = ('<div class="guestbox"><div class="gq">Bringing someone from outside the building?</div>'
                     '<div class="gh">You&rsquo;re always welcome on your own, with no RSVP needed. We only ask for a '
-                    'count of guests from outside the building, so we can pour and plate for them.</div>'
-                    f'<div class="glab">How many guests</div><div class="gchips">{chips}</div></div>')
-        cta += (f'<label class="btn rsvpbtn" for="rsvp{i}">'
-                '<span class="s-off">Register my guests</span>'
-                '<span class="s-on">Guests registered &check;</span></label>')
-        box = ('<div class="rsvpbox"><h3>Thank you.</h3>'
-               '<p>Your guests are on the list, and a confirmation is on its way to your email. '
-               'If the numbers change, simply reply to that email.</p></div>')
+                    'count of guests from outside the building, so we can pour and plate for them.</div></div>')
+        href = mailto(f"Guests for {plain(e['title'])}, {when}",
+                      f"I would like to register guests for {plain(e['title'])} on {when}.\n\n"
+                      "Name:\nUnit:\nNumber of outside guests:\n")
+        cta += f'<a class="btn" href="{href}">Register Guests by Email</a>'
+        note = "Your mail app opens with the note started. A reply from Resident Experiences confirms it."
     elif e["rsvp"] == "paid":
-        cta += (f'<label class="btn rsvpbtn" for="rsvp{i}">'
-                f'<span class="s-off">{e["price"]} &middot; Reserve my seat</span>'
-                '<span class="s-on">Seat reserved &check;</span></label>')
-        box = ('<div class="rsvpbox"><h3>Your seat is held.</h3>'
-               '<p>Payment of $75 completes the reservation. You&rsquo;ll be taken to a secure checkout, and a '
-               'receipt and confirmation will follow by email. Seats are released if payment isn&rsquo;t '
-               'completed within 48 hours.</p></div>')
+        href = mailto(f"Seat request: {plain(e['title'])}, {when}",
+                      f"I would like to reserve a seat for {plain(e['title'])} on {when} ({e['price']} per person).\n\n"
+                      "Name:\nUnit:\nNumber of seats:\n")
+        cta += f'<a class="btn" href="{href}">{e["price"]} &middot; Request a Seat</a>'
+        note = ("Seats are confirmed by reply in the order requests arrive, along with how payment is arranged. "
+                "Your mail app opens with the note started.")
     elif e["rsvp"] == "standard":
-        cta += (f'<label class="btn rsvpbtn" for="rsvp{i}">'
-                '<span class="s-off">RSVP for this Event</span>'
-                '<span class="s-on">You&rsquo;re going &check;</span></label>')
-        cutoff_line = (f' If your plans change, please let us know by {e["cutoff"]}, as that is when we '
-                       'order materials.') if e["cutoff"] else ''
-        box = ('<div class="rsvpbox"><h3>You&rsquo;re on the list.</h3>'
-               '<p>A confirmation is on its way to your email, and we&rsquo;ll send a reminder the day before.'
-               + cutoff_line + ' To cancel, simply reply to that email.</p></div>')
+        cutoff_line = (f" Kindly reply with any change of plans by {e['cutoff']}, as that is when we order materials."
+                       if e["cutoff"] else "")
+        href = mailto(f"RSVP: {plain(e['title'])}, {when}",
+                      f"I would like to RSVP for {plain(e['title'])} on {when}.\n\n"
+                      "Name:\nUnit:\nNumber attending:\n")
+        cta += f'<a class="btn" href="{href}">RSVP by Email</a>'
+        note = ("Your mail app opens with the note started. A reply from Resident Experiences is your confirmation."
+                + cutoff_line)
 
-    cta += (f'<a class="btn ghost" href="{ics_href(e)}" download="{slug(e)}.ics">Add to My Calendar</a></div>')
+    cta += (f'<a class="btn ghost" href="{ics_href(e)}" download="{e["on"].isoformat()}_{e["slug"]}.ics">'
+            'Add to My Calendar</a></div>')
+    if note:
+        box = f'<div class="note" style="margin-top:14px">{note}</div>' 
 
     eyebrow = e["sub"] or e["cat"]
     return f'''<section class="screen" id="scr-ev{i}">
@@ -484,7 +491,7 @@ HTML = f'''<!DOCTYPE html>
 </head>
 <body>
 
-<div class="mocknote">Preview &middot; RSVPs open soon, the message button already works</div>
+
 
 <header class="masthead">
   <div class="masthead-inner">
@@ -521,7 +528,7 @@ HTML = f'''<!DOCTYPE html>
         <label class="sq" for="r-rsvp">
           <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M8.2 12.4l2.6 2.6 5-5.4"/></svg></span>
           <span class="badge">{len(MY_RSVP_SLUGS)}</span>
-          <span class="label">My RSVPs</span><span class="sub">{(str(len(MY_RSVP_SLUGS)) + " coming up") if MY_RSVP_SLUGS else "Coming soon"}</span>
+          <span class="label">My RSVPs</span><span class="sub">By email, for now</span>
         </label>
         <label class="sq" for="r-msg">
           <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5.5" width="18" height="13" rx="2"/><path d="M3.5 7l8.5 6 8.5-6"/></svg></span>
@@ -557,9 +564,10 @@ HTML = f'''<!DOCTYPE html>
     <div class="wrap">
       <label class="back" for="r-home">&larr; Back</label>
       <div class="msg-intro"><h2>My RSVPs</h2>
-        <p>The events you&rsquo;re signed up for. To cancel, simply reply to your confirmation email.</p></div>
+        <p>For now, RSVPs travel by email: tap RSVP on any event and your mail app opens with the note started.
+        The reply from Resident Experiences is your confirmation, and replying to it again is how you change or
+        cancel. Once resident sign-in arrives, this screen will list your events.</p></div>
       <div style="height:18px"></div>
-      {rsvp_rows or '<p class="prefill">Once RSVPs go live, the events you sign up for will be listed here.</p>'}
       <div style="height:80px"></div>
     </div>
   </section>
