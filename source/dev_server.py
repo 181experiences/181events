@@ -8,28 +8,23 @@ Serves ../site as static files and answers the same /api routes the Functions do
   POST /api/publish                                            (rebuilds ../site from dev_events.json)
   GET  /api/analytics                                          (sample figures, clearly marked)
 
-dev_events.json is seeded from airtable/events_import.csv on first run. Delete it to reseed.
+dev_events.json is seeded from site/events_seed.json on first run. Delete it to reseed.
 Run: python source/dev_server.py  (port 8181)"""
-import csv, json, os, sys, subprocess, datetime, random
+import json, os, sys, subprocess, datetime, random
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from urllib.parse import urlparse
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 SITE = os.path.normpath(os.path.join(HERE, "..", "site"))
 STORE = os.path.join(HERE, "dev_events.json")
-CSV = os.path.join(HERE, "..", "airtable", "events_import.csv")
+SEED = os.path.join(HERE, "..", "site", "events_seed.json")
 PORT = int(os.environ.get("PORT", "8181"))
 
 def seed():
-    rows = list(csv.DictReader(open(CSV, encoding="utf-8")))
-    out = []
+    rows = json.load(open(SEED, encoding="utf-8"))
     for i, r in enumerate(rows, 1):
-        for k in ("Marquee", "Counted", "Moved"):
-            r[k] = r[k] == "True"
-        r["Capacity"] = int(r["Capacity"]) if r["Capacity"] else None
         r["id"] = f"dev{i:03d}"
-        out.append(r)
-    return out
+    return rows
 
 def load():
     if not os.path.exists(STORE):
@@ -88,7 +83,7 @@ class H(SimpleHTTPRequestHandler):
     def do_GET(self):
         p = urlparse(self.path)
         if p.path == "/api/status":
-            return self._json({"airtable": True, "publish": True, "email": False, "analytics": False, "mode": "local"})
+            return self._json({"db": True, "publish": True, "email": False, "analytics": False, "mode": "local"})
         if p.path == "/api/events":
             return self._json({"events": load()})
         if p.path == "/api/analytics":

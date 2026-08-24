@@ -1,39 +1,54 @@
 #!/usr/bin/env python3
-"""Pull published events from Airtable, rebuild the site, report what changed.
+"""Build the site from the events database, falling back to events_data.py when the
+database is not reachable. This is the Cloudflare Pages build command.
 
-Needs two environment variables (never put them in a file in this folder):
-  AIRTABLE_TOKEN   a personal access token with data.records:read on the base
-  AIRTABLE_BASE    the base id, starts with "app"
-Optional: AIRTABLE_TABLE (default "Events").
+Reads the Live rows from D1 over the Cloudflare API. Environment variables, set in the
+Pages project settings and never in a file here:
+  CF_API_TOKEN     API token with D1 read (the same token the analytics use)
+  CF_ACCOUNT_ID    the Cloudflare account id
+  D1_DATABASE_ID   the D1 database id (uuid, shown on the database page)"""
+import json, os, sys, subprocess, urllib.request
+HERE = os.path.dirname(os.path.abspath(__file__)); sys.path.insert(0, HERE)
+from fields import FIELD_OF_COL
 
-Then upload the site/ folder in the Cloudflare dashboard, or let the
-GitHub Action do it once that is set up."""
-import json, os, sys, urllib.request, urllib.parse
-HERE = os.path.dirname(os.path.abspath(__file__))
-token, base = os.environ.get("AIRTABLE_TOKEN"), os.environ.get("AIRTABLE_BASE")
-table = os.environ.get("AIRTABLE_TABLE", "Events")
-if not (token and base):
-    # First deploys happen before Airtable exists. Build from events_data.py so the site still ships.
-    print("AIRTABLE_TOKEN / AIRTABLE_BASE not set. Building from events_data.py instead. See airtable/SETUP.md")
-    import subprocess
-    live = os.path.join(HERE, "events_live.json")
-    if os.path.exists(live): os.remove(live)
+token = os.environ.get("CF_API_TOKEN")
+account = os.environ.get("CF_ACCOUNT_ID")
+dbid = os.environ.get("D1_DATABASE_ID")
+live = os.path.join(HERE, "events_live.json")
+
+def build_from_code(reason):
+    print(reason + " Building from events_data.py instead.")
+    if os.path.exists(live):
+        os.remove(live)
     sys.exit(subprocess.run([sys.executable, os.path.join(HERE, "build_site.py")]).returncode)
 
-records, offset = [], None
-while True:
-    q = {"pageSize": 100, "filterByFormula": "{Status}='Live'"}
-    if offset: q["offset"] = offset
-    url = f"https://api.airtable.com/v0/{base}/{urllib.parse.quote(table)}?{urllib.parse.urlencode(q)}"
-    req = urllib.request.Request(url, headers={"Authorization": f"Bearer {token}"})
-    with urllib.request.urlopen(req) as r: page = json.load(r)
-    records += page["records"]; offset = page.get("offset")
-    if not offset: break
+if not (token and account and dbid):
+    build_from_code("CF_API_TOKEN / CF_ACCOUNT_ID / D1_DATABASE_ID not set.")
 
-rows = [dict(r["fields"], _id=r["id"]) for r in records if r["fields"].get("Date") and r["fields"].get("Title")]
-live = os.path.join(HERE, "events_live.json")
-old = json.load(open(live, encoding="utf-8")) if os.path.exists(live) else None
+url = f"https://api.cloudflare.com/client/v4/accounts/{account}/d1/database/{dbid}/query"
+req = urllib.request.Request(url, method="POST",
+    data=json.dumps({"sql": "SELECT * FROM events WHERE status='Live' ORDER BY date, start24"}).encode(),
+    headers={"Authorization": f"Bearer {token}", "content-type": "application/json"})
+try:
+    with urllib.request.urlopen(req) as r:
+        data = json.load(r)
+    results = data["result"][0]["results"]
+except Exception as ex:
+    build_from_code(f"Could not read the events database ({ex}).")
+
+rows = []
+for r in results:
+    f = {FIELD_OF_COL[k]: v for k, v in r.items() if k in FIELD_OF_COL}
+    for k in ("Marquee", "Counted", "Moved"):
+        f[k] = bool(f.get(k))
+    f["_id"] = str(r.get("id"))
+    if f.get("Date") and f.get("Title"):
+        rows.append(f)
+
+if not rows:
+    build_from_code("The events database is empty (not seeded yet).")
+
 json.dump(rows, open(live, "w", encoding="utf-8"), indent=1, ensure_ascii=False)
-print(f"{len(rows)} published events pulled from Airtable" + (f" (was {len(old)})" if old else ""))
-import subprocess; subprocess.run([sys.executable, os.path.join(HERE, "build_site.py")], check=True)
+print(f"{len(rows)} live events pulled from the database")
+subprocess.run([sys.executable, os.path.join(HERE, "build_site.py")], check=True)
 print("Built. On Cloudflare this deploys automatically; locally, the site/ folder is current.")

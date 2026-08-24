@@ -15,8 +15,13 @@ os.makedirs(SITE, exist_ok=True)
 # Copy them in so a rebuild into an empty folder is still a complete deploy.
 ASSETS = os.path.join(HERE, "assets")
 for f in os.listdir(ASSETS):
-    shutil.copy(os.path.join(ASSETS, f), os.path.join(SITE, f))
+    src = os.path.join(ASSETS, f)
+    if os.path.isdir(src):
+        shutil.copytree(src, os.path.join(SITE, f), dirs_exist_ok=True)
+    else:
+        shutil.copy(src, os.path.join(SITE, f))
 
+subprocess.run([sys.executable, "make_seed.py", os.path.join(SITE, "events_seed.json")], check=True, cwd=HERE)
 subprocess.run([sys.executable, "build_proto.py"], check=True, cwd=HERE)
 subprocess.run([sys.executable, "build_admin.py"], check=True, cwd=HERE)
 

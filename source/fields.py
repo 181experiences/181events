@@ -1,37 +1,43 @@
-"""The contract between Airtable and the generator. One row per occurrence.
-Column names are the Airtable field names; the order is the CSV order."""
+"""The event field contract, shared by the builders, the publish script, and the dev server.
+The API and every data file speak these names: Status, Date, Title, ... One record per occurrence.
+functions/_lib.js holds the same lists for the Cloudflare side; keep them in step."""
 import html
 
 FIELDS = ["Status", "Date", "Title", "Category", "Start", "End", "Start24", "Location",
           "Host", "RSVP", "Capacity", "Price", "Series", "Description", "Cutoff", "Marquee",
           "Counted", "Moved", "Image", "Slug"]
 
+# SQL column per field in the D1 events table ("End" would collide with the SQL keyword).
+COLS = {f: f.lower() for f in FIELDS}
+COLS["End"] = "end_time"
+FIELD_OF_COL = {v: k for k, v in COLS.items()}
+
 RSVP_LABELS = {None: "None", "guest": "Guest count", "standard": "Seat", "paid": "Paid seat"}
 RSVP_KEYS = {v: k for k, v in RSVP_LABELS.items()}
+STATUSES = ["Draft", "Live", "Unpublished", "Archived"]
 
 def plain(s):
-    """HTML entities -> readable text for Airtable."""
+    """HTML entities -> readable text for storage."""
     return html.unescape(s) if isinstance(s, str) else s
 
 def markup(s):
-    """Readable text -> safe HTML for the site (page is UTF-8, so accents are fine)."""
+    """Stored text -> safe HTML for the site (the page is UTF-8, so accents stay as they are)."""
     return html.escape(s, quote=False) if isinstance(s, str) else s
 
-def to_row(e):
+def to_record(e):
+    """events_data event -> the stored field shape."""
     return {
         "Status": "Live", "Date": e["on"].isoformat(), "Title": plain(e["title"]),
         "Category": e["cat"], "Start": e["time"], "End": e["end"], "Start24": e["t24"],
         "Location": plain(e["loc"]), "Host": e["host"], "RSVP": RSVP_LABELS[e["rsvp"]],
-        "Capacity": e["cap"] or "", "Price": e["price"] or "", "Series": e["series"] or "",
+        "Capacity": e["cap"], "Price": e["price"] or "", "Series": e["series"] or "",
         "Description": "\n\n".join(plain(p) for p in e["desc"]), "Cutoff": e["cutoff"] or "",
         "Marquee": bool(e["marquee"]), "Counted": bool(e["counted"]), "Moved": bool(e["moved"]),
         "Image": e["img"] or "", "Slug": e["slug"],
     }
 
-STATUSES = ["Draft", "Live", "Unpublished", "Archived"]
-
 def from_record(f, month_keys):
-    """Airtable field dict -> the event shape build_proto.py expects (id/m/d added by caller)."""
+    """Stored field shape -> the event shape build_proto.py expects (id added by caller)."""
     from datetime import date
     d = date.fromisoformat(f["Date"])
     desc = [markup(p.strip()) for p in (f.get("Description") or "").split("\n\n") if p.strip()]

@@ -257,9 +257,15 @@
     try { status = await api("/api/status"); } catch (e) { status = {}; }
     const bar = $("#sysbar");
     if (status.mode === "local") bar.textContent = "Local preview · saving to this computer, publishing rebuilds the local calendar";
-    else if (status.airtable) bar.textContent = "Connected · " + (status.publish ? "saves publish to 181residents.com within a couple of minutes" : "publishing not yet wired, changes stay in Airtable");
-    else bar.textContent = "Not connected to Airtable yet · the page is read-only until the base is linked";
-    try { const d = await api("/api/events"); events = d.events; }
+    else if (status.db) bar.textContent = "Connected · " + (status.publish ? "saves publish to 181residents.com within a couple of minutes" : "publishing not yet wired, changes stay in the database");
+    else bar.textContent = "Events database not linked yet · add the D1 binding named DB in the Pages settings";
+    try {
+      let d = await api("/api/events"); events = d.events;
+      if (!events.length && status.db && status.mode === "cloudflare") {
+        const s = await api("/api/seed", { method: "POST" });
+        if (s.seeded) { toast(`Loaded the opening calendar: ${s.count} events.`); d = await api("/api/events"); events = d.events; }
+      }
+    }
     catch (e) { $("#evlist").innerHTML = `<div class="erow"><div class="ecell" style="color:var(--stone)">Could not load events: ${esc(e.message)}</div></div>`; }
     renderAll();
     loadAnalytics();

@@ -6,7 +6,7 @@ The resident calendar for 181residents.com. Static site, no build step, no depen
 
 ## Deploying
 
-See `DEPLOY.md` at the root of the repository. The short version: the site is built by Cloudflare Pages from the GitHub repository, the admin at `/admin.html` edits events in Airtable, and saving a Live event rebuilds the calendar by itself.
+See `DEPLOY.md` at the root of the repository. The short version: the site is built by Cloudflare Pages from the GitHub repository, the admin at `/admin.html` edits events in Cloudflare D1, and saving a Live event rebuilds the calendar by itself.
 
 ## Deploying by hand, the fallback
 
@@ -35,6 +35,8 @@ To update later, drag the folder in again. Every deploy keeps the previous one, 
 | `apple-touch-icon.png` | 180 × 180 for iPhone. |
 | `favicon-32.png` | Browser tab. |
 | `robots.txt` | Keeps the site out of search results while it is resident-only. |
+| `events_seed.json` | The opening calendar, used once to fill an empty events database. |
+| `fonts/` | Marcellus and Hanken Grotesk, served from here. No outside font servers. |
 | `_headers` | Basic security headers, read by Cloudflare Pages. |
 
 ---
@@ -48,11 +50,11 @@ Everything is generated from three Python files, which are not deployed:
 - `build_admin.py`: renders the admin.
 - `build_site.py`: runs both, adds the manifest, icons, and install prompt, and writes this folder.
 
-To add an event, add a row in Airtable and run `python source/publish.py` (see `airtable/SETUP.md`). Until Airtable is set up, edit `events_data.py` and run `python source/build_site.py`. To extend the calendar into another month, move `RANGE_END`.
+To add an event, use the admin page, or before launch run `python source/publish.py` (see `DEPLOY.md`). Until the database is linked, edit `events_data.py` and run `python source/build_site.py`. To extend the calendar into another month, move `RANGE_END`.
 
-- `airtable_fields.py`: the column contract between Airtable and the generator.
-- `airtable_export.py`: writes `airtable/events_import.csv` for the one-time import.
-- `publish.py`: pulls Live rows from Airtable into `events_live.json` and rebuilds. When that file exists it replaces the series and one-offs in `events_data.py`; delete it to fall back.
+- `fields.py`: the field contract shared by the builders, the API, and the database.
+- `make_seed.py`: writes `events_seed.json`, the opening calendar that seeds an empty database.
+- `publish.py`: pulls Live rows from the D1 events database into `events_live.json` and rebuilds. When that file exists it replaces the series and one-offs in `events_data.py`; delete it to fall back.
 
 ### Why there is no framework
 
@@ -66,10 +68,10 @@ The site is complete as a calendar. These need accounts and a backend:
 
 | Piece | Needs |
 |---|---|
-| Event editing | Built. The admin page writes to Airtable through Pages Functions in `functions/`, and a deploy hook rebuilds the calendar. Needs the accounts in `DEPLOY.md`. |
+| Event editing | Built. The admin page writes to Cloudflare D1 through Pages Functions in `functions/`, and a deploy hook rebuilds the calendar. Steps in `DEPLOY.md`. |
 | Admin dashboard | Built. Reads Cloudflare Web Analytics through `functions/api/analytics.js`: visits by day, by source, by device. RSVP and attendance figures join once sign-ups exist. |
-| RSVP submission | Airtable, same base as the events. |
-| Message form | Done for now: posts to `mailto:leonardo@181sf.com` with topic, message, optional name, unit, and email. Replace with an Airtable form once login exists. |
+| RSVP submission | Same D1 database, an rsvps table, once resident sign-in exists. |
+| Message form | Done for now: posts to `mailto:leonardo@181sf.com` with topic, message, optional name, unit, and email. Becomes a logged inbox once resident sign-in exists. |
 | Staff login | Cloudflare Access in front of `admin.html` and `api/*`, one-time email PIN, three addresses. Steps in `DEPLOY.md`. |
 | Resident login | Cloudflare Access on the calendar itself, one-time email PIN. Free to 50 users. |
 | Payment ($75 dinner) | Stripe, in the building's name rather than a personal account. |

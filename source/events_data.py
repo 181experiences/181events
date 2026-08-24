@@ -259,13 +259,13 @@ for o in ONE_OFFS:
 EVENTS.sort(key=lambda e: (e["on"], e["t24"]))
 
 # ---- Airtable takes over once publish.py has run -----------------------------
-# events_live.json is written by publish.py from the Published rows in Airtable.
+# events_live.json is written by publish.py from the Live rows in the events database.
 # When it exists, it replaces the generated list above. Delete it to fall back
 # to the series and one-offs in this file. EVENTS_FROM_CODE=1 forces the fallback.
 import os as _os, json as _json
 _live = _os.path.join(_os.path.dirname(_os.path.abspath(__file__)), "events_live.json")
 if _os.path.exists(_live) and not _os.environ.get("EVENTS_FROM_CODE"):
-    from airtable_fields import from_record as _from_record
+    from fields import from_record as _from_record
     _rows = _json.load(open(_live, encoding="utf-8"))
     EVENTS = [_base(**_from_record(f, MONTH_KEYS)) for f in _rows if (f.get("Status") or "Draft") == "Live"]
     EVENTS = [e for e in EVENTS if RANGE_START <= e["on"] <= RANGE_END]

@@ -1,11 +1,14 @@
-import { airtable, json, clean } from "../../_lib.js";
+import { json, noDb, fromRow, toCols } from "../../_lib.js";
 
 // PATCH /api/events/:id {fields} -> the updated row.
 export async function onRequestPatch({ request, params, env }) {
-  const body = await request.json();
-  const r = await airtable(env, "/" + params.id, { method: "PATCH",
-    body: JSON.stringify({ fields: clean(body), typecast: true }) });
-  if (!r.ok) return json({ error: "Airtable " + r.status, detail: await r.text() }, 502);
-  const out = await r.json();
-  return json({ id: out.id, ...out.fields });
+  const err = noDb(env); if (err) return err;
+  const id = Number(params.id);
+  if (!Number.isInteger(id)) return json({ error: "Bad id" }, 400);
+  const { cols, vals } = toCols(await request.json());
+  if (!cols.length) return json({ error: "Nothing to save" }, 400);
+  const sql = `UPDATE events SET ${cols.map(c => c + "=?").join(",")} WHERE id=? RETURNING *`;
+  const row = await env.DB.prepare(sql).bind(...vals, id).first();
+  if (!row) return json({ error: "No such event" }, 404);
+  return json(fromRow(row));
 }
