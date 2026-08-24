@@ -1,6 +1,6 @@
 import { json } from "../_lib.js";
 
-// POST /api/publish -> asks Cloudflare Pages to rebuild the resident site from Airtable.
+// POST /api/publish -> asks Cloudflare Pages to rebuild the resident site from the events database.
 // DEPLOY_HOOK is the Pages deploy hook URL, stored as an environment variable.
 export async function onRequestPost({ env }) {
   if (!env.DEPLOY_HOOK) return json({ error: "No deploy hook configured" }, 503);

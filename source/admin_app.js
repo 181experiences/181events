@@ -40,7 +40,7 @@
   function go(screen) { const r = $("#s-" + screen); if (r) { r.checked = true; window.scrollTo(0, 0); } }
 
   // ---------------------------------------------------------------- grouping
-  // One Airtable row per occurrence. The admin shows a series as one line.
+  // One database row per occurrence. The admin shows a series as one line.
   function groups() {
     const by = new Map();
     for (const e of events) {

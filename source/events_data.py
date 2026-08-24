@@ -258,7 +258,7 @@ for o in ONE_OFFS:
 
 EVENTS.sort(key=lambda e: (e["on"], e["t24"]))
 
-# ---- Airtable takes over once publish.py has run -----------------------------
+# ---- the events database takes over once publish.py has run -----------------
 # events_live.json is written by publish.py from the Live rows in the events database.
 # When it exists, it replaces the generated list above. Delete it to fall back
 # to the series and one-offs in this file. EVENTS_FROM_CODE=1 forces the fallback.
@@ -271,7 +271,7 @@ if _os.path.exists(_live) and not _os.environ.get("EVENTS_FROM_CODE"):
     EVENTS = [e for e in EVENTS if RANGE_START <= e["on"] <= RANGE_END]
     EVENTS.sort(key=lambda e: (e["on"], e["t24"]))
     for _i, e in enumerate(EVENTS, 1): e["id"] = _i
-    EVENTS_SOURCE = "airtable"
+    EVENTS_SOURCE = "database"
 else:
     EVENTS_SOURCE = "code"
 
