@@ -270,6 +270,7 @@ HTML = f'''<!DOCTYPE html>
     background-position:calc(100% - 20px) 50%,calc(100% - 14px) 50%;background-size:6px 6px;background-repeat:no-repeat;padding-right:40px}}
   .check{{display:flex;gap:12px;align-items:center;font-size:15px;color:var(--ink-body)}}
   .check input{{width:20px;height:20px;accent-color:var(--red)}}
+  .picks .pick.on{{background:var(--ink);color:var(--paper-2);border-color:var(--ink)}}
   .fmtbar{{display:flex;gap:6px;margin-bottom:8px}}
   .fmtbar .mini{{min-width:44px;justify-content:center;background:var(--paper-2)}}
   .chart{{width:100%;height:auto;display:block}}
@@ -396,7 +397,45 @@ HTML = f'''<!DOCTYPE html>
       <div class="hint">Shown on the event page so residents know who to ask.</div></div>
     <div class="field"><label class="fl">Count in engagement reporting</label><div class="picks">{picks("co", ["Count it", "List only, don’t count"])}</div>
       <div class="hint">Choose List only whenever the host is not Resident Experiences, so nothing credits you with someone else&rsquo;s attendance.</div></div>
-    <div class="field"><label class="fl" for="f-series">Repeats, as shown to residents</label><input class="inp" id="f-series" placeholder="Every Tuesday, or leave blank"></div>
+    <div class="field f-full" id="rp-builder"><label class="fl">Repeats</label>
+      <div class="picks" id="rp-picks">
+        <label class="pick on" data-rp="none">Does not repeat</label>
+        <label class="pick" data-rp="daily">Daily</label>
+        <label class="pick" data-rp="weekly">Weekly</label>
+        <label class="pick" data-rp="monthly">Monthly</label>
+      </div>
+      <div id="rp-weekly" class="rp-row" style="display:none">
+        <span class="fl" style="margin:14px 0 8px">On these days</span>
+        <div class="picks" id="rp-days">
+          <label class="pick" data-wd="0">Sunday</label><label class="pick" data-wd="1">Monday</label>
+          <label class="pick" data-wd="2">Tuesday</label><label class="pick" data-wd="3">Wednesday</label>
+          <label class="pick" data-wd="4">Thursday</label><label class="pick" data-wd="5">Friday</label>
+          <label class="pick" data-wd="6">Saturday</label>
+        </div>
+      </div>
+      <div id="rp-monthly" class="rp-row" style="display:none">
+        <span class="fl" style="margin:14px 0 8px">Which day of the month</span>
+        <div style="display:flex;gap:10px;flex-wrap:wrap">
+          <select class="inp" id="rp-ord" style="width:auto"><option>First</option><option>Second</option><option>Third</option><option>Fourth</option><option selected>Last</option></select>
+          <select class="inp" id="rp-wd" style="width:auto"><option value="0">Sunday</option><option value="1">Monday</option><option value="2">Tuesday</option><option value="3">Wednesday</option><option value="4">Thursday</option><option value="5">Friday</option><option value="6">Saturday</option></select>
+        </div>
+      </div>
+      <div id="rp-ends" class="rp-row" style="display:none">
+        <span class="fl" style="margin:14px 0 8px">Ends</span>
+        <div class="picks" id="rp-endpicks">
+          <label class="pick on" data-en="cal">End of the calendar</label>
+          <label class="pick" data-en="count">After a number of times</label>
+          <label class="pick" data-en="date">On a date</label>
+        </div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:10px">
+          <input class="inp" type="number" id="rp-times" min="2" max="60" value="6" style="width:120px;display:none">
+          <input class="inp" type="date" id="rp-until" style="width:auto;display:none">
+        </div>
+        <div class="hint">The resident calendar runs to a fixed end and is extended season by season, so a series runs to the calendar&rsquo;s end rather than forever. Each date becomes its own entry, so a single week can still be moved or skipped later.</div>
+      </div>
+      <div class="hint" id="rp-preview" style="margin-top:10px"></div>
+    </div>
+    <div class="field"><label class="fl" for="f-series">Repeats, as shown to residents</label><input class="inp" id="f-series" placeholder="Writes itself from the rule; edit if you like"></div>
     <div class="field"><label class="fl">RSVP type</label><div class="picks">{picks("rt", RSVP_TYPES)}</div><div class="hint">Guest count collects non-resident numbers only. Paid seat shows the price.</div></div>
     <div class="field"><label class="fl" for="f-cap">Capacity</label><input class="inp" type="number" id="f-cap" inputmode="numeric" placeholder="Leave blank for no limit"></div>
     <div class="field"><label class="fl" for="f-price">Price per person</label><input class="inp" id="f-price" placeholder="$75"></div>

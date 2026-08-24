@@ -14,6 +14,78 @@
   const DOW = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
   let events = [], status = {}, analytics = null, days = 30, editing = null;
+  let rp = { mode: "none", days: new Set(), ord: "Last", wd: 0, end: "cal", times: 6, until: "" };
+  const DOWFULL = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+
+  function calendarEnd() {
+    const m = events.reduce((a, e) => e.Date > a ? e.Date : a, "");
+    return m || today();
+  }
+
+  function addDays(iso, n) { const d = new Date(iso + "T12:00:00"); d.setDate(d.getDate() + n); return d.toISOString().slice(0, 10); }
+
+  function ruleDates(anchor) {
+    // Every date the current rule generates, starting at the anchor date.
+    const out = [];
+    const capIso = rp.end === "date" && rp.until ? rp.until : calendarEnd();
+    const capN = rp.end === "count" ? Math.max(2, Math.min(60, rp.times || 6)) : 366;
+    if (rp.mode === "daily") {
+      for (let d = anchor; d <= capIso && out.length < capN; d = addDays(d, 1)) out.push(d);
+    } else if (rp.mode === "weekly") {
+      const want = rp.days.size ? rp.days : new Set([new Date(anchor + "T12:00:00").getDay()]);
+      for (let d = anchor; d <= capIso && out.length < capN; d = addDays(d, 1)) {
+        if (want.has(new Date(d + "T12:00:00").getDay())) out.push(d);
+      }
+    } else if (rp.mode === "monthly") {
+      const a = new Date(anchor + "T12:00:00");
+      for (let y = a.getFullYear(), m = a.getMonth(), guard = 0; guard < 14 && out.length < capN; guard++) {
+        const hits = [];
+        for (let dd = 1; dd <= 31; dd++) {
+          const d = new Date(y, m, dd, 12);
+          if (d.getMonth() !== m) break;
+          if (d.getDay() === Number(rp.wd)) hits.push(d);
+        }
+        const ordIdx = { First: 0, Second: 1, Third: 2, Fourth: 3, Last: hits.length - 1 }[rp.ord];
+        const pick = hits[ordIdx];
+        if (pick) {
+          const iso = pick.toISOString().slice(0, 10);
+          if (iso >= anchor && iso <= capIso) out.push(iso);
+        }
+        m++; if (m > 11) { m = 0; y++; }
+      }
+    }
+    return out;
+  }
+
+  function ruleLabel() {
+    if (rp.mode === "daily") return "Every day";
+    if (rp.mode === "weekly") {
+      const names = [...rp.days].sort().map(i => DOWFULL[i]);
+      if (!names.length) return "Every week";
+      if (names.length === 1) return "Every " + names[0];
+      return "Every " + names.slice(0, -1).join(", ") + " and " + names[names.length - 1];
+    }
+    if (rp.mode === "monthly") return `${rp.ord} ${DOWFULL[rp.wd]} of the month`;
+    return "";
+  }
+
+  function rpRefresh() {
+    $$("#rp-picks .pick").forEach(b => b.classList.toggle("on", b.dataset.rp === rp.mode));
+    $$("#rp-days .pick").forEach(b => b.classList.toggle("on", rp.days.has(Number(b.dataset.wd))));
+    $$("#rp-endpicks .pick").forEach(b => b.classList.toggle("on", b.dataset.en === rp.end));
+    $("#rp-weekly").style.display = rp.mode === "weekly" ? "" : "none";
+    $("#rp-monthly").style.display = rp.mode === "monthly" ? "" : "none";
+    $("#rp-ends").style.display = rp.mode === "none" ? "none" : "";
+    $("#rp-times").style.display = rp.end === "count" ? "" : "none";
+    $("#rp-until").style.display = rp.end === "date" ? "" : "none";
+    if (rp.mode !== "none") $("#f-series").value = ruleLabel();
+    else if (!editing || !editing.row) $("#f-series").value = "";
+    const anchor = $("#f-date").value;
+    const n = rp.mode === "none" || !anchor ? 0 : ruleDates(anchor).length;
+    $("#rp-preview").textContent = rp.mode === "none" ? "" :
+      (n ? `${n} dates, ${fmt(ruleDates(anchor)[0])} through ${fmt(ruleDates(anchor)[n - 1])}. Each becomes its own entry.` :
+           "Pick a start date above and the dates will preview here.");
+  }
 
   // ---------------------------------------------------------------- helpers
   const today = () => new Date().toISOString().slice(0, 10);
@@ -104,6 +176,10 @@
       $("#f-scope").checked = true;
       $("#f-scope-n").textContent = String(g.upcoming.length);
     } else { occ.style.display = "none"; $("#ed-scope").style.display = "none"; $("#f-scope").checked = false; }
+    // The repeat builder creates rows, so it only shows for a brand-new event.
+    // An existing series is edited through the occurrence picker above.
+    $("#rp-builder").style.display = row ? "none" : "";
+    if (!row) { rp = { mode: "none", days: new Set(), ord: "Last", wd: 0, end: "cal", times: 6, until: "" }; rpRefresh(); }
     const set = (id, v) => { $(id).value = v == null ? "" : v; };
     set("#f-title", e.Title); set("#f-date", e.Date); set("#f-start", e.Start); set("#f-end", e.End);
     set("#f-loc", e.Location); set("#f-host", e.Host); set("#f-series", e.Series); set("#f-cap", e.Capacity);
@@ -151,6 +227,7 @@
     const f = readForm();
     if (overrideStatus) f.Status = overrideStatus;
     const err = validate(f); if (err) { toast(err, "warn"); return; }
+    let told = false;
     const wasLive = editing.row && editing.row.Status === "Live";
     const touchesSite = wasLive || f.Status === "Live";
     const btns = $$("#ed-actions button"); btns.forEach(b => b.disabled = true);
@@ -158,20 +235,35 @@
       if (editing.row) {
         const applyAll = editing.group && editing.group.series && $("#f-scope").checked;
         const targets = applyAll ? editing.group.upcoming : [editing.row];
+        let done = 0, failed = 0, firstErr = "";
         for (const r of targets) {
           const patch = r.id === editing.row.id ? f : Object.fromEntries(SERIES_FIELDS.map(k => [k, f[k]]));
-          const upd = await api("/api/events/" + encodeURIComponent(r.id), { method: "PATCH", body: JSON.stringify(patch) });
-          Object.assign(r, upd);
+          try {
+            const upd = await api("/api/events/" + encodeURIComponent(r.id), { method: "PATCH", body: JSON.stringify(patch) });
+            Object.assign(r, upd); done++;
+          } catch (ex) { failed++; if (!firstErr) firstErr = ex.message; }
         }
+        if (failed) { toast(`Saved ${done} of ${targets.length} dates. ${failed} failed: ${firstErr}`, "warn"); told = true; }
+        else if (targets.length > 1) { toast(`Saved all ${done} upcoming dates.`); told = true; }
+      } else if (rp.mode !== "none") {
+        const dates = ruleDates(f.Date);
+        if (!dates.length) { toast("The repeat rule produces no dates. Check the start date.", "warn"); return; }
+        let made = 0;
+        for (const d of dates) {
+          const created = await api("/api/events", { method: "POST", body: JSON.stringify({ ...f, Date: d }) });
+          events.push(created); made++;
+        }
+        editing.row = events[events.length - 1];
+        toast(`Created ${made} dates of ${f.Title}.`); told = true;
       } else {
         const created = await api("/api/events", { method: "POST", body: JSON.stringify(f) });
         events.push(created); editing.row = created;
       }
       renderAll();
       if (touchesSite && status.publish) {
-        toast("Saved. Publishing the calendar, live in a couple of minutes.");
+        if (!told) toast("Saved. Publishing the calendar, live in a couple of minutes.");
         api("/api/publish", { method: "POST" }).then(r => toast(r.note || "Published.")).catch(e => toast("Saved, but publishing failed: " + e.message, "warn"));
-      } else {
+      } else if (!told) {
         toast(f.Status === "Draft" ? "Saved as a draft. Nothing changes on the resident site." : "Saved.");
       }
       go("events");
@@ -286,6 +378,23 @@
     else if (b.dataset.save) save(b.dataset.save === "keep" ? null : b.dataset.save);
     else if (b.dataset.period) { days = Number(b.dataset.period); loadAnalytics(); }
     else if (b.dataset.publish !== undefined) { b.disabled = true; api("/api/publish", { method: "POST" }).then(r => toast(r.note || "Publishing.")).catch(e => toast(e.message, "warn")).finally(() => b.disabled = false); }
+  });
+  document.addEventListener("click", ev => {
+    const b = ev.target.closest("#rp-picks .pick, #rp-days .pick, #rp-endpicks .pick");
+    if (!b) return;
+    if (b.dataset.rp) rp.mode = b.dataset.rp;
+    else if (b.dataset.wd !== undefined) { const n = Number(b.dataset.wd); rp.days.has(n) ? rp.days.delete(n) : rp.days.add(n); }
+    else if (b.dataset.en) rp.end = b.dataset.en;
+    rpRefresh();
+  });
+  document.addEventListener("change", ev => {
+    if (["rp-ord", "rp-wd", "rp-times", "rp-until", "f-date"].includes(ev.target.id)) {
+      if (ev.target.id === "rp-ord") rp.ord = ev.target.value;
+      if (ev.target.id === "rp-wd") rp.wd = Number(ev.target.value);
+      if (ev.target.id === "rp-times") rp.times = Number(ev.target.value);
+      if (ev.target.id === "rp-until") rp.until = ev.target.value;
+      if ($("#rp-builder").style.display !== "none") rpRefresh();
+    }
   });
   document.addEventListener("change", ev => {
     if (ev.target.id === "f-occ" && editing && editing.group) openEditor(editing.group.key, ev.target.value);
