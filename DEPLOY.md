@@ -74,7 +74,7 @@ After steps 6 and 7, trigger one deploy by hand (**Deployments**, **Retry deploy
 ## 8. Lock the admin
 
 **Zero Trust**, **Access**, **Applications**, **Add an application**, Self-hosted.
-- Application domain `181residents.com`, path `admin.html`; add a second path `api/*` on the same application.
+- Application domain `181residents.com`, path `admin` (Pages serves the page at /admin); add a second path `api/*` on the same application.
 - Identity providers: One-time PIN only.
 - Policy: Allow, Include, Emails: your address, Scott's, Leigh-Ann's, Carley-Anne's.
 - Session duration: 1 month, so nobody types a code every morning.
@@ -84,7 +84,7 @@ Resident sign-in for the calendar itself comes later as a second Access applicat
 
 ## Day to day
 
-- Edit events at 181residents.com/admin.html. Saving a Live event publishes by itself; "Publish calendar" forces it.
+- Edit events at 181residents.com/admin. Saving a Live event publishes by itself; "Publish calendar" forces it.
 - Nothing runs on any office computer. Builds happen on Cloudflare.
 - Rollback: Pages project, **Deployments**, pick the previous one, **Rollback**.
 - The "Next Event" tile on the resident home page is baked in at build time. A quiet week with no edits can
