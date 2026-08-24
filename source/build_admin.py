@@ -452,8 +452,8 @@ HTML = f'''<!DOCTYPE html>
         <button type="button" class="mini" data-fmt="em" title="Italicise the selected text"><em>I</em></button>
         <button type="button" class="mini" data-fmt="u" title="Underline the selected text"><u>U</u></button>
       </div>
-      <textarea class="inp" id="f-desc" rows="7" placeholder="Write it as if the reader knows nothing about the event. A blank line starts a new paragraph."></textarea>
-      <div class="hint">Select some text, then B, I, or U. Titles of books and films take italics. A blank line starts a new paragraph; sizes are set by the calendar itself.</div></div>
+      <textarea class="inp" id="f-desc" rows="7" placeholder="Write it as if the reader knows nothing about the event. It shows exactly as typed: a return starts a new line, a blank line starts a new paragraph."></textarea>
+      <div class="hint">Select some text, then B, I, or U. Titles of books and films take italics. Line breaks show exactly as typed: a return is a new line (menus read one item per line), a blank line is a new paragraph. Sizes are set by the calendar itself.</div></div>
     <div class="field f-full"><label class="check"><input type="checkbox" id="f-marquee"> Feature this on the home screen as the marquee event</label></div>
     <div class="field f-full" id="ed-scope" style="display:none"><label class="check"><input type="checkbox" id="f-scope" checked> Apply these changes to every upcoming date of this series (<span id="f-scope-n">0</span>)</label>
       <div class="hint">Untick to change only the date chosen above, for example to move or re-time a single week.</div></div>

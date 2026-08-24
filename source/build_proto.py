@@ -289,8 +289,9 @@ HTML = f'''<!DOCTYPE html>
 
   /* Saved to an iPhone home screen the page runs edge to edge, so the status bar
      (clock, battery) overlays the top. The inset pushes the header below it. */
-  header.masthead{{border-bottom:1px solid var(--line);background:var(--paper-2);padding-top:env(safe-area-inset-top)}}
-  .masthead-inner{{max-width:940px;margin:0 auto;padding:18px var(--pad);display:flex;align-items:center;justify-content:space-between;gap:16px}}
+  header.masthead{{border-bottom:1px solid var(--line);background:var(--paper-2);padding-top:env(safe-area-inset-top);
+    position:sticky;top:0;z-index:50}}
+  .masthead-inner{{max-width:940px;margin:0 auto;padding:12px var(--pad);display:flex;align-items:center;justify-content:space-between;gap:16px}}
   .logo{{display:block;font-family:var(--fd);font-size:25px;letter-spacing:.2em;text-transform:uppercase;line-height:1;color:var(--ink)}}
   .logo:hover{{color:var(--red)}}
   .logo small{{display:block;font-family:var(--fb);font-size:11px;letter-spacing:.26em;color:var(--stone);margin-top:7px}}
@@ -322,8 +323,8 @@ HTML = f'''<!DOCTYPE html>
     display:flex;align-items:center;justify-content:center;padding:0 8px}}
 
   /* ---------- calendar ---------- */
-  .stickybar{{position:sticky;top:0;z-index:40;background:var(--paper);border-bottom:1px solid var(--line);
-    padding-top:env(safe-area-inset-top);
+  /* sits directly under the frozen masthead (68px of content plus the phone status bar) */
+  .stickybar{{position:sticky;top:calc(env(safe-area-inset-top) + 68px);z-index:40;background:var(--paper);border-bottom:1px solid var(--line);
     padding:16px 0 14px;margin-bottom:18px}}
   .stickybar .inner{{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap}}
   .mname{{display:none;font-family:var(--fd);font-size:clamp(26px,5.6vw,36px);line-height:1;color:var(--ink)}}

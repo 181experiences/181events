@@ -47,7 +47,10 @@ def from_record(f, month_keys):
     """Stored field shape -> the event shape build_proto.py expects (id added by caller)."""
     from datetime import date
     d = date.fromisoformat(f["Date"])
-    desc = [markup(p.strip()) for p in (f.get("Description") or "").split("\n\n") if p.strip()]
+    # A blank line starts a new paragraph; a single return stays a line break,
+    # so a menu typed one item per line reads one item per line.
+    raw = (f.get("Description") or "").replace("\r", "")
+    desc = [markup(p.strip()).replace("\n", "<br>") for p in raw.split("\n\n") if p.strip()]
     return dict(
         on=d, m=month_keys[d.month], d=d.day, slug=f["Slug"], title=markup(f["Title"]),
         cat=f["Category"], t24=f.get("Start24") or "0000", time=f.get("Start", ""), end=f.get("End", ""),
