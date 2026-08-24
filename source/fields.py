@@ -22,10 +22,14 @@ def plain(s):
 
 def markup(s):
     """Stored text -> safe HTML for the site (the page is UTF-8, so accents stay as they are).
-    Everything is escaped except <em>, which staff use for book and film titles."""
+    Everything is escaped except <em>, <strong>, and <u>, the three the admin's
+    formatting buttons produce."""
     if not isinstance(s, str):
         return s
-    return html.escape(s, quote=False).replace("&lt;em&gt;", "<em>").replace("&lt;/em&gt;", "</em>")
+    s = html.escape(s, quote=False)
+    for t in ("em", "strong", "u"):
+        s = s.replace(f"&lt;{t}&gt;", f"<{t}>").replace(f"&lt;/{t}&gt;", f"</{t}>")
+    return s
 
 def to_record(e):
     """events_data event -> the stored field shape."""

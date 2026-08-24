@@ -14,7 +14,8 @@ GUEST_COUNTS = ["1", "2", "3", "4+"]
 
 def plain(s):
     for a, b in [("&rsquo;", "'"), ("&amp;", "&"), ("&middot;", "-"), ("&mdash;", "-"),
-                 ("<em>", ""), ("</em>", ""), ("—", "-")]:
+                 ("<em>", ""), ("</em>", ""), ("<strong>", ""), ("</strong>", ""),
+                 ("<u>", ""), ("</u>", ""), ("—", "-")]:
         s = s.replace(a, b)
     return s
 

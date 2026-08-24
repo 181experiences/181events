@@ -272,8 +272,14 @@
   }
 
   document.addEventListener("click", ev => {
-    const b = ev.target.closest("[data-edit],[data-archive],[data-new],[data-save],[data-period],[data-publish]");
+    const b = ev.target.closest("[data-edit],[data-archive],[data-new],[data-save],[data-period],[data-publish],[data-fmt]");
     if (!b) return;
+    if (b.dataset.fmt) {
+      const ta = $("#f-desc"), t = b.dataset.fmt, a = ta.selectionStart, z = ta.selectionEnd;
+      ta.value = ta.value.slice(0, a) + `<${t}>` + ta.value.slice(a, z) + `</${t}>` + ta.value.slice(z);
+      ta.focus(); ta.setSelectionRange(a + t.length + 2, z + t.length + 2);
+      return;
+    }
     if (b.dataset.edit) openEditor(b.dataset.edit);
     else if (b.dataset.archive) archiveGroup(b.dataset.archive);
     else if (b.dataset.new !== undefined) openEditor(null);

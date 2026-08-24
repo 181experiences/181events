@@ -76,7 +76,7 @@ After steps 6 and 7, trigger one deploy by hand (**Deployments**, **Retry deploy
 **Zero Trust**, **Access**, **Applications**, **Add an application**, Self-hosted.
 - Application domain `181residents.com`, path `admin.html`; add a second path `api/*` on the same application.
 - Identity providers: One-time PIN only.
-- Policy: Allow, Include, Emails: your address, Scott's, Leigh-Ann's.
+- Policy: Allow, Include, Emails: your address, Scott's, Leigh-Ann's, Carley-Anne's.
 - Session duration: 1 month, so nobody types a code every morning.
 
 They enter their email, get a six-digit code, and are in. Nothing to install, nothing to remember.

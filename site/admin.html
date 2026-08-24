@@ -260,6 +260,8 @@
     background-position:calc(100% - 20px) 50%,calc(100% - 14px) 50%;background-size:6px 6px;background-repeat:no-repeat;padding-right:40px}
   .check{display:flex;gap:12px;align-items:center;font-size:15px;color:var(--ink-body)}
   .check input{width:20px;height:20px;accent-color:var(--red)}
+  .fmtbar{display:flex;gap:6px;margin-bottom:8px}
+  .fmtbar .mini{min-width:44px;justify-content:center;background:var(--paper-2)}
   .chart{width:100%;height:auto;display:block}
   .chart .bar{fill:#cfc6b8} .chart .bar.hot{fill:var(--ink)}
   .chart .tick{font-size:11px;fill:var(--stone);font-family:var(--fb)}
@@ -401,7 +403,13 @@
     <div class="field"><label class="fl" for="f-cutoff">RSVP closes</label><input class="inp" id="f-cutoff" placeholder="Monday, Aug 31">
       <div class="hint">Workshops close the Monday of the event week, so materials can be ordered against a firm count.</div></div>
     <div class="field f-full"><label class="fl" for="f-desc">Description</label>
-      <textarea class="inp" id="f-desc" rows="7" placeholder="Write it as if the reader knows nothing about the event. A blank line starts a new paragraph."></textarea></div>
+      <div class="fmtbar">
+        <button type="button" class="mini" data-fmt="strong" title="Bold the selected text"><strong>B</strong></button>
+        <button type="button" class="mini" data-fmt="em" title="Italicise the selected text"><em>I</em></button>
+        <button type="button" class="mini" data-fmt="u" title="Underline the selected text"><u>U</u></button>
+      </div>
+      <textarea class="inp" id="f-desc" rows="7" placeholder="Write it as if the reader knows nothing about the event. A blank line starts a new paragraph."></textarea>
+      <div class="hint">Select some text, then B, I, or U. Titles of books and films take italics. A blank line starts a new paragraph; sizes are set by the calendar itself.</div></div>
     <div class="field f-full"><label class="check"><input type="checkbox" id="f-marquee"> Feature this on the home screen as the marquee event</label></div>
     <div class="field f-full" id="ed-scope" style="display:none"><label class="check"><input type="checkbox" id="f-scope" checked> Apply these changes to every upcoming date of this series (<span id="f-scope-n">0</span>)</label>
       <div class="hint">Untick to change only the date chosen above, for example to move or re-time a single week.</div></div>
@@ -940,8 +948,14 @@
   }
 
   document.addEventListener("click", ev => {
-    const b = ev.target.closest("[data-edit],[data-archive],[data-new],[data-save],[data-period],[data-publish]");
+    const b = ev.target.closest("[data-edit],[data-archive],[data-new],[data-save],[data-period],[data-publish],[data-fmt]");
     if (!b) return;
+    if (b.dataset.fmt) {
+      const ta = $("#f-desc"), t = b.dataset.fmt, a = ta.selectionStart, z = ta.selectionEnd;
+      ta.value = ta.value.slice(0, a) + `<${t}>` + ta.value.slice(a, z) + `</${t}>` + ta.value.slice(z);
+      ta.focus(); ta.setSelectionRange(a + t.length + 2, z + t.length + 2);
+      return;
+    }
     if (b.dataset.edit) openEditor(b.dataset.edit);
     else if (b.dataset.archive) archiveGroup(b.dataset.archive);
     else if (b.dataset.new !== undefined) openEditor(null);
