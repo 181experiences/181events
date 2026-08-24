@@ -73,7 +73,7 @@
       const when = g.series ? `${esc(h.Series)} &middot; next ${esc(fmt(h.Date))}` : `${esc(fmt(h.Date))}, ${esc(h.Start)}`;
       const extra = (g.series ? badge("Series") : "") + (h.Price ? badge(h.Price, "pay") : "") +
         (g.rows.some(r => r.Moved) ? badge(g.rows.filter(r => r.Moved).length + " moved") : "") +
-        (h.Counted === false || h.Counted === "False" ? badge("Not counted", "ext") : "");
+        (h.Counted === true || h.Counted === "True" ? "" : badge("Not counted", "ext"));
       const rsvp = h.RSVP === "None" || !h.RSVP ? "Drop in" : (h.Capacity ? `0 of ${h.Capacity}` : "Open");
       return `<div class="erow ${cls(g.status)}${g.mixed ? " live" : ""}" data-key="${esc(g.key)}">
         <div class="ecell etitle"><span class="et">${esc(h.Title)}${extra}</span><span class="esub">${esc(h.Category)} &middot; ${when}${g.series ? ` &middot; ${g.upcoming.length} upcoming` : ""}</span></div>
@@ -112,7 +112,7 @@
     $$("input[name=cat]").forEach((r, i) => r.checked = CATS[i] === e.Category);
     $$("input[name=st]").forEach((r, i) => r.checked = STATUSES[i] === (e.Status || "Draft"));
     $$("input[name=rt]").forEach((r, i) => r.checked = RSVPS[i] === (e.RSVP || "None"));
-    const counted = !(e.Counted === false || e.Counted === "False");
+    const counted = e.Counted === true || e.Counted === "True";
     $("#co-0").checked = counted; $("#co-1").checked = !counted;
     $("#f-stem").textContent = stem({ Date: e.Date, Slug: e.Slug, Title: e.Title });
     $("#ed-cancel").disabled = true;

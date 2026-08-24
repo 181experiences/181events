@@ -14,7 +14,7 @@ Do these in order. Each step is a few minutes in the dashboard. Never paste a to
 1. Cloudflare dashboard, **Workers & Pages**, **Create**, **Pages**, **Connect to Git**. Choose the `181residents` repository.
 2. Build settings:
    - Framework preset: None
-   - Build command: `python source/publish.py`
+   - Build command: `python3 source/publish.py`
    - Build output directory: `site`
 3. Deploy. The first build takes about a minute and uses the events in `events_data.py`, since Airtable is not linked yet.
 4. **Custom domains**: add `181residents.com` and `www.181residents.com`. DNS and HTTPS are automatic because the domain lives in the same account.

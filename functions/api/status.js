@@ -6,7 +6,7 @@ export async function onRequestGet({ env }) {
     airtable: !!(env.AIRTABLE_TOKEN && env.AIRTABLE_BASE),
     publish: !!env.DEPLOY_HOOK,
     email: !!env.EMAIL_API_KEY,
-    analytics: !!env.ANALYTICS_TOKEN,
+    analytics: !!(env.CF_API_TOKEN && env.CF_ACCOUNT_ID && env.CF_SITE_TAG),
     mode: "cloudflare",
   });
 }
