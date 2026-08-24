@@ -345,6 +345,40 @@
 
   function renderAll() { renderEvents(); renderDash(); renderAssets(); }
 
+  // ---------------------------------------------------------------- csv export
+  function csvCell(v) { v = String(v == null ? "" : v); return /[",\n]/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v; }
+  function exportCsv() {
+    const a = analytics || { byDay: [], bySource: [], byDevice: [], visits: 0, pageviews: 0, sample: false };
+    const t = today();
+    const upcoming = events.filter(e => e.Status === "Live" && e.Date >= t);
+    const rows = [];
+    rows.push(["181 Fremont Resident Experiences, analytics export"]);
+    rows.push(["Exported", t, a.sample ? "SAMPLE FIGURES, site not yet collecting" : `last ${days} days`]);
+    rows.push([]);
+    rows.push(["Totals"]); rows.push(["Visits", a.visits]); rows.push(["Page views", a.pageviews]);
+    rows.push(["Live upcoming dates", upcoming.length]);
+    rows.push([]);
+    rows.push(["Visits by day"]); rows.push(["Date", "Visits", "Page views"]);
+    for (const d of a.byDay) rows.push([d.date, d.visits, d.views]);
+    rows.push([]);
+    rows.push(["Traffic by source"]); rows.push(["Source", "Visits"]);
+    for (const s2 of a.bySource) rows.push([s2.label, s2.visits]);
+    rows.push([]);
+    rows.push(["Devices"]); rows.push(["Device", "Page views"]);
+    for (const d of a.byDevice) rows.push([d.device, d.views]);
+    rows.push([]);
+    rows.push(["Live calendar by category"]); rows.push(["Category", "Upcoming dates"]);
+    for (const c of CATS) { const n = upcoming.filter(e => e.Category === c).length; if (n) rows.push([c, n]); }
+    const csv = rows.map(r => r.map(csvCell).join(",")).join("\r\n");
+    const blob = new Blob(["\ufeff" + csv], { type: "text/csv;charset=utf-8" });
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = `181fremont-analytics-${t}-${days}d.csv`;
+    document.body.appendChild(link); link.click(); link.remove();
+    setTimeout(() => URL.revokeObjectURL(link.href), 5000);
+    toast("Downloaded. The file opens straight into Excel.");
+  }
+
   // ---------------------------------------------------------------- boot
   async function loadAnalytics() {
     try { analytics = await api("/api/analytics?days=" + days); } catch (e) { analytics = null; }
@@ -370,8 +404,9 @@
   }
 
   document.addEventListener("click", ev => {
-    const b = ev.target.closest("[data-edit],[data-archive],[data-new],[data-save],[data-period],[data-publish],[data-fmt],[data-dates],[data-editrow]");
+    const b = ev.target.closest("[data-edit],[data-archive],[data-new],[data-save],[data-period],[data-publish],[data-fmt],[data-dates],[data-editrow],[data-export]");
     if (!b) return;
+    if (b.dataset.export !== undefined) { exportCsv(); return; }
     if (b.dataset.dates) {
       const d = document.querySelector(`[data-dates-for="${CSS.escape(b.dataset.dates)}"]`);
       if (d) d.style.display = d.style.display === "none" ? "" : "none";

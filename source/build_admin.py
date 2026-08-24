@@ -48,61 +48,61 @@ HTML = f'''<!DOCTYPE html>
     --ink:#16161a; --ink-body:#3a3a43; --ink-soft:#55555f;
     --paper:#f2efe9; --paper-2:#fffdfa; --line:#ddd6cb; --line-2:#eae3d8;
     --red:#c41f26; --stone:#7a7266; --radius:4px;
-    --fd:'Marcellus',Georgia,serif;
+    --fd:'Hanken Grotesk',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;  /* the admin is a tool, not a lobby */
     --fb:'Hanken Grotesk',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
   }}
   *{{box-sizing:border-box;-webkit-tap-highlight-color:transparent}}
   html,body{{margin:0;padding:0}}
-  body{{background:var(--paper);color:var(--ink-body);font-family:var(--fb);font-size:17px;line-height:1.6;-webkit-font-smoothing:antialiased}}
-  h1,h2,h3{{font-family:var(--fd);font-weight:400;margin:0;color:var(--ink);letter-spacing:.015em}}
+  body{{background:var(--paper);color:var(--ink-body);font-family:var(--fb);font-size:14px;line-height:1.5;-webkit-font-smoothing:antialiased}}
+  h1,h2,h3{{font-family:var(--fd);font-weight:600;margin:0;color:var(--ink);letter-spacing:0}}
   label{{cursor:pointer}}
   code{{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.86em;background:#eae3d8;padding:2px 6px;border-radius:3px;color:#4a4238}}
   .state{{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none;margin:0}}
-  .wrap{{max-width:1080px;margin:0 auto;padding:0 clamp(18px,4vw,34px)}}
+  .wrap{{max-width:1240px;margin:0 auto;padding:0 clamp(16px,3vw,28px)}}
 
   /* ---------- chrome ---------- */
   .topbar{{background:var(--ink);color:#e8e2d8}}
-  .topbar .inner{{max-width:1080px;margin:0 auto;padding:15px clamp(18px,4vw,34px);display:flex;align-items:center;justify-content:space-between;gap:16px}}
-  .brand{{font-family:var(--fd);font-size:17px;letter-spacing:.2em;text-transform:uppercase;line-height:1.3}}
+  .topbar .inner{{max-width:1240px;margin:0 auto;padding:9px clamp(18px,4vw,34px);display:flex;align-items:center;justify-content:space-between;gap:16px}}
+  .brand{{font-family:var(--fd);font-weight:600;font-size:14px;letter-spacing:.18em;text-transform:uppercase;line-height:1.3}}
   .brand small{{display:block;font-family:var(--fb);font-size:10px;letter-spacing:.24em;color:#a49c90;margin-top:4px}}
   .who{{font-size:13px;color:#a49c90;text-align:right;line-height:1.4}}
   .who strong{{display:block;color:#e8e2d8;font-weight:500}}
 
   .navbar{{background:var(--paper-2);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:30}}
-  .navbar .inner{{max-width:1080px;margin:0 auto;padding:0 clamp(18px,4vw,34px);display:flex;gap:4px;overflow-x:auto}}
-  .navbar label{{white-space:nowrap;padding:17px 18px;font-size:14px;letter-spacing:.1em;text-transform:uppercase;
+  .navbar .inner{{max-width:1240px;margin:0 auto;padding:0 clamp(18px,4vw,34px);display:flex;gap:2px;overflow-x:auto}}
+  .navbar label{{white-space:nowrap;padding:11px 14px;font-size:12px;letter-spacing:.09em;text-transform:uppercase;
     font-weight:500;color:var(--stone);border-bottom:2px solid transparent}}
   .navbar label:hover{{color:var(--ink)}}
 
-  .screen{{display:none;padding:34px 0 90px}}
+  .screen{{display:none;padding:22px 0 70px}}
   {GEN_CSS}
 
   .phead{{display:flex;align-items:flex-end;justify-content:space-between;gap:18px;flex-wrap:wrap;margin-bottom:6px}}
-  .phead h1{{font-size:clamp(28px,4.4vw,38px);line-height:1.1}}
-  .psub{{color:var(--stone);font-size:15px;margin:8px 0 26px}}
+  .phead h1{{font-size:clamp(20px,3vw,26px);line-height:1.15}}
+  .psub{{color:var(--stone);font-size:13px;margin:5px 0 16px}}
   .btn{{display:inline-flex;align-items:center;justify-content:center;gap:8px;background:var(--red);color:#fff;
-    border:1px solid var(--red);border-radius:var(--radius);padding:14px 22px;font-size:13px;letter-spacing:.14em;
-    text-transform:uppercase;font-weight:600;min-height:50px}}
+    border:1px solid var(--red);border-radius:var(--radius);padding:9px 16px;font-size:12px;letter-spacing:.1em;
+    text-transform:uppercase;font-weight:600;min-height:38px}}
   .btn:hover{{background:#a5171d;border-color:#a5171d}}
   .btn.ghost{{background:transparent;color:var(--ink);border-color:#c9c0b3}}
-  .card{{background:var(--paper-2);border:1px solid var(--line);border-radius:var(--radius);padding:24px}}
-  .sec{{margin-top:34px}}
-  .sec h2{{font-size:23px;margin-bottom:4px}}
-  .sec .sd{{font-size:15px;color:var(--stone);margin-bottom:16px}}
+  .card{{background:var(--paper-2);border:1px solid var(--line);border-radius:var(--radius);padding:16px 18px}}
+  .sec{{margin-top:22px}}
+  .sec h2{{font-size:16px;margin-bottom:2px}}
+  .sec .sd{{font-size:12.5px;color:var(--stone);margin-bottom:10px}}
   .back{{display:inline-block;font-size:15px;color:var(--ink-soft);margin-bottom:16px}}
   .back:hover{{color:var(--red)}}
 
   /* ---------- kpi tiles ---------- */
   .kpis{{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(196px,1fr))}}
-  .kpi{{background:var(--paper-2);border:1px solid var(--line);border-radius:var(--radius);padding:22px}}
-  .kpi .k{{font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--stone);font-weight:500}}
-  .kpi .v{{font-family:var(--fd);font-size:40px;line-height:1.05;color:var(--ink);margin-top:10px}}
-  .kpi .n{{font-size:14px;color:var(--ink-soft);margin-top:6px}}
+  .kpi{{background:var(--paper-2);border:1px solid var(--line);border-radius:var(--radius);padding:14px 16px}}
+  .kpi .k{{font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--stone);font-weight:600}}
+  .kpi .v{{font-family:var(--fd);font-weight:600;font-size:26px;line-height:1.05;color:var(--ink);margin-top:6px}}
+  .kpi .n{{font-size:12px;color:var(--ink-soft);margin-top:4px}}
 
   /* ---------- funnels ---------- */
   .fgrid{{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(310px,1fr))}}
   .fcard{{background:var(--paper-2);border:1px solid var(--line);border-radius:var(--radius);padding:20px 22px}}
-  .fhead{{font-family:var(--fd);font-size:19px;color:var(--ink);line-height:1.25;margin-bottom:14px;display:flex;
+  .fhead{{font-family:var(--fd);font-weight:600;font-size:14px;color:var(--ink);line-height:1.25;margin-bottom:14px;display:flex;
     justify-content:space-between;gap:12px;align-items:baseline}}
   .fhead span{{font-family:var(--fb);font-size:13px;color:var(--stone);white-space:nowrap}}
   .frow{{display:flex;align-items:center;gap:12px;margin-bottom:9px}}
@@ -120,19 +120,19 @@ HTML = f'''<!DOCTYPE html>
 
   /* ---------- events table ---------- */
   .tabs{{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}}
-  .tabs label{{border:1px solid var(--line);border-radius:100px;padding:9px 18px;font-size:13px;letter-spacing:.1em;
-    text-transform:uppercase;font-weight:500;color:var(--stone);background:var(--paper-2);min-height:42px;display:flex;align-items:center}}
+  .tabs label{{border:1px solid var(--line);border-radius:100px;padding:5px 13px;font-size:11.5px;letter-spacing:.08em;
+    text-transform:uppercase;font-weight:600;color:var(--stone);background:var(--paper-2);min-height:30px;display:flex;align-items:center}}
   .emptynote{{display:none;background:var(--paper-2);border:1px dashed var(--line);border-radius:var(--radius);
     padding:22px;margin-bottom:12px;font-size:15px;color:var(--stone);line-height:1.5}}
   #f-unpublished:checked ~ .wrap .emptynote{{display:block}}
   .evlist{{background:var(--paper-2);border:1px solid var(--line);border-radius:var(--radius);overflow:hidden}}
-  .erow{{display:grid;gap:14px;grid-template-columns:2.2fr .8fr 1fr .9fr 1fr;align-items:center;
-    padding:18px 22px;border-top:1px solid var(--line-2)}}
+  .erow{{display:grid;gap:12px;grid-template-columns:2.4fr .7fr .8fr .8fr 1.2fr;align-items:center;
+    padding:11px 16px;border-top:1px solid var(--line-2)}}
   .erow:first-child{{border-top:none}}
-  .et{{display:block;font-family:var(--fd);font-size:19px;color:var(--ink);line-height:1.25}}
-  .esub{{display:block;font-size:13px;color:var(--stone);margin-top:3px}}
+  .et{{display:block;font-family:var(--fd);font-weight:600;font-size:14.5px;color:var(--ink);line-height:1.3}}
+  .esub{{display:block;font-size:12px;color:var(--stone);margin-top:2px}}
   .lbl{{display:none;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--stone);margin-right:6px}}
-  .ecell{{font-size:15px}}
+  .ecell{{font-size:13px}}
   .pill{{display:inline-block;font-size:11px;letter-spacing:.14em;text-transform:uppercase;font-weight:600;
     border-radius:100px;padding:5px 12px}}
   .pill.live{{background:#e7f0e8;color:#2c5c37}}
@@ -145,8 +145,8 @@ HTML = f'''<!DOCTYPE html>
   .badge2.pay{{background:var(--ink);border-color:var(--ink);color:var(--paper-2)}}
   .badge2.ext{{background:#efe9e0;border-color:#efe9e0;color:#6d6355}}
   .eact{{display:flex;gap:8px;justify-content:flex-end}}
-  .mini{{border:1px solid var(--line);border-radius:3px;padding:9px 14px;font-size:12px;letter-spacing:.1em;
-    text-transform:uppercase;font-weight:600;color:var(--ink);min-height:40px;display:inline-flex;align-items:center}}
+  .mini{{border:1px solid var(--line);border-radius:3px;padding:5px 10px;font-size:11px;letter-spacing:.07em;
+    text-transform:uppercase;font-weight:600;color:var(--ink);min-height:30px;display:inline-flex;align-items:center;background:var(--paper-2)}}
   .mini:hover{{border-color:var(--red);color:var(--red)}}
   .mini.ghost{{color:var(--stone)}}
   @media(max-width:820px){{
@@ -156,17 +156,18 @@ HTML = f'''<!DOCTYPE html>
   }}
 
   /* ---------- editor form ---------- */
-  .form{{display:grid;gap:18px;grid-template-columns:1fr 1fr}}
+  .form{{display:grid;gap:12px 16px;grid-template-columns:1fr 1fr 1fr}}
+  @media(max-width:1000px){{.form{{grid-template-columns:1fr 1fr}}}}
   .f-full{{grid-column:1/-1}}
-  .field label.fl{{display:block;font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--stone);
-    margin-bottom:8px;font-weight:500}}
-  .inp{{width:100%;padding:14px 16px;font-family:var(--fb);font-size:17px;color:var(--ink);background:var(--paper-2);
-    border:1px solid var(--line);border-radius:var(--radius);min-height:52px}}
-  textarea.inp{{min-height:120px;resize:vertical;line-height:1.55}}
-  .hint{{font-size:13px;color:var(--stone);margin-top:7px}}
-  .picks{{display:flex;flex-wrap:wrap;gap:8px}}
-  .pick{{border:1px solid var(--line);border-radius:100px;padding:12px 18px;font-size:14px;font-weight:500;
-    color:var(--ink-body);background:var(--paper-2);min-height:48px;display:inline-flex;align-items:center}}
+  .field label.fl{{display:block;font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--stone);
+    margin-bottom:5px;font-weight:600}}
+  .inp{{width:100%;padding:8px 11px;font-family:var(--fb);font-size:13.5px;color:var(--ink);background:var(--paper-2);
+    border:1px solid var(--line);border-radius:var(--radius);min-height:36px}}
+  textarea.inp{{min-height:110px;resize:vertical;line-height:1.5;font-size:13.5px}}
+  .hint{{font-size:11.5px;color:var(--stone);margin-top:4px;line-height:1.45}}
+  .picks{{display:flex;flex-wrap:wrap;gap:6px}}
+  .pick{{border:1px solid var(--line);border-radius:100px;padding:5px 12px;font-size:12px;font-weight:500;
+    color:var(--ink-body);background:var(--paper-2);min-height:30px;display:inline-flex;align-items:center}}
   .pick:hover{{border-color:var(--red)}}
 #ho-0:checked ~ .form label[for="ho-0"]{{background:var(--ink);color:var(--paper-2);border-color:var(--ink)}}
   #ho-1:checked ~ .form label[for="ho-1"]{{background:var(--ink);color:var(--paper-2);border-color:var(--ink)}}
@@ -214,15 +215,15 @@ HTML = f'''<!DOCTYPE html>
   .akstate.miss{{font-style:italic}}
   .akact{{display:flex;gap:8px;justify-content:flex-end}}
   @media(max-width:760px){{ .akrow{{grid-template-columns:1fr;gap:8px}} .akact{{justify-content:flex-start}} }}
-  .acard{{background:var(--paper-2);border:1px solid var(--line);border-radius:var(--radius);padding:20px 22px;margin-bottom:12px}}
+  .acard{{background:var(--paper-2);border:1px solid var(--line);border-radius:var(--radius);padding:14px 16px;margin-bottom:8px}}
   .ahead{{margin-bottom:14px}}
-  .at{{display:block;font-family:var(--fd);font-size:20px;color:var(--ink)}}
+  .at{{display:block;font-family:var(--fd);font-weight:600;font-size:15px;color:var(--ink)}}
   .asub{{display:block;font-size:13px;color:var(--stone);margin-top:5px}}
 
   /* ---------- messages ---------- */
-  .mrow{{background:var(--paper-2);border:1px solid var(--line);border-radius:var(--radius);padding:20px 22px;margin-bottom:10px}}
+  .mrow{{background:var(--paper-2);border:1px solid var(--line);border-radius:var(--radius);padding:14px 16px;margin-bottom:8px}}
   .mtop{{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:9px}}
-  .munit{{font-family:var(--fd);font-size:19px;color:var(--ink)}}
+  .munit{{font-family:var(--fd);font-weight:600;font-size:14.5px;color:var(--ink)}}
   .mkind{{font-size:11px;letter-spacing:.14em;text-transform:uppercase;font-weight:600;border:1px solid var(--line);
     border-radius:100px;padding:4px 11px;color:var(--stone)}}
   .mstate{{font-size:11px;letter-spacing:.14em;text-transform:uppercase;font-weight:600;border-radius:100px;padding:4px 11px}}
@@ -233,15 +234,15 @@ HTML = f'''<!DOCTYPE html>
 
   /* ---------- instructions ---------- */
   .docs{{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(255px,1fr))}}
-  .doc{{display:block;background:var(--paper-2);border:1px solid var(--line);border-radius:var(--radius);padding:24px}}
+  .doc{{display:block;background:var(--paper-2);border:1px solid var(--line);border-radius:var(--radius);padding:16px 18px}}
   .doc:hover{{border-color:var(--red)}}
-  .doc .dt{{display:block;font-family:var(--fd);font-size:22px;color:var(--ink);line-height:1.2}}
+  .doc .dt{{display:block;font-family:var(--fd);font-weight:600;font-size:15.5px;color:var(--ink);line-height:1.25}}
   .doc .dd{{display:block;font-size:14px;color:var(--ink-soft);margin-top:8px;line-height:1.5}}
   .doc .dm{{display:block;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--stone);margin-top:14px;font-weight:500}}
 
   .prose{{max-width:74ch}}
-  .prose h2{{font-size:26px;margin:34px 0 10px}}
-  .prose h3{{font-size:20px;margin:26px 0 8px}}
+  .prose h2{{font-size:17px;margin:24px 0 8px}}
+  .prose h3{{font-size:14.5px;margin:18px 0 6px}}
   .prose p{{margin:0 0 14px}}
   .prose ol,.prose ul{{margin:0 0 16px;padding-left:22px}}
   .prose li{{margin-bottom:8px}}
@@ -308,7 +309,7 @@ HTML = f'''<!DOCTYPE html>
 
 <!-- ================= DASHBOARD ================= -->
 <section class="screen" id="scr-dash"><div class="wrap">
-  <div class="phead"><h1>Dashboard</h1><div class="period" id="period"><button data-period="7" data-days="7">7 days</button><button data-period="30" data-days="30" class="on">30 days</button><button data-period="90" data-days="90">90 days</button></div></div>
+  <div class="phead"><h1>Dashboard</h1><div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><div class="period" id="period"><button data-period="7" data-days="7">7 days</button><button data-period="30" data-days="30" class="on">30 days</button><button data-period="90" data-days="90">90 days</button></div><button class="mini" data-export title="Downloads a CSV that opens in Excel">Download CSV</button></div></div>
   <div class="psub" id="dash-period">Loading&hellip;</div>
   <div class="callout" id="dash-note" style="display:none;margin:0 0 18px"></div>
 
