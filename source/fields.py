@@ -21,8 +21,11 @@ def plain(s):
     return html.unescape(s) if isinstance(s, str) else s
 
 def markup(s):
-    """Stored text -> safe HTML for the site (the page is UTF-8, so accents stay as they are)."""
-    return html.escape(s, quote=False) if isinstance(s, str) else s
+    """Stored text -> safe HTML for the site (the page is UTF-8, so accents stay as they are).
+    Everything is escaped except <em>, which staff use for book and film titles."""
+    if not isinstance(s, str):
+        return s
+    return html.escape(s, quote=False).replace("&lt;em&gt;", "<em>").replace("&lt;/em&gt;", "</em>")
 
 def to_record(e):
     """events_data event -> the stored field shape."""
