@@ -15,6 +15,7 @@
 
   let events = [], status = {}, analytics = null, days = 30, editing = null;
   let role = "staff", residents = [], msgs = [], rsvps = [];
+  let evError = null;   // a failed events load must say so, never render as a quiet zero
   let rp = { mode: "none", days: new Set(), ord: "Last", wd: 0, end: "cal", times: 6, until: "" };
   const DOWFULL = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 
@@ -141,6 +142,11 @@
 
   // ---------------------------------------------------------------- events list
   function renderEvents() {
+    if (evError) {
+      $("#evlist").innerHTML = `<div class="erow"><div class="ecell" style="color:var(--stone)">Could not load events: ${esc(evError)}</div></div>`;
+      $("#evcount").textContent = "The events could not be loaded, so nothing below is current.";
+      return;
+    }
     const gs = groups();
     const badge = (t, c) => ` <span class="badge2 ${c || ""}">${esc(t)}</span>`;
     $("#evlist").innerHTML = gs.map(g => {
@@ -455,7 +461,12 @@
   }
 
   async function loadResidents() {
-    try { const d = await api("/api/residents"); residents = d.residents; } catch (e) { residents = []; }
+    try { const d = await api("/api/residents"); residents = d.residents; } catch (e) {
+      residents = [];
+      renderResidents();
+      $("#rescount").textContent = "Could not load residents: " + e.message;
+      return;
+    }
     renderResidents();
   }
 
@@ -550,7 +561,12 @@
   }
 
   async function loadMsgs() {
-    try { const d = await api("/api/messages"); msgs = d.messages; } catch (e) { msgs = []; }
+    try { const d = await api("/api/messages"); msgs = d.messages; } catch (e) {
+      msgs = [];
+      renderMsgs();
+      $("#msgcount").textContent = "Could not load messages: " + e.message;
+      return;
+    }
     renderMsgs();
   }
 
@@ -582,7 +598,12 @@
   }
 
   async function loadBookings() {
-    try { const d = await api("/api/bookings"); bookings = d.bookings; } catch (e) { bookings = []; }
+    try { const d = await api("/api/bookings"); bookings = d.bookings; } catch (e) {
+      bookings = [];
+      renderBookings();
+      $("#bkcount").textContent = "Could not load reservations: " + e.message;
+      return;
+    }
     renderBookings();
   }
 
@@ -663,7 +684,8 @@
     const bar = $("#sysbar");
     if (status.mode === "local") bar.textContent = `Local preview · saving to this computer, publishing rebuilds the local calendar · signed in as ${role}`;
     else if (status.db) bar.textContent = "Connected · " + (status.publish ? "saves publish to 181residents.com within a couple of minutes" : "publishing not yet wired, changes stay in the database")
-      + (status.signin ? "" : " · resident sign-in not switched on yet: set SESSION_SECRET in the Pages settings");
+      + (status.signin ? "" : " · resident sign-in not switched on yet: set SESSION_SECRET in the Pages settings")
+      + (role === "none" ? " · Access did not pass your email through, so nothing will load: reload the page, or sign out of Access and back in" : "");
     else bar.textContent = "Events database not linked yet · add the D1 binding named DB in the Pages settings";
 
     // The desk tier works with people and codes; the calendar is not its business,
@@ -682,7 +704,7 @@
         if (s.seeded) { toast(`Loaded the opening calendar: ${s.count} events.`); d = await api("/api/events"); events = d.events; }
       }
     }
-    catch (e) { $("#evlist").innerHTML = `<div class="erow"><div class="ecell" style="color:var(--stone)">Could not load events: ${esc(e.message)}</div></div>`; }
+    catch (e) { evError = e.message; }
     try { rsvps = (await api("/api/rsvps")).rsvps; } catch (e) { rsvps = []; }
     rsvpCache = null;
     renderAll();

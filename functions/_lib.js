@@ -83,8 +83,26 @@ export function residentView(r) {
 function emailList(v) {
   return String(v || "").toLowerCase().split(",").map(s => s.trim()).filter(Boolean);
 }
+// Access attaches the verified address two ways: a plain header, and the signed
+// login token (JWT). On Pages the plain header does not always arrive, so the
+// token's payload is the fallback. Both are trustworthy for the same reason:
+// nothing reaches /api/* without passing Access first, and Access sets them.
+function b64urlJson(seg) {
+  try {
+    const pad = seg.replace(/-/g, "+").replace(/_/g, "/") + "===".slice((seg.length + 3) % 4);
+    return JSON.parse(atob(pad));
+  } catch (e) { return null; }
+}
+export function accessEmail(request) {
+  const direct = (request.headers.get("cf-access-authenticated-user-email") || "").toLowerCase().trim();
+  if (direct) return direct;
+  const parts = String(request.headers.get("cf-access-jwt-assertion") || "").split(".");
+  if (parts.length !== 3) return "";
+  const payload = b64urlJson(parts[1]);
+  return payload && typeof payload.email === "string" ? payload.email.toLowerCase().trim() : "";
+}
 export function adminRole(request, env) {
-  const email = (request.headers.get("cf-access-authenticated-user-email") || "").toLowerCase().trim();
+  const email = accessEmail(request);
   if (!email) return env.DEV_ROLE || null;   // DEV_ROLE is the local dev server's stand-in
   if (emailList(env.OWNER_EMAILS).includes(email)) return "owner";
   if (emailList(env.DESK_EMAILS).includes(email)) return "desk";
