@@ -1,20 +1,34 @@
 import { json, noDb, adminRole, forbidden, ensureResidentTables } from "../../_lib.js";
 
-// PATCH /api/rsvps/:id {status} -> promote a waitlisted party to Confirmed (or
-// step one back). Freed seats are never given away automatically; this is how
-// staff hand them to the queue, in order, and then let the resident know.
+// PATCH /api/rsvps/:id {status?, count?, names?} -> staff changes to an RSVP:
+// promote a waitlisted party, adjust a party size for someone who asked in
+// passing, or cancel outright. Every tier may do this; the desk fields these
+// requests all day. The admin opens a pre-written note to the resident after,
+// so the person always hears about a change made on their behalf.
 export async function onRequestPatch({ request, params, env }) {
   const err = noDb(env); if (err) return err;
-  const role = adminRole(request, env);
-  if (!role || role === "desk") return forbidden();
+  if (!adminRole(request, env)) return forbidden();
   await ensureResidentTables(env);
   const id = Number(params.id);
   if (!Number.isInteger(id)) return json({ error: "Bad id" }, 400);
-  const { status } = await request.json();
-  if (!["Confirmed", "Waitlist"].includes(status)) return json({ error: "Bad status" }, 400);
+  const body = await request.json();
+
+  const sets = [], vals = [];
+  if ("status" in body) {
+    if (!["Confirmed", "Waitlist", "Cancelled"].includes(body.status)) return json({ error: "Bad status" }, 400);
+    sets.push("status=?"); vals.push(body.status);
+  }
+  if ("count" in body) {
+    const count = Math.round(Number(body.count));
+    if (!Number.isFinite(count) || count < 1 || count > 6) return json({ error: "Party size runs 1 to 6." }, 400);
+    sets.push("count=?"); vals.push(count);
+  }
+  if ("names" in body) { sets.push("names=?"); vals.push(String(body.names || "").trim().slice(0, 120)); }
+  if (!sets.length) return json({ error: "Nothing to change" }, 400);
+  sets.push("updated=?"); vals.push(new Date().toISOString());
+
   const row = await env.DB.prepare(
-    "UPDATE rsvps SET status=?, updated=? WHERE id=? RETURNING *")
-    .bind(status, new Date().toISOString(), id).first();
+    `UPDATE rsvps SET ${sets.join(",")} WHERE id=? RETURNING *`).bind(...vals, id).first();
   if (!row) return json({ error: "No such RSVP" }, 404);
-  return json({ id: row.id, status: row.status });
+  return json({ id: row.id, status: row.status, count: row.count, names: row.names || "" });
 }

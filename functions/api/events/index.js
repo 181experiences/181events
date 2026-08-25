@@ -7,10 +7,12 @@ function noEvents(request, env) {
   return !role || role === "desk";
 }
 
-// GET /api/events -> every row, every status, for the admin.
+// GET /api/events -> every row, every status, for the admin. Reading is open to
+// every tier, the desk included: their dashboard and RSVP work needs the list.
+// Writing events stays out of the desk's reach below.
 export async function onRequestGet({ request, env }) {
   const err = noDb(env); if (err) return err;
-  if (noEvents(request, env)) return forbidden();
+  if (!adminRole(request, env)) return forbidden();
   await env.DB.prepare(CREATE_SQL).run();
   const { results } = await env.DB.prepare("SELECT * FROM events ORDER BY date, start24").all();
   return json({ events: results.map(fromRow) });

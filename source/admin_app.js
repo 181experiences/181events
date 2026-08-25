@@ -379,6 +379,76 @@
     return rsvpCache;
   }
 
+  // A change made on someone's behalf deserves a word to them. No mail service
+  // exists in this stack by design, so the word travels the same way the code
+  // cards do: a pre-written email opens from the operator's own mailbox.
+  function notifyRsvp(r, kind) {
+    if (!r.email) {
+      toast(`No email on file for ${r.name}${r.unit ? " · " + r.unit : ""}. A call or a word at the desk closes the loop.`);
+      return;
+    }
+    const when = fmt(r.event_date);
+    const what = r.rsvp_type === "guest"
+      ? (r.count === 1 ? "1 outside guest" : `${r.count} outside guests`)
+      : (r.count === 1 ? "a party of 1" : `a party of ${r.count}`);
+    let line;
+    if (kind === "cancel") line = `As requested, we have taken you off the list for ${r.event_title} on ${when}. If plans change again, you are always welcome back while there is room.`;
+    else if (kind === "confirm") line = `Good news: room opened up for ${r.event_title} on ${when}, and your spot is confirmed, ${what}.`;
+    else line = `As requested, your RSVP for ${r.event_title} on ${when} is updated: ${what}${r.status === "Waitlist" ? ", currently on the waitlist" : ""}.`;
+    const href = "mailto:" + encodeURIComponent(r.email)
+      + "?subject=" + encodeURIComponent(`Your RSVP for ${r.event_title}, ${when}`)
+      + "&body=" + encodeURIComponent(`Hello ${r.name},\n\n${line}\n\nWarmly,\nResident Experiences\n181 Fremont`);
+    window.location.href = href;
+  }
+
+  function patchRsvp(id, body, after) {
+    api("/api/rsvps/" + id, { method: "PATCH", body: JSON.stringify(body) })
+      .then(u => {
+        const row = rsvps.find(x => String(x.id) === String(u.id));
+        if (row) Object.assign(row, { status: u.status, count: u.count, names: u.names });
+        rsvpCache = null;
+        renderDash(); renderEvents();
+        if (after) after(row);
+      })
+      .catch(e => toast(e.message, "warn"));
+  }
+
+  function openAddRsvp() {
+    const card = $("#ar-card");
+    if (card.style.display !== "none") { card.style.display = "none"; return; }
+    const people = residents.filter(p => p.status === "Active")
+      .sort((a, b) => (a.unit + a.name).localeCompare(b.unit + b.name, undefined, { numeric: true }));
+    $("#ar-person").innerHTML = people.map(p => `<option value="${p.id}">${esc(p.label)}</option>`).join("");
+    const t = today();
+    const evs = events.filter(e => e.Status === "Live" && e.Date >= t && e.RSVP && e.RSVP !== "None")
+      .sort((a, b) => (a.Date + a.Start24).localeCompare(b.Date + b.Start24));
+    $("#ar-event").innerHTML = evs.map(e => `<option value="${esc(stem(e))}">${esc(fmt(e.Date))} · ${esc(e.Title)}${e.RSVP === "Guest count" ? " (outside guests)" : ""}</option>`).join("");
+    if (!people.length || !evs.length) { toast("Needs at least one active person and one live upcoming event.", "warn"); return; }
+    card.style.display = "";
+  }
+
+  function saveAddRsvp() {
+    const body = {
+      resident_id: Number($("#ar-person").value),
+      event_key: $("#ar-event").value,
+      count: Number($("#ar-count").value),
+      names: $("#ar-names").value.trim(),
+    };
+    api("/api/rsvps", { method: "POST", body: JSON.stringify(body) })
+      .then(d => {
+        const i = rsvps.findIndex(x => String(x.id) === String(d.rsvp.id));
+        if (i >= 0) rsvps[i] = d.rsvp; else rsvps.push(d.rsvp);
+        rsvpCache = null;
+        renderDash(); renderEvents();
+        $("#ar-names").value = "";
+        $("#ar-card").style.display = "none";
+        toast(d.rsvp.status === "Waitlist"
+          ? `Saved. ${d.rsvp.name} is on the waitlist: the event is full or others are ahead in line.`
+          : `Saved. ${d.rsvp.name} is confirmed.`);
+      })
+      .catch(e => toast(e.message, "warn"));
+  }
+
   function rsvpForGroup(g) {
     const keys = new Set(g.upcoming.map(stem));
     let heads = 0, wait = 0;
@@ -408,7 +478,11 @@
         ${s.rows.map(r => `<div class="srow"><span class="slab">${esc(r.unit || "Role")} &middot; ${esc(r.name)}</span>
           <span style="flex:1;font-size:14px;color:var(--ink-soft)">${r.status === "Waitlist" ? "Waitlist" : (s.type === "guest" ? `${r.count} guest${r.count === 1 ? "" : "s"}` : `party of ${r.count}`)}${r.names ? ` &middot; ${esc(r.names)}` : ""}</span>
           <span class="sval" style="flex-basis:90px;font-size:12px;color:var(--stone)">${esc((r.created || "").slice(0, 10))}</span>
-          ${r.status === "Waitlist" ? `<button class="mini" data-wconfirm="${r.id}" title="Give this party the freed seats, then let them know">Confirm seats</button>` : ""}</div>`).join("")}
+          <span class="eact">
+          ${r.status === "Waitlist" ? `<button class="mini" data-wconfirm="${r.id}" title="Give this party the freed seats, then let them know">Confirm seats</button>` : ""}
+          <button class="mini ghost" data-redit="${r.id}" title="Change the party size for someone who asked">Edit</button>
+          <button class="mini ghost" data-rcancel="${r.id}" title="Take them off the list; a note to them opens after">Cancel</button>
+          </span></div>`).join("")}
         </div>`;
     }).join("");
   }
@@ -689,15 +763,8 @@
       + (role === "none" ? " · Access did not pass your email through, so nothing will load: reload the page, or sign out of Access and back in" : "");
     else bar.textContent = "Events database not linked yet · add the D1 binding named DB in the Pages settings";
 
-    // The desk tier works with people and codes; the calendar is not its business,
-    // so it lands on Residents and never asks for what the server would refuse.
-    if (role === "desk") {
-      go("res");
-      loadResidents();
-      loadMsgs();
-      loadBookings();
-      return;
-    }
+    // Every tier, the desk included, gets the dashboard and the RSVP work; the
+    // server refuses event writes for the desk, and its tabs are hidden by CSS.
     try {
       let d = await api("/api/events"); events = d.events;
       if (!events.length && status.db && status.mode === "cloudflare") {
@@ -716,7 +783,7 @@
   }
 
   document.addEventListener("click", ev => {
-    const r = ev.target.closest("[data-rotate],[data-ends],[data-toggle],[data-rdelete],[data-addres],[data-addbulk],[data-printcards],[data-mreplied],[data-marchive],[data-wconfirm],[data-rsvpkey],[data-addbooking],[data-unbook]");
+    const r = ev.target.closest("[data-rotate],[data-ends],[data-toggle],[data-rdelete],[data-addres],[data-addbulk],[data-printcards],[data-mreplied],[data-marchive],[data-wconfirm],[data-redit],[data-rcancel],[data-addrsvp],[data-savearsvp],[data-closearsvp],[data-rsvpkey],[data-addbooking],[data-unbook]");
     if (r) {
       if (r.dataset.rotate) {
         const p = residents.find(x => String(x.id) === r.dataset.rotate);
@@ -756,16 +823,36 @@
           .then(u => { const m = msgs.find(x => String(x.id) === String(u.id)); if (m) m.state = u.state; renderMsgs(); })
           .catch(e => toast(e.message, "warn"));
       } else if (r.dataset.wconfirm) {
-        api("/api/rsvps/" + r.dataset.wconfirm, { method: "PATCH", body: JSON.stringify({ status: "Confirmed" }) })
-          .then(u => {
-            const row = rsvps.find(x => String(x.id) === String(u.id));
-            if (row) row.status = u.status;
-            rsvpCache = null;
-            renderDash(); renderEvents();
-            toast("Confirmed. Kindly let the resident know their seats came through.");
-          })
-          .catch(e => toast(e.message, "warn"));
-      } else if (r.dataset.rsvpkey) {
+        patchRsvp(r.dataset.wconfirm, { status: "Confirmed" }, row => {
+          toast("Confirmed. A note to the resident is opening; send it so they know their seats came through.");
+          if (row) notifyRsvp(row, "confirm");
+        });
+      } else if (r.dataset.redit) {
+        const row = rsvps.find(x => String(x.id) === r.dataset.redit);
+        if (!row) return;
+        const v = prompt(`New ${row.rsvp_type === "guest" ? "outside guest count" : "party size"} for ${row.name} at ${row.event_title} (1-6):`, String(row.count));
+        if (v === null) return;
+        const n = Math.round(Number(v));
+        if (!Number.isFinite(n) || n < 1 || n > 6) { toast("Party size runs 1 to 6.", "warn"); return; }
+        patchRsvp(r.dataset.redit, { count: n }, updated => {
+          toast("Updated. A note to the resident is opening; send it so the change is in writing.");
+          if (updated) notifyRsvp(updated, "update");
+        });
+      } else if (r.dataset.rcancel) {
+        const row = rsvps.find(x => String(x.id) === r.dataset.rcancel);
+        if (!row) return;
+        if (!confirm(`Cancel ${row.name}'s RSVP for ${row.event_title}? A note to them opens after, ready to send.`)) return;
+        patchRsvp(r.dataset.rcancel, { status: "Cancelled" }, () => {
+          rsvps = rsvps.filter(x => String(x.id) !== r.dataset.rcancel);
+          rsvpCache = null;
+          renderDash(); renderEvents();
+          toast("Cancelled. Their seats are free for the waitlist; use Confirm seats to hand them on.");
+          notifyRsvp(row, "cancel");
+        });
+      } else if (r.dataset.addrsvp !== undefined) openAddRsvp();
+      else if (r.dataset.savearsvp !== undefined) saveAddRsvp();
+      else if (r.dataset.closearsvp !== undefined) $("#ar-card").style.display = "none";
+      else if (r.dataset.rsvpkey) {
         const d = document.querySelector(`[data-rsvpdetail="${CSS.escape(r.dataset.rsvpkey)}"]`);
         if (d) d.style.display = d.style.display === "none" ? "" : "none";
       } else if (r.dataset.addbooking !== undefined) addBooking();

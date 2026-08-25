@@ -476,21 +476,20 @@ class H(SimpleHTTPRequestHandler):
         if p.path == "/api/whoami":
             return self._json({"role": self._role()})
         if p.path == "/api/events":
-            if self._role() == "desk": return self._json({"error": "forbidden"}, 403)
-            return self._json({"events": load_events()})
+            return self._json({"events": load_events()})   # reading is open to every tier
         if p.path == "/api/analytics":
             days = max(1, min(90, int((q.get("days") or ["30"])[0])))
             return self._json(sample_analytics(days))
         if p.path == "/api/residents":
             return self._json({"residents": [shape_resident(r) for r in ensure_front_desk()]})
         if p.path == "/api/rsvps":
-            if self._role() == "desk": return self._json({"error": "forbidden"}, 403)
             residents = {r["id"]: r for r in load_store("residents", [])}
             rows = []
             for r in load_store("rsvps", []):
                 if r["status"] == "Cancelled": continue
                 res = residents.get(r["resident_id"], {})
-                rows.append(dict(r, name=res.get("name", "?"), unit=res.get("unit") or ""))
+                rows.append(dict(r, name=res.get("name", "?"), unit=res.get("unit") or "",
+                                 email=res.get("email") or ""))
             rows.sort(key=lambda r: (r["event_date"], r["event_key"], r["created"]))
             return self._json({"rsvps": rows})
         if p.path == "/api/messages":
@@ -608,6 +607,44 @@ class H(SimpleHTTPRequestHandler):
                                  created=now_iso()))
             residents += made; save_store("residents", residents)
             return self._json({"residents": [shape_resident(r) for r in made]}, 201)
+        if p.path == "/api/rsvps":
+            body = self._body_json()
+            residents = load_store("residents", [])
+            resident = next((r for r in residents if r["id"] == int(body.get("resident_id") or 0)
+                             and r["status"] == "Active"), None)
+            if not resident: return self._json({"error": "No such active person."}, 400)
+            key = str(body.get("event_key") or "")
+            e = live_event(key)
+            if not e: return self._json({"error": "That event is not on the live calendar."}, 400)
+            if e.get("RSVP") not in TYPE_OF:
+                return self._json({"error": f"{label_of(resident)} is always welcome: {e['Title']} is drop-in, no RSVP needed."}, 400)
+            rsvp_type = TYPE_OF[e["RSVP"]]
+            mx = 6 if rsvp_type == "guest" else 4
+            try: count = max(1, min(mx, int(body.get("count") or 1)))
+            except ValueError: count = 1
+            names = str(body.get("names") or "").strip()[:120]
+            rsvps = load_store("rsvps", [])
+            cap = int(e["Capacity"]) if e.get("Capacity") else None
+            status = "Confirmed"
+            if cap and rsvp_type != "guest":
+                waiting = sum(1 for r in rsvps if r["event_key"] == key
+                              and r["status"] == "Waitlist" and r["resident_id"] != resident["id"])
+                if seats_taken(key, resident["id"]) + count > cap or waiting:
+                    status = "Waitlist"
+            mine = next((r for r in rsvps if r["resident_id"] == resident["id"] and r["event_key"] == key), None)
+            if mine:
+                if mine["status"] == "Cancelled": mine["created"] = now_iso()
+                mine.update(rsvp_type=rsvp_type, count=count, names=names, status=status, updated=now_iso())
+                row = mine
+            else:
+                row = dict(id=max([r["id"] for r in rsvps] or [0]) + 1, resident_id=resident["id"],
+                           event_key=key, event_date=e["Date"], event_title=e["Title"],
+                           rsvp_type=rsvp_type, count=count, names=names, status=status,
+                           created=now_iso(), updated=now_iso())
+                rsvps.append(row)
+            save_store("rsvps", rsvps)
+            return self._json({"rsvp": dict(row, name=resident["name"], unit=resident.get("unit") or "",
+                                            email=resident.get("email") or "")}, 201)
         if p.path == "/api/bookings":
             b = self._body_json()
             space = (b.get("space") or "").strip(); date = (b.get("date") or "").strip()
@@ -765,16 +802,25 @@ class H(SimpleHTTPRequestHandler):
                     return self._json(shape_resident(r))
             return self._json({"error": "No such person"}, 404)
         if p.path.startswith("/api/rsvps/"):
-            if self._role() == "desk": return self._json({"error": "forbidden"}, 403)
             rid = p.path.rsplit("/", 1)[1]; body = self._body_json()
-            if body.get("status") not in ("Confirmed", "Waitlist"):
-                return self._json({"error": "Bad status"}, 400)
             rsvps = load_store("rsvps", [])
             for r in rsvps:
                 if str(r["id"]) == rid:
-                    r["status"] = body["status"]; r["updated"] = now_iso()
+                    if "status" in body:
+                        if body["status"] not in ("Confirmed", "Waitlist", "Cancelled"):
+                            return self._json({"error": "Bad status"}, 400)
+                        r["status"] = body["status"]
+                    if "count" in body:
+                        try: n = int(body["count"])
+                        except (TypeError, ValueError): n = 0
+                        if n < 1 or n > 6: return self._json({"error": "Party size runs 1 to 6."}, 400)
+                        r["count"] = n
+                    if "names" in body:
+                        r["names"] = str(body["names"] or "").strip()[:120]
+                    r["updated"] = now_iso()
                     save_store("rsvps", rsvps)
-                    return self._json({"id": r["id"], "status": r["status"]})
+                    return self._json({"id": r["id"], "status": r["status"], "count": r["count"],
+                                       "names": r.get("names") or ""})
             return self._json({"error": "No such RSVP"}, 404)
         if p.path.startswith("/api/messages/"):
             if self._role() != "owner": return self._json({"error": "forbidden"}, 403)

@@ -223,9 +223,9 @@ HTML = f'''<!DOCTYPE html>
   .asub{{display:block;font-size:13px;color:var(--stone);margin-top:5px}}
 
   /* ---------- roles ---------- */
-  /* The desk tier (front desk) sees Residents and Messages only. The server enforces
-     this on every endpoint; hiding the tabs just keeps the desk view honest. */
-  body.role-desk .navbar label[for="s-dash"],
+  /* The desk tier (front desk) works the Dashboard, Residents, Spaces, and
+     Messages, and manages RSVPs; the calendar itself stays out of reach. The
+     server enforces this on every endpoint; hiding tabs keeps the view honest. */
   body.role-desk .navbar label[for="s-events"],
   body.role-desk .navbar label[for="s-assets"],
   body.role-desk .navbar label[for="s-inst"]{{display:none}}
@@ -375,8 +375,24 @@ HTML = f'''<!DOCTYPE html>
   </div>
 
   <div class="sec">
-    <h2>RSVPs</h2>
-    <div class="sd">Confirmed parties and heads for upcoming dates, with waitlists. Open an event to see who, by unit; a unit appearing twice for one event is worth a glance, since a household can double-count itself.</div>
+    <div style="display:flex;align-items:baseline;justify-content:space-between;gap:12px;flex-wrap:wrap">
+      <h2>RSVPs</h2>
+      <button class="mini" data-addrsvp title="For the resident who phones the desk or asks in passing">Add an RSVP for someone</button>
+    </div>
+    <div class="sd">Confirmed parties and heads for upcoming dates, with waitlists. Open an event to see who, by unit; a unit appearing twice for one event is worth a glance, since a household can double-count itself. Edit or cancel any RSVP from the list, and a note to the resident opens ready to send from your own mailbox.</div>
+    <div class="card" id="ar-card" style="display:none;margin-bottom:10px">
+      <div style="display:grid;gap:12px 16px;grid-template-columns:repeat(auto-fit,minmax(190px,1fr))">
+        <div class="field"><label class="fl" for="ar-person">Person</label><select class="inp" id="ar-person"></select></div>
+        <div class="field"><label class="fl" for="ar-event">Event</label><select class="inp" id="ar-event"></select></div>
+        <div class="field"><label class="fl" for="ar-count">Party, or outside guests</label><select class="inp" id="ar-count"><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option></select></div>
+        <div class="field"><label class="fl" for="ar-names">Their names, optional</label><input class="inp" id="ar-names" autocapitalize="words"></div>
+      </div>
+      <div style="display:flex;gap:10px;margin-top:14px;align-items:center">
+        <button class="btn" data-savearsvp>Save RSVP</button>
+        <button class="mini ghost" data-closearsvp>Close</button>
+      </div>
+      <div class="hint" style="margin-top:8px">Capacity and the waitlist apply the same as on the site, so one queue stays one queue: if the event is full or others are waiting, this RSVP queues too. Saving for someone who already has an RSVP updates theirs.</div>
+    </div>
     <div class="card" id="rsvplist"></div>
   </div>
 

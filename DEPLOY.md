@@ -98,9 +98,11 @@ admin's **Residents** screen. Three settings switch it on (add them in step 6's 
 2. `OWNER_EMAILS`: your addresses, comma separated (leonardo@181sf.com plus your two personal).
    Owners see everything, including the text of resident messages. If this is unset, nobody can
    read message bodies, by design.
-3. `DESK_EMAILS`: `concierge@181sf.com`. The desk tier sees Residents, Spaces, and Messages
-   (redacted) only, and cannot touch the calendar. Anyone else the Access lock admits (Scott,
-   Leigh Anne, Carley-Ann) gets full events and residents powers, with message bodies redacted.
+3. `DESK_EMAILS`: `concierge@181sf.com`. The desk tier gets the Dashboard, Residents, Spaces,
+   Messages (redacted), and full RSVP handling: adding one for a resident who phones or asks in
+   passing, editing, cancelling, and promoting from the waitlist. It cannot touch the calendar
+   itself. Anyone else the Access lock admits (Scott, Leigh Anne, Carley-Ann) gets full events
+   and residents powers, with message bodies redacted.
 
 Then add `concierge@181sf.com` to the "181 admin" Access policy (same application, one more
 email), so the front desk can sign in for late-night code rescues: look the person up, Rotate,
