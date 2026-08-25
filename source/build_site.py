@@ -189,9 +189,16 @@ for q in QR_PATHS:
 # ---------------------------------------------------------------- admin
 admin = open(os.path.join(HERE, "181fremont_admin_prototype.html"), encoding="utf-8").read()
 admin = admin.replace('<div class="mocknote">Admin prototype — sample data, nothing here saves</div>\n\n', "")
-# First occurrence only: the admin's own JavaScript contains a literal </head>
-# inside the print-cards template, which must not receive the head block.
-admin = admin.replace("</head>", HEAD + "</head>", 1)
+# The admin is its own installable app: saved to a home screen or desktop it
+# must open at /admin, not the resident calendar, so it carries its own
+# manifest and its own name. First occurrence only: the admin's JavaScript
+# contains a literal </head> inside the print-cards template.
+# use-credentials matters: the Access lock covers admin.webmanifest too, and
+# browsers fetch manifests anonymously unless told to bring the session along.
+ADMIN_HEAD = HEAD.replace('href="/manifest.webmanifest"',
+                          'href="/admin.webmanifest" crossorigin="use-credentials"').replace(
+    'content="181 Events"', 'content="181 Admin"')
+admin = admin.replace("</head>", ADMIN_HEAD + "</head>", 1)
 open(f"{SITE}/admin.html", "w", encoding="utf-8").write(admin)
 
 # ---------------------------------------------------------------- manifest
@@ -213,6 +220,15 @@ manifest = {
     ],
 }
 open(f"{SITE}/manifest.webmanifest", "w", encoding="utf-8").write(json.dumps(manifest, indent=2))
+
+admin_manifest = dict(manifest,
+    name="181 Fremont Admin",
+    short_name="181 Admin",
+    description="Resident Experiences admin for 181 Fremont.",
+    start_url="/admin",
+    scope="/admin",
+)
+open(f"{SITE}/admin.webmanifest", "w", encoding="utf-8").write(json.dumps(admin_manifest, indent=2))
 
 # keep robots honest while it is a private resident site
 open(f"{SITE}/robots.txt", "w", encoding="utf-8").write("User-agent: *\nDisallow: /\n")

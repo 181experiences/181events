@@ -474,7 +474,9 @@ class H(SimpleHTTPRequestHandler):
             return self._json({"db": True, "publish": True, "email": False, "analytics": False,
                                "signin": True, "roles": True, "mode": "local"})
         if p.path == "/api/whoami":
-            return self._json({"role": self._role()})
+            return self._json({"role": self._role(), "email": f"{self._role()}@local.dev"})
+        if p.path == "/cdn-cgi/access/logout":   # Access sign-out is a live-site feature
+            return self._redirect("/admin.html", status=302)
         if p.path == "/api/events":
             return self._json({"events": load_events()})   # reading is open to every tier
         if p.path == "/api/analytics":

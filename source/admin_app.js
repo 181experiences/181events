@@ -754,14 +754,20 @@
 
   async function boot() {
     try { status = await api("/api/status"); } catch (e) { status = {}; }
-    try { role = (await api("/api/whoami")).role || "staff"; } catch (e) { role = "staff"; }
+    let whoEmail = "";
+    try { const w = await api("/api/whoami"); role = w.role || "staff"; whoEmail = w.email || ""; }
+    catch (e) { role = "staff"; }
     document.body.classList.add("role-" + role);
+    const roleName = { owner: "owner", staff: "staff", desk: "front desk", none: "no access" }[role] || role;
+    $("#who").innerHTML = `Signed in as ${esc(roleName)}<strong>${esc(whoEmail || "181 Fremont · Level 39")}</strong>`;
     const bar = $("#sysbar");
     if (status.mode === "local") bar.textContent = `Local preview · saving to this computer, publishing rebuilds the local calendar · signed in as ${role}`;
     else if (status.db) bar.textContent = "Connected · " + (status.publish ? "saves publish to 181residents.com within a couple of minutes" : "publishing not yet wired, changes stay in the database")
       + (status.signin ? "" : " · resident sign-in not switched on yet: set SESSION_SECRET in the Pages settings")
-      + (role === "none" ? " · Access did not pass your email through, so nothing will load: reload the page, or sign out of Access and back in" : "");
+      + (role === "none" ? " · Access did not pass your email through, so nothing will load: reload the page, or use Sign out above and sign back in" : "");
     else bar.textContent = "Events database not linked yet · add the D1 binding named DB in the Pages settings";
+    // Installed as an app, a healthy plumbing report is noise; hide it there.
+    if (status.db && (status.signin || status.mode === "local") && role !== "none") bar.classList.add("quiet");
 
     // Every tier, the desk included, gets the dashboard and the RSVP work; the
     // server refuses event writes for the desk, and its tabs are hidden by CSS.

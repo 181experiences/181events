@@ -67,7 +67,13 @@ HTML = f'''<!DOCTYPE html>
   .brand{{font-family:var(--fd);font-weight:600;font-size:14px;letter-spacing:.18em;text-transform:uppercase;line-height:1.3}}
   .brand small{{display:block;font-family:var(--fb);font-size:10px;letter-spacing:.24em;color:#a49c90;margin-top:4px}}
   .who{{font-size:13px;color:#a49c90;text-align:right;line-height:1.4}}
-  .who strong{{display:block;color:#e8e2d8;font-weight:500}}
+  .who strong{{display:block;color:#e8e2d8;font-weight:500;overflow-wrap:anywhere}}
+  .signout{{color:#a49c90;font-size:11px;letter-spacing:.1em;text-transform:uppercase;font-weight:600;
+    border:1px solid #4a4a52;border-radius:3px;padding:8px 12px;white-space:nowrap}}
+  .signout:hover{{color:#e8e2d8;border-color:#a49c90}}
+  /* Saved as an app, the plumbing report stays out of sight while all is well;
+     it reappears the moment something needs attention. */
+  @media(display-mode: standalone){{ .mocknote.quiet{{display:none}} }}
 
   .navbar{{background:var(--paper-2);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:30}}
   .navbar .inner{{max-width:1240px;margin:0 auto;padding:0 clamp(18px,4vw,34px);display:flex;gap:2px;overflow-x:auto}}
@@ -322,7 +328,10 @@ HTML = f'''<!DOCTYPE html>
 
 <div class="topbar"><div class="inner">
   <div class="brand">181 Fremont<small>Resident Experiences &middot; Admin</small></div>
-  <div class="who">Resident Experiences<strong>181 Fremont &middot; Level 39</strong></div>
+  <div style="display:flex;align-items:center;gap:16px">
+    <div class="who" id="who">Resident Experiences<strong>181 Fremont &middot; Level 39</strong></div>
+    <a class="signout" href="/cdn-cgi/access/logout" title="Ends this admin sign-in, so the next person can enter their own email">Sign out</a>
+  </div>
 </div></div>
 
 <input class="state" type="radio" name="scr" id="s-dash" checked>
