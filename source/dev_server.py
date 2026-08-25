@@ -792,6 +792,14 @@ class H(SimpleHTTPRequestHandler):
     # ------------------------------------------------------------ DELETE
     def do_DELETE(self):
         p = urlparse(self.path)
+        if p.path.startswith("/api/residents/"):
+            rid = p.path.rsplit("/", 1)[1]
+            residents = load_store("residents", [])
+            kept = [r for r in residents if str(r["id"]) != rid]
+            if len(kept) == len(residents): return self._json({"error": "No such person"}, 404)
+            save_store("residents", kept)
+            save_store("rsvps", [r for r in load_store("rsvps", []) if str(r["resident_id"]) != rid])
+            return self._json({"ok": True})
         if p.path.startswith("/api/bookings/"):
             bid = p.path.rsplit("/", 1)[1]
             bookings = load_store("bookings", [])

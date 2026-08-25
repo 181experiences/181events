@@ -1253,6 +1253,7 @@
         <button class="mini" data-rotate="${p.id}" title="A fresh code; the old one stops working everywhere">Rotate</button>
         <button class="mini ghost" data-ends="${p.id}" title="Set or clear the date this code stops working">Ends</button>
         <button class="mini ghost" data-toggle="${p.id}">${p.status === "Active" ? "Disable" : "Restore"}</button>
+        <button class="mini ghost" data-rdelete="${p.id}" title="Remove entirely, for typos and test rows. Someone who moved out should be Disabled instead, which keeps their history.">Delete</button>
       </span></div>`;
 
     let html = "";
@@ -1524,7 +1525,7 @@
   }
 
   document.addEventListener("click", ev => {
-    const r = ev.target.closest("[data-rotate],[data-ends],[data-toggle],[data-addres],[data-addbulk],[data-printcards],[data-mreplied],[data-marchive],[data-wconfirm],[data-rsvpkey],[data-addbooking],[data-unbook]");
+    const r = ev.target.closest("[data-rotate],[data-ends],[data-toggle],[data-rdelete],[data-addres],[data-addbulk],[data-printcards],[data-mreplied],[data-marchive],[data-wconfirm],[data-rsvpkey],[data-addbooking],[data-unbook]");
     if (r) {
       if (r.dataset.rotate) {
         const p = residents.find(x => String(x.id) === r.dataset.rotate);
@@ -1541,6 +1542,17 @@
         const p = residents.find(x => String(x.id) === r.dataset.toggle);
         if (p) patchResident(r.dataset.toggle, { status: p.status === "Active" ? "Disabled" : "Active" },
           u => u.status === "Active" ? `${u.label} is restored.` : `${u.label} is disabled and signed out everywhere.`);
+      } else if (r.dataset.rdelete) {
+        const p = residents.find(x => String(x.id) === r.dataset.rdelete);
+        if (p && confirm(`Delete ${p.label} entirely? Their code and any RSVPs they made are removed for good. For someone who moved out, Disable is the better choice; it keeps their history.`)) {
+          api("/api/residents/" + r.dataset.rdelete, { method: "DELETE" })
+            .then(() => {
+              residents = residents.filter(x => String(x.id) !== r.dataset.rdelete);
+              renderResidents();
+              toast(`${p.label} is deleted.`);
+            })
+            .catch(e => toast(e.message, "warn"));
+        }
       } else if (r.dataset.addres !== undefined) addResident();
       else if (r.dataset.addbulk !== undefined) addBulk();
       else if (r.dataset.printcards !== undefined) printCards();

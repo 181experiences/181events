@@ -33,3 +33,19 @@ export async function onRequestPatch({ request, params, env }) {
   if (!row) return json({ error: "No such person" }, 404);
   return json(residentView(row));
 }
+
+// DELETE /api/residents/:id -> remove the row entirely, along with any RSVPs it
+// made, so nothing orphaned lingers in the counts. For typos, duplicates, and
+// test rows. Someone who moved out should be Disabled instead: that keeps
+// their history and stays one click from restored.
+export async function onRequestDelete({ request, params, env }) {
+  const err = noDb(env); if (err) return err;
+  if (!adminRole(request, env)) return forbidden();
+  await ensureResidentTables(env);
+  const id = Number(params.id);
+  if (!Number.isInteger(id)) return json({ error: "Bad id" }, 400);
+  await env.DB.prepare("DELETE FROM rsvps WHERE resident_id=?").bind(id).run();
+  const { meta } = await env.DB.prepare("DELETE FROM residents WHERE id=?").bind(id).run();
+  if (!meta.changes) return json({ error: "No such person" }, 404);
+  return json({ ok: true });
+}
