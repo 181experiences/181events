@@ -471,6 +471,8 @@ HTML = f'''<!DOCTYPE html>
   .msgsent p{{font-size:19px;color:var(--ink-soft);max-width:30em;margin:16px auto 0}}
 
   footer{{border-top:1px solid var(--line);padding:34px 0 60px;color:var(--stone);font-size:15px;text-align:center}}
+  .stafflink{{color:var(--stone);border-bottom:1px solid var(--line);padding:14px 2px}}
+  .stafflink:hover{{color:var(--ink)}}
   .mocknote{{background:#16161a;color:#c9c2b6;font-size:13px;letter-spacing:.1em;text-align:center;padding:11px 16px;text-transform:uppercase}}
 </style>
 </head>
@@ -602,7 +604,7 @@ HTML = f'''<!DOCTYPE html>
 
 </div>
 
-<footer>181 Fremont Residences &middot; Resident Experiences &middot; Questions? Leo at Level 39</footer>
+<footer>181 Fremont Residences &middot; Resident Experiences &middot; Questions? Leo at Level 39 &middot; <a class="stafflink" href="/admin">Staff</a></footer>
 </body>
 </html>
 '''
@@ -717,6 +719,8 @@ SHELL_CSS = '''
   .msgsent p{font-size:19px;color:var(--ink-soft);max-width:30em;margin:16px auto 0}
   .cta2{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;margin-top:32px}
   footer{border-top:1px solid var(--line);padding:34px 0 60px;color:var(--stone);font-size:15px;text-align:center}
+  .stafflink{color:var(--stone);border-bottom:1px solid var(--line);padding:14px 2px}
+  .stafflink:hover{color:var(--ink)}
 '''
 
 SHELL = '''<!DOCTYPE html>
@@ -740,7 +744,7 @@ SHELL = '''<!DOCTYPE html>
 <main class="wrap">
 {{CONTENT}}
 </main>
-<footer>181 Fremont Residences &middot; Resident Experiences &middot; Questions? Leo at Level 39</footer>
+<footer>181 Fremont Residences &middot; Resident Experiences &middot; Questions? Leo at Level 39 &middot; <a class="stafflink" href="/admin">Staff</a></footer>
 </body>
 </html>
 '''
