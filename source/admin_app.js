@@ -2,6 +2,11 @@
    Staff only, so JavaScript is fine here. The resident site stays script-free. */
 (function () {
   "use strict";
+  // The Cloudflare Access team domain, used only by Sign out to end the SSO
+  // session. If the team domain is ever renamed in Zero Trust -> Settings,
+  // this is the one line to update.
+  const ACCESS_TEAM = "shy-bread-8b54.cloudflareaccess.com";
+
   const $ = (s, r) => (r || document).querySelector(s);
   const $$ = (s, r) => Array.from((r || document).querySelectorAll(s));
   const esc = s => String(s == null ? "" : s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
@@ -921,15 +926,19 @@
   });
   document.addEventListener("input", ev => { if (ev.target.id === "f-title" && !editing.row) $("#f-slug").placeholder = slugify(ev.target.value); });
 
-  // Sign out clears the Access session, then lands straight on the login screen
-  // instead of Cloudflare's dead-end "logged out" page. The href stays as a
-  // fallback for browsers that block the fetch.
+  // Sign out must clear BOTH Access sessions: this site's cookie, and the one
+  // on the Access team domain, or Access quietly signs the same person back in.
+  // The site cookie goes first in the background; then a real visit to the team
+  // domain's logout ends the other and returns straight to the login screen.
   const so = document.querySelector(".signout");
   if (so) so.addEventListener("click", ev => {
     ev.preventDefault();
-    fetch("/cdn-cgi/access/logout", { credentials: "same-origin" })
-      .catch(() => {})
-      .finally(() => { window.location.href = "/admin"; });
+    const done = () => {
+      if (window.location.hostname === "localhost") { window.location.href = "/admin.html"; return; }
+      window.location.href = `https://${ACCESS_TEAM}/cdn-cgi/access/logout?returnTo=`
+        + encodeURIComponent("https://181residents.com/admin");
+    };
+    fetch("/cdn-cgi/access/logout", { credentials: "same-origin" }).catch(() => {}).finally(done);
   });
 
   boot();

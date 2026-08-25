@@ -195,9 +195,13 @@ admin = admin.replace('<div class="mocknote">Admin prototype — sample data, no
 # contains a literal </head> inside the print-cards template.
 # use-credentials matters: the Access lock covers admin.webmanifest too, and
 # browsers fetch manifests anonymously unless told to bring the session along.
+# The status bar goes solid ("default") for the admin app: unlike the resident
+# page, its bars have no safe-area padding, so drawing beneath the iPhone clock
+# would put the top bar behind the camera notch.
 ADMIN_HEAD = HEAD.replace('href="/manifest.webmanifest"',
                           'href="/admin.webmanifest" crossorigin="use-credentials"').replace(
-    'content="181 Events"', 'content="181 Events Admin"')
+    'content="181 Events"', 'content="181 Events Admin"').replace(
+    'content="black-translucent"', 'content="default"')
 admin = admin.replace("</head>", ADMIN_HEAD + "</head>", 1)
 open(f"{SITE}/admin.html", "w", encoding="utf-8").write(admin)
 
