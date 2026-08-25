@@ -921,5 +921,16 @@
   });
   document.addEventListener("input", ev => { if (ev.target.id === "f-title" && !editing.row) $("#f-slug").placeholder = slugify(ev.target.value); });
 
+  // Sign out clears the Access session, then lands straight on the login screen
+  // instead of Cloudflare's dead-end "logged out" page. The href stays as a
+  // fallback for browsers that block the fetch.
+  const so = document.querySelector(".signout");
+  if (so) so.addEventListener("click", ev => {
+    ev.preventDefault();
+    fetch("/cdn-cgi/access/logout", { credentials: "same-origin" })
+      .catch(() => {})
+      .finally(() => { window.location.href = "/admin"; });
+  });
+
   boot();
 })();
