@@ -24,7 +24,8 @@ query ($accountTag: String!, $siteTag: String!, $since: Date!, $until: Date!) {
 
 // QR standees land on their own paths so scans are attributable. Keep in step with build_site.py.
 export const SOURCES = { "/q/lobby/": "QR, Lobby", "/q/coffee/": "QR, Coffee Bar",
-  "/q/fitness/": "QR, Fitness Center", "/q/office/": "QR, Leo's Office", "/q/email/": "Weekly email" };
+  "/q/fitness/": "QR, Fitness Center", "/q/office/": "QR, Leo's Office", "/q/email/": "Weekly email",
+  "/q/bar/": "QR, Level 39 Bar", "/q/screens/": "QR, Building screens" };
 
 export async function onRequestGet({ request, env }) {
   const days = Math.min(90, Math.max(1, Number(new URL(request.url).searchParams.get("days") || 30)));
