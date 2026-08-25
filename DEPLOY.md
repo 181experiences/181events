@@ -9,7 +9,7 @@ Do these in order. Each is a few minutes in the dashboard. Never paste a token i
 
 ## 1. GitHub, once
 
-1. Create a free account at github.com (yours only; Scott and Leigh-Ann never need it).
+1. Create a free account at github.com (yours only; Scott and Leigh Anne never need it).
 2. Create a new **private** repository called `181residents`. Leave it completely empty.
 3. Claude pushes this folder to it from your computer. That is the only time GitHub is touched directly.
 
@@ -62,6 +62,9 @@ Pages project, **Settings**, **Environment variables**, Production. Add these, m
 | `CF_SITE_TAG` | the Web Analytics site tag |
 | `D1_DATABASE_ID` | the database id |
 | `DEPLOY_HOOK` | see step 7 |
+| `SESSION_SECRET` | see step 9 (secret) |
+| `OWNER_EMAILS` | see step 9 |
+| `DESK_EMAILS` | see step 9 |
 
 ## 7. The publish hook
 
@@ -76,11 +79,48 @@ After steps 6 and 7, trigger one deploy by hand (**Deployments**, **Retry deploy
 **Zero Trust**, **Access**, **Applications**, **Add an application**, Self-hosted.
 - Application domain `181residents.com`, path `admin` (Pages serves the page at /admin); add a second path `api/*` on the same application.
 - Identity providers: One-time PIN only.
-- Policy: Allow, Include, Emails: your address, Scott's, Leigh-Ann's, Carley-Anne's.
+- Policy: Allow, Include, Emails: your address, Scott's, Leigh Anne's, Carley-Ann's.
 - Session duration: 1 month, so nobody types a code every morning.
 
 They enter their email, get a six-digit code, and are in. Nothing to install, nothing to remember.
-Resident sign-in for the calendar itself comes later as a second Access application on the root path.
+Resident sign-in is NOT Access: residents use personal codes (step 9). Never add an Access
+application on the root path; it would put an email wall in front of the public calendar and the
+QR standee links.
+
+## 9. Resident sign-in, once
+
+Residents sign in with personal codes: one code per person, grouped by unit, managed on the
+admin's **Residents** screen. Three settings switch it on (add them in step 6's table):
+
+1. `SESSION_SECRET`, marked secret: a long random string that signs the month-long session
+   cookies. Generate one anywhere (40+ random characters); never reuse another password. Until it
+   is set, RSVP buttons, My RSVPs, and the Contact form show a quiet "nearly ready" page.
+2. `OWNER_EMAILS`: your addresses, comma separated (leonardo@181sf.com plus your two personal).
+   Owners see everything, including the text of resident messages. If this is unset, nobody can
+   read message bodies, by design.
+3. `DESK_EMAILS`: `concierge@181sf.com`. The desk tier sees Residents, Spaces, and Messages
+   (redacted) only, and cannot touch the calendar. Anyone else the Access lock admits (Scott,
+   Leigh Anne, Carley-Ann) gets full events and residents powers, with message bodies redacted.
+
+Then add `concierge@181sf.com` to the "181 admin" Access policy (same application, one more
+email), so the front desk can sign in for late-night code rescues: look the person up, Rotate,
+read the fresh code over the phone or email it from the desk mailbox.
+
+First population: open Residents, paste the building in bulk (one line per person:
+`unit, name, email`), and print the code cards. The Front Desk role account seeds itself with
+its own code on first load.
+
+## Board meetings and spaces
+
+- **Board meetings** are entered like any event under the category **Board Meeting**. They never
+  appear on the resident calendar; they live at `/board`, with per-meeting calendar files and a
+  subscription feed at `/board/feed` that carries cancellations to subscribers automatically.
+- **Space reservations** are entered on the admin's **Spaces** screen. Residents see only the
+  room, date, and hours, marked Reserved, at `/spaces`; the note field stays in the admin.
+
+One data note from the launch database: rows seeded before Aug 24 spell Leigh Anne's name with a
+hyphen. Open the Café 181 series in the editor, correct the host and description once with "apply
+to every upcoming date" ticked, and the whole series updates.
 
 ## Day to day
 

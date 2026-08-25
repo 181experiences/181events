@@ -1,0 +1,16 @@
+<a class="back" href="/">&larr; Back to the calendar</a>
+<div class="pagehead"><h1>My RSVPs</h1>
+<p>Signed in as {{LABEL}}.</p></div>
+<!--EMPTY--><div class="emptybox">
+<p>Nothing on the books yet. Tap RSVP on any event, and it appears here.</p>
+<a class="btn" href="/">See the Calendar</a>
+</div><!--/EMPTY-->
+<!--ROWS--><div class="lgroup">
+<!--ROW--><a class="lrow" href="/rsvp/{{KEY}}">
+<span class="ldate"><span class="dnum">{{DAY}}</span><span class="dday">{{DOW}}</span></span>
+<span class="ev-body"><span class="ev-title">{{TITLE}}</span><span class="ev-meta">{{META}}</span>
+<span class="tag {{TAGCLASS}}">{{TAG}}</span></span>
+<span class="ev-go">&rarr;</span></a><!--/ROW-->
+</div>
+<p class="note">Tap any RSVP to change your party or cancel.</p><!--/ROWS-->
+<form method="post" action="/signout" class="signoutform"><button type="submit">Sign out of this device</button></form>

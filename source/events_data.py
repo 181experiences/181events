@@ -51,8 +51,8 @@ CATEGORIES = ["Morning Offering", "Happy Hour", "Community Dinner",
 CLUB = "Level 39, Residents&rsquo; Club"
 
 CAFE_DESC = [
-    "Leigh-Ann hosts a coffee house on Level 39 on Tuesday and Thursday mornings, from 7:30 to 9:00. Come down for a proper cup before the day gets going.",
-    "No sign-up needed. This one is Leigh-Ann&rsquo;s, so please send any questions her way.",
+    "Leigh Anne hosts a coffee house on Level 39 on Tuesday and Thursday mornings, from 7:30 to 9:00. Come down for a proper cup before the day gets going.",
+    "No sign-up needed. This one is Leigh Anne&rsquo;s, so please send any questions her way.",
 ]
 WINE_DESC = [
     "Every Tuesday on Level 39, from 5:30 to 7:30. A rotating selection of wine and beer in good company. Come as you are, and stay as long as you like.",
@@ -125,7 +125,7 @@ SERIES = [
     dict(slug="cafe-181", title="Caf&eacute; 181", cat="Morning Offering",
          when=lambda d: d.isoweekday() in (2, 4), label="Every Tuesday and Thursday",
          t24="0730", time="7:30 AM", end="9:00 AM", rsvp=None, cap=None, price=None,
-         host="Leigh-Ann", counted=False, desc=CAFE_DESC,
+         host="Leigh Anne", counted=False, desc=CAFE_DESC,
          img="linear-gradient(160deg,#3b2a1c 0%,#7a5636 48%,#c9a377 100%)"),
     dict(slug="wine-beer-happy-hour", title="Wine &amp; Beer Happy Hour", cat="Happy Hour",
          when=lambda d: d.isoweekday() == 2, label="Every Tuesday",
@@ -274,6 +274,10 @@ if _os.path.exists(_live) and not _os.environ.get("EVENTS_FROM_CODE"):
     EVENTS_SOURCE = "database"
 else:
     EVENTS_SOURCE = "code"
+
+# Board meetings live on /board, entered in the admin under their own category.
+# They never appear on the resident events calendar, whichever source built it.
+EVENTS = [e for e in EVENTS if e.get("cat") != "Board Meeting"]
 
 def dow_of(mk, d):   return DOW[(MONTH_BY_KEY[mk]["first_dow"] + d - 1) % 7]
 def dow_s(mk, d):    return DOW_S[(MONTH_BY_KEY[mk]["first_dow"] + d - 1) % 7]

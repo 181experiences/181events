@@ -7,6 +7,8 @@ export async function onRequestGet({ env }) {
     publish: !!env.DEPLOY_HOOK,
     email: !!env.EMAIL_API_KEY,
     analytics: !!(env.CF_API_TOKEN && env.CF_ACCOUNT_ID && env.CF_SITE_TAG),
+    signin: !!env.SESSION_SECRET,
+    roles: !!(env.OWNER_EMAILS || env.DESK_EMAILS),
     mode: "cloudflare",
   });
 }

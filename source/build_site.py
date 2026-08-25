@@ -167,6 +167,12 @@ for _old in os.listdir(f"{SITE}/ics"):
 for _fname, _body in _bp.ICS_FILES.items():
     open(os.path.join(f"{SITE}/ics", _fname), "w", encoding="utf-8", newline="").write(_body)
 print("ics files:", len(_bp.ICS_FILES))
+
+# templates for the dynamic resident pages, rendered by the Pages Functions
+os.makedirs(f"{SITE}/_templates", exist_ok=True)
+for _name, _tpl in _bp.TEMPLATES.items():
+    open(os.path.join(f"{SITE}/_templates", _name + ".html"), "w", encoding="utf-8").write(_tpl)
+print("templates:", len(_bp.TEMPLATES))
 html = html.replace('<div class="mocknote">Prototype &middot; real calendar, nothing here is live yet</div>\n\n', "")
 html = html.replace("</head>", HEAD + "</head>")
 html = html.replace("</style>", PROMPT_CSS + "</style>", 1)
@@ -183,7 +189,9 @@ for q in QR_PATHS:
 # ---------------------------------------------------------------- admin
 admin = open(os.path.join(HERE, "181fremont_admin_prototype.html"), encoding="utf-8").read()
 admin = admin.replace('<div class="mocknote">Admin prototype — sample data, nothing here saves</div>\n\n', "")
-admin = admin.replace("</head>", HEAD.replace('href="/manifest.webmanifest"', 'href="/manifest.webmanifest"') + "</head>")
+# First occurrence only: the admin's own JavaScript contains a literal </head>
+# inside the print-cards template, which must not receive the head block.
+admin = admin.replace("</head>", HEAD + "</head>", 1)
 open(f"{SITE}/admin.html", "w", encoding="utf-8").write(admin)
 
 # ---------------------------------------------------------------- manifest

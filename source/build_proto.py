@@ -3,14 +3,11 @@
 All navigation, month switching, view toggles, day panels and RSVP states run on
 CSS :checked selectors, so it works in any renderer including sandboxed previews."""
 
-from urllib.parse import quote
 from events_data import (EVENTS, MONTHS, MONTH_BY_KEY, dow_of, dow_s, month_name,
                          short_month, evs_on, days_with_events)
 
 # picked by slug so ids can be regenerated freely
-MY_RSVP_SLUGS = []  # populated once RSVPs are live
 NEXT_SLUG = "book-club-inaugural"
-GUEST_COUNTS = ["1", "2", "3", "4+"]
 
 def plain(s):
     for a, b in [("&rsquo;", "'"), ("&amp;", "&"), ("&middot;", "-"), ("&mdash;", "-"),
@@ -56,7 +53,7 @@ def tag_for(e):
 
 # ------------------------------------------------------------------ generated CSS
 rules = []
-for s in ["home", "cal", "rsvp", "msg"] + [f"ev{e['id']}" for e in EVENTS]:
+for s in ["home", "cal", "msg"] + [f"ev{e['id']}" for e in EVENTS]:
     rules.append(f'#r-{s}:checked ~ .screens #scr-{s}{{display:block}}')
 for m in MONTHS:
     k = m["key"]
@@ -70,14 +67,6 @@ for m in MONTHS:
                          '{background:var(--ink);color:var(--paper-2);border-color:var(--ink)}')
             rules.append(f'#d-{k}-{d}:checked ~ .monthwrap[data-m="{k}"] label[for="d-{k}-{d}"] .dot'
                          '{background:var(--paper-2)}')
-for e in EVENTS:
-    if e["rsvp"]:
-        i = e["id"]
-        pass  # RSVP state CSS retired: RSVPs travel by email until resident sign-in exists
-        if e["rsvp"] == "guest":
-            for gi, _ in enumerate(GUEST_COUNTS):
-                rules.append(f'#g{i}-{gi}:checked ~ .ebody label[for="g{i}-{gi}"]'
-                             '{background:var(--ink);color:var(--paper-2);border-color:var(--ink)}')
 GEN_CSS = "\n  ".join(rules)
 
 # ------------------------------------------------------------------ month grids
@@ -159,45 +148,34 @@ def event_screen(e):
         facts += f'<div class="fact"><dt>Repeats</dt><dd>{e["series"]}</dd></div>'
     facts += f'<div class="fact"><dt>Hosted by</dt><dd>{e["host"]}</dd></div></dl>'
 
-    # RSVPs travel by email for now: the button opens the resident's own mail app with
-    # the note started, so every RSVP arrives with a reply address attached and no
-    # login is needed. On-page RSVPs arrive together with resident sign-in.
+    # RSVPs happen on the site: each button leads to /rsvp/{date}_{slug}, a live page
+    # that knows who is signed in, what the unit already said, and how many seats
+    # remain. The calendar itself stays static and script-free.
     checkbox = ""
     guest_radios = ""
     guest_ui = ""
     box = ""
     cta = '<div class="cta">'
-    when = f"{dow_of(e['m'], e['d'])}, {short_month(e['m'])} {e['d']}"
     note = ""
-
-    def mailto(subject, body):
-        return "mailto:leonardo@181sf.com?subject=" + quote(subject) + "&body=" + quote(body)
+    rsvp_href = f"/rsvp/{e['on'].isoformat()}_{e['slug']}"
 
     if e["rsvp"] == "guest":
         guest_ui = ('<div class="guestbox"><div class="gq">Bringing someone from outside the building?</div>'
                     '<div class="gh">You&rsquo;re always welcome on your own, with no RSVP needed. We only ask for a '
                     'count of guests from outside the building, so we can pour and plate for them.</div></div>')
-        href = mailto(f"Guests for {plain(e['title'])}, {when}",
-                      f"I would like to register guests for {plain(e['title'])} on {when}.\n\n"
-                      "Name:\nUnit:\nNumber of outside guests:\n")
-        cta += f'<a class="btn" href="{href}">Register Guests by Email</a>'
-        note = "Your mail app opens with the note started. A reply from Resident Experiences confirms it."
+        cta += f'<a class="btn" href="{rsvp_href}">Register Guests</a>'
+        note = ("Takes a moment, right here on the site. Sign in once with your resident code, "
+                "and your guest count saves to your name.")
     elif e["rsvp"] == "paid":
-        href = mailto(f"Seat request: {plain(e['title'])}, {when}",
-                      f"I would like to reserve a seat for {plain(e['title'])} on {when} ({e['price']} per person).\n\n"
-                      "Name:\nUnit:\nNumber of seats:\n")
-        cta += f'<a class="btn" href="{href}">{e["price"]} &middot; Request a Seat</a>'
-        note = ("Seats are confirmed by reply in the order requests arrive, along with how payment is arranged. "
-                "Your mail app opens with the note started.")
+        cta += f'<a class="btn" href="{rsvp_href}">{e["price"]} &middot; Request Seats</a>'
+        note = ("Seats are confirmed in the order requests arrive, and payment is arranged with "
+                "your confirmation. Sign in once with your resident code.")
     elif e["rsvp"] == "standard":
-        cutoff_line = (f" Kindly reply with any change of plans by {e['cutoff']}, as that is when we order materials."
+        cutoff_line = (f" Kindly update your RSVP with any change of plans by {e['cutoff']}, as that is when we order materials."
                        if e["cutoff"] else "")
-        href = mailto(f"RSVP: {plain(e['title'])}, {when}",
-                      f"I would like to RSVP for {plain(e['title'])} on {when}.\n\n"
-                      "Name:\nUnit:\nNumber attending:\n")
-        cta += f'<a class="btn" href="{href}">RSVP by Email</a>'
-        note = ("Your mail app opens with the note started. A reply from Resident Experiences is your confirmation."
-                + cutoff_line)
+        cta += f'<a class="btn" href="{rsvp_href}">RSVP</a>'
+        note = ("Sign in once with your resident code, and your RSVP saves under My RSVPs, "
+                "where you can change or cancel anytime." + cutoff_line)
 
     cta += (f'<a class="btn ghost" href="{ics_href(e)}" download="{e["on"].isoformat()}_{e["slug"]}.ics">'
             'Add to My Calendar</a></div>')
@@ -225,16 +203,7 @@ def event_screen(e):
 
 EVENT_SCREENS = "".join(event_screen(e) for e in EVENTS)
 
-# ------------------------------------------------------------------ my rsvps
-rsvp_rows = "".join(
-    f'<div class="lgroup"><label class="lrow" for="r-ev{e["id"]}">'
-    f'<span class="ldate"><span class="dnum">{e["d"]}</span><span class="dday">{dow_s(e["m"],e["d"])}</span></span>'
-    f'<span class="ev-body"><span class="ev-title">{e["title"]}</span>'
-    f'<span class="ev-meta">{short_month(e["m"])} {e["d"]} &middot; {e["time"]} &middot; {e["loc"]}</span>'
-    f'<span class="tag open">You&rsquo;re going</span></span>'
-    f'<span class="ev-go">&rarr;</span></label></div>'
-    for e in EVENTS if e["slug"] in MY_RSVP_SLUGS)
-
+# ------------------------------------------------------------------ next event tile
 NEXT = next(e for e in EVENTS if e["slug"] == NEXT_SLUG)
 
 # ------------------------------------------------------------------ month nav
@@ -307,7 +276,15 @@ HTML = f'''<!DOCTYPE html>
   .hero h1{{font-size:clamp(34px,7.5vw,56px);line-height:1.12}}
   .hero p{{max-width:28em;margin:20px auto 0;color:var(--ink-soft)}}
   .rule{{width:52px;height:1px;background:var(--red);margin:26px auto}}
-  .quad{{display:grid;grid-template-columns:1fr 1fr;gap:14px;max-width:620px;margin:0 auto;padding-bottom:70px}}
+  .quad{{display:grid;grid-template-columns:1fr 1fr;gap:14px;max-width:620px;margin:0 auto;padding-bottom:30px}}
+  /* two quiet lines under the quad: real pages, not tiles */
+  .homelines{{max-width:620px;margin:0 auto;padding-bottom:70px}}
+  .hline{{display:flex;align-items:center;gap:18px;padding:22px 6px;border-top:1px solid var(--line);min-height:64px}}
+  .hline:last-child{{border-bottom:1px solid var(--line)}}
+  .hline:hover .hl-t{{color:var(--red)}}
+  .hl-body{{flex:1}}
+  .hl-t{{display:block;font-family:var(--fd);font-size:23px;color:var(--ink);line-height:1.2}}
+  .hl-s{{display:block;font-size:15px;color:var(--ink-soft);margin-top:4px;line-height:1.4}}
   .sq{{position:relative;aspect-ratio:1/1;background:var(--paper-2);border:1px solid var(--line);
     border-radius:var(--radius);display:flex;flex-direction:column;align-items:flex-start;justify-content:flex-end;
     padding:clamp(16px,4.4vw,26px);transition:border-color .18s,transform .18s}}
@@ -510,7 +487,6 @@ HTML = f'''<!DOCTYPE html>
 
 <input class="state" type="radio" name="scr" id="r-home" checked>
 <input class="state" type="radio" name="scr" id="r-cal">
-<input class="state" type="radio" name="scr" id="r-rsvp">
 <input class="state" type="radio" name="scr" id="r-msg">
 {"".join(f'<input class="state" type="radio" name="scr" id="r-ev{e["id"]}">' for e in EVENTS)}
 
@@ -533,15 +509,26 @@ HTML = f'''<!DOCTYPE html>
           <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5.4l3.4 2"/></svg></span>
           <span class="label">Next Event</span><span class="sub">{dow_s(NEXT["m"],NEXT["d"])}, {short_month(NEXT["m"])} {NEXT["d"]}</span>
         </label>
-        <label class="sq" for="r-rsvp">
+        <a class="sq" href="/my">
           <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M8.2 12.4l2.6 2.6 5-5.4"/></svg></span>
-          <span class="badge">{len(MY_RSVP_SLUGS)}</span>
-          <span class="label">My RSVPs</span><span class="sub">By email, for now</span>
-        </label>
+          <span class="label">My RSVPs</span><span class="sub">Saved to your name</span>
+        </a>
         <label class="sq" for="r-msg">
           <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5.5" width="18" height="13" rx="2"/><path d="M3.5 7l8.5 6 8.5-6"/></svg></span>
           <span class="label">Message</span><span class="sub">Ideas &amp; requests</span>
         </label>
+      </div>
+      <div class="homelines">
+        <a class="hline" href="/board">
+          <span class="hl-body"><span class="hl-t">Board Meetings</span>
+          <span class="hl-s">Board business, on its own page, with Add to My Calendar</span></span>
+          <span class="ev-go">&rarr;</span>
+        </a>
+        <a class="hline" href="/spaces">
+          <span class="hl-body"><span class="hl-t">Level 39 Spaces</span>
+          <span class="hl-s">See when a room is spoken for; walk in whenever one is free</span></span>
+          <span class="ev-go">&rarr;</span>
+        </a>
       </div>
     </div>
   </section>
@@ -568,20 +555,8 @@ HTML = f'''<!DOCTYPE html>
     <div class="listwrap"><div class="wrap">{LIST}<div style="height:70px"></div></div></div>
   </section>
 
-  <section class="screen" id="scr-rsvp">
-    <div class="wrap">
-      <label class="back" for="r-home">&larr; Back</label>
-      <div class="msg-intro"><h2>My RSVPs</h2>
-        <p>For now, RSVPs travel by email: tap RSVP on any event and your mail app opens with the note started.
-        The reply from Resident Experiences is your confirmation, and replying to it again is how you change or
-        cancel. Once resident sign-in arrives, this screen will list your events.</p></div>
-      <div style="height:18px"></div>
-      <div style="height:80px"></div>
-    </div>
-  </section>
-
   <section class="screen" id="scr-msg">
-    <form class="msgform" action="mailto:leonardo@181sf.com?subject=Note%20from%20a%20181%20Fremont%20resident" method="post" enctype="text/plain">
+    <form class="msgform" action="/message" method="post">
     <input class="state" type="radio" name="Topic" value="Share an idea" id="i-idea" checked>
     <input class="state" type="radio" name="Topic" value="Plan an event with us" id="i-plan">
     <input class="state" type="radio" name="Topic" value="Something else" id="i-other">
@@ -609,14 +584,14 @@ HTML = f'''<!DOCTYPE html>
       <div class="flabel idea">Your idea</div>
       <div class="flabel plan">What would you like to plan?</div>
       <div class="flabel other">Your message</div>
-      <textarea name="Message" placeholder="Type here&hellip;"></textarea>
+      <textarea name="Message" placeholder="Type here&hellip;" required></textarea>
       <div class="fields">
         <label class="field"><span>Your name</span><input type="text" name="Name" autocomplete="name" autocapitalize="words" placeholder="Optional"></label>
-        <label class="field"><span>Unit</span><input type="text" name="Unit" autocomplete="off" autocapitalize="characters" inputmode="text" placeholder="Optional"></label>
-        <label class="field" style="grid-column:1/-1"><span>Email, if you&rsquo;d like a reply</span><input type="email" name="Email" autocomplete="email" autocapitalize="none" inputmode="email" placeholder="Optional"></label>
+        <label class="field"><span>Email, if you&rsquo;d like a reply</span><input type="email" name="Email" autocomplete="email" autocapitalize="none" inputmode="email" placeholder="Optional"></label>
       </div>
       <div class="cta"><button class="btn" type="submit">Send to Resident Experiences</button></div>
-      <p class="mailnote">Your mail app will open with the note ready to send, so the reply reaches the address you send from. If nothing opens, write to <a href="mailto:leonardo@181sf.com">leonardo@181sf.com</a>.</p>
+      <p class="mailnote">Sends right from this page and lands with Resident Experiences under your name and unit.
+      Not signed in yet? We&rsquo;ll ask for your resident code first, and nothing you&rsquo;ve typed is lost.</p>
       <div class="routing"><strong>Building maintenance or a service issue?</strong> Please contact the front desk or Action Life directly. This inbox is monitored during Resident Experiences hours only.</div>
       <div style="height:80px"></div>
     </div></div>
@@ -631,6 +606,299 @@ HTML = f'''<!DOCTYPE html>
 </body>
 </html>
 '''
+
+# ------------------------------------------------------------------ dynamic page templates
+# The signed-in pages (/signin, /my, /rsvp/..., /message) are rendered by Pages
+# Functions from these templates, which ship with the static build in /_templates/.
+# All resident-facing copy and styling for those pages lives HERE, in one voice
+# with the calendar; the Functions only compute the values that fill the slots.
+# {{NAME}} is a slot; <!--NAME--> ... <!--/NAME--> is a section kept or dropped.
+
+SHELL_CSS = '''
+  :root{
+    --ink:#16161a; --ink-body:#3a3a43; --ink-soft:#55555f;
+    --paper:#f7f4ef; --paper-2:#fffdfa; --line:#ddd6cb;
+    --red:#c41f26; --stone:#7a7266; --radius:4px;
+    --pad:clamp(20px,5vw,44px);
+    --fd:'Marcellus',Georgia,serif;
+    --fb:'Hanken Grotesk',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;padding:0}
+  body{background:var(--paper);color:var(--ink-body);font-family:var(--fb);
+    font-weight:400;font-size:19px;line-height:1.6;-webkit-font-smoothing:antialiased}
+  h1,h2{font-family:var(--fd);font-weight:400;letter-spacing:.015em;margin:0;color:var(--ink)}
+  a{color:inherit;text-decoration:none}
+  .wrap{max-width:720px;margin:0 auto;padding:0 var(--pad) 90px}
+  header.masthead{border-bottom:1px solid var(--line);background:var(--paper-2);padding-top:env(safe-area-inset-top);
+    position:sticky;top:0;z-index:50}
+  .masthead-inner{max-width:940px;margin:0 auto;padding:12px var(--pad);display:flex;align-items:center;justify-content:space-between;gap:16px}
+  .logo{display:block;font-family:var(--fd);font-size:25px;letter-spacing:.2em;text-transform:uppercase;line-height:1;color:var(--ink)}
+  .logo:hover{color:var(--red)}
+  .logo small{display:block;font-family:var(--fb);font-size:11px;letter-spacing:.26em;color:var(--stone);margin-top:7px}
+  .whoami{font-size:15px;color:var(--stone);text-align:right;line-height:1.35}
+  .whoami strong{color:var(--ink);font-weight:500;display:block}
+  .back{display:inline-flex;align-items:center;gap:10px;margin:24px 0 4px;font-size:17px;color:var(--ink-soft);min-height:50px}
+  .back:hover{color:var(--red)}
+  .pagehead{padding:14px 0 6px}
+  .pagehead h1{font-size:clamp(30px,6.4vw,44px);line-height:1.12}
+  .pagehead h2{font-size:clamp(25px,5.4vw,32px);line-height:1.18}
+  .pagehead p{font-size:19px;color:var(--ink-soft);max-width:34em;margin:14px 0 0}
+  .e-eyebrow{font-size:13px;letter-spacing:.26em;text-transform:uppercase;color:var(--red);font-weight:500;margin-top:22px}
+  .e-title{font-size:clamp(30px,6.4vw,44px);line-height:1.12;margin:12px 0 0}
+  .e-facts{border-top:1px solid var(--line);border-bottom:1px solid var(--line);margin:26px 0;padding:6px 0}
+  .fact{display:flex;gap:20px;padding:16px 0;border-top:1px solid var(--line)}
+  .fact:first-child{border-top:none}
+  .fact dt{flex:0 0 112px;font-size:13px;letter-spacing:.14em;text-transform:uppercase;color:var(--stone);padding-top:5px;margin:0;font-weight:500}
+  .fact dd{margin:0;flex:1;font-size:20px;color:var(--ink)}
+  .pageform{margin:26px 0 0;display:grid;gap:16px;max-width:30em}
+  .field{display:block}
+  .field span{display:block;font-size:13px;letter-spacing:.14em;text-transform:uppercase;color:var(--stone);margin-bottom:8px;font-weight:500}
+  .field input{width:100%;min-height:54px;padding:0 16px;font-family:var(--fb);font-size:19px;color:var(--ink);
+    background:var(--paper-2);border:1px solid var(--line);border-radius:var(--radius)}
+  .field input:focus{outline:none;border-color:var(--red)}
+  .btn{display:inline-flex;align-items:center;justify-content:center;gap:10px;padding:20px 30px;min-height:62px;
+    border-radius:var(--radius);font-size:16px;letter-spacing:.12em;text-transform:uppercase;font-weight:600;
+    background:var(--red);color:#fff;border:1px solid var(--red);text-align:center;cursor:pointer;font-family:var(--fb)}
+  .btn:hover{background:#a5171d;border-color:#a5171d}
+  .btn.ghost{background:transparent;color:var(--ink);border-color:#c9c0b3}
+  .btn.ghost:hover{border-color:var(--ink);background:transparent}
+  .note{font-size:16px;color:var(--stone);margin:22px 0 0;max-width:34em}
+  .note a{border-bottom:1px solid var(--line)}
+  .formerror{background:#f7e9e9;border:1px solid #d8b4b4;border-left:3px solid var(--red);border-radius:var(--radius);
+    padding:16px 18px;margin:22px 0 0;font-size:17px;color:#7a2a2a;max-width:30em}
+  .state{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none;margin:0}
+  .flabel2{font-size:13px;letter-spacing:.14em;text-transform:uppercase;color:var(--stone);font-weight:500}
+  .gchips{display:flex;gap:10px;flex-wrap:wrap}
+  .gchip{min-width:62px;min-height:56px;display:flex;align-items:center;justify-content:center;
+    border:1px solid var(--line);border-radius:var(--radius);background:var(--paper-2);font-size:18px;font-weight:500;
+    color:var(--ink);padding:0 18px;cursor:pointer}
+  .gchip:hover{border-color:var(--red)}
+  .state:checked + .gchip{background:var(--ink);color:var(--paper-2);border-color:var(--ink)}
+  .guestbox,.statebox{background:var(--paper-2);border:1px solid var(--line);border-radius:var(--radius);padding:24px;margin:26px 0 0}
+  .statebox{border-left:3px solid var(--red)}
+  .gq,.statebox h2{font-family:var(--fd);font-size:24px;color:var(--ink);line-height:1.25}
+  .gh,.statebox p{font-size:17px;color:var(--ink-soft);margin:8px 0 0}
+  .alsobox{background:#efe9e0;border-radius:var(--radius);padding:20px 22px;margin:26px 0 0;max-width:34em}
+  .alsobox .al-t{font-size:13px;letter-spacing:.14em;text-transform:uppercase;color:#6d6355;font-weight:600;margin-bottom:8px}
+  .alsobox p{margin:0;font-size:18px;color:var(--ink)}
+  .alsobox .al-s{font-size:15px;color:#6d6355;margin-top:10px}
+  .fullnote{background:#f4ecd9;border-radius:var(--radius);padding:18px 20px;margin:26px 0 0;font-size:17px;color:#5b4a1f;line-height:1.55;max-width:34em}
+  .cancelform{margin:14px 0 0;max-width:30em;display:grid}
+  .lgroup{border-top:1px solid var(--line);border-bottom:1px solid var(--line);margin-top:26px}
+  .lrow{position:relative;display:flex;gap:22px;width:100%;padding:24px 4px;align-items:flex-start;min-height:72px}
+  .lrow:not(:first-child){border-top:1px solid #e6ded2}
+  .lrow:hover .ev-title{color:var(--red)}
+  .ldate{flex:0 0 68px;text-align:center;padding-top:2px}
+  .ldate .dnum{display:block;font-family:var(--fd);font-size:34px;line-height:1;color:var(--ink)}
+  .ldate .dday{display:block;font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--stone);margin-top:5px;font-weight:500}
+  .ev-body{flex:1;display:block}
+  .ev-title{display:block;font-family:var(--fd);font-size:25px;line-height:1.25;color:var(--ink)}
+  .ev-meta{display:block;font-size:17px;color:var(--ink-soft);margin-top:5px}
+  .ev-go{color:var(--red);font-size:24px;padding-top:2px}
+  .tag{display:inline-block;font-size:13px;letter-spacing:.1em;text-transform:uppercase;font-weight:500;
+    border:1px solid var(--line);border-radius:100px;padding:5px 13px;color:var(--stone);margin-top:10px}
+  .tag.open{border-color:var(--red);color:var(--red)}
+  .emptybox{background:var(--paper-2);border:1px dashed var(--line);border-radius:var(--radius);padding:30px 26px;margin-top:26px;max-width:34em}
+  .emptybox p{margin:0 0 20px;color:var(--ink-soft)}
+  .signoutform{margin-top:44px}
+  .signoutform button{background:none;border:none;padding:14px 4px;min-height:54px;font-family:var(--fb);font-size:16px;
+    color:var(--stone);cursor:pointer;border-bottom:1px solid var(--line)}
+  .signoutform button:hover{color:var(--red);border-color:var(--red)}
+  .rlink{display:inline-flex;align-items:center;min-height:54px;margin-top:2px;font-size:14px;letter-spacing:.1em;
+    text-transform:uppercase;font-weight:600;color:var(--red);border-bottom:1px solid currentColor;padding-bottom:2px}
+  .rlink:hover{color:#a5171d}
+  .urlline{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:15px;background:var(--paper-2);
+    border:1px solid var(--line);border-radius:var(--radius);padding:12px 14px;margin-top:12px;overflow-wrap:anywhere}
+  .msgsent{text-align:center;padding:60px 0 20px}
+  .check2{width:70px;height:70px;border-radius:50%;background:var(--red);color:#fff;
+    display:flex;align-items:center;justify-content:center;margin:0 auto 26px}
+  .msgsent h1{font-size:clamp(30px,6.4vw,40px)}
+  .msgsent p{font-size:19px;color:var(--ink-soft);max-width:30em;margin:16px auto 0}
+  .cta2{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;margin-top:32px}
+  footer{border-top:1px solid var(--line);padding:34px 0 60px;color:var(--stone);font-size:15px;text-align:center}
+'''
+
+SHELL = '''<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>{{TITLE}} &middot; 181 Fremont</title>
+<link rel="stylesheet" href="/fonts/fonts.css">
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#16161a">
+<style>''' + SHELL_CSS + '''</style>
+</head>
+<body>
+<header class="masthead">
+  <div class="masthead-inner">
+    <a class="logo" href="/">181 Fremont<small>Resident Events</small></a>
+    <div class="whoami">Welcome<strong>{{WHO}}</strong></div>
+  </div>
+</header>
+<main class="wrap">
+{{CONTENT}}
+</main>
+<footer>181 Fremont Residences &middot; Resident Experiences &middot; Questions? Leo at Level 39</footer>
+</body>
+</html>
+'''
+
+SIGNIN_FORM = '''<form method="post" action="/signin" class="pageform">
+<input type="hidden" name="to" value="{{TO}}">
+<label class="field"><span>Resident code</span>
+<input type="text" name="code" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="XXXX-XXXX" required></label>
+<button class="btn" type="submit">Sign In</button>
+</form>
+<p class="note">No code yet, or lost it? The front desk can hand you a fresh one any hour of the day.</p>'''
+
+T_SIGNIN = '''<a class="back" href="/">&larr; Back to the calendar</a>
+<div class="pagehead"><h1>Sign in</h1>
+<p>Enter your resident code, the one on your card or in your note from Resident Experiences.
+One sign-in lasts a month on this device.</p></div>
+<!--ERROR--><div class="formerror">{{ERROR}}</div><!--/ERROR-->
+''' + SIGNIN_FORM
+
+T_MY = '''<a class="back" href="/">&larr; Back to the calendar</a>
+<div class="pagehead"><h1>My RSVPs</h1>
+<p>Signed in as {{LABEL}}.</p></div>
+<!--EMPTY--><div class="emptybox">
+<p>Nothing on the books yet. Tap RSVP on any event, and it appears here.</p>
+<a class="btn" href="/">See the Calendar</a>
+</div><!--/EMPTY-->
+<!--ROWS--><div class="lgroup">
+<!--ROW--><a class="lrow" href="/rsvp/{{KEY}}">
+<span class="ldate"><span class="dnum">{{DAY}}</span><span class="dday">{{DOW}}</span></span>
+<span class="ev-body"><span class="ev-title">{{TITLE}}</span><span class="ev-meta">{{META}}</span>
+<span class="tag {{TAGCLASS}}">{{TAG}}</span></span>
+<span class="ev-go">&rarr;</span></a><!--/ROW-->
+</div>
+<p class="note">Tap any RSVP to change your party or cancel.</p><!--/ROWS-->
+<form method="post" action="/signout" class="signoutform"><button type="submit">Sign out of this device</button></form>'''
+
+RSVP_CHIPS = '''<div class="flabel2">{{COUNTLABEL}}</div>
+<div class="gchips"><!--CHIP--><input class="state" type="radio" name="count" id="c{{N}}" value="{{N}}" {{CHECKED}}><label class="gchip" for="c{{N}}">{{LABEL}}</label><!--/CHIP--></div>
+<label class="field"><span>Their names, if you&rsquo;d like us to know</span>
+<input type="text" name="names" value="{{NAMES}}" autocomplete="off" autocapitalize="words" placeholder="Optional"></label>'''
+
+T_RSVP = '''<a class="back" href="/">&larr; Back to the calendar</a>
+<div class="e-eyebrow">{{EYEBROW}}</div>
+<h1 class="e-title">{{TITLE}}</h1>
+<dl class="e-facts">
+<div class="fact"><dt>When</dt><dd>{{WHEN}}</dd></div>
+<div class="fact"><dt>Where</dt><dd>{{WHERE}}</dd></div>
+<!--SEATS--><div class="fact"><dt>Seats</dt><dd>{{SEATS}}</dd></div><!--/SEATS-->
+<!--CUTOFF--><div class="fact"><dt>RSVP by</dt><dd>{{CUTOFF}}</dd></div><!--/CUTOFF-->
+</dl>
+<!--ALSO--><div class="alsobox"><div class="al-t">Also from your unit</div>
+<p>{{MATES}}</p>
+<p class="al-s">Shown so a household never counts itself twice. If they already have you covered, you&rsquo;re all set.</p>
+</div><!--/ALSO-->
+<!--SIGNIN--><div class="pagehead"><h2>Sign in to RSVP</h2>
+<p>Enter your resident code, and you&rsquo;ll come straight back to this page. One sign-in lasts a month on this device.</p></div>
+''' + SIGNIN_FORM + '''<!--/SIGNIN-->
+<!--EXISTING--><div class="statebox"><h2>{{STATE}}</h2>
+<p>Change your party below, or cancel. Kindly keep us posted; the kitchen sets by the count.</p></div>
+<form method="post" action="/rsvp/{{KEY}}" class="pageform">
+<input type="hidden" name="action" value="rsvp">
+''' + RSVP_CHIPS + '''
+<button class="btn" type="submit">Save Changes</button>
+</form>
+<form method="post" action="/rsvp/{{KEY}}" class="cancelform">
+<input type="hidden" name="action" value="cancel">
+<button class="btn ghost" type="submit">Cancel This RSVP</button>
+</form><!--/EXISTING-->
+<!--FORM--><!--STANDARD--><div class="pagehead"><h2>Will you join us?</h2>
+<p>Count yourself and anyone coming with you: your household, or a guest staying with you.</p></div><!--/STANDARD-->
+<!--GUEST--><div class="guestbox"><div class="gq">Bringing someone from outside the building?</div>
+<div class="gh">You&rsquo;re always welcome on your own, with no RSVP needed. We only ask for a count of
+guests from outside the building, so we can pour and plate for them.</div></div><!--/GUEST-->
+<!--PAID--><div class="pagehead"><h2>Request your seats</h2>
+<p>Seats are confirmed by Resident Experiences in the order requests arrive. Payment is arranged
+with your confirmation, never on this site.</p></div><!--/PAID-->
+<!--FULLNOTE--><div class="fullnote">Every seat is spoken for at the moment. Join the waitlist and
+you hold a place in line, in the order requests arrived.</div><!--/FULLNOTE-->
+<form method="post" action="/rsvp/{{KEY}}" class="pageform">
+<input type="hidden" name="action" value="rsvp">
+''' + RSVP_CHIPS + '''
+<button class="btn" type="submit">{{BTNTEXT}}</button>
+</form><!--/FORM-->
+<p class="note">Full details for this event are on <a href="/">the calendar</a>.</p>'''
+
+T_DONE = '''<div class="msgsent">
+<!--ICON--><div class="check2"><svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 12.8l5 5 10-11"/></svg></div><!--/ICON-->
+<h1>{{HEAD}}</h1>
+<p>{{SUB}}</p>
+<div class="cta2"><!--LINK--><a class="btn" href="{{LINKHREF}}">{{LINKTEXT}}</a><!--/LINK--></div>
+</div>'''
+
+T_MSGSTEP = '''<a class="back" href="/">&larr; Back to the calendar</a>
+<div class="pagehead"><h1>One more step</h1>
+<p>Your note is written and ready. Enter your resident code to send it, and you&rsquo;ll stay
+signed in for a month on this device.</p></div>
+<!--ERROR--><div class="formerror">{{ERROR}}</div><!--/ERROR-->
+<form method="post" action="/message" class="pageform">
+<input type="hidden" name="Topic" value="{{TOPIC}}">
+<input type="hidden" name="Message" value="{{BODY}}">
+<input type="hidden" name="Name" value="{{NAME}}">
+<input type="hidden" name="Email" value="{{EMAIL}}">
+<label class="field"><span>Resident code</span>
+<input type="text" name="code" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="XXXX-XXXX" required></label>
+<button class="btn" type="submit">Send to Resident Experiences</button>
+</form>
+<p class="note">No code yet, or lost it? The front desk can hand you a fresh one any hour of the day.</p>'''
+
+T_BOARD = '''<a class="back" href="/">&larr; Back to the calendar</a>
+<div class="pagehead"><h1>Board Meetings</h1>
+<p>Board business, kept apart from the events calendar. Dates and times are set by the Board,
+and questions about them go to the Board or building management rather than Resident Experiences.</p></div>
+<!--EMPTY--><div class="emptybox">
+<p>Nothing is scheduled at the moment. When the Board sets a date, it appears here.</p>
+<a class="btn ghost" href="/">Back to the Calendar</a>
+</div><!--/EMPTY-->
+<!--ROWS--><div class="lgroup">
+<!--ROW--><div class="lrow">
+<span class="ldate"><span class="dnum">{{DAY}}</span><span class="dday">{{DOW}}</span></span>
+<span class="ev-body"><span class="ev-title">{{TITLE}}</span><span class="ev-meta">{{META}}</span>
+<a class="rlink" href="{{ICS}}">Add to My Calendar</a></span>
+</div><!--/ROW-->
+</div>
+<div class="guestbox"><div class="gq">Keep these in your calendar on their own</div>
+<div class="gh">Add the Board calendar once, and every change reaches you by itself: a cancelled meeting
+leaves your calendar without anyone sending a notice. On an iPhone or iPad,
+<a class="rlink" style="margin:0" href="webcal://181residents.com/board/feed">tap here to subscribe</a>.
+In Google Calendar or Outlook, add a calendar from this address:</div>
+<div class="urlline">https://181residents.com/board/feed</div></div><!--/ROWS-->'''
+
+T_SPACES = '''<a class="back" href="/">&larr; Back to the calendar</a>
+<div class="pagehead"><h1>Level 39 Spaces</h1>
+<p>The conference room, the dining room, and the Club are yours to walk into whenever they&rsquo;re
+free, any hour of the day. The hours below are spoken for; everything else is open.</p></div>
+<!--EMPTY--><div class="emptybox">
+<p>Nothing is reserved ahead. Every space is open; come on up.</p>
+<a class="btn ghost" href="/">Back to the Calendar</a>
+</div><!--/EMPTY-->
+<!--ROWS--><div class="lgroup">
+<!--ROW--><div class="lrow">
+<span class="ldate"><span class="dnum">{{DAY}}</span><span class="dday">{{DOW}}</span></span>
+<span class="ev-body"><span class="ev-title">{{SPACE}}</span><span class="ev-meta">{{META}}</span>
+<span class="tag">Reserved</span></span>
+</div><!--/ROW-->
+</div><!--/ROWS-->
+<p class="note">Reservations show the space and hours only. To reserve a space for yourself,
+contact Leo in Resident Experiences.</p>'''
+
+TEMPLATES = {
+    "shell": SHELL,
+    "signin": T_SIGNIN,
+    "my": T_MY,
+    "rsvp": T_RSVP,
+    "done": T_DONE,
+    "msgstep": T_MSGSTEP,
+    "board": T_BOARD,
+    "spaces": T_SPACES,
+}
 
 import os
 open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "181fremont_residents_prototype.html"), "w", encoding="utf-8").write(HTML)

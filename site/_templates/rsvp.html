@@ -1,0 +1,55 @@
+<a class="back" href="/">&larr; Back to the calendar</a>
+<div class="e-eyebrow">{{EYEBROW}}</div>
+<h1 class="e-title">{{TITLE}}</h1>
+<dl class="e-facts">
+<div class="fact"><dt>When</dt><dd>{{WHEN}}</dd></div>
+<div class="fact"><dt>Where</dt><dd>{{WHERE}}</dd></div>
+<!--SEATS--><div class="fact"><dt>Seats</dt><dd>{{SEATS}}</dd></div><!--/SEATS-->
+<!--CUTOFF--><div class="fact"><dt>RSVP by</dt><dd>{{CUTOFF}}</dd></div><!--/CUTOFF-->
+</dl>
+<!--ALSO--><div class="alsobox"><div class="al-t">Also from your unit</div>
+<p>{{MATES}}</p>
+<p class="al-s">Shown so a household never counts itself twice. If they already have you covered, you&rsquo;re all set.</p>
+</div><!--/ALSO-->
+<!--SIGNIN--><div class="pagehead"><h2>Sign in to RSVP</h2>
+<p>Enter your resident code, and you&rsquo;ll come straight back to this page. One sign-in lasts a month on this device.</p></div>
+<form method="post" action="/signin" class="pageform">
+<input type="hidden" name="to" value="{{TO}}">
+<label class="field"><span>Resident code</span>
+<input type="text" name="code" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="XXXX-XXXX" required></label>
+<button class="btn" type="submit">Sign In</button>
+</form>
+<p class="note">No code yet, or lost it? The front desk can hand you a fresh one any hour of the day.</p><!--/SIGNIN-->
+<!--EXISTING--><div class="statebox"><h2>{{STATE}}</h2>
+<p>Change your party below, or cancel. Kindly keep us posted; the kitchen sets by the count.</p></div>
+<form method="post" action="/rsvp/{{KEY}}" class="pageform">
+<input type="hidden" name="action" value="rsvp">
+<div class="flabel2">{{COUNTLABEL}}</div>
+<div class="gchips"><!--CHIP--><input class="state" type="radio" name="count" id="c{{N}}" value="{{N}}" {{CHECKED}}><label class="gchip" for="c{{N}}">{{LABEL}}</label><!--/CHIP--></div>
+<label class="field"><span>Their names, if you&rsquo;d like us to know</span>
+<input type="text" name="names" value="{{NAMES}}" autocomplete="off" autocapitalize="words" placeholder="Optional"></label>
+<button class="btn" type="submit">Save Changes</button>
+</form>
+<form method="post" action="/rsvp/{{KEY}}" class="cancelform">
+<input type="hidden" name="action" value="cancel">
+<button class="btn ghost" type="submit">Cancel This RSVP</button>
+</form><!--/EXISTING-->
+<!--FORM--><!--STANDARD--><div class="pagehead"><h2>Will you join us?</h2>
+<p>Count yourself and anyone coming with you: your household, or a guest staying with you.</p></div><!--/STANDARD-->
+<!--GUEST--><div class="guestbox"><div class="gq">Bringing someone from outside the building?</div>
+<div class="gh">You&rsquo;re always welcome on your own, with no RSVP needed. We only ask for a count of
+guests from outside the building, so we can pour and plate for them.</div></div><!--/GUEST-->
+<!--PAID--><div class="pagehead"><h2>Request your seats</h2>
+<p>Seats are confirmed by Resident Experiences in the order requests arrive. Payment is arranged
+with your confirmation, never on this site.</p></div><!--/PAID-->
+<!--FULLNOTE--><div class="fullnote">Every seat is spoken for at the moment. Join the waitlist and
+you hold a place in line, in the order requests arrived.</div><!--/FULLNOTE-->
+<form method="post" action="/rsvp/{{KEY}}" class="pageform">
+<input type="hidden" name="action" value="rsvp">
+<div class="flabel2">{{COUNTLABEL}}</div>
+<div class="gchips"><!--CHIP--><input class="state" type="radio" name="count" id="c{{N}}" value="{{N}}" {{CHECKED}}><label class="gchip" for="c{{N}}">{{LABEL}}</label><!--/CHIP--></div>
+<label class="field"><span>Their names, if you&rsquo;d like us to know</span>
+<input type="text" name="names" value="{{NAMES}}" autocomplete="off" autocapitalize="words" placeholder="Optional"></label>
+<button class="btn" type="submit">{{BTNTEXT}}</button>
+</form><!--/FORM-->
+<p class="note">Full details for this event are on <a href="/">the calendar</a>.</p>

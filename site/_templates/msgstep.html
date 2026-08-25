@@ -1,0 +1,15 @@
+<a class="back" href="/">&larr; Back to the calendar</a>
+<div class="pagehead"><h1>One more step</h1>
+<p>Your note is written and ready. Enter your resident code to send it, and you&rsquo;ll stay
+signed in for a month on this device.</p></div>
+<!--ERROR--><div class="formerror">{{ERROR}}</div><!--/ERROR-->
+<form method="post" action="/message" class="pageform">
+<input type="hidden" name="Topic" value="{{TOPIC}}">
+<input type="hidden" name="Message" value="{{BODY}}">
+<input type="hidden" name="Name" value="{{NAME}}">
+<input type="hidden" name="Email" value="{{EMAIL}}">
+<label class="field"><span>Resident code</span>
+<input type="text" name="code" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="XXXX-XXXX" required></label>
+<button class="btn" type="submit">Send to Resident Experiences</button>
+</form>
+<p class="note">No code yet, or lost it? The front desk can hand you a fresh one any hour of the day.</p>

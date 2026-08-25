@@ -7,17 +7,18 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 APP_JS = open(os.path.join(HERE, "admin_app.js"), encoding="utf-8").read()
 
 CATEGORIES = ["Morning Offering", "Happy Hour", "Community Dinner", "Culinary Experience",
-              "Enrichment Experience", "Signature Event"]
+              "Enrichment Experience", "Signature Event", "Board Meeting"]
 STATUSES = ["Draft", "Live", "Unpublished", "Archived"]
 RSVP_TYPES = ["None", "Guest count only", "Seat", "Paid seat"]
 
-SCREENS = ["dash", "events", "editor", "assets", "msgs", "inst",
+SCREENS = ["dash", "events", "editor", "assets", "res", "spaces", "msgs", "inst",
            "inst-events", "inst-brand", "inst-email", "inst-screens"]
 NAV_OF = {"dash": "dash", "events": "events", "editor": "events", "assets": "assets",
-          "msgs": "msgs", "inst": "inst", "inst-events": "inst", "inst-brand": "inst",
-          "inst-email": "inst", "inst-screens": "inst"}
+          "res": "res", "spaces": "spaces", "msgs": "msgs", "inst": "inst",
+          "inst-events": "inst", "inst-brand": "inst", "inst-email": "inst",
+          "inst-screens": "inst"}
 NAV = [("dash", "Dashboard"), ("events", "Events"), ("assets", "Assets"),
-       ("msgs", "Messages"), ("inst", "Instructions")]
+       ("res", "Residents"), ("spaces", "Spaces"), ("msgs", "Messages"), ("inst", "Instructions")]
 
 rules = [f'#s-{s}:checked ~ .body #scr-{s}{{display:block}}' for s in SCREENS]
 for s, nav in NAV_OF.items():
@@ -181,6 +182,7 @@ HTML = f'''<!DOCTYPE html>
   #cat-3:checked ~ .form label[for="cat-3"]{{background:var(--ink);color:var(--paper-2);border-color:var(--ink)}}
   #cat-4:checked ~ .form label[for="cat-4"]{{background:var(--ink);color:var(--paper-2);border-color:var(--ink)}}
   #cat-5:checked ~ .form label[for="cat-5"]{{background:var(--ink);color:var(--paper-2);border-color:var(--ink)}}
+  #cat-6:checked ~ .form label[for="cat-6"]{{background:var(--ink);color:var(--paper-2);border-color:var(--ink)}}
   #st-0:checked ~ .form label[for="st-0"]{{background:var(--ink);color:var(--paper-2);border-color:var(--ink)}}
   #st-1:checked ~ .form label[for="st-1"]{{background:var(--ink);color:var(--paper-2);border-color:var(--ink)}}
   #st-2:checked ~ .form label[for="st-2"]{{background:var(--ink);color:var(--paper-2);border-color:var(--ink)}}
@@ -220,7 +222,32 @@ HTML = f'''<!DOCTYPE html>
   .at{{display:block;font-family:var(--fd);font-weight:600;font-size:15px;color:var(--ink)}}
   .asub{{display:block;font-size:13px;color:var(--stone);margin-top:5px}}
 
+  /* ---------- roles ---------- */
+  /* The desk tier (front desk) sees Residents and Messages only. The server enforces
+     this on every endpoint; hiding the tabs just keeps the desk view honest. */
+  body.role-desk .navbar label[for="s-dash"],
+  body.role-desk .navbar label[for="s-events"],
+  body.role-desk .navbar label[for="s-assets"],
+  body.role-desk .navbar label[for="s-inst"]{{display:none}}
+
+  /* ---------- residents ---------- */
+  .unithead{{display:flex;align-items:center;gap:10px;font-family:var(--fd);font-weight:600;font-size:14px;color:var(--ink);
+    padding:14px 16px 6px;letter-spacing:.04em}}
+  .flagmany{{display:inline-block;font-size:10px;letter-spacing:.12em;text-transform:uppercase;font-weight:600;
+    background:#f0e2e2;color:#8a2b2b;border-radius:100px;padding:3px 10px}}
+  .rrow{{display:grid;gap:12px;grid-template-columns:1.3fr 1.6fr 1.1fr .9fr auto;align-items:center;
+    padding:10px 16px;border-top:1px solid var(--line-2)}}
+  .rname{{font-size:14px;color:var(--ink);font-weight:500}}
+  .rname em{{display:block;font-style:normal;font-size:12px;color:var(--stone);font-weight:400;margin-top:2px}}
+  .rcode{{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:13px;background:#eae3d8;
+    padding:4px 9px;border-radius:3px;color:#4a4238;white-space:nowrap}}
+  .rrow .pill{{justify-self:start}}
+  .rrow.off .rname,.rrow.off .rcode{{opacity:.45}}
+  @media(max-width:900px){{ .rrow{{grid-template-columns:1fr 1fr;row-gap:8px}} }}
+
   /* ---------- messages ---------- */
+  .mshade{{height:16px;max-width:520px;border-radius:100px;margin:6px 0 2px;
+    background:repeating-linear-gradient(90deg,#e6ded2 0 16px,#efe9e0 16px 34px)}}
   .mrow{{background:var(--paper-2);border:1px solid var(--line);border-radius:var(--radius);padding:14px 16px;margin-bottom:8px}}
   .mtop{{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:9px}}
   .munit{{font-family:var(--fd);font-weight:600;font-size:14.5px;color:var(--ink)}}
@@ -348,13 +375,19 @@ HTML = f'''<!DOCTYPE html>
   </div>
 
   <div class="sec">
+    <h2>RSVPs</h2>
+    <div class="sd">Confirmed parties and heads for upcoming dates, with waitlists. Open an event to see who, by unit; a unit appearing twice for one event is worth a glance, since a household can double-count itself.</div>
+    <div class="card" id="rsvplist"></div>
+  </div>
+
+  <div class="sec">
     <h2>Reporting note</h2>
     <div class="card" style="font-size:15px;color:var(--ink-soft)">
       With about ten year-round residents, two people is 20%. Every figure here shows a <strong style="color:var(--ink);font-weight:500">count alongside its percentage</strong>,
       and month-to-month swings should be read as noise until there are three months of trend. <strong style="color:var(--ink);font-weight:500">Events hosted by others are listed but not counted.</strong>
       Caf&eacute; 181 appears on the resident calendar and is excluded from engagement figures, so nothing here credits
       Resident Experiences with someone else&rsquo;s attendance. Traffic is measured without cookies and without identifying anyone.
-      RSVP and attendance figures join this page once sign-ups open on the site.
+      RSVP figures above come from sign-ups on the site itself; attendance recording joins them next.
     </div>
   </div>
 </div></section>
@@ -398,7 +431,7 @@ HTML = f'''<!DOCTYPE html>
     <div class="field"><label class="fl" for="f-start">Start time</label><input class="inp" id="f-start" placeholder="5:30 PM" inputmode="text"></div>
     <div class="field"><label class="fl" for="f-end">End time</label><input class="inp" id="f-end" placeholder="7:30 PM"></div>
     <div class="field"><label class="fl" for="f-loc">Location</label><input class="inp" id="f-loc" list="locs"><datalist id="locs"><option value="Level 39, Residents’ Club"><option value="Level 7 Terrace"><option value="Lobby"><option value="Fitness Center"></datalist></div>
-    <div class="field"><label class="fl" for="f-host">Hosted by</label><input class="inp" id="f-host" list="hosts" autocapitalize="words"><datalist id="hosts"><option value="Resident Experiences"><option value="Leigh-Ann"><option value="Front desk"></datalist>
+    <div class="field"><label class="fl" for="f-host">Hosted by</label><input class="inp" id="f-host" list="hosts" autocapitalize="words"><datalist id="hosts"><option value="Resident Experiences"><option value="Leigh Anne"><option value="Front desk"></datalist>
       <div class="hint">Shown on the event page so residents know who to ask.</div></div>
     <div class="field"><label class="fl">Count in engagement reporting</label><div class="picks">{picks("co", ["Count it", "List only, don’t count"])}</div>
       <div class="hint">Choose List only whenever the host is not Resident Experiences, so nothing credits you with someone else&rsquo;s attendance.</div></div>
@@ -486,14 +519,67 @@ HTML = f'''<!DOCTYPE html>
   <div id="assets"></div>
 </div></section>
 
+<!-- ================= RESIDENTS ================= -->
+<section class="screen" id="scr-res"><div class="wrap">
+  <div class="phead"><h1>Residents</h1><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="mini" data-printcards title="A printable sheet of code cards, one per person">Print code cards</button></div></div>
+  <div class="psub" id="rescount">Loading&hellip;</div>
+  <div class="callout" style="margin:0 0 18px">
+    <strong>One code per person, grouped by unit.</strong> Couples each get their own. A renter or a visiting
+    family member gets their own row with an <strong>end date</strong>, and the code simply stops working after it.
+    Rotate a code and the old one dies everywhere at once; that is the whole late-night rescue:
+    look the person up, rotate, read the new code over the phone or email it from your own mailbox.
+  </div>
+  <div class="card" style="margin-bottom:18px">
+    <div style="display:grid;gap:12px 16px;grid-template-columns:repeat(auto-fit,minmax(150px,1fr))">
+      <div class="field"><label class="fl" for="r-unit">Unit</label><input class="inp" id="r-unit" autocapitalize="characters" placeholder="12A"></div>
+      <div class="field"><label class="fl" for="r-name">Name</label><input class="inp" id="r-name" autocapitalize="words" placeholder="Margaret"></div>
+      <div class="field"><label class="fl" for="r-email">Email, for sending the code</label><input class="inp" id="r-email" type="email" autocapitalize="none" placeholder="Optional"></div>
+      <div class="field"><label class="fl" for="r-ends">Access ends</label><input class="inp" id="r-ends" type="date"><div class="hint">Only for temporary stays.</div></div>
+    </div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:14px">
+      <button class="btn" data-addres>Add Person</button>
+      <label class="check" style="font-size:13.5px"><input type="checkbox" id="r-role"> Role account, no unit (front desk, building services)</label>
+    </div>
+    <div class="sec" style="margin-top:18px">
+      <label class="fl" for="r-bulk" style="display:block;font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--stone);margin-bottom:5px;font-weight:600">Add several at once</label>
+      <textarea class="inp" id="r-bulk" rows="3" placeholder="One person per line: unit, name, email &#10;12A, Margaret, margaret@example.com&#10;12A, Robert"></textarea>
+      <div style="margin-top:10px"><button class="mini" data-addbulk>Add Everyone Listed</button></div>
+    </div>
+  </div>
+  <div id="reslist"></div>
+</div></section>
+
+<!-- ================= SPACES ================= -->
+<section class="screen" id="scr-spaces"><div class="wrap">
+  <div class="phead"><h1>Spaces</h1></div>
+  <div class="psub" id="bkcount">Loading&hellip;</div>
+  <div class="callout" style="margin:0 0 18px">
+    <strong>Residents see only &ldquo;Reserved.&rdquo;</strong> The public Spaces page shows the room, the date, and
+    the hours, and nothing else, so a private reservation stays private. The note field below is for this
+    admin alone: who booked it, what for, whatever the desk needs to remember.
+  </div>
+  <div class="card" style="margin-bottom:18px">
+    <div style="display:grid;gap:12px 16px;grid-template-columns:repeat(auto-fit,minmax(150px,1fr))">
+      <div class="field"><label class="fl" for="bk-space">Space</label><input class="inp" id="bk-space" list="spaces" autocapitalize="words" placeholder="Conference Room"><datalist id="spaces"><option value="Conference Room"><option value="Dining Room"><option value="Residents’ Club"><option value="Level 7 Terrace"></datalist></div>
+      <div class="field"><label class="fl" for="bk-date">Date</label><input class="inp" id="bk-date" type="date"></div>
+      <div class="field"><label class="fl" for="bk-start">From</label><input class="inp" id="bk-start" placeholder="2:00 PM"></div>
+      <div class="field"><label class="fl" for="bk-end">Until</label><input class="inp" id="bk-end" placeholder="5:00 PM"></div>
+      <div class="field"><label class="fl" for="bk-note">Note, staff only</label><input class="inp" id="bk-note" placeholder="Who and what, never shown to residents"></div>
+    </div>
+    <div style="margin-top:14px"><button class="btn" data-addbooking>Reserve the Space</button></div>
+  </div>
+  <div class="evlist" id="bklist"></div>
+</div></section>
+
 <!-- ================= MESSAGES ================= -->
 <section class="screen" id="scr-msgs"><div class="wrap">
   <div class="phead"><h1>Messages</h1></div>
-  <div class="psub">What residents send from the Message tile, with the promise of a reply within one business day.</div>
-  <div class="card" style="font-size:15px;color:var(--ink-soft);line-height:1.6">
-    For now the Message tile opens the resident&rsquo;s own mail app addressed to <strong style="color:var(--ink);font-weight:500">leonardo@181sf.com</strong>, with the topic, their note, and optionally their name, unit, and email.
-    Replies happen in the inbox, so nothing is lost and nobody needs another login. Once resident sign-in is live, messages will be logged here with their status, and this screen becomes the inbox.
+  <div class="psub" id="msgcount">What residents send from the Message tile, with the promise of a reply within one business day.</div>
+  <div class="callout" id="msg-redacted" style="display:none;margin:0 0 18px">
+    <strong>Message text is private to Leo.</strong> This view shows who wrote, when, and whether it has
+    been answered, so response times are visible without reading residents&rsquo; words.
   </div>
+  <div id="msglist"></div>
 </div></section>
 
 <!-- ================= INSTRUCTIONS ================= -->
@@ -560,7 +646,7 @@ HTML = f'''<!DOCTYPE html>
   judgment call and keeps the report honest. You only ever have to ask who is paying.</div>
 
   <h2>Capacity and waitlists</h2>
-  <p>Capacity is enforced automatically. Once RSVPs reach the number, the button changes to <em>Join the Waitlist</em> and continues collecting names. Raise the capacity number and waitlisted residents are promoted in the order they signed up.</p>
+  <p>Capacity is enforced automatically. Once RSVPs reach the number, the button changes to <em>Join the Waitlist</em> and keeps collecting names in order. Freed seats are never given away by the site: while anyone is waiting, new RSVPs join the back of the line, and you hand a freed seat to the front of it with <em>Confirm seats</em> on the Dashboard&rsquo;s RSVP list, then let the resident know. A party that already holds seats never loses them by editing; growing a party only goes through if there is room.</p>
 
   <h2>Timing</h2>
   <table>

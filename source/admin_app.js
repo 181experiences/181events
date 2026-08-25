@@ -6,7 +6,7 @@
   const $$ = (s, r) => Array.from((r || document).querySelectorAll(s));
   const esc = s => String(s == null ? "" : s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
   const UNITS = 55;
-  const CATS = ["Morning Offering", "Happy Hour", "Community Dinner", "Culinary Experience", "Enrichment Experience", "Signature Event"];
+  const CATS = ["Morning Offering", "Happy Hour", "Community Dinner", "Culinary Experience", "Enrichment Experience", "Signature Event", "Board Meeting"];
   const STATUSES = ["Draft", "Live", "Unpublished", "Archived"];
   const RSVPS = ["None", "Guest count", "Seat", "Paid seat"];
   const KIT = ["Web hero", "Nixplay still", "Nixplay video", "Elevator print", "Level 39 print", "Email header"];
@@ -14,6 +14,7 @@
   const DOW = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
   let events = [], status = {}, analytics = null, days = 30, editing = null;
+  let role = "staff", residents = [], msgs = [], rsvps = [];
   let rp = { mode: "none", days: new Set(), ord: "Last", wd: 0, end: "cal", times: 6, until: "" };
   const DOWFULL = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 
@@ -88,11 +89,13 @@
   }
 
   // ---------------------------------------------------------------- helpers
-  const today = () => new Date().toISOString().slice(0, 10);
+  // The building's day, not UTC's: after 5 PM Pacific those differ, and tonight's
+  // dinner must not fall out of the counts while residents are still arriving.
+  const today = () => new Date().toLocaleDateString("en-CA", { timeZone: "America/Los_Angeles" });
   const fmt = iso => { if (!iso) return ""; const d = new Date(iso + "T12:00:00"); return `${DOW[d.getDay()]}, ${MONTHS[d.getMonth()]} ${d.getDate()}`; };
   const fmtLong = iso => { if (!iso) return ""; const d = new Date(iso + "T12:00:00"); return `${["January","February","March","April","May","June","July","August","September","October","November","December"][d.getMonth()]} ${d.getDate()}, ${d.getFullYear()}`; };
   const slugify = s => s.toLowerCase().replace(/&amp;|&/g, "and").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
-  const to24 = t => { const m = /(\d{1,2})(?::(\d{2}))?\s*(AM|PM)/i.exec(t || ""); if (!m) return "0000"; let h = +m[1] % 12; if (/pm/i.test(m[3])) h += 12; return String(h).padStart(2, "0") + (m[2] || "00"); };
+  const to24 = t => { const m = /(\d{1,2})(?::(\d{2}))?\s*(AM|PM)?/i.exec(String(t || "").trim()); if (!m || !m[1]) return "0000"; let h = +m[1]; if (m[3]) { h = h % 12; if (/pm/i.test(m[3])) h += 12; } if (h > 23) return "0000"; return String(h).padStart(2, "0") + (m[2] || "00"); };
   const stem = e => `${e.Date}_${e.Slug || slugify(e.Title || "")}`;
   const cls = s => (s || "Draft").toLowerCase();
 
@@ -146,7 +149,9 @@
       const extra = (g.series ? badge("Series") : "") + (h.Price ? badge(h.Price, "pay") : "") +
         (g.rows.some(r => r.Moved) ? badge(g.rows.filter(r => r.Moved).length + " moved") : "") +
         (h.Counted === true || h.Counted === "True" ? "" : badge("Not counted", "ext"));
-      const rsvp = h.RSVP === "None" || !h.RSVP ? "Drop in" : (h.Capacity ? `0 of ${h.Capacity}` : "Open");
+      const counts = rsvpForGroup(g);
+      const rsvp = h.RSVP === "None" || !h.RSVP ? "Drop in"
+        : `${counts.heads}${h.Capacity && !g.series ? ` of ${h.Capacity}` : ""}${counts.wait ? ` · ${counts.wait} waiting` : ""}`;
       return `<div class="erow ${cls(g.status)}${g.mixed ? " live" : ""}" data-key="${esc(g.key)}">
         <div class="ecell etitle"><span class="et">${esc(h.Title)}${extra}</span><span class="esub">${esc(h.Category)} &middot; ${when}${g.series ? ` &middot; ${g.upcoming.length} upcoming` : ""}</span></div>
         <div class="ecell"><span class="pill ${cls(g.status)}">${esc(g.mixed ? "Mixed" : g.status)}</span></div>
@@ -313,7 +318,8 @@
   function renderDash() {
     const t = today();
     const live = events.filter(e => e.Status === "Live");
-    const upcoming = live.filter(e => e.Date >= t).sort((a, b) => (a.Date + a.Start24).localeCompare(b.Date + b.Start24));
+    const upcoming = live.filter(e => e.Date >= t && e.Category !== "Board Meeting")
+      .sort((a, b) => (a.Date + a.Start24).localeCompare(b.Date + b.Start24));
     const a = analytics || { pageviews: 0, visits: 0, byDay: [], bySource: [], byDevice: [], sample: false, configured: false };
     $("#dash-period").textContent = `Last ${days} days · ${UNITS} occupied units`;
     $("#dash-note").style.display = a.configured ? "none" : "";
@@ -321,9 +327,12 @@
       ? "<strong>Sample figures.</strong> This is what the dashboard looks like with a month of traffic. Real numbers replace them the day the site goes live."
       : "<strong>Analytics not connected yet.</strong> Traffic figures begin once Cloudflare Web Analytics is switched on for the site.";
     const perUnit = a.visits ? (a.visits / UNITS).toFixed(1) : "0";
+    const sums = rsvpSummary();
+    const heads = sums.reduce((s, x) => s + x.heads, 0), waiting = sums.reduce((s, x) => s + x.waitHeads, 0);
     $("#kpis").innerHTML = [
       ["Visits", a.visits, `${a.pageviews} page views · ${perUnit} per unit`],
       ["Busiest day", a.byDay.length ? Math.max(...a.byDay.map(d => d.visits)) : 0, a.byDay.length ? "visits on " + fmt(a.byDay.reduce((m, d) => d.visits > m.visits ? d : m).date) : "no traffic yet"],
+      ["RSVPs ahead", heads, waiting ? `${waiting} on waitlists` : "confirmed heads for upcoming dates"],
       ["Upcoming dates", upcoming.length, `${new Set(upcoming.map(e => e.Slug)).size} live listings on the calendar`],
       ["Next up", upcoming[0] ? fmt(upcoming[0].Date).replace(/^\w+, /, "") : "None", upcoming[0] ? `${upcoming[0].Title}, ${upcoming[0].Start}` : "Nothing scheduled"],
     ].map(([k, v, n]) => `<div class="kpi"><div class="k">${k}</div><div class="v">${esc(v)}</div><div class="n">${esc(n)}</div></div>`).join("");
@@ -331,16 +340,265 @@
     $("#sources").innerHTML = a.bySource.length ? bars(a.bySource, "visits", a.visits) : '<div class="nodata">Sources appear once the QR standees and the weekly email are in use.</div>';
     const devs = a.byDevice.map(d => ({ label: { mobile: "Phone", tablet: "iPad or tablet", desktop: "Computer" }[d.device] || d.device, views: d.views }));
     $("#devices").innerHTML = devs.length ? bars(devs, "views", devs.reduce((s, d) => s + d.views, 0)) : '<div class="nodata">No device data yet.</div>';
-    const byCat = CATS.map(c => ({ label: c, n: upcoming.filter(e => e.Category === c).length })).filter(c => c.n);
+    // Board meetings live on their own page, not the resident calendar, so the
+    // category chart keeps to what residents actually see.
+    const byCat = CATS.filter(c => c !== "Board Meeting").map(c => ({ label: c, n: upcoming.filter(e => e.Category === c).length })).filter(c => c.n);
     $("#bycat").innerHTML = bars(byCat, "n");
+    renderRsvps();
     $("#nextlist").innerHTML = upcoming.slice(0, 6).map(e => `<div class="srow"><span class="slab">${esc(fmt(e.Date))}</span><span style="flex:1;font-size:15px;color:var(--ink)">${esc(e.Title)}</span><span class="sval" style="flex-basis:90px">${esc(e.Start)}</span></div>`).join("") || '<div class="nodata">Nothing scheduled.</div>';
     $$("#period button").forEach(b => b.classList.toggle("on", Number(b.dataset.days) === days));
+  }
+
+  // ---------------------------------------------------------------- rsvps
+  // One RSVP row per person per event; heads = the count each row carries.
+  // The summary is derived state, computed once and cached until rsvps change,
+  // since the events list asks for it per row.
+  let rsvpCache = null;
+  function rsvpSummary() {
+    if (rsvpCache) return rsvpCache;
+    const t = today();
+    const by = new Map();
+    for (const r of rsvps) {
+      if (r.event_date < t || r.status === "Cancelled") continue;
+      if (!by.has(r.event_key)) by.set(r.event_key, {
+        key: r.event_key, date: r.event_date, title: r.event_title, type: r.rsvp_type,
+        parties: 0, heads: 0, waitParties: 0, waitHeads: 0, rows: [],
+      });
+      const s = by.get(r.event_key);
+      s.rows.push(r);
+      if (r.status === "Waitlist") { s.waitParties++; s.waitHeads += r.count; }
+      else { s.parties++; s.heads += r.count; }
+    }
+    rsvpCache = [...by.values()].sort((a, b) => a.date.localeCompare(b.date));
+    return rsvpCache;
+  }
+
+  function rsvpForGroup(g) {
+    const keys = new Set(g.upcoming.map(stem));
+    let heads = 0, wait = 0;
+    for (const s of rsvpSummary()) if (keys.has(s.key)) { heads += s.heads; wait += s.waitHeads; }
+    return { heads, wait };
+  }
+
+  function renderRsvps() {
+    const box = $("#rsvplist"); if (!box) return;
+    const sums = rsvpSummary();
+    if (!sums.length) {
+      box.innerHTML = '<div class="nodata">Nothing yet. Figures begin with the first RSVP made on the site.</div>';
+      return;
+    }
+    const ev = key => events.find(e => stem(e) === key);
+    box.innerHTML = sums.map(s => {
+      const e = ev(s.key);
+      const cap = e && e.Capacity ? ` of ${e.Capacity}` : "";
+      const what = s.type === "guest" ? `${s.heads} outside guests` : `${s.heads}${cap} ${s.type === "paid" ? "seats" : "going"}`;
+      const wait = s.waitHeads ? ` &middot; ${s.waitHeads} waitlisted` : "";
+      const units = new Set(s.rows.map(r => r.unit).filter(Boolean));
+      const dupUnit = units.size < s.rows.filter(r => r.unit).length;
+      return `<div class="srow" style="cursor:pointer" data-rsvpkey="${esc(s.key)}"><span class="slab">${esc(fmt(s.date))}</span>
+        <span style="flex:1;font-size:15px;color:var(--ink)">${esc(s.title)}${dupUnit ? ' <span class="flagmany" title="One unit holds more than one RSVP for this event">unit twice</span>' : ""}</span>
+        <span class="sval" style="flex-basis:190px;white-space:nowrap">${what}${wait}</span></div>
+        <div class="card" data-rsvpdetail="${esc(s.key)}" style="display:none;margin:4px 0 10px">
+        ${s.rows.map(r => `<div class="srow"><span class="slab">${esc(r.unit || "Role")} &middot; ${esc(r.name)}</span>
+          <span style="flex:1;font-size:14px;color:var(--ink-soft)">${r.status === "Waitlist" ? "Waitlist" : (s.type === "guest" ? `${r.count} guest${r.count === 1 ? "" : "s"}` : `party of ${r.count}`)}${r.names ? ` &middot; ${esc(r.names)}` : ""}</span>
+          <span class="sval" style="flex-basis:90px;font-size:12px;color:var(--stone)">${esc((r.created || "").slice(0, 10))}</span>
+          ${r.status === "Waitlist" ? `<button class="mini" data-wconfirm="${r.id}" title="Give this party the freed seats, then let them know">Confirm seats</button>` : ""}</div>`).join("")}
+        </div>`;
+    }).join("");
+  }
+
+  // ---------------------------------------------------------------- residents
+  function renderResidents() {
+    const box = $("#reslist"); if (!box) return;
+    const roles = residents.filter(r => r.kind === "role");
+    const people = residents.filter(r => r.kind !== "role");
+    const byUnit = new Map();
+    for (const p of people) {
+      if (!byUnit.has(p.unit)) byUnit.set(p.unit, []);
+      byUnit.get(p.unit).push(p);
+    }
+    const units = [...byUnit.keys()].sort((a, b) => a.localeCompare(b, undefined, { numeric: true }));
+    const active = people.filter(p => p.status === "Active" && !p.expired);
+    $("#rescount").textContent = `${people.length} people across ${units.length} units, ${active.length} with working codes, plus ${roles.length} role account${roles.length === 1 ? "" : "s"}.`;
+
+    const pill = p => p.status !== "Active" ? '<span class="pill archived">Disabled</span>'
+      : p.expired ? '<span class="pill unpublished">Ended</span>'
+      : p.ends ? `<span class="pill draft">Ends ${esc(p.ends)}</span>`
+      : '<span class="pill live">Active</span>';
+    const mailHref = p => "mailto:" + encodeURIComponent(p.email)
+      + "?subject=" + encodeURIComponent("Your 181 Fremont resident code")
+      + "&body=" + encodeURIComponent(`Hello ${p.name},\n\nYour personal code for 181residents.com is:\n\n    ${p.code}\n\nTap RSVP on any event, enter the code once, and you stay signed in for a month on that device. Your RSVPs and notes to us save under your name.\n\nWarmly,\nResident Experiences\n181 Fremont`);
+    const row = p => `<div class="rrow${p.status !== "Active" || p.expired ? " off" : ""}">
+      <span class="rname">${esc(p.name)}${p.email ? `<em>${esc(p.email)}</em>` : ""}</span>
+      <span><span class="rcode">${esc(p.code)}</span></span>
+      <span>${pill(p)}</span>
+      <span class="ecell" style="font-size:12px;color:var(--stone)">${esc((p.created || "").slice(0, 10))}</span>
+      <span class="eact">
+        ${p.email && p.status === "Active" ? `<a class="mini" href="${mailHref(p)}" title="Opens your own mail app with the code written out">Email code</a>` : ""}
+        <button class="mini" data-rotate="${p.id}" title="A fresh code; the old one stops working everywhere">Rotate</button>
+        <button class="mini ghost" data-ends="${p.id}" title="Set or clear the date this code stops working">Ends</button>
+        <button class="mini ghost" data-toggle="${p.id}">${p.status === "Active" ? "Disable" : "Restore"}</button>
+      </span></div>`;
+
+    let html = "";
+    if (roles.length) {
+      html += `<div class="evlist" style="margin-bottom:14px"><div class="unithead">Role accounts</div>${roles.map(row).join("")}</div>`;
+    }
+    html += `<div class="evlist">` + units.map(u => {
+      const rows = byUnit.get(u);
+      const activeCodes = rows.filter(p => p.status === "Active" && !p.expired).length;
+      const flag = activeCodes > 4 ? ` <span class="flagmany" title="More than four working codes on one unit is worth a look">${activeCodes} codes</span>` : "";
+      return `<div class="unithead">Unit ${esc(u)}${flag}</div>` + rows.map(row).join("");
+    }).join("") + `</div>`;
+    if (!people.length && !roles.length) html = '<div class="nodata" style="padding:20px">Nobody yet. Add people above, or paste the whole building at once.</div>';
+    box.innerHTML = html;
+  }
+
+  async function loadResidents() {
+    try { const d = await api("/api/residents"); residents = d.residents; } catch (e) { residents = []; }
+    renderResidents();
+  }
+
+  async function addResident() {
+    const isRole = $("#r-role").checked;
+    const body = {
+      kind: isRole ? "role" : "resident",
+      unit: $("#r-unit").value.trim(), name: $("#r-name").value.trim(),
+      email: $("#r-email").value.trim(), ends: $("#r-ends").value,
+    };
+    try {
+      const d = await api("/api/residents", { method: "POST", body: JSON.stringify(body) });
+      residents.push(...d.residents); renderResidents();
+      ["#r-unit", "#r-name", "#r-email", "#r-ends"].forEach(s => $(s).value = "");
+      $("#r-role").checked = false;
+      toast(`Added ${d.residents[0].label}. Their code: ${d.residents[0].code}`);
+    } catch (e) { toast(e.message, "warn"); }
+  }
+
+  async function addBulk() {
+    const bulk = $("#r-bulk").value;
+    if (!bulk.trim()) { toast("Paste at least one line first: unit, name, email.", "warn"); return; }
+    try {
+      const d = await api("/api/residents", { method: "POST", body: JSON.stringify({ bulk }) });
+      residents.push(...d.residents); renderResidents();
+      $("#r-bulk").value = "";
+      toast(`Added ${d.residents.length} ${d.residents.length === 1 ? "person" : "people"}. Codes are in the list.`);
+    } catch (e) { toast(e.message, "warn"); }
+  }
+
+  async function patchResident(id, body, note) {
+    try {
+      const upd = await api("/api/residents/" + id, { method: "PATCH", body: JSON.stringify(body) });
+      const i = residents.findIndex(r => String(r.id) === String(id));
+      if (i >= 0) residents[i] = upd;
+      renderResidents();
+      if (note) toast(note(upd));
+    } catch (e) { toast(e.message, "warn"); }
+  }
+
+  function printCards() {
+    const list = residents.filter(p => p.status === "Active" && !p.expired);
+    if (!list.length) { toast("Nobody to print for yet.", "warn"); return; }
+    const card = p => `<div class="pc"><div class="pc-h">181 Fremont<span>Resident Events</span></div>
+      <div class="pc-n">${esc(p.name)}${p.unit ? ` &middot; Unit ${esc(p.unit)}` : ""}</div>
+      <div class="pc-c">${esc(p.code)}</div>
+      <div class="pc-s">181residents.com &middot; tap RSVP on any event and enter this code once.<br>
+      It stays signed in for a month on your device. Lost it? The front desk has a fresh one.</div></div>`;
+    const w = window.open("", "_blank");
+    w.document.write(`<!DOCTYPE html><html><head><title>181 Fremont resident code cards</title><style>
+      body{font-family:'Hanken Grotesk',-apple-system,sans-serif;margin:24px;color:#16161a}
+      .grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px}
+      .pc{border:1px solid #b9afa1;border-radius:6px;padding:20px 22px;page-break-inside:avoid}
+      .pc-h{font-size:15px;letter-spacing:.18em;text-transform:uppercase}
+      .pc-h span{display:block;font-size:9px;letter-spacing:.24em;color:#7a7266;margin-top:3px}
+      .pc-n{font-size:16px;font-weight:600;margin-top:14px}
+      .pc-c{font-family:ui-monospace,Menlo,monospace;font-size:26px;letter-spacing:.08em;margin:10px 0;color:#c41f26}
+      .pc-s{font-size:11px;color:#55555f;line-height:1.5}
+      @media print{body{margin:8mm}}
+    </style></head><body><div class="grid">${list.map(card).join("")}</div>
+    <script>window.print()<\/script></body></html>`);
+    w.document.close();
+  }
+
+  // ---------------------------------------------------------------- messages
+  function renderMsgs() {
+    const box = $("#msglist"); if (!box) return;
+    const visible = msgs.filter(m => m.state !== "Archived");
+    const fresh = visible.filter(m => m.state === "New").length;
+    $("#msgcount").textContent = visible.length
+      ? `${visible.length} message${visible.length === 1 ? "" : "s"}, ${fresh} awaiting a reply. Residents are promised an answer within one business day.`
+      : "Nothing yet. Notes from the Message tile land here the moment they are sent.";
+    $("#msg-redacted").style.display = role === "owner" || !visible.length ? "none" : "";
+    const msgsLabel = document.querySelector('.navbar label[for="s-msgs"]');
+    if (msgsLabel) msgsLabel.textContent = fresh ? `Messages · ${fresh}` : "Messages";
+    box.innerHTML = visible.map(m => {
+      const when = (m.created || "").slice(0, 10);
+      const state = m.state === "New" ? '<span class="mstate new">New</span>'
+        : `<span class="mstate replied">Replied${m.replied ? " " + esc(m.replied.slice(0, 10)) : ""}</span>`;
+      const text = m.body != null
+        ? `<div class="mtext">${esc(m.body).replace(/\n/g, "<br>")}</div>`
+          + (m.name || m.email ? `<div style="font-size:13px;color:var(--stone);margin-top:8px">${esc([m.name, m.email].filter(Boolean).join(" · "))}</div>` : "")
+        : '<div class="mshade" title="Message text is private to Leo"></div>';
+      const acts = role === "owner" ? `<span class="eact" style="margin-left:auto">
+          ${m.state === "New" ? `<button class="mini" data-mreplied="${m.id}">Mark replied</button>` : ""}
+          <button class="mini ghost" data-marchive="${m.id}">Archive</button></span>` : "";
+      return `<div class="mrow"><div class="mtop">
+        <span class="munit">${esc(m.sender || "Resident")}</span>
+        <span class="mkind">${esc(m.topic || "Note")}</span>${state}
+        <span class="mwhen">${esc(when)}</span>${acts}</div>${text}</div>`;
+    }).join("");
+  }
+
+  async function loadMsgs() {
+    try { const d = await api("/api/messages"); msgs = d.messages; } catch (e) { msgs = []; }
+    renderMsgs();
   }
 
   // ---------------------------------------------------------------- assets, messages
   function renderAssets() {
     const gs = groups().filter(g => g.status !== "Archived");
     $("#assets").innerHTML = gs.map(g => `<div class="acard"><div class="ahead"><span class="at">${esc(g.head.Title)}</span><span class="asub">${esc(g.series ? g.head.Series : fmt(g.head.Date))} &middot; <code>${esc(stem(g.head))}</code></span></div><div class="chips">${KIT.map(k => `<span class="chip miss"><i>+</i>${k}</span>`).join("")}</div></div>`).join("");
+  }
+
+  // ---------------------------------------------------------------- spaces
+  // Reservations for the Level 39 rooms. Residents see only "Reserved" with the
+  // space and hours on /spaces; the note stays in this admin.
+  let bookings = [];
+
+  function renderBookings() {
+    const box = $("#bklist"); if (!box) return;
+    const t = today();
+    const ahead = bookings.filter(b => b.date >= t).sort((a, b2) => (a.date + (a.start24 || "")).localeCompare(b2.date + (b2.start24 || "")));
+    $("#bkcount").textContent = ahead.length
+      ? `${ahead.length} reservation${ahead.length === 1 ? "" : "s"} ahead. Residents see the space and hours only, marked Reserved, never who or why.`
+      : "Nothing reserved ahead. Residents see open rooms and can walk in anytime.";
+    box.innerHTML = ahead.map(b => `<div class="rrow">
+      <span class="rname">${esc(b.space)}${b.note ? `<em>${esc(b.note)} · staff only</em>` : ""}</span>
+      <span class="ecell">${esc(fmt(b.date))}</span>
+      <span class="ecell">${esc(b.start || "")}${b.end_time ? " – " + esc(b.end_time) : ""}</span>
+      <span></span>
+      <span class="eact"><button class="mini ghost" data-unbook="${b.id}">Remove</button></span>
+    </div>`).join("");
+  }
+
+  async function loadBookings() {
+    try { const d = await api("/api/bookings"); bookings = d.bookings; } catch (e) { bookings = []; }
+    renderBookings();
+  }
+
+  async function addBooking() {
+    const body = {
+      space: $("#bk-space").value.trim(), date: $("#bk-date").value,
+      start: $("#bk-start").value.trim(), end: $("#bk-end").value.trim(),
+      note: $("#bk-note").value.trim(),
+    };
+    if (!body.space || !body.date) { toast("A space and a date are needed.", "warn"); return; }
+    try {
+      const d = await api("/api/bookings", { method: "POST", body: JSON.stringify(body) });
+      bookings.push(d.booking); renderBookings();
+      ["#bk-space", "#bk-date", "#bk-start", "#bk-end", "#bk-note"].forEach(s => $(s).value = "");
+      toast("Reserved. It shows on the Spaces page immediately.");
+    } catch (e) { toast(e.message, "warn"); }
   }
 
   function renderAll() { renderEvents(); renderDash(); renderAssets(); }
@@ -369,6 +627,19 @@
     rows.push([]);
     rows.push(["Live calendar by category"]); rows.push(["Category", "Upcoming dates"]);
     for (const c of CATS) { const n = upcoming.filter(e => e.Category === c).length; if (n) rows.push([c, n]); }
+    const sums = rsvpSummary();
+    rows.push([]);
+    rows.push(["RSVPs by event, upcoming"]);
+    rows.push(["Date", "Event", "Type", "Parties", "Heads", "Capacity", "Waitlisted heads"]);
+    for (const s2 of sums) {
+      const e = events.find(x => stem(x) === s2.key);
+      rows.push([s2.date, s2.title, s2.type, s2.parties, s2.heads, e && e.Capacity ? e.Capacity : "", s2.waitHeads]);
+    }
+    if (!sums.length) rows.push(["No RSVPs yet"]);
+    rows.push([]);
+    rows.push(["Messages"]);
+    rows.push(["Awaiting reply", msgs.filter(m => m.state === "New").length]);
+    rows.push(["Replied", msgs.filter(m => m.state === "Replied").length]);
     const csv = rows.map(r => r.map(csvCell).join(",")).join("\r\n");
     const blob = new Blob(["\ufeff" + csv], { type: "text/csv;charset=utf-8" });
     const link = document.createElement("a");
@@ -387,10 +658,23 @@
 
   async function boot() {
     try { status = await api("/api/status"); } catch (e) { status = {}; }
+    try { role = (await api("/api/whoami")).role || "staff"; } catch (e) { role = "staff"; }
+    document.body.classList.add("role-" + role);
     const bar = $("#sysbar");
-    if (status.mode === "local") bar.textContent = "Local preview · saving to this computer, publishing rebuilds the local calendar";
-    else if (status.db) bar.textContent = "Connected · " + (status.publish ? "saves publish to 181residents.com within a couple of minutes" : "publishing not yet wired, changes stay in the database");
+    if (status.mode === "local") bar.textContent = `Local preview · saving to this computer, publishing rebuilds the local calendar · signed in as ${role}`;
+    else if (status.db) bar.textContent = "Connected · " + (status.publish ? "saves publish to 181residents.com within a couple of minutes" : "publishing not yet wired, changes stay in the database")
+      + (status.signin ? "" : " · resident sign-in not switched on yet: set SESSION_SECRET in the Pages settings");
     else bar.textContent = "Events database not linked yet · add the D1 binding named DB in the Pages settings";
+
+    // The desk tier works with people and codes; the calendar is not its business,
+    // so it lands on Residents and never asks for what the server would refuse.
+    if (role === "desk") {
+      go("res");
+      loadResidents();
+      loadMsgs();
+      loadBookings();
+      return;
+    }
     try {
       let d = await api("/api/events"); events = d.events;
       if (!events.length && status.db && status.mode === "cloudflare") {
@@ -399,11 +683,67 @@
       }
     }
     catch (e) { $("#evlist").innerHTML = `<div class="erow"><div class="ecell" style="color:var(--stone)">Could not load events: ${esc(e.message)}</div></div>`; }
+    try { rsvps = (await api("/api/rsvps")).rsvps; } catch (e) { rsvps = []; }
+    rsvpCache = null;
     renderAll();
     loadAnalytics();
+    loadResidents();
+    loadMsgs();
+    loadBookings();
   }
 
   document.addEventListener("click", ev => {
+    const r = ev.target.closest("[data-rotate],[data-ends],[data-toggle],[data-addres],[data-addbulk],[data-printcards],[data-mreplied],[data-marchive],[data-wconfirm],[data-rsvpkey],[data-addbooking],[data-unbook]");
+    if (r) {
+      if (r.dataset.rotate) {
+        const p = residents.find(x => String(x.id) === r.dataset.rotate);
+        if (p && confirm(`Rotate ${p.label}'s code? The old one stops working everywhere, on every device, right away.`))
+          patchResident(r.dataset.rotate, { rotate: true }, u => `New code for ${u.label}: ${u.code}`);
+      } else if (r.dataset.ends) {
+        const p = residents.find(x => String(x.id) === r.dataset.ends);
+        const v = prompt("Access ends on (YYYY-MM-DD), or blank for no end date:", p && p.ends || "");
+        if (v !== null) {
+          if (v && !/^\d{4}-\d{2}-\d{2}$/.test(v.trim())) { toast("Dates read as YYYY-MM-DD, like 2026-09-30.", "warn"); return; }
+          patchResident(r.dataset.ends, { ends: v.trim() }, u => u.ends ? `${u.label}'s code works through ${u.ends}.` : `${u.label}'s code no longer has an end date.`);
+        }
+      } else if (r.dataset.toggle) {
+        const p = residents.find(x => String(x.id) === r.dataset.toggle);
+        if (p) patchResident(r.dataset.toggle, { status: p.status === "Active" ? "Disabled" : "Active" },
+          u => u.status === "Active" ? `${u.label} is restored.` : `${u.label} is disabled and signed out everywhere.`);
+      } else if (r.dataset.addres !== undefined) addResident();
+      else if (r.dataset.addbulk !== undefined) addBulk();
+      else if (r.dataset.printcards !== undefined) printCards();
+      else if (r.dataset.mreplied) {
+        api("/api/messages/" + r.dataset.mreplied, { method: "PATCH", body: JSON.stringify({ state: "Replied" }) })
+          .then(u => { const m = msgs.find(x => String(x.id) === String(u.id)); if (m) { m.state = u.state; m.replied = u.replied; } renderMsgs(); })
+          .catch(e => toast(e.message, "warn"));
+      } else if (r.dataset.marchive) {
+        api("/api/messages/" + r.dataset.marchive, { method: "PATCH", body: JSON.stringify({ state: "Archived" }) })
+          .then(u => { const m = msgs.find(x => String(x.id) === String(u.id)); if (m) m.state = u.state; renderMsgs(); })
+          .catch(e => toast(e.message, "warn"));
+      } else if (r.dataset.wconfirm) {
+        api("/api/rsvps/" + r.dataset.wconfirm, { method: "PATCH", body: JSON.stringify({ status: "Confirmed" }) })
+          .then(u => {
+            const row = rsvps.find(x => String(x.id) === String(u.id));
+            if (row) row.status = u.status;
+            rsvpCache = null;
+            renderDash(); renderEvents();
+            toast("Confirmed. Kindly let the resident know their seats came through.");
+          })
+          .catch(e => toast(e.message, "warn"));
+      } else if (r.dataset.rsvpkey) {
+        const d = document.querySelector(`[data-rsvpdetail="${CSS.escape(r.dataset.rsvpkey)}"]`);
+        if (d) d.style.display = d.style.display === "none" ? "" : "none";
+      } else if (r.dataset.addbooking !== undefined) addBooking();
+      else if (r.dataset.unbook) {
+        const b2 = bookings.find(x => String(x.id) === r.dataset.unbook);
+        if (b2 && confirm(`Remove the ${b2.space} reservation on ${fmt(b2.date)}? The room shows as open again.`))
+          api("/api/bookings/" + r.dataset.unbook, { method: "DELETE" })
+            .then(() => { bookings = bookings.filter(x => String(x.id) !== r.dataset.unbook); renderBookings(); })
+            .catch(e => toast(e.message, "warn"));
+      }
+      return;
+    }
     const b = ev.target.closest("[data-edit],[data-archive],[data-new],[data-save],[data-period],[data-publish],[data-fmt],[data-dates],[data-editrow],[data-export]");
     if (!b) return;
     if (b.dataset.export !== undefined) { exportCsv(); return; }
