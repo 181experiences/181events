@@ -1,6 +1,6 @@
 {
-  "name": "181 Fremont Admin",
-  "short_name": "181 Admin",
+  "name": "181 Events Admin",
+  "short_name": "181 Events Admin",
   "description": "Resident Experiences admin for 181 Fremont.",
   "start_url": "/admin",
   "scope": "/admin",

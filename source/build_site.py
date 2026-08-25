@@ -197,7 +197,7 @@ admin = admin.replace('<div class="mocknote">Admin prototype — sample data, no
 # browsers fetch manifests anonymously unless told to bring the session along.
 ADMIN_HEAD = HEAD.replace('href="/manifest.webmanifest"',
                           'href="/admin.webmanifest" crossorigin="use-credentials"').replace(
-    'content="181 Events"', 'content="181 Admin"')
+    'content="181 Events"', 'content="181 Events Admin"')
 admin = admin.replace("</head>", ADMIN_HEAD + "</head>", 1)
 open(f"{SITE}/admin.html", "w", encoding="utf-8").write(admin)
 
@@ -222,8 +222,8 @@ manifest = {
 open(f"{SITE}/manifest.webmanifest", "w", encoding="utf-8").write(json.dumps(manifest, indent=2))
 
 admin_manifest = dict(manifest,
-    name="181 Fremont Admin",
-    short_name="181 Admin",
+    name="181 Events Admin",
+    short_name="181 Events Admin",
     description="Resident Experiences admin for 181 Fremont.",
     start_url="/admin",
     scope="/admin",
