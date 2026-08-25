@@ -250,9 +250,12 @@
   .hero p{max-width:28em;margin:20px auto 0;color:var(--ink-soft)}
   .rule{width:52px;height:1px;background:var(--red);margin:26px auto}
   .quad{display:grid;grid-template-columns:1fr 1fr;gap:14px;max-width:620px;margin:0 auto;padding-bottom:30px}
-  /* two quiet lines under the quad: real pages, not tiles */
+  /* two quiet lines under the quad: real pages, not tiles. position:relative
+     matters: on phones the calendar's .ev-go arrows go absolute, and without an
+     anchor here they would escape the line and float behind the tiles. */
   .homelines{max-width:620px;margin:0 auto;padding-bottom:70px}
-  .hline{display:flex;align-items:center;gap:18px;padding:22px 6px;border-top:1px solid var(--line);min-height:64px}
+  .hline{position:relative;display:flex;align-items:center;gap:18px;padding:22px 6px;border-top:1px solid var(--line);min-height:64px}
+  @media(max-width:620px){ .hline{padding-right:38px} }
   .hline:last-child{border-bottom:1px solid var(--line)}
   .hline:hover .hl-t{color:var(--red)}
   .hl-body{flex:1}
