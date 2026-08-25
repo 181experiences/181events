@@ -33,9 +33,15 @@
   .signout{color:#a49c90;font-size:11px;letter-spacing:.1em;text-transform:uppercase;font-weight:600;
     border:1px solid #4a4a52;border-radius:3px;padding:8px 12px;white-space:nowrap}
   .signout:hover{color:#e8e2d8;border-color:#a49c90}
-  /* phones: Sign out tucks under the identity, so the email keeps to one line */
+  /* phones: the brand tightens so the identity gets real width, Sign out tucks
+     under the email, and the address holds one line, whoever's it is */
   @media(max-width:700px){
+    .topbar .inner{gap:10px}
+    .brand{font-size:13px;letter-spacing:.13em}
+    .brand small{font-size:8.5px;letter-spacing:.09em}
     .whowrap{flex-direction:column;align-items:flex-end;gap:7px}
+    .who{font-size:11px}
+    .who strong{font-size:12px;white-space:nowrap;overflow-wrap:normal;overflow:hidden;text-overflow:ellipsis;max-width:58vw}
     .signout{padding:5px 10px;font-size:10px}
   }
   /* Saved as an app, the plumbing report stays out of sight while all is well;
