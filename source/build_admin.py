@@ -22,7 +22,7 @@ NAV = [("dash", "Dashboard"), ("events", "Events"), ("assets", "Assets"),
 
 rules = [f'#s-{s}:checked ~ .body #scr-{s}{{display:block}}' for s in SCREENS]
 for s, nav in NAV_OF.items():
-    rules.append(f'#s-{s}:checked ~ .navbar label[for="s-{nav}"]{{color:var(--ink);border-bottom-color:var(--red)}}')
+    rules.append(f'#s-{s}:checked ~ .chrome .navbar label[for="s-{nav}"]{{color:var(--ink);border-bottom-color:var(--red)}}')
 for f in ["all", "live", "draft", "unpublished", "archived"]:
     rules.append(f'#f-{f}:checked ~ .wrap .tabs label[for="f-{f}"]{{background:var(--ink);color:var(--paper-2);border-color:var(--ink)}}')
 for f in ["live", "draft", "unpublished", "archived"]:
@@ -68,14 +68,22 @@ HTML = f'''<!DOCTYPE html>
   .brand small{{display:block;font-family:var(--fb);font-size:10px;letter-spacing:.24em;color:#a49c90;margin-top:4px}}
   .who{{font-size:13px;color:#a49c90;text-align:right;line-height:1.4}}
   .who strong{{display:block;color:#e8e2d8;font-weight:500;overflow-wrap:anywhere}}
+  .whowrap{{display:flex;align-items:center;gap:16px}}
   .signout{{color:#a49c90;font-size:11px;letter-spacing:.1em;text-transform:uppercase;font-weight:600;
     border:1px solid #4a4a52;border-radius:3px;padding:8px 12px;white-space:nowrap}}
   .signout:hover{{color:#e8e2d8;border-color:#a49c90}}
+  /* phones: Sign out tucks under the identity, so the email keeps to one line */
+  @media(max-width:700px){{
+    .whowrap{{flex-direction:column;align-items:flex-end;gap:7px}}
+    .signout{{padding:5px 10px;font-size:10px}}
+  }}
   /* Saved as an app, the plumbing report stays out of sight while all is well;
      it reappears the moment something needs attention. */
   @media(display-mode: standalone){{ .mocknote.quiet{{display:none}} }}
 
-  .navbar{{background:var(--paper-2);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:30}}
+  /* the whole chrome (black bar + tabs) rides along; the plumbing strip above scrolls away */
+  .chrome{{position:sticky;top:0;z-index:40}}
+  .navbar{{background:var(--paper-2);border-bottom:1px solid var(--line)}}
   .navbar .inner{{max-width:1240px;margin:0 auto;padding:0 clamp(18px,4vw,34px);display:flex;gap:2px;overflow-x:auto}}
   .navbar label{{white-space:nowrap;padding:11px 14px;font-size:12px;letter-spacing:.09em;text-transform:uppercase;
     font-weight:500;color:var(--stone);border-bottom:2px solid transparent}}
@@ -105,6 +113,22 @@ HTML = f'''<!DOCTYPE html>
   .kpi .k{{font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--stone);font-weight:600}}
   .kpi .v{{font-family:var(--fd);font-weight:600;font-size:26px;line-height:1.05;color:var(--ink);margin-top:6px}}
   .kpi .n{{font-size:12px;color:var(--ink-soft);margin-top:4px}}
+  .sgrow{{flex:1;min-width:0}}
+  /* phones: the five stats become a tight grid of squares, and the card tables
+     trade their wide date columns for slim ones that wrap instead of spilling */
+  @media(max-width:700px){{
+    .kpis{{grid-template-columns:repeat(3,1fr);gap:8px}}
+    .kpi{{aspect-ratio:1/1;padding:10px 11px;display:flex;flex-direction:column;justify-content:space-between}}
+    .kpi .k{{font-size:9.5px;letter-spacing:.08em}}
+    .kpi .v{{font-size:20px;margin-top:4px}}
+    .kpi .n{{display:none}}
+    .srow{{flex-wrap:wrap;gap:8px 10px}}
+    .slab{{flex:0 0 96px;font-size:13px}}
+    .sval{{flex:0 0 auto;font-size:13px;margin-left:auto}}
+    /* titles keep room to breathe; the time wraps to its own line instead */
+    .sgrow{{min-width:150px}}
+    .fcard,.card{{padding:12px 14px}}
+  }}
 
   /* ---------- funnels ---------- */
   .fgrid{{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(310px,1fr))}}
@@ -123,7 +147,7 @@ HTML = f'''<!DOCTYPE html>
   .slab{{flex:0 0 168px;font-size:15px;color:var(--ink-body)}}
   .strack{{flex:1;height:12px;background:#eee8de;border-radius:3px;overflow:hidden}}
   .sfill{{display:block;height:100%;background:var(--ink);border-radius:0 3px 3px 0}}
-  .sval{{flex:0 0 44px;text-align:right;font-size:15px;font-weight:500;color:var(--ink)}}
+  .sval{{flex:0 0 auto;min-width:44px;text-align:right;font-size:15px;font-weight:500;color:var(--ink)}}
 
   /* ---------- events table ---------- */
   .tabs{{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}}
@@ -326,20 +350,21 @@ HTML = f'''<!DOCTYPE html>
 
 <div class="mocknote" id="sysbar">Connecting&hellip;</div>
 
+<input class="state" type="radio" name="scr" id="s-dash" checked>
+{"".join(f'<input class="state" type="radio" name="scr" id="s-{s}">' for s in SCREENS if s != "dash")}
+
+<div class="chrome">
 <div class="topbar"><div class="inner">
   <div class="brand">181 Fremont<small>Resident Experiences &middot; Admin</small></div>
-  <div style="display:flex;align-items:center;gap:16px">
+  <div class="whowrap">
     <div class="who" id="who">Resident Experiences<strong>181 Fremont &middot; Level 39</strong></div>
     <a class="signout" href="/cdn-cgi/access/logout" title="Ends this admin sign-in, so the next person can enter their own email">Sign out</a>
   </div>
 </div></div>
-
-<input class="state" type="radio" name="scr" id="s-dash" checked>
-{"".join(f'<input class="state" type="radio" name="scr" id="s-{s}">' for s in SCREENS if s != "dash")}
-
 <nav class="navbar"><div class="inner">
   {"".join(f'<label for="s-{k}">{v}</label>' for k, v in NAV)}
 </div></nav>
+</div>
 
 <div class="body">
 

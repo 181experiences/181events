@@ -356,7 +356,7 @@
     const byCat = CATS.filter(c => c !== "Board Meeting").map(c => ({ label: c, n: upcoming.filter(e => e.Category === c).length })).filter(c => c.n);
     $("#bycat").innerHTML = bars(byCat, "n");
     renderRsvps();
-    $("#nextlist").innerHTML = upcoming.slice(0, 6).map(e => `<div class="srow"><span class="slab">${esc(fmt(e.Date))}</span><span style="flex:1;font-size:15px;color:var(--ink)">${esc(e.Title)}</span><span class="sval" style="flex-basis:90px">${esc(e.Start)}</span></div>`).join("") || '<div class="nodata">Nothing scheduled.</div>';
+    $("#nextlist").innerHTML = upcoming.slice(0, 6).map(e => `<div class="srow"><span class="slab">${esc(fmt(e.Date))}</span><span class="sgrow" style="font-size:15px;color:var(--ink)">${esc(e.Title)}</span><span class="sval" style="white-space:nowrap">${esc(e.Start)}</span></div>`).join("") || '<div class="nodata">Nothing scheduled.</div>';
     $$("#period button").forEach(b => b.classList.toggle("on", Number(b.dataset.days) === days));
   }
 
@@ -477,12 +477,12 @@
       const units = new Set(s.rows.map(r => r.unit).filter(Boolean));
       const dupUnit = units.size < s.rows.filter(r => r.unit).length;
       return `<div class="srow" style="cursor:pointer" data-rsvpkey="${esc(s.key)}"><span class="slab">${esc(fmt(s.date))}</span>
-        <span style="flex:1;font-size:15px;color:var(--ink)">${esc(s.title)}${dupUnit ? ' <span class="flagmany" title="One unit holds more than one RSVP for this event">unit twice</span>' : ""}</span>
-        <span class="sval" style="flex-basis:190px;white-space:nowrap">${what}${wait}</span></div>
+        <span class="sgrow" style="font-size:15px;color:var(--ink)">${esc(s.title)}${dupUnit ? ' <span class="flagmany" title="One unit holds more than one RSVP for this event">unit twice</span>' : ""}</span>
+        <span class="sval">${what}${wait}</span></div>
         <div class="card" data-rsvpdetail="${esc(s.key)}" style="display:none;margin:4px 0 10px">
         ${s.rows.map(r => `<div class="srow"><span class="slab">${esc(r.unit || "Role")} &middot; ${esc(r.name)}</span>
-          <span style="flex:1;font-size:14px;color:var(--ink-soft)">${r.status === "Waitlist" ? "Waitlist" : (s.type === "guest" ? `${r.count} guest${r.count === 1 ? "" : "s"}` : `party of ${r.count}`)}${r.names ? ` &middot; ${esc(r.names)}` : ""}</span>
-          <span class="sval" style="flex-basis:90px;font-size:12px;color:var(--stone)">${esc((r.created || "").slice(0, 10))}</span>
+          <span class="sgrow" style="font-size:14px;color:var(--ink-soft)">${r.status === "Waitlist" ? "Waitlist" : (s.type === "guest" ? `${r.count} guest${r.count === 1 ? "" : "s"}` : `party of ${r.count}`)}${r.names ? ` &middot; ${esc(r.names)}` : ""}</span>
+          <span class="sval" style="font-size:12px;color:var(--stone)">${esc((r.created || "").slice(0, 10))}</span>
           <span class="eact">
           ${r.status === "Waitlist" ? `<button class="mini" data-wconfirm="${r.id}" title="Give this party the freed seats, then let them know">Confirm seats</button>` : ""}
           <button class="mini ghost" data-redit="${r.id}" title="Change the party size for someone who asked">Edit</button>

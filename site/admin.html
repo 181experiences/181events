@@ -29,14 +29,22 @@
   .brand small{display:block;font-family:var(--fb);font-size:10px;letter-spacing:.24em;color:#a49c90;margin-top:4px}
   .who{font-size:13px;color:#a49c90;text-align:right;line-height:1.4}
   .who strong{display:block;color:#e8e2d8;font-weight:500;overflow-wrap:anywhere}
+  .whowrap{display:flex;align-items:center;gap:16px}
   .signout{color:#a49c90;font-size:11px;letter-spacing:.1em;text-transform:uppercase;font-weight:600;
     border:1px solid #4a4a52;border-radius:3px;padding:8px 12px;white-space:nowrap}
   .signout:hover{color:#e8e2d8;border-color:#a49c90}
+  /* phones: Sign out tucks under the identity, so the email keeps to one line */
+  @media(max-width:700px){
+    .whowrap{flex-direction:column;align-items:flex-end;gap:7px}
+    .signout{padding:5px 10px;font-size:10px}
+  }
   /* Saved as an app, the plumbing report stays out of sight while all is well;
      it reappears the moment something needs attention. */
   @media(display-mode: standalone){ .mocknote.quiet{display:none} }
 
-  .navbar{background:var(--paper-2);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:30}
+  /* the whole chrome (black bar + tabs) rides along; the plumbing strip above scrolls away */
+  .chrome{position:sticky;top:0;z-index:40}
+  .navbar{background:var(--paper-2);border-bottom:1px solid var(--line)}
   .navbar .inner{max-width:1240px;margin:0 auto;padding:0 clamp(18px,4vw,34px);display:flex;gap:2px;overflow-x:auto}
   .navbar label{white-space:nowrap;padding:11px 14px;font-size:12px;letter-spacing:.09em;text-transform:uppercase;
     font-weight:500;color:var(--stone);border-bottom:2px solid transparent}
@@ -55,18 +63,18 @@
   #s-inst-brand:checked ~ .body #scr-inst-brand{display:block}
   #s-inst-email:checked ~ .body #scr-inst-email{display:block}
   #s-inst-screens:checked ~ .body #scr-inst-screens{display:block}
-  #s-dash:checked ~ .navbar label[for="s-dash"]{color:var(--ink);border-bottom-color:var(--red)}
-  #s-events:checked ~ .navbar label[for="s-events"]{color:var(--ink);border-bottom-color:var(--red)}
-  #s-editor:checked ~ .navbar label[for="s-events"]{color:var(--ink);border-bottom-color:var(--red)}
-  #s-assets:checked ~ .navbar label[for="s-assets"]{color:var(--ink);border-bottom-color:var(--red)}
-  #s-res:checked ~ .navbar label[for="s-res"]{color:var(--ink);border-bottom-color:var(--red)}
-  #s-spaces:checked ~ .navbar label[for="s-spaces"]{color:var(--ink);border-bottom-color:var(--red)}
-  #s-msgs:checked ~ .navbar label[for="s-msgs"]{color:var(--ink);border-bottom-color:var(--red)}
-  #s-inst:checked ~ .navbar label[for="s-inst"]{color:var(--ink);border-bottom-color:var(--red)}
-  #s-inst-events:checked ~ .navbar label[for="s-inst"]{color:var(--ink);border-bottom-color:var(--red)}
-  #s-inst-brand:checked ~ .navbar label[for="s-inst"]{color:var(--ink);border-bottom-color:var(--red)}
-  #s-inst-email:checked ~ .navbar label[for="s-inst"]{color:var(--ink);border-bottom-color:var(--red)}
-  #s-inst-screens:checked ~ .navbar label[for="s-inst"]{color:var(--ink);border-bottom-color:var(--red)}
+  #s-dash:checked ~ .chrome .navbar label[for="s-dash"]{color:var(--ink);border-bottom-color:var(--red)}
+  #s-events:checked ~ .chrome .navbar label[for="s-events"]{color:var(--ink);border-bottom-color:var(--red)}
+  #s-editor:checked ~ .chrome .navbar label[for="s-events"]{color:var(--ink);border-bottom-color:var(--red)}
+  #s-assets:checked ~ .chrome .navbar label[for="s-assets"]{color:var(--ink);border-bottom-color:var(--red)}
+  #s-res:checked ~ .chrome .navbar label[for="s-res"]{color:var(--ink);border-bottom-color:var(--red)}
+  #s-spaces:checked ~ .chrome .navbar label[for="s-spaces"]{color:var(--ink);border-bottom-color:var(--red)}
+  #s-msgs:checked ~ .chrome .navbar label[for="s-msgs"]{color:var(--ink);border-bottom-color:var(--red)}
+  #s-inst:checked ~ .chrome .navbar label[for="s-inst"]{color:var(--ink);border-bottom-color:var(--red)}
+  #s-inst-events:checked ~ .chrome .navbar label[for="s-inst"]{color:var(--ink);border-bottom-color:var(--red)}
+  #s-inst-brand:checked ~ .chrome .navbar label[for="s-inst"]{color:var(--ink);border-bottom-color:var(--red)}
+  #s-inst-email:checked ~ .chrome .navbar label[for="s-inst"]{color:var(--ink);border-bottom-color:var(--red)}
+  #s-inst-screens:checked ~ .chrome .navbar label[for="s-inst"]{color:var(--ink);border-bottom-color:var(--red)}
   #f-all:checked ~ .wrap .tabs label[for="f-all"]{background:var(--ink);color:var(--paper-2);border-color:var(--ink)}
   #f-live:checked ~ .wrap .tabs label[for="f-live"]{background:var(--ink);color:var(--paper-2);border-color:var(--ink)}
   #f-draft:checked ~ .wrap .tabs label[for="f-draft"]{background:var(--ink);color:var(--paper-2);border-color:var(--ink)}
@@ -98,6 +106,22 @@
   .kpi .k{font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--stone);font-weight:600}
   .kpi .v{font-family:var(--fd);font-weight:600;font-size:26px;line-height:1.05;color:var(--ink);margin-top:6px}
   .kpi .n{font-size:12px;color:var(--ink-soft);margin-top:4px}
+  .sgrow{flex:1;min-width:0}
+  /* phones: the five stats become a tight grid of squares, and the card tables
+     trade their wide date columns for slim ones that wrap instead of spilling */
+  @media(max-width:700px){
+    .kpis{grid-template-columns:repeat(3,1fr);gap:8px}
+    .kpi{aspect-ratio:1/1;padding:10px 11px;display:flex;flex-direction:column;justify-content:space-between}
+    .kpi .k{font-size:9.5px;letter-spacing:.08em}
+    .kpi .v{font-size:20px;margin-top:4px}
+    .kpi .n{display:none}
+    .srow{flex-wrap:wrap;gap:8px 10px}
+    .slab{flex:0 0 96px;font-size:13px}
+    .sval{flex:0 0 auto;font-size:13px;margin-left:auto}
+    /* titles keep room to breathe; the time wraps to its own line instead */
+    .sgrow{min-width:150px}
+    .fcard,.card{padding:12px 14px}
+  }
 
   /* ---------- funnels ---------- */
   .fgrid{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(310px,1fr))}
@@ -116,7 +140,7 @@
   .slab{flex:0 0 168px;font-size:15px;color:var(--ink-body)}
   .strack{flex:1;height:12px;background:#eee8de;border-radius:3px;overflow:hidden}
   .sfill{display:block;height:100%;background:var(--ink);border-radius:0 3px 3px 0}
-  .sval{flex:0 0 44px;text-align:right;font-size:15px;font-weight:500;color:var(--ink)}
+  .sval{flex:0 0 auto;min-width:44px;text-align:right;font-size:15px;font-weight:500;color:var(--ink)}
 
   /* ---------- events table ---------- */
   .tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
@@ -329,20 +353,21 @@
 
 <div class="mocknote" id="sysbar">Connecting&hellip;</div>
 
+<input class="state" type="radio" name="scr" id="s-dash" checked>
+<input class="state" type="radio" name="scr" id="s-events"><input class="state" type="radio" name="scr" id="s-editor"><input class="state" type="radio" name="scr" id="s-assets"><input class="state" type="radio" name="scr" id="s-res"><input class="state" type="radio" name="scr" id="s-spaces"><input class="state" type="radio" name="scr" id="s-msgs"><input class="state" type="radio" name="scr" id="s-inst"><input class="state" type="radio" name="scr" id="s-inst-events"><input class="state" type="radio" name="scr" id="s-inst-brand"><input class="state" type="radio" name="scr" id="s-inst-email"><input class="state" type="radio" name="scr" id="s-inst-screens">
+
+<div class="chrome">
 <div class="topbar"><div class="inner">
   <div class="brand">181 Fremont<small>Resident Experiences &middot; Admin</small></div>
-  <div style="display:flex;align-items:center;gap:16px">
+  <div class="whowrap">
     <div class="who" id="who">Resident Experiences<strong>181 Fremont &middot; Level 39</strong></div>
     <a class="signout" href="/cdn-cgi/access/logout" title="Ends this admin sign-in, so the next person can enter their own email">Sign out</a>
   </div>
 </div></div>
-
-<input class="state" type="radio" name="scr" id="s-dash" checked>
-<input class="state" type="radio" name="scr" id="s-events"><input class="state" type="radio" name="scr" id="s-editor"><input class="state" type="radio" name="scr" id="s-assets"><input class="state" type="radio" name="scr" id="s-res"><input class="state" type="radio" name="scr" id="s-spaces"><input class="state" type="radio" name="scr" id="s-msgs"><input class="state" type="radio" name="scr" id="s-inst"><input class="state" type="radio" name="scr" id="s-inst-events"><input class="state" type="radio" name="scr" id="s-inst-brand"><input class="state" type="radio" name="scr" id="s-inst-email"><input class="state" type="radio" name="scr" id="s-inst-screens">
-
 <nav class="navbar"><div class="inner">
   <label for="s-dash">Dashboard</label><label for="s-events">Events</label><label for="s-assets">Assets</label><label for="s-res">Residents</label><label for="s-spaces">Spaces</label><label for="s-msgs">Messages</label><label for="s-inst">Instructions</label>
 </div></nav>
+</div>
 
 <div class="body">
 
@@ -1190,7 +1215,7 @@
     const byCat = CATS.filter(c => c !== "Board Meeting").map(c => ({ label: c, n: upcoming.filter(e => e.Category === c).length })).filter(c => c.n);
     $("#bycat").innerHTML = bars(byCat, "n");
     renderRsvps();
-    $("#nextlist").innerHTML = upcoming.slice(0, 6).map(e => `<div class="srow"><span class="slab">${esc(fmt(e.Date))}</span><span style="flex:1;font-size:15px;color:var(--ink)">${esc(e.Title)}</span><span class="sval" style="flex-basis:90px">${esc(e.Start)}</span></div>`).join("") || '<div class="nodata">Nothing scheduled.</div>';
+    $("#nextlist").innerHTML = upcoming.slice(0, 6).map(e => `<div class="srow"><span class="slab">${esc(fmt(e.Date))}</span><span class="sgrow" style="font-size:15px;color:var(--ink)">${esc(e.Title)}</span><span class="sval" style="white-space:nowrap">${esc(e.Start)}</span></div>`).join("") || '<div class="nodata">Nothing scheduled.</div>';
     $$("#period button").forEach(b => b.classList.toggle("on", Number(b.dataset.days) === days));
   }
 
@@ -1311,12 +1336,12 @@
       const units = new Set(s.rows.map(r => r.unit).filter(Boolean));
       const dupUnit = units.size < s.rows.filter(r => r.unit).length;
       return `<div class="srow" style="cursor:pointer" data-rsvpkey="${esc(s.key)}"><span class="slab">${esc(fmt(s.date))}</span>
-        <span style="flex:1;font-size:15px;color:var(--ink)">${esc(s.title)}${dupUnit ? ' <span class="flagmany" title="One unit holds more than one RSVP for this event">unit twice</span>' : ""}</span>
-        <span class="sval" style="flex-basis:190px;white-space:nowrap">${what}${wait}</span></div>
+        <span class="sgrow" style="font-size:15px;color:var(--ink)">${esc(s.title)}${dupUnit ? ' <span class="flagmany" title="One unit holds more than one RSVP for this event">unit twice</span>' : ""}</span>
+        <span class="sval">${what}${wait}</span></div>
         <div class="card" data-rsvpdetail="${esc(s.key)}" style="display:none;margin:4px 0 10px">
         ${s.rows.map(r => `<div class="srow"><span class="slab">${esc(r.unit || "Role")} &middot; ${esc(r.name)}</span>
-          <span style="flex:1;font-size:14px;color:var(--ink-soft)">${r.status === "Waitlist" ? "Waitlist" : (s.type === "guest" ? `${r.count} guest${r.count === 1 ? "" : "s"}` : `party of ${r.count}`)}${r.names ? ` &middot; ${esc(r.names)}` : ""}</span>
-          <span class="sval" style="flex-basis:90px;font-size:12px;color:var(--stone)">${esc((r.created || "").slice(0, 10))}</span>
+          <span class="sgrow" style="font-size:14px;color:var(--ink-soft)">${r.status === "Waitlist" ? "Waitlist" : (s.type === "guest" ? `${r.count} guest${r.count === 1 ? "" : "s"}` : `party of ${r.count}`)}${r.names ? ` &middot; ${esc(r.names)}` : ""}</span>
+          <span class="sval" style="font-size:12px;color:var(--stone)">${esc((r.created || "").slice(0, 10))}</span>
           <span class="eact">
           ${r.status === "Waitlist" ? `<button class="mini" data-wconfirm="${r.id}" title="Give this party the freed seats, then let them know">Confirm seats</button>` : ""}
           <button class="mini ghost" data-redit="${r.id}" title="Change the party size for someone who asked">Edit</button>
