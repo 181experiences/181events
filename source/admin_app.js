@@ -5,7 +5,7 @@
   // The Cloudflare Access team domain, used only by Sign out to end the SSO
   // session. If the team domain is ever renamed in Zero Trust -> Settings,
   // this is the one line to update.
-  const ACCESS_TEAM = "shy-bread-8b54.cloudflareaccess.com";
+  const ACCESS_TEAM = "181sf-events.cloudflareaccess.com";
 
   const $ = (s, r) => (r || document).querySelector(s);
   const $$ = (s, r) => Array.from((r || document).querySelectorAll(s));
