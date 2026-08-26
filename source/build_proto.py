@@ -6,8 +6,14 @@ CSS :checked selectors, so it works in any renderer including sandboxed previews
 from events_data import (EVENTS, MONTHS, MONTH_BY_KEY, dow_of, dow_s, month_name,
                          short_month, evs_on, days_with_events)
 
-# picked by slug so ids can be regenerated freely
-NEXT_SLUG = "book-club-inaugural"
+# The Next Event tile aims at the first date on or after the day the site is
+# built, Pacific time; the nightly rebuild keeps that honest every morning.
+from datetime import datetime as _dt
+try:
+    from zoneinfo import ZoneInfo as _Zone
+    TODAY = _dt.now(_Zone("America/Los_Angeles")).date()
+except Exception:
+    TODAY = _dt.utcnow().date()
 
 def plain(s):
     for a, b in [("&rsquo;", "'"), ("&amp;", "&"), ("&middot;", "-"), ("&mdash;", "-"),
@@ -204,7 +210,7 @@ def event_screen(e):
 EVENT_SCREENS = "".join(event_screen(e) for e in EVENTS)
 
 # ------------------------------------------------------------------ next event tile
-NEXT = next(e for e in EVENTS if e["slug"] == NEXT_SLUG)
+NEXT = next((e for e in EVENTS if e["on"] >= TODAY), EVENTS[-1])
 
 # ------------------------------------------------------------------ month nav
 MONTH_RADIOS = "\n    ".join(
