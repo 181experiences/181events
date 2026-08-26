@@ -5,7 +5,7 @@ import { json, noDb, adminRole, forbidden, ensureResidentTables } from "../../_l
 // Canva links work either way. Events staff only.
 export async function onRequestGet({ request, env }) {
   const err = noDb(env); if (err) return err;
-  const role = adminRole(request, env);
+  const role = await adminRole(request, env);
   if (!role || role === "desk") return forbidden();
   await ensureResidentTables(env);
   const { results } = await env.DB.prepare(

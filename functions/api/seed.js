@@ -5,7 +5,7 @@ import { json, noDb, toCols, CREATE_SQL, adminRole, forbidden } from "../_lib.js
 // Refuses to touch a database that already has rows, so it can never overwrite live edits.
 export async function onRequestPost({ request, env }) {
   const err = noDb(env); if (err) return err;
-  const role = adminRole(request, env);
+  const role = await adminRole(request, env);
   if (!role || role === "desk") return forbidden();
   await env.DB.prepare(CREATE_SQL).run();
   const { c } = await env.DB.prepare("SELECT COUNT(*) AS c FROM events").first();

@@ -10,7 +10,7 @@ const ROW_SQL = `SELECT r.id, r.event_key, r.event_date, r.event_title, r.rsvp_t
 // Every tier may read and manage RSVPs; the desk handles them in person daily.
 export async function onRequestGet({ request, env }) {
   const err = noDb(env); if (err) return err;
-  if (!adminRole(request, env)) return forbidden();
+  if (!(await adminRole(request, env))) return forbidden();
   await ensureResidentTables(env);
   const { results } = await env.DB.prepare(
     // Waitlist order is creation order; the join names the person and unit.
@@ -24,7 +24,7 @@ export async function onRequestGet({ request, env }) {
 // the person already had an RSVP for that event, this updates it.
 export async function onRequestPost({ request, env }) {
   const err = noDb(env); if (err) return err;
-  if (!adminRole(request, env)) return forbidden();
+  if (!(await adminRole(request, env))) return forbidden();
   await ensureResidentTables(env);
   const body = await request.json();
 

@@ -96,25 +96,65 @@ function emailList(v) {
   return String(v || "").toLowerCase().split(",").map(s => s.trim()).filter(Boolean);
 }
 // Access attaches the verified address two ways: a plain header, and the signed
-// login token (JWT). On Pages the plain header does not always arrive, so the
-// token's payload is the fallback. Both are trustworthy for the same reason:
-// nothing reaches /api/* without passing Access first, and Access sets them.
+// login token (JWT). On the locked custom domain both are trustworthy: nothing
+// reaches /admin or /api there without passing Access, which sets them itself.
+// On *.pages.dev preview addresses Access enforces only if the project's
+// preview Access policy is switched on, and headers a client sends itself must
+// never be believed, so there the token's SIGNATURE is verified against the
+// team's published keys before its email is trusted. Forged tokens fail closed.
+export const ACCESS_TEAM = "181sf-events.cloudflareaccess.com";
+
 function b64urlJson(seg) {
   try {
     const pad = seg.replace(/-/g, "+").replace(/_/g, "/") + "===".slice((seg.length + 3) % 4);
     return JSON.parse(atob(pad));
   } catch (e) { return null; }
 }
-export function accessEmail(request) {
+
+let jwksCache = { keys: null, at: 0 };
+async function accessKeys() {
+  if (jwksCache.keys && Date.now() - jwksCache.at < 6 * 3600 * 1000) return jwksCache.keys;
+  const r = await fetch(`https://${ACCESS_TEAM}/cdn-cgi/access/certs`);
+  if (!r.ok) return jwksCache.keys || [];
+  const d = await r.json();
+  jwksCache = { keys: d.keys || [], at: Date.now() };
+  return jwksCache.keys;
+}
+
+async function verifiedJwtEmail(jwt) {
+  const parts = String(jwt || "").split(".");
+  if (parts.length !== 3) return "";
+  const header = b64urlJson(parts[0]);
+  const payload = b64urlJson(parts[1]);
+  if (!header || !payload) return "";
+  if (payload.iss !== `https://${ACCESS_TEAM}`) return "";
+  if (typeof payload.exp !== "number" || payload.exp < Date.now() / 1000) return "";
+  const jwk = (await accessKeys()).find(k => k.kid === header.kid);
+  if (!jwk) return "";
+  try {
+    const key = await crypto.subtle.importKey("jwk", jwk,
+      { name: "RSASSA-PKCS1-v1_5", hash: "SHA-256" }, false, ["verify"]);
+    const seg = parts[2].replace(/-/g, "+").replace(/_/g, "/") + "===".slice((parts[2].length + 3) % 4);
+    const sig = Uint8Array.from(atob(seg), c => c.charCodeAt(0));
+    const ok = await crypto.subtle.verify("RSASSA-PKCS1-v1_5", key, sig,
+      new TextEncoder().encode(parts[0] + "." + parts[1]));
+    return ok && typeof payload.email === "string" ? payload.email.toLowerCase().trim() : "";
+  } catch (e) { return ""; }
+}
+
+export async function accessEmail(request) {
+  const jwt = request.headers.get("cf-access-jwt-assertion") || "";
+  if (new URL(request.url).hostname.endsWith(".pages.dev")) {
+    return jwt ? verifiedJwtEmail(jwt) : "";
+  }
   const direct = (request.headers.get("cf-access-authenticated-user-email") || "").toLowerCase().trim();
   if (direct) return direct;
-  const parts = String(request.headers.get("cf-access-jwt-assertion") || "").split(".");
-  if (parts.length !== 3) return "";
-  const payload = b64urlJson(parts[1]);
+  const payload = jwt ? b64urlJson(jwt.split(".")[1] || "") : null;
   return payload && typeof payload.email === "string" ? payload.email.toLowerCase().trim() : "";
 }
-export function adminRole(request, env) {
-  const email = accessEmail(request);
+
+export async function adminRole(request, env) {
+  const email = await accessEmail(request);
   if (!email) return env.DEV_ROLE || null;   // DEV_ROLE is the local dev server's stand-in
   if (emailList(env.OWNER_EMAILS).includes(email)) return "owner";
   if (emailList(env.DESK_EMAILS).includes(email)) return "desk";

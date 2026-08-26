@@ -7,7 +7,7 @@ import {
 // epoch, which signs that person out on every device at once.
 export async function onRequestPatch({ request, params, env }) {
   const err = noDb(env); if (err) return err;
-  if (!adminRole(request, env)) return forbidden();
+  if (!(await adminRole(request, env))) return forbidden();
   await ensureResidentTables(env);
   const id = Number(params.id);
   if (!Number.isInteger(id)) return json({ error: "Bad id" }, 400);
@@ -40,7 +40,7 @@ export async function onRequestPatch({ request, params, env }) {
 // their history and stays one click from restored.
 export async function onRequestDelete({ request, params, env }) {
   const err = noDb(env); if (err) return err;
-  if (!adminRole(request, env)) return forbidden();
+  if (!(await adminRole(request, env))) return forbidden();
   await ensureResidentTables(env);
   const id = Number(params.id);
   if (!Number.isInteger(id)) return json({ error: "Bad id" }, 400);

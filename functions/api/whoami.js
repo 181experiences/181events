@@ -5,6 +5,6 @@ import { json, adminRole, accessEmail } from "../_lib.js";
 // eye. The real enforcement lives on each endpoint. When role is null the
 // email never arrived; report it honestly instead of dressing it as staff.
 export async function onRequestGet({ request, env }) {
-  const role = adminRole(request, env);
-  return json({ role: role || "none", email: accessEmail(request) });
+  const role = await adminRole(request, env);
+  return json({ role: role || "none", email: await accessEmail(request) });
 }

@@ -6,7 +6,7 @@ import { json, noDb, adminRole, forbidden, ensureResidentTables, to24 } from "..
 
 export async function onRequestGet({ request, env }) {
   const err = noDb(env); if (err) return err;
-  if (!adminRole(request, env)) return forbidden();
+  if (!(await adminRole(request, env))) return forbidden();
   await ensureResidentTables(env);
   const { results } = await env.DB.prepare(
     "SELECT * FROM bookings ORDER BY date, start24").all();
@@ -15,7 +15,7 @@ export async function onRequestGet({ request, env }) {
 
 export async function onRequestPost({ request, env }) {
   const err = noDb(env); if (err) return err;
-  if (!adminRole(request, env)) return forbidden();
+  if (!(await adminRole(request, env))) return forbidden();
   await ensureResidentTables(env);
   const b = await request.json();
   const space = String(b.space || "").trim();

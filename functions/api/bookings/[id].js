@@ -3,7 +3,7 @@ import { json, noDb, adminRole, forbidden, ensureResidentTables } from "../../_l
 // DELETE /api/bookings/:id -> the room shows as open again, at once.
 export async function onRequestDelete({ request, params, env }) {
   const err = noDb(env); if (err) return err;
-  if (!adminRole(request, env)) return forbidden();
+  if (!(await adminRole(request, env))) return forbidden();
   await ensureResidentTables(env);
   const id = Number(params.id);
   if (!Number.isInteger(id)) return json({ error: "Bad id" }, 400);

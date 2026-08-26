@@ -136,12 +136,21 @@ Uploads cap at about 95 MB per file; keep video masters in Canva and upload the 
 ## Previewing changes before they go live
 
 Code changes land on the `preview` branch first. Cloudflare Pages builds every push to it
-automatically at `https://preview.181events.pages.dev`: same build, same data, not the live
-domain. When it looks right, the branch merges to `main` and the same build goes live. Two
-notes: the admin, the API, and resident sign-in deliberately bounce from any pages.dev address
-to the locked live domain, so previews are for the resident-facing pages (the admin is
-previewed on the local dev server); and every past deployment in the Deployments list keeps a
-permanent address of its own, which is the build history.
+automatically at `https://preview.181events.pages.dev`: same build, not the live domain. When
+it looks right, the branch merges to `main` and the same build goes live. Every past
+deployment in the Deployments list keeps a permanent address of its own: the build history.
+
+**Previewing the admin** needs the project's preview lock switched on, once: Pages project,
+**Settings**, find **Access policy** (sometimes under General), and **Enable** it. That puts
+the same one-time-PIN wall in front of every preview address. Cloudflare creates a new
+application for it in Zero Trust; open **Zero Trust, Access, Applications**, find the one
+named for the Pages project, and set its policy to the same staff emails as "181 admin"
+(One-time PIN, one-month session). From then on `https://preview.181events.pages.dev/admin`
+works behind that wall. Two cautions: the preview admin reads and writes the SAME database as
+the live site (there is only one), so treat it as a place to look, not to save; and without
+the preview lock enabled, all locked areas on pages.dev addresses bounce to the live domain,
+which is the safe default. The server verifies the Access login token's signature on preview
+hosts, so the wall cannot be talked around with forged headers.
 
 ## Board meetings and spaces
 

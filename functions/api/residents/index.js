@@ -9,7 +9,7 @@ import {
 // account on first sight of an empty table, so it exists before anyone asks.
 export async function onRequestGet({ request, env }) {
   const err = noDb(env); if (err) return err;
-  if (!adminRole(request, env)) return forbidden();
+  if (!(await adminRole(request, env))) return forbidden();
   await ensureResidentTables(env);
   const { c } = await env.DB.prepare("SELECT COUNT(*) AS c FROM residents").first();
   if (c === 0) {
@@ -27,7 +27,7 @@ export async function onRequestGet({ request, env }) {
 // or {bulk: "12A, Margaret, margaret@..."} with one person per line.
 export async function onRequestPost({ request, env }) {
   const err = noDb(env); if (err) return err;
-  if (!adminRole(request, env)) return forbidden();
+  if (!(await adminRole(request, env))) return forbidden();
   await ensureResidentTables(env);
   const body = await request.json();
   const now = new Date().toISOString();

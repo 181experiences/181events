@@ -7,7 +7,7 @@ import { json, noDb, adminRole, forbidden, ensureResidentTables } from "../../_l
 // so the person always hears about a change made on their behalf.
 export async function onRequestPatch({ request, params, env }) {
   const err = noDb(env); if (err) return err;
-  if (!adminRole(request, env)) return forbidden();
+  if (!(await adminRole(request, env))) return forbidden();
   await ensureResidentTables(env);
   const id = Number(params.id);
   if (!Number.isInteger(id)) return json({ error: "Bad id" }, 400);

@@ -9,9 +9,9 @@ import {
 //   DELETE  remove the uploaded file (the Canva link stays)
 // Files live in the R2 bucket bound as KIT; rows in D1 carry the facts.
 
-function gate(request, env) {
+async function gate(request, env) {
   const err = noDb(env); if (err) return err;
-  const role = adminRole(request, env);
+  const role = await adminRole(request, env);
   if (!role || role === "desk") return forbidden();
   return null;
 }
@@ -24,7 +24,7 @@ function ids(params) {
 }
 
 export async function onRequestPut({ request, params, env }) {
-  const err = gate(request, env); if (err) return err;
+  const err = await gate(request, env); if (err) return err;
   if (!env.KIT) return json({ error: "File storage is not linked yet. Add the R2 bucket binding named KIT in the Pages settings." }, 503);
   const a = ids(params); if (!a) return json({ error: "Bad asset address" }, 400);
   await ensureResidentTables(env);
@@ -46,7 +46,7 @@ export async function onRequestPut({ request, params, env }) {
 }
 
 export async function onRequestGet({ request, params, env }) {
-  const err = gate(request, env); if (err) return err;
+  const err = await gate(request, env); if (err) return err;
   if (!env.KIT) return json({ error: "File storage is not linked yet." }, 503);
   const a = ids(params); if (!a) return json({ error: "Bad asset address" }, 400);
   const obj = await env.KIT.get(a.key);
@@ -62,7 +62,7 @@ export async function onRequestGet({ request, params, env }) {
 }
 
 export async function onRequestPatch({ request, params, env }) {
-  const err = gate(request, env); if (err) return err;
+  const err = await gate(request, env); if (err) return err;
   const a = ids(params); if (!a) return json({ error: "Bad asset address" }, 400);
   await ensureResidentTables(env);
   const { canva } = await request.json();
@@ -77,7 +77,7 @@ export async function onRequestPatch({ request, params, env }) {
 }
 
 export async function onRequestDelete({ request, params, env }) {
-  const err = gate(request, env); if (err) return err;
+  const err = await gate(request, env); if (err) return err;
   const a = ids(params); if (!a) return json({ error: "Bad asset address" }, 400);
   await ensureResidentTables(env);
   if (env.KIT) await env.KIT.delete(a.key);

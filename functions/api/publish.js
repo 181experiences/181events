@@ -3,7 +3,7 @@ import { json, adminRole, forbidden } from "../_lib.js";
 // POST /api/publish -> asks Cloudflare Pages to rebuild the resident site from the events database.
 // DEPLOY_HOOK is the Pages deploy hook URL, stored as an environment variable. Not for the desk tier.
 export async function onRequestPost({ request, env }) {
-  const role = adminRole(request, env);
+  const role = await adminRole(request, env);
   if (!role || role === "desk") return forbidden();
   if (!env.DEPLOY_HOOK) return json({ error: "No deploy hook configured" }, 503);
   const r = await fetch(env.DEPLOY_HOOK, { method: "POST" });
