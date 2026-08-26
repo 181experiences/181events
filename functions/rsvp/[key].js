@@ -62,7 +62,7 @@ function stateLine(r) {
 
 async function rsvpPage(context, ev, key, me) {
   const { env } = context;
-  const type = TYPE[ev.rsvp];
+  const type = TYPE[ev.rsvp];   // undefined for drop-in events: facts, no forms
   const tpl = await template(context, "rsvp");
 
   const existing = me ? await myRsvp(env, me.id, key) : null;
@@ -86,6 +86,14 @@ async function rsvpPage(context, ev, key, me) {
       })
     : null);
   body = cut(body, "CUTOFF", ev.cutoff ? fill(inner(tpl, "CUTOFF"), { CUTOFF: esc(ev.cutoff) }) : null);
+
+  // Drop-in events still get their shareable page: the facts, a warm word, no forms.
+  if (!type) {
+    body = cut(cut(cut(cut(body, "ALSO", null), "SIGNIN", null), "EXISTING", null), "FORM", null);
+    body = cut(body, "DROPIN", inner(tpl, "DROPIN"));
+    return page(context, ev.title, body, me);
+  }
+  body = cut(body, "DROPIN", null);
 
   // What the rest of the unit already said, so the household sees its own picture.
   const mates = me ? await unitMates(env, me, key) : [];
@@ -143,11 +151,6 @@ export async function onRequestGet(context) {
     return donePage(context, me, "That event isn&rsquo;t on the calendar",
       "It may have moved, or the address was mistyped. The calendar has everything that is on.",
       "/", "Back to the calendar", 404);
-  }
-  if (!TYPE[ev.rsvp]) {
-    return donePage(context, me, "No RSVP needed",
-      "This one is drop-in. Just come along; we&rsquo;ll be glad to see you.",
-      "/", "Back to the calendar");
   }
   if (ev.date < todayPacific()) {
     return donePage(context, me, "That date has passed",

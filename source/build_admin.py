@@ -251,6 +251,7 @@ HTML = f'''<!DOCTYPE html>
   .akstate{{font-size:13px;color:var(--stone);overflow-wrap:anywhere}}
   .akstate.done{{color:#2c5c37}}
   .akstate.miss{{font-style:italic}}
+  .akwhere{{display:block;font-size:12px;color:var(--stone);margin-top:4px;line-height:1.45;max-width:52ch}}
   .akact{{display:flex;gap:8px;justify-content:flex-end}}
   @media(max-width:760px){{ .akrow{{grid-template-columns:1fr;gap:8px}} .akact{{justify-content:flex-start}} }}
   .acard{{background:var(--paper-2);border:1px solid var(--line);border-radius:var(--radius);padding:14px 16px;margin-bottom:8px}}
@@ -551,7 +552,7 @@ HTML = f'''<!DOCTYPE html>
       <div class="hint">Every file in this kit is named from this stem, so it stays identifiable in Canva, on Nixplay, or at the print shop.</div></div>
     <div class="field f-full"><label class="fl">Asset kit</label>
       <div class="aklist" id="ak"></div>
-      <div class="hint">Uploads arrive with the next build. A Nixplay still will also email itself to the frames. Specs under Instructions &rarr; Screens &amp; Print.</div></div>
+      <div class="hint">Files and Canva links are managed on the Assets screen; each row there says what the piece is and where it goes. Specs under Instructions &rarr; Screens &amp; Print.</div></div>
   </div>
 
   <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:30px" id="ed-actions">
@@ -566,7 +567,12 @@ HTML = f'''<!DOCTYPE html>
 <!-- ================= ASSETS ================= -->
 <section class="screen" id="scr-assets"><div class="wrap">
   <div class="phead"><h1>Assets</h1></div>
-  <div class="psub">One kit per event. This is the single place every version of an event&rsquo;s artwork lives: web, screens, print, and email. Uploads arrive with the next build; the kits and their file names are ready now.</div>
+  <div class="psub">One kit per event, two homes per piece: the <strong>uploaded file</strong> is the final version, here for any admin on any device to download; the <strong>Canva link</strong> beside it opens the living design for edits. Each row says what the piece is and where it goes.</div>
+  <div class="callout" id="assets-storage" style="display:none;margin-bottom:18px">
+    <strong>File storage is not linked yet.</strong> Canva links save fine already. For uploads, create an R2 bucket
+    named <code>residents-assets</code> (Cloudflare dashboard, R2), then in this Pages project add the binding
+    <code>KIT</code> pointing at it, and redeploy. Free tier, same Cloudflare account, no new parties.
+  </div>
   <div class="callout" style="margin-bottom:22px">
     <strong>File naming is the whole trick.</strong> Every file in a kit uses the same stem, so a file stays identifiable
     anywhere it ends up. Canva, Nixplay, a print shop, or someone&rsquo;s downloads folder:
@@ -858,6 +864,7 @@ HTML = f'''<!DOCTYPE html>
 </div></section>
 
 </div>
+<input type="file" id="afile" style="display:none">
 <div class="toast" id="toast"></div>
 <script>
 {APP_JS}

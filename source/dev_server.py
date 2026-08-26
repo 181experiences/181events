@@ -60,6 +60,8 @@ DOW_S = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
 sys.path.insert(0, HERE)
 from fields import RSVP_KEYS
 TYPE_OF = {label: key for label, key in RSVP_KEYS.items() if key}
+ASSET_KINDS = ["web-hero", "nixplay-still", "nixplay-video", "elevator-print", "level39-print", "email-header"]
+ASSET_DIR = os.path.join(HERE, "dev_assets")
 
 def esc(s):
     return str("" if s is None else s).replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;").replace('"', "&quot;")
@@ -226,7 +228,7 @@ def state_line(r):
     return "You&rsquo;re confirmed." if r["count"] == 1 else f"You&rsquo;re confirmed, party of {r['count']}."
 
 def rsvp_page(e, key, me):
-    rsvp_type = TYPE_OF[e["RSVP"]]
+    rsvp_type = TYPE_OF.get(e["RSVP"])   # None for drop-in events: facts, no forms
     tpl = template("rsvp")
     existing = my_rsvp(me["id"], key) if me else None
     active = existing if existing and existing["status"] != "Cancelled" else None
@@ -243,6 +245,12 @@ def rsvp_page(e, key, me):
                       else f"{cap} places")
     body = cut(body, "SEATS", fill(inner(tpl, "SEATS"), dict(SEATS=seats_text)) if seats_text else None)
     body = cut(body, "CUTOFF", fill(inner(tpl, "CUTOFF"), dict(CUTOFF=esc(e["Cutoff"]))) if e.get("Cutoff") else None)
+    if not rsvp_type:
+        body = cut(cut(cut(cut(body, "ALSO", None), "SIGNIN", None), "EXISTING", None), "FORM", None)
+        body = cut(body, "DROPIN", inner(tpl, "DROPIN"))
+        return shell_page(e["Title"], body, me)
+    body = cut(body, "DROPIN", None)
+
     mates = unit_mates(me, key) if me else []
     body = cut(body, "ALSO", fill(inner(tpl, "ALSO"), dict(MATES="<br>".join(mate_line(m) for m in mates))) if mates else None)
 
@@ -509,6 +517,25 @@ class H(SimpleHTTPRequestHandler):
             return self._json({"role": self._role(), "messages": out})
         if p.path == "/api/bookings":
             return self._json({"bookings": load_store("bookings", [])})
+        if p.path == "/api/assets":
+            if self._role() == "desk": return self._json({"error": "forbidden"}, 403)
+            return self._json({"storage": True, "assets": load_store("assets", [])})
+        if p.path.startswith("/api/assets/"):
+            parts = p.path.split("/")
+            if len(parts) == 5 and parts[4] in ASSET_KINDS:
+                fp = os.path.join(ASSET_DIR, f"{parts[3]}__{parts[4]}")
+                row = next((a for a in load_store("assets", [])
+                            if a["stem"] == parts[3] and a["kind"] == parts[4] and a.get("uploaded")), None)
+                if not row or not os.path.exists(fp):
+                    return self._json({"error": "Nothing uploaded here yet."}, 404)
+                data = open(fp, "rb").read()
+                self.send_response(200)
+                self.send_header("content-type", row.get("type") or "application/octet-stream")
+                self.send_header("content-disposition", f'attachment; filename="{row.get("filename") or "file"}"')
+                self.send_header("content-length", str(len(data)))
+                self.end_headers(); self.wfile.write(data)
+                return
+            return self._json({"error": "Bad asset address"}, 400)
         if p.path.startswith("/api/"):
             return self._json({"error": "not found"}, 404)
 
@@ -525,6 +552,22 @@ class H(SimpleHTTPRequestHandler):
             return self._redirect("/")
         if p.path == "/board":
             return self._html(board_page(me))
+        if p.path == "/calendar/feed":
+            rows = sorted([e for e in load_events()
+                           if e.get("Status") == "Live" and e.get("Category") != "Board Meeting"
+                           and e.get("Date", "") >= today()],
+                          key=lambda e: (e["Date"], e.get("Start24") or ""))
+            out = ["BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//181 Fremont//Resident Events//EN",
+                   "X-WR-CALNAME:181 Fremont Resident Events"]
+            for e in rows:
+                d = e["Date"].replace("-", "")
+                start = e.get("Start24") or to24(e.get("Start"))
+                end = to24(e.get("End")) if e.get("End") else start
+                out += ["BEGIN:VEVENT", f"UID:181fremont-{e.get('Slug') or 'event'}-{d}@181residents.com",
+                        f"DTSTAMP:{d}T000000Z", f"DTSTART:{d}T{start}00", f"DTEND:{d}T{end}00",
+                        f"SUMMARY:{e['Title']}", f"LOCATION:181 Fremont - {e.get('Location') or 'Level 39'}",
+                        f"URL:https://181residents.com/rsvp/{e['Date']}_{e.get('Slug') or ''}", "END:VEVENT"]
+            return self._text("\r\n".join(out) + "\r\nEND:VCALENDAR\r\n", "text/calendar; charset=utf-8")
         if p.path == "/board/feed":
             return self._text(board_ics(board_rows(), "181 Fremont Board Meetings"),
                               "text/calendar; charset=utf-8")
@@ -550,10 +593,6 @@ class H(SimpleHTTPRequestHandler):
                 return self._html(done_page(me, "That event isn&rsquo;t on the calendar",
                     "It may have moved, or the address was mistyped. The calendar has everything that is on.",
                     "/", "Back to the calendar", 404))
-            if e["RSVP"] not in TYPE_OF:
-                return self._html(done_page(me, "No RSVP needed",
-                    "This one is drop-in. Just come along; we&rsquo;ll be glad to see you.",
-                    "/", "Back to the calendar"))
             if e["Date"] < today():
                 return self._html(done_page(me, "That date has passed",
                     "This event has already happened. The calendar has what&rsquo;s coming next.",
@@ -778,6 +817,29 @@ class H(SimpleHTTPRequestHandler):
                                         sub, "/my", "My RSVPs"))
         return self._json({"error": "not found"}, 404)
 
+    # ------------------------------------------------------------ PUT
+    def do_PUT(self):
+        p = urlparse(self.path)
+        parts = p.path.split("/")
+        if p.path.startswith("/api/assets/") and len(parts) == 5 and parts[4] in ASSET_KINDS:
+            if self._role() == "desk": return self._json({"error": "forbidden"}, 403)
+            os.makedirs(ASSET_DIR, exist_ok=True)
+            n = int(self.headers.get("content-length") or 0)
+            data = self.rfile.read(n)
+            open(os.path.join(ASSET_DIR, f"{parts[3]}__{parts[4]}"), "wb").write(data)
+            from urllib.parse import unquote
+            filename = unquote(self.headers.get("x-filename") or "file")[:160]
+            rows = load_store("assets", [])
+            row = next((a for a in rows if a["stem"] == parts[3] and a["kind"] == parts[4]), None)
+            if not row:
+                row = dict(id=max([a["id"] for a in rows] or [0]) + 1, stem=parts[3], kind=parts[4], canva=None)
+                rows.append(row)
+            row.update(filename=filename, size=n, type=self.headers.get("content-type") or "application/octet-stream",
+                       uploaded=now_iso())
+            save_store("assets", rows)
+            return self._json({"asset": row}, 201)
+        return self._json({"error": "not found"}, 404)
+
     # ------------------------------------------------------------ PATCH
     def do_PATCH(self):
         p = urlparse(self.path)
@@ -803,6 +865,21 @@ class H(SimpleHTTPRequestHandler):
                     save_store("residents", residents)
                     return self._json(shape_resident(r))
             return self._json({"error": "No such person"}, 404)
+        parts = p.path.split("/")
+        if p.path.startswith("/api/assets/") and len(parts) == 5 and parts[4] in ASSET_KINDS:
+            body = self._body_json()
+            url = str(body.get("canva") or "").strip()[:400]
+            if url and not url.startswith("https://"):
+                return self._json({"error": "A Canva link starts with https://"}, 400)
+            rows = load_store("assets", [])
+            row = next((a for a in rows if a["stem"] == parts[3] and a["kind"] == parts[4]), None)
+            if not row:
+                row = dict(id=max([a["id"] for a in rows] or [0]) + 1, stem=parts[3], kind=parts[4],
+                           filename=None, size=None, type=None, uploaded=None)
+                rows.append(row)
+            row["canva"] = url or None
+            save_store("assets", rows)
+            return self._json({"asset": row})
         if p.path.startswith("/api/rsvps/"):
             rid = p.path.rsplit("/", 1)[1]; body = self._body_json()
             rsvps = load_store("rsvps", [])
@@ -840,6 +917,19 @@ class H(SimpleHTTPRequestHandler):
     # ------------------------------------------------------------ DELETE
     def do_DELETE(self):
         p = urlparse(self.path)
+        parts = p.path.split("/")
+        if p.path.startswith("/api/assets/") and len(parts) == 5 and parts[4] in ASSET_KINDS:
+            fp = os.path.join(ASSET_DIR, f"{parts[3]}__{parts[4]}")
+            if os.path.exists(fp): os.remove(fp)
+            rows = load_store("assets", [])
+            row = next((a for a in rows if a["stem"] == parts[3] and a["kind"] == parts[4]), None)
+            if row:
+                if row.get("canva"):
+                    row.update(filename=None, size=None, type=None, uploaded=None)
+                else:
+                    rows.remove(row); row = None
+            save_store("assets", rows)
+            return self._json({"asset": row})
         if p.path.startswith("/api/residents/"):
             rid = p.path.rsplit("/", 1)[1]
             residents = load_store("residents", [])

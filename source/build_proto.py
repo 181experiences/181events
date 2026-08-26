@@ -501,7 +501,7 @@ HTML = f'''<!DOCTYPE html>
     <div class="wrap">
       <div class="hero">
         <div class="eyebrow">August to December 2026</div>
-        <h1>What&rsquo;s happening<br>at 181 Fremont</h1>
+        <h1>What&rsquo;s happening at<br>The Residents&rsquo; Club</h1>
         <div class="rule"></div>
         <p>Everything on the calendar, in one place.</p>
       </div>
@@ -529,12 +529,11 @@ HTML = f'''<!DOCTYPE html>
           <span class="hl-s">Board business, on its own page, with Add to My Calendar</span></span>
           <span class="ev-go">&rarr;</span>
         </a>
-        <a class="hline" href="/spaces">
-          <span class="hl-body"><span class="hl-t">Level 39 Spaces</span>
-          <span class="hl-s">See when a room is spoken for; walk in whenever one is free</span></span>
-          <span class="ev-go">&rarr;</span>
-        </a>
       </div>
+      <!-- The Level 39 Spaces line is resting at the Board's request (Aug 2026).
+           The /spaces page and the admin's Spaces screen stay live; restore the
+           line by putting the anchor back here.
+        <a class="hline" href="/spaces"> ... </a> -->
     </div>
   </section>
 
@@ -607,7 +606,7 @@ HTML = f'''<!DOCTYPE html>
 
 </div>
 
-<footer>181 Fremont Residences &middot; Resident Experiences &middot; Questions? Leo at Level 39 &middot; <a class="stafflink" href="/admin">Staff</a></footer>
+<footer>181 Fremont Residences &middot; Resident Experiences &middot; <a class="stafflink" href="/admin">Staff</a></footer>
 </body>
 </html>
 '''
@@ -747,7 +746,7 @@ SHELL = '''<!DOCTYPE html>
 <main class="wrap">
 {{CONTENT}}
 </main>
-<footer>181 Fremont Residences &middot; Resident Experiences &middot; Questions? Leo at Level 39 &middot; <a class="stafflink" href="/admin">Staff</a></footer>
+<footer>181 Fremont Residences &middot; Resident Experiences &middot; <a class="stafflink" href="/admin">Staff</a></footer>
 </body>
 </html>
 '''
@@ -802,6 +801,8 @@ T_RSVP = '''<a class="back" href="/">&larr; Back to the calendar</a>
 <p>{{MATES}}</p>
 <p class="al-s">Shown so a household never counts itself twice. If they already have you covered, you&rsquo;re all set.</p>
 </div><!--/ALSO-->
+<!--DROPIN--><div class="pagehead"><h2>No RSVP needed</h2>
+<p>This one is drop-in. Just come along; we&rsquo;ll be glad to see you.</p></div><!--/DROPIN-->
 <!--SIGNIN--><div class="pagehead"><h2>Sign in to RSVP</h2>
 <p>Enter your resident code, and you&rsquo;ll come straight back to this page. One sign-in lasts a month on this device.</p></div>
 ''' + SIGNIN_FORM + '''<!--/SIGNIN-->

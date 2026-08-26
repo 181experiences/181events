@@ -112,6 +112,37 @@ First population: open Residents, paste the building in bulk (one line per perso
 `unit, name, email`), and print the code cards. The Front Desk role account seeds itself with
 its own code on first load.
 
+## 10. Asset storage, once
+
+The Assets screen stores each event's final artwork (PDF, PNG, JPG, MP4) so any admin on any
+device can download it; a Canva link sits beside each file for edits. Canva links work
+immediately; uploads need one binding:
+
+1. Cloudflare dashboard, **R2 Object Storage**, **Create bucket**, name it `residents-assets`.
+   Free tier (10 GB) is far more than a season of artwork.
+2. Pages project, **Settings**, **Bindings**, add an **R2 bucket** binding named exactly `KIT`,
+   pointing at `residents-assets`. Retry the latest deployment so it takes effect.
+
+Uploads cap at about 95 MB per file; keep video masters in Canva and upload the export.
+
+## Calendar feeds, for calendars and machines
+
+- `https://181residents.com/calendar/feed` is the whole resident calendar as a live iCal feed:
+  subscribe once in Apple, Google, or Outlook and it maintains itself, cancellations included.
+- `https://181residents.com/board/feed` is the same for Board meetings.
+- Each event page (`/rsvp/{date}_{slug}`) is the shareable address for one event; the admin's
+  **Link** buttons copy it, ready for emails.
+
+## Previewing changes before they go live
+
+Code changes land on the `preview` branch first. Cloudflare Pages builds every push to it
+automatically at `https://preview.181events.pages.dev`: same build, same data, not the live
+domain. When it looks right, the branch merges to `main` and the same build goes live. Two
+notes: the admin, the API, and resident sign-in deliberately bounce from any pages.dev address
+to the locked live domain, so previews are for the resident-facing pages (the admin is
+previewed on the local dev server); and every past deployment in the Deployments list keeps a
+permanent address of its own, which is the build history.
+
 ## Board meetings and spaces
 
 - **Board meetings** are entered like any event under the category **Board Meeting**. They never

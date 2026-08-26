@@ -55,7 +55,19 @@ export const RESIDENT_TABLES = [
     start TEXT, end_time TEXT, start24 TEXT,
     note TEXT, created TEXT NOT NULL
   )`,
+  `CREATE TABLE IF NOT EXISTS assets (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    stem TEXT NOT NULL, kind TEXT NOT NULL,
+    canva TEXT, filename TEXT, size INTEGER, type TEXT, uploaded TEXT
+  )`,
+  `CREATE UNIQUE INDEX IF NOT EXISTS assets_one_per_kind ON assets(stem, kind)`,
 ];
+
+// The six pieces of an event's kit, by slug. The file itself lives in R2 (the
+// KIT binding); the row carries what staff need to know about it, plus the
+// Canva address where the design is edited.
+export const ASSET_KINDS = ["web-hero", "nixplay-still", "nixplay-video",
+  "elevator-print", "level39-print", "email-header"];
 
 // "Margaret · 12A" for residents, "Front Desk" for role accounts.
 export function labelOf(r) {

@@ -14,7 +14,23 @@
   const CATS = ["Morning Offering", "Happy Hour", "Community Dinner", "Culinary Experience", "Enrichment Experience", "Signature Event", "Board Meeting"];
   const STATUSES = ["Draft", "Live", "Unpublished", "Archived"];
   const RSVPS = ["None", "Guest count", "Seat", "Paid seat"];
-  const KIT = ["Web hero", "Nixplay still", "Nixplay video", "Elevator print", "Level 39 print", "Email header"];
+  // The six pieces of every event's kit: what each is, and where it actually goes.
+  const KITINFO = [
+    { slug: "web-hero", name: "Web hero", spec: "1600 × 900 JPG, under 500 KB",
+      where: "The picture atop this event's page on the site. Without one, the page shows the typographic card, which is fine." },
+    { slug: "nixplay-still", name: "Nixplay still", spec: "1080 × 1920 PNG or JPG, portrait",
+      where: "The bar, lobby, and Level 7 screens, sent to the frames at their email address." },
+    { slug: "nixplay-video", name: "Nixplay video", spec: "1080 × 1920 MP4, 10 to 20 seconds",
+      where: "The same three screens. Uploads by hand in the Nixplay dashboard; email cannot carry video." },
+    { slug: "elevator-print", name: "Elevator print", spec: "8.5 × 11 portrait PDF, 300 DPI",
+      where: "The printed sign in the elevator frames, posted one week out, removed the morning after." },
+    { slug: "level39-print", name: "Level 39 print", spec: "8.5 × 11 portrait PDF, 300 DPI",
+      where: "The sign on the Level 39 landing, worth printing whenever the event is up here. Its QR differs from the elevator's so scans are told apart." },
+    { slug: "email-header", name: "Email header", spec: "1200 × 600 JPG, under 200 KB",
+      where: "Tops the Mailchimp campaign for this event, and the weekly email when featured." },
+  ];
+  let assets = [], assetStorage = false;
+  const assetOf = (st, slug) => assets.find(a => a.stem === st && a.kind === slug);
   const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "June", "July", "Aug", "Sept", "Oct", "Nov", "Dec"];
   const DOW = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
@@ -167,13 +183,14 @@
         <div class="ecell etitle"><span class="et">${esc(h.Title)}${extra}</span><span class="esub">${esc(h.Category)} &middot; ${when}${g.series ? ` &middot; ${g.upcoming.length} upcoming` : ""}</span></div>
         <div class="ecell"><span class="pill ${cls(g.status)}">${esc(g.mixed ? "Mixed" : g.status)}</span></div>
         <div class="ecell"><span class="lbl">RSVPs</span>${rsvp}</div>
-        <div class="ecell"><span class="lbl">Asset kit</span>0 of 6</div>
-        <div class="ecell eact">${g.series ? `<button class="mini ghost" data-dates="${esc(g.key)}">${g.rows.length} dates</button>` : ""}<button class="mini" data-edit="${esc(g.key)}">Edit</button>${g.status !== "Archived" ? `<button class="mini ghost" data-archive="${esc(g.key)}">Archive</button>` : ""}</div>
+        <div class="ecell"><span class="lbl">Asset kit</span>${kitCount(stem(h))} of 6</div>
+        <div class="ecell eact">${g.series ? `<button class="mini ghost" data-dates="${esc(g.key)}">${g.rows.length} dates</button>` : ""}<button class="mini ghost" data-copylink="${esc(stem(h))}" title="Copies this date's page address, for emails and reminders">Link</button><button class="mini" data-edit="${esc(g.key)}">Edit</button>${g.status !== "Archived" ? `<button class="mini ghost" data-archive="${esc(g.key)}">Archive</button>` : ""}</div>
       </div>
       <div class="edates" data-dates-for="${esc(g.key)}" style="display:none">${g.rows.map(r => `
         <div class="edrow"><span class="edwhen">${esc(fmt(r.Date))} &middot; ${esc(r.Start)}</span>
           <span class="pill ${cls(r.Status)}">${esc(r.Status || "Draft")}</span>
           ${r.Moved ? '<span class="badge2">moved</span>' : ""}
+          <button class="mini ghost" data-copylink="${esc(stem(r))}" title="Copies this date's page address">Link</button>
           <button class="mini" data-editrow="${esc(g.key)}|${esc(r.id)}">Edit this date</button></div>`).join("")}
       </div>`;
     }).join("");
@@ -215,7 +232,14 @@
     $("#f-stem").textContent = stem({ Date: e.Date, Slug: e.Slug, Title: e.Title });
     $("#ed-cancel").disabled = true;
     $("#ed-cancel-note").textContent = status.email ? "" : "Guest notifications switch on once RSVPs are collected on the site.";
-    $("#ak").innerHTML = KIT.map(k => `<div class="akrow"><span class="akname">${k}<em>${k.startsWith("Nixplay") ? "1080 × 1920, portrait" : k.includes("print") ? "8.5 × 11, PDF 300 DPI" : k === "Web hero" ? "1600 × 900, JPG" : "1200 × 600, JPG"}</em></span><span class="akstate miss">Not uploaded</span><span class="akact"><span class="mini ghost" title="Uploads arrive with the next build">Upload</span></span></div>`).join("");
+    const edStem = stem({ Date: e.Date, Slug: e.Slug, Title: e.Title });
+    $("#ak").innerHTML = KITINFO.map(k => {
+      const a = assetOf(edStem, k.slug);
+      const up = a && a.uploaded;
+      return `<div class="akrow"><span class="akname">${k.name}<em>${k.spec}</em></span>
+        <span class="akstate ${up ? "done" : "miss"}">${up ? `Uploaded ${esc((a.uploaded || "").slice(0, 10))}` : "Not uploaded"}${a && a.canva ? " &middot; Canva linked" : ""}</span>
+        <span class="akact"><label class="mini ghost" for="s-assets" title="Files and Canva links are managed on the Assets screen">Manage</label></span></div>`;
+    }).join("");
     go("editor");
   }
 
@@ -650,10 +674,81 @@
     renderMsgs();
   }
 
-  // ---------------------------------------------------------------- assets, messages
+  // ---------------------------------------------------------------- assets
+  function kitCount(st) {
+    return KITINFO.filter(k => { const a = assetOf(st, k.slug); return a && a.uploaded; }).length;
+  }
+
   function renderAssets() {
+    const box = $("#assets"); if (!box) return;
+    const note = $("#assets-storage");
+    if (note) note.style.display = assetStorage ? "none" : "";
     const gs = groups().filter(g => g.status !== "Archived");
-    $("#assets").innerHTML = gs.map(g => `<div class="acard"><div class="ahead"><span class="at">${esc(g.head.Title)}</span><span class="asub">${esc(g.series ? g.head.Series : fmt(g.head.Date))} &middot; <code>${esc(stem(g.head))}</code></span></div><div class="chips">${KIT.map(k => `<span class="chip miss"><i>+</i>${k}</span>`).join("")}</div></div>`).join("");
+    box.innerHTML = gs.map(g => {
+      const st = stem(g.head);
+      const rows = KITINFO.map(k => {
+        const a = assetOf(st, k.slug);
+        const up = a && a.uploaded;
+        const state = up
+          ? `<span class="akstate done">${esc(a.filename)} &middot; ${a.size ? Math.max(1, Math.round(a.size / 1024)) + " KB &middot; " : ""}${esc((a.uploaded || "").slice(0, 10))}</span>`
+          : `<span class="akstate miss">Not uploaded</span>`;
+        return `<div class="akrow">
+          <span class="akname">${k.name}<em>${k.spec}</em></span>
+          <span>${state}<span class="akwhere">${k.where}</span></span>
+          <span class="akact">
+            ${up ? `<a class="mini" href="/api/assets/${esc(st)}/${k.slug}" title="The final version, for any admin on any device">Download</a>` : ""}
+            <button class="mini${up ? " ghost" : ""}" data-aupload="${esc(st)}|${k.slug}" ${assetStorage ? "" : 'disabled title="Link the R2 bucket first; see the note above"'}>${up ? "Replace" : "Upload"}</button>
+            ${a && a.canva ? `<a class="mini ghost" href="${esc(a.canva)}" target="_blank" rel="noopener" title="Opens the design in Canva for editing">Canva</a>` : ""}
+            <button class="mini ghost" data-acanva="${esc(st)}|${k.slug}" title="Save the Canva address where this piece is edited">${a && a.canva ? "Edit link" : "Canva link"}</button>
+            ${up ? `<button class="mini ghost" data-adelete="${esc(st)}|${k.slug}">Remove file</button>` : ""}
+          </span></div>`;
+      }).join("");
+      return `<div class="acard"><div class="ahead"><span class="at">${esc(g.head.Title)}</span><span class="asub">${esc(g.series ? g.head.Series : fmt(g.head.Date))} &middot; <code>${esc(st)}</code> &middot; ${kitCount(st)} of 6 uploaded</span></div><div class="aklist">${rows}</div></div>`;
+    }).join("");
+  }
+
+  async function loadAssets() {
+    try { const d = await api("/api/assets"); assets = d.assets; assetStorage = d.storage; }
+    catch (e) { assets = []; assetStorage = false; }
+    renderAssets();
+  }
+
+  let pendingAsset = null;
+  function uploadAsset(st, slug) {
+    pendingAsset = { st, slug };
+    const inp = $("#afile"); inp.value = ""; inp.click();
+  }
+
+  async function sendAssetFile(file) {
+    const { st, slug } = pendingAsset; pendingAsset = null;
+    if (file.size > 95 * 1024 * 1024) { toast("That file is over the 95 MB upload ceiling. Compress it, or keep the master in Canva.", "warn"); return; }
+    toast(`Uploading ${file.name}…`);
+    try {
+      const r = await fetch(`/api/assets/${encodeURIComponent(st)}/${slug}`, {
+        method: "PUT",
+        headers: { "x-filename": encodeURIComponent(file.name), "content-type": file.type || "application/octet-stream" },
+        body: file,
+      });
+      const d = await r.json();
+      if (!r.ok) throw new Error(d.error || "Upload failed: " + r.status);
+      assets = assets.filter(a => !(a.stem === st && a.kind === slug)).concat([d.asset]);
+      renderAssets(); renderEvents();
+      toast(`${file.name} is up. Any admin can download it from here now.`);
+    } catch (e) { toast(e.message, "warn"); }
+  }
+
+  function editCanva(st, slug) {
+    const a = assetOf(st, slug);
+    const v = prompt("The Canva address for this piece (blank removes the link):", (a && a.canva) || "https://www.canva.com/design/");
+    if (v === null) return;
+    api(`/api/assets/${encodeURIComponent(st)}/${slug}`, { method: "PATCH", body: JSON.stringify({ canva: v.trim() }) })
+      .then(d => {
+        assets = assets.filter(x => !(x.stem === st && x.kind === slug));
+        if (d.asset) assets.push(d.asset);
+        renderAssets();
+        toast(v.trim() ? "Canva link saved." : "Canva link removed.");
+      })
+      .catch(e => toast(e.message, "warn"));
   }
 
   // ---------------------------------------------------------------- spaces
@@ -786,6 +881,7 @@
     catch (e) { evError = e.message; }
     try { rsvps = (await api("/api/rsvps")).rsvps; } catch (e) { rsvps = []; }
     rsvpCache = null;
+    await loadAssets();
     renderAll();
     loadAnalytics();
     loadResidents();
@@ -794,7 +890,7 @@
   }
 
   document.addEventListener("click", ev => {
-    const r = ev.target.closest("[data-rotate],[data-ends],[data-toggle],[data-rdelete],[data-addres],[data-addbulk],[data-printcards],[data-mreplied],[data-marchive],[data-wconfirm],[data-redit],[data-rcancel],[data-addrsvp],[data-savearsvp],[data-closearsvp],[data-rsvpkey],[data-addbooking],[data-unbook]");
+    const r = ev.target.closest("[data-rotate],[data-ends],[data-toggle],[data-rdelete],[data-addres],[data-addbulk],[data-printcards],[data-mreplied],[data-marchive],[data-wconfirm],[data-redit],[data-rcancel],[data-addrsvp],[data-savearsvp],[data-closearsvp],[data-copylink],[data-aupload],[data-acanva],[data-adelete],[data-rsvpkey],[data-addbooking],[data-unbook]");
     if (r) {
       if (r.dataset.rotate) {
         const p = residents.find(x => String(x.id) === r.dataset.rotate);
@@ -860,6 +956,30 @@
           toast("Cancelled. Their seats are free for the waitlist; use Confirm seats to hand them on.");
           notifyRsvp(row, "cancel");
         });
+      } else if (r.dataset.aupload) {
+        const [st, slug] = r.dataset.aupload.split("|");
+        uploadAsset(st, slug);
+      } else if (r.dataset.acanva) {
+        const [st, slug] = r.dataset.acanva.split("|");
+        editCanva(st, slug);
+      } else if (r.dataset.adelete) {
+        const [st, slug] = r.dataset.adelete.split("|");
+        const k = KITINFO.find(x => x.slug === slug);
+        if (confirm(`Remove the uploaded ${k ? k.name : "file"} for ${st}? The Canva link, if any, stays.`)) {
+          api(`/api/assets/${encodeURIComponent(st)}/${slug}`, { method: "DELETE" })
+            .then(d => {
+              assets = assets.filter(x => !(x.stem === st && x.kind === slug));
+              if (d.asset) assets.push(d.asset);
+              renderAssets(); renderEvents();
+              toast("File removed.");
+            })
+            .catch(e => toast(e.message, "warn"));
+        }
+      } else if (r.dataset.copylink) {
+        const url = "https://181residents.com/rsvp/" + r.dataset.copylink;
+        navigator.clipboard.writeText(url)
+          .then(() => toast("Copied: " + url))
+          .catch(() => prompt("Copy the event link:", url));
       } else if (r.dataset.addrsvp !== undefined) openAddRsvp();
       else if (r.dataset.savearsvp !== undefined) saveAddRsvp();
       else if (r.dataset.closearsvp !== undefined) $("#ar-card").style.display = "none";
@@ -925,6 +1045,11 @@
     if (ev.target.id === "f-title" || ev.target.id === "f-date" || ev.target.id === "f-slug") $("#f-stem").textContent = stem({ Date: $("#f-date").value, Slug: $("#f-slug").value.trim(), Title: $("#f-title").value });
   });
   document.addEventListener("input", ev => { if (ev.target.id === "f-title" && !editing.row) $("#f-slug").placeholder = slugify(ev.target.value); });
+  document.addEventListener("change", ev => {
+    if (ev.target.id === "afile" && pendingAsset && ev.target.files && ev.target.files[0]) {
+      sendAssetFile(ev.target.files[0]);
+    }
+  });
 
   // Sign out must clear BOTH Access sessions: this site's cookie, and the one
   // on the Access team domain, or Access quietly signs the same person back in.

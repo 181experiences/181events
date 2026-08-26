@@ -9,6 +9,7 @@ export async function onRequestGet({ env }) {
     analytics: !!(env.CF_API_TOKEN && env.CF_ACCOUNT_ID && env.CF_SITE_TAG),
     signin: !!env.SESSION_SECRET,
     roles: !!(env.OWNER_EMAILS || env.DESK_EMAILS),
+    assets: !!env.KIT,
     mode: "cloudflare",
   });
 }
