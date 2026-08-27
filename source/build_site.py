@@ -181,7 +181,7 @@ open(f"{SITE}/index.html", "w", encoding="utf-8").write(html)
 
 # Each QR standee and the weekly email land on their own copy of the calendar, so Cloudflare
 # Web Analytics can count them separately. Keep in step with SOURCES in functions/api/analytics.js.
-QR_PATHS = ["lobby", "coffee", "fitness", "office", "email", "bar", "screens"]
+QR_PATHS = ["lobby", "coffee", "fitness", "office", "email", "bar", "screens", "welcome"]
 for q in QR_PATHS:
     os.makedirs(f"{SITE}/q/{q}", exist_ok=True)
     open(f"{SITE}/q/{q}/index.html", "w", encoding="utf-8").write(html)

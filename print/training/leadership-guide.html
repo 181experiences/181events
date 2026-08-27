@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The leadership guide · 181residents.com</title>
+<style>
+  :root{
+    --ink:#16161a; --ink-body:#3a3a43; --ink-soft:#55555f;
+    --paper:#f7f4ef; --paper-2:#fffdfa; --line:#ddd6cb;
+    --red:#c41f26; --stone:#7a7266;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{background:var(--paper);color:var(--ink-body);
+    font-family:'Hanken Grotesk',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+    font-size:15.5px;line-height:1.65}
+  .page{max-width:760px;margin:0 auto;padding:56px 28px 72px}
+  .eyebrow{font-size:12px;letter-spacing:.22em;text-transform:uppercase;color:var(--stone);
+    text-align:center;font-weight:600;margin:0 0 6px}
+  .brand{font-family:Georgia,'Times New Roman',serif;font-size:30px;letter-spacing:.14em;
+    color:var(--ink);text-align:center;margin:0 0 10px}
+  .tick{width:88px;height:4px;background:var(--red);margin:18px auto 26px}
+  h1{font-family:Georgia,'Times New Roman',serif;font-weight:400;font-size:34px;line-height:1.2;
+    color:var(--ink);text-align:center;margin:0 0 10px}
+  .lede{text-align:center;color:var(--ink-soft);margin:0 auto 40px;max-width:560px}
+  h2{font-family:Georgia,'Times New Roman',serif;font-weight:400;font-size:23px;color:var(--ink);
+    margin:40px 0 4px;padding-top:14px;border-top:1px solid var(--line)}
+  h2::before{content:"";display:block;width:44px;height:4px;background:var(--red);margin:0 0 14px}
+  p{margin:10px 0}
+  ol,ul{margin:10px 0;padding-left:22px}
+  li{margin:6px 0}
+  strong{color:var(--ink);font-weight:600}
+  .aside{background:var(--paper-2);border:1px solid var(--line);border-radius:4px;
+    padding:12px 16px;margin:16px 0;font-size:14.5px}
+  footer{margin-top:56px;text-align:center;color:var(--stone);font-size:13px}
+  @media print{
+    body{background:#fff;font-size:11.5pt}
+    .page{max-width:none;padding:0}
+    h2{break-after:avoid}
+    .aside,li{break-inside:avoid}
+    a{color:inherit;text-decoration:none}
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+<p class="eyebrow">Leadership · Resident events</p>
+<p class="brand">181 FREMONT</p>
+<div class="tick"></div>
+<h1>The leadership guide to 181residents.com</h1>
+<p class="lede">The admin at 181residents.com/admin runs the resident calendar end to end: events
+and series, RSVPs and waitlists, the asset kits behind every poster and screen, and the reporting.
+This guide covers the staff view for Scott, Leigh Anne, and Carley-Ann. The one-page cheat sheet is
+the short version, and the admin&rsquo;s own <strong>Instructions</strong> tab holds the deeper
+reference documents.</p>
+
+<h2>1 · Signing in, and who sees what</h2>
+<p>Go to <strong>181residents.com/admin</strong>, enter your own work email, and type in the code
+that arrives by email. The first code often comes back &ldquo;already been used&rdquo;; that is the
+mailbox&rsquo;s link scanner using it up before you can. Request another and the second one works.</p>
+<p>There are three views of this admin. Leo sees everything, including the text of resident
+messages. You see events, assets, residents, spaces, the dashboard, and message records. The front
+desk sees a working subset: codes, phoned-in RSVPs, spaces, and message records, with no event
+tools. Nothing needs configuring; the view follows the signed-in email.</p>
+<div class="aside"><strong>Two small habits.</strong> On any shared machine, use <strong>Sign
+out</strong> at the top right when you finish. And if you use the admin often, your browser will
+offer to install it as its own app; it then opens from the dock or home screen like anything
+else.</div>
+
+<h2>2 · How the calendar reaches residents</h2>
+<p>The admin edits a database; the resident site is built from it. Press <strong>Publish
+calendar</strong> after a working session and the site rebuilds from what is saved. A nightly
+rebuild at 3 AM keeps dates rolling forward on their own, so yesterday&rsquo;s events grey out and
+the Next Event tile stays honest without anyone touching anything.</p>
+
+<h2>3 · Creating an event</h2>
+<p>On the <strong>Events</strong> tab, <strong>+ New Event</strong> opens the editor. Most fields
+explain themselves; these carry the doctrine:</p>
+<ul>
+  <li><strong>Category</strong> matches the budget line items, so the monthly report rolls up
+  against what Scott already sees.</li>
+  <li><strong>Count in engagement reporting</strong>: choose List only whenever the host is not
+  Resident Experiences, so nothing credits us with someone else&rsquo;s attendance.</li>
+  <li><strong>RSVP type</strong>: Seat holds seats, Guest count collects outside-guest numbers
+  only, and Paid seat shows the price with seats held; payment itself stays off the site.</li>
+  <li><strong>Capacity</strong> left blank means no limit. <strong>RSVP closes</strong> is written
+  in words, for example the Monday of the event week for workshops, so materials can be ordered
+  against a firm count.</li>
+  <li>The <strong>marquee</strong> checkbox features one event on the home screen.</li>
+</ul>
+
+<h2>4 · Series</h2>
+<p>The Repeats picker writes one row per date, which is the quiet trick behind everything series
+shaped: a single week can be moved, re-timed, or skipped without touching the rest. In the editor,
+<strong>Which date of this series</strong> chooses the week you are looking at, and the
+<strong>apply to every upcoming date</strong> box decides how far a change reaches. Untick it to
+change one date only. When a date moves, its sign-ups, counts, and feeds follow along; nothing is
+orphaned.</p>
+
+<h2>5 · Statuses, and the Archive</h2>
+<ul>
+  <li><strong>Draft</strong> is never published.</li>
+  <li><strong>Live</strong> is on the resident calendar.</li>
+  <li><strong>Unpublished</strong> is pulled from the site with its RSVPs held, so an event can go
+  back up unchanged.</li>
+  <li><strong>Archived</strong> is over, hidden, and kept for reporting.</li>
+</ul>
+<p>The Archive files itself: when an event&rsquo;s last date passes, or it is cancelled, it drifts
+off Events and Assets into the <strong>Archive</strong>, kit and all. Downloads and Canva links
+stay live there, ready to serve as templates for the next season. Reach it from the
+<strong>Archive&nbsp;·&nbsp;N</strong> link atop Events or Assets; restoring is one edit, status
+back to Live, and it walks back out.</p>
+
+<h2>6 · Capacity, waitlists, and Confirm seats</h2>
+<p>A full event queues a waitlist, and it is one queue: the site, the desk, and this admin all
+feed the same line. Freed seats are never handed out automatically while anyone waits. On the
+Dashboard, <strong>Confirm seats</strong> appears on a waitlist row once seats free up; pressing it
+gives them to that party and opens a note to them, ready to send. A confirmed party never loses
+seats by editing their RSVP, and a request to grow only goes through if it fits.</p>
+<p>RSVPs are parties: a resident says how many are coming, up to six, and may list names. The
+per-event rollup shows parties by unit; a unit appearing twice for one event is worth a glance,
+since a household can double-count itself.</p>
+
+<h2>7 · Telling residents about changes</h2>
+<p>Change a Live event&rsquo;s date, time, or location while people are signed up, and one BCC
+email opens in Outlook addressed to everyone affected, with old and new spelled out and a line
+about updating calendars. Read it, then send it; it goes from your own mailbox, on purpose, so
+nothing is sent in your name unseen. If someone signed up has no email on file, the screen says so,
+and a call or a word in the lobby closes the loop.</p>
+<p><strong>Cancel &amp; notify guests</strong>, in the editor, is the graceful exit: it pulls the
+event from the site, holds the RSVPs, and opens the cancellation draft.</p>
+<p>Two companions to know. <strong>Link</strong>, on any event row or series date, copies that
+date&rsquo;s page address, made for pasting into emails and reminders. And residents who subscribed
+to the calendar feed update automatically; those who used <strong>Add to My Calendar</strong>
+re-tap it once after a change, which the drafts already explain.</p>
+
+<h2>8 · Asset kits: masters and overrides</h2>
+<p>Every event carries a kit: hero image, Nixplay still, elevator sign, and so on, each row saying
+what the piece is and where it goes. Per piece there are two homes: the <strong>uploaded
+file</strong> is the final version, here for anyone to download on any device, and the
+<strong>Canva link</strong> beside it opens the living design for edits.</p>
+<p>A series carries <strong>one master kit</strong>, under Assets, and every date inherits it. When
+one week needs its own artwork, open that date in the editor: the kit section shows what the date
+actually uses, and <strong>Override this date</strong> gives it its own file while the rest of the
+series stays on the master. <strong>Back to series kit</strong> hands it back. Every file is named
+from the event&rsquo;s stem, so it stays identifiable in Canva, on Nixplay, or at the print shop.
+Specs live under Instructions, Screens &amp; Print.</p>
+
+<h2>9 · The Dashboard, and the monthly story</h2>
+<p>The Dashboard shows 7, 30, or 90 days: visits by day, where traffic came from (every QR standee
+and the weekly email carry their own link, so each scan is attributable), what residents open the
+site on, the live calendar by category, and the RSVP rollups. <strong>Download CSV</strong> exports
+the period for Excel.</p>
+<p>The reporting doctrine, worth repeating in any board conversation: with a small year-round
+population, counts stand beside their percentages, and month-to-month swings read as noise until
+three months agree. Events hosted by others are listed but not counted, so the engagement figures
+only ever claim what Resident Experiences actually did.</p>
+
+<h2>10 · Messages</h2>
+<p>The Messages tab shows who wrote, when, and whether it has been answered, so response times are
+visible. The text itself is private to Leo: residents write to a person, not a department, and the
+inbox keeps that promise.</p>
+
+<h2>11 · Residents and codes, in brief</h2>
+<p>Sign-in codes are the desk&rsquo;s daily work, and the desk guide covers the rescue routine. The
+staff view has the same Residents screen when needed: one code per person, <strong>Rotate</strong>
+for a fresh one, end dates for temporary stays, Disable for move-outs, and <strong>Print code
+cards</strong> for a sheet of cards at move-in or a re-issue.</p>
+
+<footer>181 Fremont Residences · Resident Experiences · August 2026</footer>
+</div>
+</body>
+</html>
