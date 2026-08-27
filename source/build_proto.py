@@ -84,27 +84,33 @@ for m in MONTHS:
 GEN_CSS = "\n  ".join(rules)
 
 # ------------------------------------------------------------------ month grids
+def day_is_past(m, d):
+    year = int(m["name"].split()[-1])
+    return _dt(year, m["num"], d).date() < TODAY
+
 def month_block(m):
     k, days, fd = m["key"], m["days"], m["first_dow"]
     cells = ['<div class="cell empty"></div>'] * fd
     for d in range(1, days + 1):
         evs = evs_on(k, d)
+        gone = " past" if day_is_past(m, d) else ""
         dots = '<span class="dots">' + '<span class="dot"></span>' * min(len(evs), 3) + '</span>'
         if not evs:
-            cells.append(f'<div class="cell plain"><span>{d}</span><span class="dots"></span></div>')
+            cells.append(f'<div class="cell plain{gone}"><span>{d}</span><span class="dots"></span></div>')
         elif len(evs) == 1:
-            cells.append(f'<label class="cell has" for="r-ev{evs[0]["id"]}" '
+            cells.append(f'<label class="cell has{gone}" for="r-ev{evs[0]["id"]}" '
                          f'aria-label="{dow_of(k,d)} {short_month(k)} {d}, 1 event"><span>{d}</span>{dots}</label>')
         else:
-            cells.append(f'<label class="cell has" for="d-{k}-{d}" '
+            cells.append(f'<label class="cell has{gone}" for="d-{k}-{d}" '
                          f'aria-label="{dow_of(k,d)} {short_month(k)} {d}, {len(evs)} events"><span>{d}</span>{dots}</label>')
     panels = []
     for d in days_with_events(k):
         evs = evs_on(k, d)
         if len(evs) < 2:
             continue
+        gone = " past" if day_is_past(m, d) else ""
         rows = "".join(
-            f'<label class="ev" for="r-ev{e["id"]}">'
+            f'<label class="ev{gone}" for="r-ev{e["id"]}">'
             f'<span class="ev-time">{e["time"]}</span>'
             f'<span class="ev-body"><span class="ev-title">{e["title"]}</span>'
             f'<span class="ev-meta">{e["loc"]}</span>{tag_for(e)}</span>'
@@ -131,7 +137,7 @@ for m in MONTHS:
             datecell = (f'<span class="dnum">{d}</span><span class="dday">{dow_s(k,d)}</span>'
                         if i == 0 else '')
             rows.append(
-                f'<label class="lrow{" marquee" if e["marquee"] else ""}" for="r-ev{e["id"]}">'
+                f'<label class="lrow{" marquee" if e["marquee"] else ""}{" past" if day_is_past(m, d) else ""}" for="r-ev{e["id"]}">'
                 f'<span class="ldate">{datecell}</span>'
                 f'<span class="ev-body"><span class="ev-title">{e["title"]}</span>'
                 f'<span class="ev-meta">{e["time"]} &middot; {e["loc"]}</span>{tag_for(e)}</span>'
@@ -172,6 +178,35 @@ def event_screen(e):
     cta = '<div class="cta">'
     note = ""
     rsvp_href = f"/rsvp/{e['on'].isoformat()}_{e['slug']}"
+    gone = e["on"] < TODAY
+
+    if gone:
+        # A passed event stays readable, an enticement for the next one, but
+        # nothing invites an RSVP or a calendar entry for what already happened.
+        label = ("Registration Closed" if e["rsvp"] == "guest"
+                 else "Seats Closed" if e["rsvp"] == "paid"
+                 else "RSVP Closed" if e["rsvp"] == "standard" else "")
+        if label:
+            cta += f'<span class="btn off">{label}</span>'
+        cta += '<span class="btn ghost off">Add to My Calendar</span></div>'
+        ics_href(e)   # the calendar file still builds; subscribers' feeds manage themselves
+        note = "This one has passed. The calendar has what&rsquo;s coming next; we&rsquo;d love to see you there."
+        box = f'<div class="note" style="margin-top:14px">{note}</div>'
+        eyebrow = e["sub"] or e["cat"]
+        return f'''<section class="screen" id="scr-ev{e["id"]}">
+    <div class="wrap">
+      <label class="back" for="r-cal">&larr; Back to calendar</label>
+      <div class="ebody">
+        {hero}
+        <div class="e-eyebrow">{eyebrow} &middot; Past event</div>
+        <h1 class="e-title">{e["title"]}</h1>
+        {facts}
+        <div class="e-copy">{"".join(f"<p>{p}</p>" for p in e["desc"])}</div>
+        {box}
+        {cta}
+      </div>
+    </div>
+  </section>'''
 
     if e["rsvp"] == "guest":
         guest_ui = ('<div class="guestbox"><div class="gq">Bringing someone from outside the building?</div>'
@@ -440,6 +475,16 @@ HTML = f'''<!DOCTYPE html>
   .btn:hover{{background:#a5171d;border-color:#a5171d}}
   .btn.ghost{{background:transparent;color:var(--ink);border-color:#c9c0b3}}
   .btn.ghost:hover{{border-color:var(--ink);background:transparent}}
+  /* passed events: readable, never actionable */
+  .btn.off{{background:#cdc5b9;border-color:#cdc5b9;color:#fffdfa;cursor:default;pointer-events:none}}
+  .btn.ghost.off{{background:transparent;color:#b8b0a4;border-color:#e0d9cd;cursor:default;pointer-events:none}}
+  .cell.past{{background:#f2eee7;border-color:#e7e0d5;color:#c3bbae}}
+  .cell.past .dot{{background:#d9b3b5}}
+  .cell.has.past:hover{{border-color:#c9c0b3}}
+  .ev.past .ev-title,.lrow.past .ev-title{{color:#a9a196}}
+  .ev.past .ev-meta,.lrow.past .ev-meta,.lrow.past .ldate .dnum{{color:#b8b0a4}}
+  .ev.past .tag,.lrow.past .tag{{opacity:.55}}
+  .lrow.past.marquee{{background:none;border-left-color:#d9b3b5}}
   .rsvpbtn .s-on{{display:none}}
   .note{{font-size:16px;color:var(--stone);margin:0 0 80px}}
   .rsvpbox{{background:var(--paper-2);border:1px solid var(--line);border-left:3px solid var(--red);
