@@ -11,7 +11,7 @@ CATEGORIES = ["Morning Offering", "Happy Hour", "Community Dinner", "Culinary Ex
 STATUSES = ["Draft", "Live", "Unpublished", "Archived"]
 RSVP_TYPES = ["None", "Guest count only", "Seat", "Paid seat"]
 
-SCREENS = ["dash", "events", "editor", "assets", "res", "spaces", "msgs", "inst",
+SCREENS = ["dash", "events", "editor", "assets", "arch", "res", "spaces", "msgs", "inst",
            "inst-events", "inst-brand", "inst-email", "inst-screens"]
 NAV_OF = {"dash": "dash", "events": "events", "editor": "events", "assets": "assets",
           "res": "res", "spaces": "spaces", "msgs": "msgs", "inst": "inst",
@@ -255,7 +255,11 @@ HTML = f'''<!DOCTYPE html>
   .akact{{display:flex;gap:8px;justify-content:flex-end}}
   @media(max-width:760px){{ .akrow{{grid-template-columns:1fr;gap:8px}} .akact{{justify-content:flex-start}} }}
   .acard{{background:var(--paper-2);border:1px solid var(--line);border-radius:var(--radius);padding:14px 16px;margin-bottom:8px}}
-  .ahead{{margin-bottom:14px}}
+  .ahead{{display:flex;align-items:center;justify-content:space-between;gap:12px;cursor:pointer;margin-bottom:0}}
+  .ahead .chev{{color:var(--stone);font-size:20px;line-height:1;transition:transform .15s;flex:0 0 auto}}
+  .acard.open .ahead .chev{{transform:rotate(90deg)}}
+  .acard .aklist{{display:none;margin-top:14px}}
+  .acard.open .aklist{{display:block}}
   .at{{display:block;font-family:var(--fd);font-weight:600;font-size:15px;color:var(--ink)}}
   .asub{{display:block;font-size:13px;color:var(--stone);margin-top:5px}}
 
@@ -457,7 +461,7 @@ HTML = f'''<!DOCTYPE html>
   <input class="state" type="radio" name="filt" id="f-unpublished">
   <input class="state" type="radio" name="filt" id="f-archived">
   <div class="wrap">
-    <div class="phead"><h1>Events</h1><div style="display:flex;gap:10px;flex-wrap:wrap"><button class="btn ghost" data-publish title="Rebuild the resident calendar from what is saved">Publish calendar</button><button class="btn" data-new>+ New Event</button></div></div>
+    <div class="phead"><h1>Events</h1><div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center"><label class="mini ghost" for="s-arch" style="min-height:38px;display:inline-flex;align-items:center" title="Passed and cancelled events, with their asset kits, kept for reference">Archive &middot;&nbsp;<span id="arch-count-e">0</span></label><button class="btn ghost" data-publish title="Rebuild the resident calendar from what is saved">Publish calendar</button><button class="btn" data-new>+ New Event</button></div></div>
     <div class="psub" id="evcount">Loading&hellip;</div>
   </div>
   <div class="wrap"><div class="tabs">
@@ -566,7 +570,7 @@ HTML = f'''<!DOCTYPE html>
 
 <!-- ================= ASSETS ================= -->
 <section class="screen" id="scr-assets"><div class="wrap">
-  <div class="phead"><h1>Assets</h1></div>
+  <div class="phead"><h1>Assets</h1><label class="mini ghost" for="s-arch" style="min-height:38px;display:inline-flex;align-items:center" title="Passed and cancelled events, with their asset kits, kept for reference">Archive &middot;&nbsp;<span id="arch-count-a">0</span></label></div>
   <div class="psub">One kit per event, two homes per piece: the <strong>uploaded file</strong> is the final version, here for any admin on any device to download; the <strong>Canva link</strong> beside it opens the living design for edits. Each row says what the piece is and where it goes.</div>
   <div class="callout" id="assets-storage" style="display:none;margin-bottom:18px">
     <strong>File storage is not linked yet.</strong> Canva links save fine already. For uploads, create an R2 bucket
@@ -579,6 +583,20 @@ HTML = f'''<!DOCTYPE html>
     <code>2026-09-25_a-night-in-mexico-city_nixplay-still.jpg</code>
   </div>
   <div id="assets"></div>
+</div></section>
+
+<!-- ================= ARCHIVE ================= -->
+<section class="screen" id="scr-arch"><div class="wrap">
+  <label class="back" for="s-events">&larr; Back to Events</label>
+  <div class="phead"><h1>Archive</h1></div>
+  <div class="psub" id="archcount">Loading&hellip;</div>
+  <div class="callout" style="margin:0 0 18px">
+    <strong>Nothing here is lost, and nothing here was filed by hand.</strong> Events drift in on their own when
+    their last date passes or they are cancelled, bringing their asset kits along: files still download, Canva
+    links still open, ready to serve as templates for the next one. Restoring an event is one edit; set its
+    status back to Live and it walks back out.
+  </div>
+  <div id="archlist"></div>
 </div></section>
 
 <!-- ================= RESIDENTS ================= -->

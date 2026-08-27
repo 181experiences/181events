@@ -61,6 +61,7 @@
   #s-events:checked ~ .body #scr-events{display:block}
   #s-editor:checked ~ .body #scr-editor{display:block}
   #s-assets:checked ~ .body #scr-assets{display:block}
+  #s-arch:checked ~ .body #scr-arch{display:block}
   #s-res:checked ~ .body #scr-res{display:block}
   #s-spaces:checked ~ .body #scr-spaces{display:block}
   #s-msgs:checked ~ .body #scr-msgs{display:block}
@@ -248,7 +249,11 @@
   .akact{display:flex;gap:8px;justify-content:flex-end}
   @media(max-width:760px){ .akrow{grid-template-columns:1fr;gap:8px} .akact{justify-content:flex-start} }
   .acard{background:var(--paper-2);border:1px solid var(--line);border-radius:var(--radius);padding:14px 16px;margin-bottom:8px}
-  .ahead{margin-bottom:14px}
+  .ahead{display:flex;align-items:center;justify-content:space-between;gap:12px;cursor:pointer;margin-bottom:0}
+  .ahead .chev{color:var(--stone);font-size:20px;line-height:1;transition:transform .15s;flex:0 0 auto}
+  .acard.open .ahead .chev{transform:rotate(90deg)}
+  .acard .aklist{display:none;margin-top:14px}
+  .acard.open .aklist{display:block}
   .at{display:block;font-family:var(--fd);font-weight:600;font-size:15px;color:var(--ink)}
   .asub{display:block;font-size:13px;color:var(--stone);margin-top:5px}
 
@@ -361,7 +366,7 @@
 <div class="mocknote" id="sysbar">Connecting&hellip;</div>
 
 <input class="state" type="radio" name="scr" id="s-dash" checked>
-<input class="state" type="radio" name="scr" id="s-events"><input class="state" type="radio" name="scr" id="s-editor"><input class="state" type="radio" name="scr" id="s-assets"><input class="state" type="radio" name="scr" id="s-res"><input class="state" type="radio" name="scr" id="s-spaces"><input class="state" type="radio" name="scr" id="s-msgs"><input class="state" type="radio" name="scr" id="s-inst"><input class="state" type="radio" name="scr" id="s-inst-events"><input class="state" type="radio" name="scr" id="s-inst-brand"><input class="state" type="radio" name="scr" id="s-inst-email"><input class="state" type="radio" name="scr" id="s-inst-screens">
+<input class="state" type="radio" name="scr" id="s-events"><input class="state" type="radio" name="scr" id="s-editor"><input class="state" type="radio" name="scr" id="s-assets"><input class="state" type="radio" name="scr" id="s-arch"><input class="state" type="radio" name="scr" id="s-res"><input class="state" type="radio" name="scr" id="s-spaces"><input class="state" type="radio" name="scr" id="s-msgs"><input class="state" type="radio" name="scr" id="s-inst"><input class="state" type="radio" name="scr" id="s-inst-events"><input class="state" type="radio" name="scr" id="s-inst-brand"><input class="state" type="radio" name="scr" id="s-inst-email"><input class="state" type="radio" name="scr" id="s-inst-screens">
 
 <div class="chrome">
 <div class="topbar"><div class="inner">
@@ -460,7 +465,7 @@
   <input class="state" type="radio" name="filt" id="f-unpublished">
   <input class="state" type="radio" name="filt" id="f-archived">
   <div class="wrap">
-    <div class="phead"><h1>Events</h1><div style="display:flex;gap:10px;flex-wrap:wrap"><button class="btn ghost" data-publish title="Rebuild the resident calendar from what is saved">Publish calendar</button><button class="btn" data-new>+ New Event</button></div></div>
+    <div class="phead"><h1>Events</h1><div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center"><label class="mini ghost" for="s-arch" style="min-height:38px;display:inline-flex;align-items:center" title="Passed and cancelled events, with their asset kits, kept for reference">Archive &middot;&nbsp;<span id="arch-count-e">0</span></label><button class="btn ghost" data-publish title="Rebuild the resident calendar from what is saved">Publish calendar</button><button class="btn" data-new>+ New Event</button></div></div>
     <div class="psub" id="evcount">Loading&hellip;</div>
   </div>
   <div class="wrap"><div class="tabs">
@@ -569,7 +574,7 @@
 
 <!-- ================= ASSETS ================= -->
 <section class="screen" id="scr-assets"><div class="wrap">
-  <div class="phead"><h1>Assets</h1></div>
+  <div class="phead"><h1>Assets</h1><label class="mini ghost" for="s-arch" style="min-height:38px;display:inline-flex;align-items:center" title="Passed and cancelled events, with their asset kits, kept for reference">Archive &middot;&nbsp;<span id="arch-count-a">0</span></label></div>
   <div class="psub">One kit per event, two homes per piece: the <strong>uploaded file</strong> is the final version, here for any admin on any device to download; the <strong>Canva link</strong> beside it opens the living design for edits. Each row says what the piece is and where it goes.</div>
   <div class="callout" id="assets-storage" style="display:none;margin-bottom:18px">
     <strong>File storage is not linked yet.</strong> Canva links save fine already. For uploads, create an R2 bucket
@@ -582,6 +587,20 @@
     <code>2026-09-25_a-night-in-mexico-city_nixplay-still.jpg</code>
   </div>
   <div id="assets"></div>
+</div></section>
+
+<!-- ================= ARCHIVE ================= -->
+<section class="screen" id="scr-arch"><div class="wrap">
+  <label class="back" for="s-events">&larr; Back to Events</label>
+  <div class="phead"><h1>Archive</h1></div>
+  <div class="psub" id="archcount">Loading&hellip;</div>
+  <div class="callout" style="margin:0 0 18px">
+    <strong>Nothing here is lost, and nothing here was filed by hand.</strong> Events drift in on their own when
+    their last date passes or they are cancelled, bringing their asset kits along: files still download, Canva
+    links still open, ready to serve as templates for the next one. Restoring an event is one edit; set its
+    status back to Live and it walks back out.
+  </div>
+  <div id="archlist"></div>
 </div></section>
 
 <!-- ================= RESIDENTS ================= -->
@@ -1040,7 +1059,7 @@
       $("#evcount").textContent = "The events could not be loaded, so nothing below is current.";
       return;
     }
-    const gs = groups();
+    const gs = groups().filter(g => !inArchive(g));
     const badge = (t, c) => ` <span class="badge2 ${c || ""}">${esc(t)}</span>`;
     $("#evlist").innerHTML = gs.map(g => {
       const h = g.head;
@@ -1066,7 +1085,7 @@
           <button class="mini" data-editrow="${esc(g.key)}|${esc(r.id)}">Edit this date</button></div>`).join("")}
       </div>`;
     }).join("");
-    $("#evcount").textContent = `${gs.length} listings, ${events.filter(e => e.Status === "Live" && e.Date >= today()).length} live upcoming dates. Nothing appears on the resident site until its status is Live.`;
+    $("#evcount").textContent = `${gs.length} current listings, ${events.filter(e => e.Status === "Live" && e.Date >= today()).length} live upcoming dates. Passed and cancelled listings rest in the Archive. Nothing appears on the resident site until its status is Live.`;
   }
 
   // ---------------------------------------------------------------- editor
@@ -1634,31 +1653,69 @@
     return KITINFO.filter(k => { const a = assetOf(st, k.slug); return a && a.uploaded; }).length;
   }
 
+  // A group belongs in the archive when nothing about it is still to come:
+  // its last date passed, it was cancelled (Unpublished), or it was archived.
+  // Time does the filing; restoring an event walks it back out.
+  function inArchive(g) {
+    const t = today();
+    return !g.rows.some(r => r.Date >= t && r.Status !== "Archived" && r.Status !== "Unpublished");
+  }
+
+  function kitRowsHtml(st) {
+    return KITINFO.map(k => {
+      const a = assetOf(st, k.slug);
+      const up = a && a.uploaded;
+      const state = up
+        ? `<span class="akstate done">${esc(a.filename)} &middot; ${a.size ? Math.max(1, Math.round(a.size / 1024)) + " KB &middot; " : ""}${esc((a.uploaded || "").slice(0, 10))}</span>`
+        : `<span class="akstate miss">Not uploaded</span>`;
+      return `<div class="akrow">
+        <span class="akname">${k.name}<em>${k.spec}</em></span>
+        <span>${state}<span class="akwhere">${k.where}</span></span>
+        <span class="akact">
+          ${up ? `<a class="mini" href="/api/assets/${esc(st)}/${k.slug}" title="The final version, for any admin on any device">Download</a>` : ""}
+          <button class="mini${up ? " ghost" : ""}" data-aupload="${esc(st)}|${k.slug}" ${assetStorage ? "" : 'disabled title="Link the R2 bucket first; see the note above"'}>${up ? "Replace" : "Upload"}</button>
+          ${a && a.canva ? `<a class="mini ghost" href="${esc(a.canva)}" target="_blank" rel="noopener" title="Opens the design in Canva for editing">Canva</a>` : ""}
+          <button class="mini ghost" data-acanva="${esc(st)}|${k.slug}" title="Save the Canva address where this piece is edited">${a && a.canva ? "Edit link" : "Canva link"}</button>
+          ${up ? `<button class="mini ghost" data-adelete="${esc(st)}|${k.slug}">Remove file</button>` : ""}
+        </span></div>`;
+    }).join("");
+  }
+
+  function assetCard(g, sub) {
+    const st = stem(g.head);
+    return `<div class="acard"><div class="ahead" data-chev>
+      <span><span class="at">${esc(g.head.Title)}</span><span class="asub">${sub} &middot; <code>${esc(st)}</code> &middot; ${kitCount(st)} of 6 uploaded</span></span>
+      <span class="chev">&rsaquo;</span></div>
+      <div class="aklist">${kitRowsHtml(st)}</div></div>`;
+  }
+
   function renderAssets() {
     const box = $("#assets"); if (!box) return;
     const note = $("#assets-storage");
     if (note) note.style.display = assetStorage ? "none" : "";
-    const gs = groups().filter(g => g.status !== "Archived");
+    const all = groups();
+    const gs = all.filter(g => !inArchive(g));
+    const archived = all.length - gs.length;
+    const ce = $("#arch-count-e"), ca = $("#arch-count-a");
+    if (ce) ce.textContent = archived;
+    if (ca) ca.textContent = archived;
+    box.innerHTML = gs.map(g => assetCard(g, esc(g.series ? g.head.Series : fmt(g.head.Date)))).join("")
+      || '<div class="nodata">Nothing current. New events bring their kits with them.</div>';
+    renderArchive(all.filter(inArchive));
+  }
+
+  function renderArchive(gs) {
+    const box = $("#archlist"); if (!box) return;
+    gs.sort((a, b) => b.rows[b.rows.length - 1].Date.localeCompare(a.rows[a.rows.length - 1].Date));
+    $("#archcount").textContent = gs.length
+      ? `${gs.length} listing${gs.length === 1 ? "" : "s"}, newest first. Files and Canva links stay live for reference.`
+      : "Empty so far. Events arrive here on their own once their last date passes.";
     box.innerHTML = gs.map(g => {
-      const st = stem(g.head);
-      const rows = KITINFO.map(k => {
-        const a = assetOf(st, k.slug);
-        const up = a && a.uploaded;
-        const state = up
-          ? `<span class="akstate done">${esc(a.filename)} &middot; ${a.size ? Math.max(1, Math.round(a.size / 1024)) + " KB &middot; " : ""}${esc((a.uploaded || "").slice(0, 10))}</span>`
-          : `<span class="akstate miss">Not uploaded</span>`;
-        return `<div class="akrow">
-          <span class="akname">${k.name}<em>${k.spec}</em></span>
-          <span>${state}<span class="akwhere">${k.where}</span></span>
-          <span class="akact">
-            ${up ? `<a class="mini" href="/api/assets/${esc(st)}/${k.slug}" title="The final version, for any admin on any device">Download</a>` : ""}
-            <button class="mini${up ? " ghost" : ""}" data-aupload="${esc(st)}|${k.slug}" ${assetStorage ? "" : 'disabled title="Link the R2 bucket first; see the note above"'}>${up ? "Replace" : "Upload"}</button>
-            ${a && a.canva ? `<a class="mini ghost" href="${esc(a.canva)}" target="_blank" rel="noopener" title="Opens the design in Canva for editing">Canva</a>` : ""}
-            <button class="mini ghost" data-acanva="${esc(st)}|${k.slug}" title="Save the Canva address where this piece is edited">${a && a.canva ? "Edit link" : "Canva link"}</button>
-            ${up ? `<button class="mini ghost" data-adelete="${esc(st)}|${k.slug}">Remove file</button>` : ""}
-          </span></div>`;
-      }).join("");
-      return `<div class="acard"><div class="ahead"><span class="at">${esc(g.head.Title)}</span><span class="asub">${esc(g.series ? g.head.Series : fmt(g.head.Date))} &middot; <code>${esc(st)}</code> &middot; ${kitCount(st)} of 6 uploaded</span></div><div class="aklist">${rows}</div></div>`;
+      const first = g.rows[0].Date, last = g.rows[g.rows.length - 1].Date;
+      const span = g.series ? `${fmt(first)} to ${fmt(last)}` : fmt(g.head.Date);
+      const why = g.status === "Archived" ? "Archived" : g.status === "Unpublished" ? "Cancelled" : "Passed";
+      const sub = `${esc(span)} &middot; <span class="pill ${cls(g.status === "Live" ? "archived" : g.status)}">${why}</span> <button class="mini ghost" data-edit="${esc(g.key)}" style="margin-left:8px">Open</button>`;
+      return assetCard(g, sub);
     }).join("");
   }
 
@@ -2008,6 +2065,11 @@
   document.addEventListener("click", ev => {
     const b = ev.target.closest("#ed-cancel");
     if (b && !b.disabled) cancelEvent();
+  });
+  document.addEventListener("click", ev => {
+    const head = ev.target.closest("[data-chev]");
+    if (!head || ev.target.closest("button,a,.mini")) return;
+    head.closest(".acard").classList.toggle("open");
   });
 
   // Sign out must clear BOTH Access sessions: this site's cookie, and the one

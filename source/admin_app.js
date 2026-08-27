@@ -168,7 +168,7 @@
       $("#evcount").textContent = "The events could not be loaded, so nothing below is current.";
       return;
     }
-    const gs = groups();
+    const gs = groups().filter(g => !inArchive(g));
     const badge = (t, c) => ` <span class="badge2 ${c || ""}">${esc(t)}</span>`;
     $("#evlist").innerHTML = gs.map(g => {
       const h = g.head;
@@ -194,7 +194,7 @@
           <button class="mini" data-editrow="${esc(g.key)}|${esc(r.id)}">Edit this date</button></div>`).join("")}
       </div>`;
     }).join("");
-    $("#evcount").textContent = `${gs.length} listings, ${events.filter(e => e.Status === "Live" && e.Date >= today()).length} live upcoming dates. Nothing appears on the resident site until its status is Live.`;
+    $("#evcount").textContent = `${gs.length} current listings, ${events.filter(e => e.Status === "Live" && e.Date >= today()).length} live upcoming dates. Passed and cancelled listings rest in the Archive. Nothing appears on the resident site until its status is Live.`;
   }
 
   // ---------------------------------------------------------------- editor
@@ -762,31 +762,69 @@
     return KITINFO.filter(k => { const a = assetOf(st, k.slug); return a && a.uploaded; }).length;
   }
 
+  // A group belongs in the archive when nothing about it is still to come:
+  // its last date passed, it was cancelled (Unpublished), or it was archived.
+  // Time does the filing; restoring an event walks it back out.
+  function inArchive(g) {
+    const t = today();
+    return !g.rows.some(r => r.Date >= t && r.Status !== "Archived" && r.Status !== "Unpublished");
+  }
+
+  function kitRowsHtml(st) {
+    return KITINFO.map(k => {
+      const a = assetOf(st, k.slug);
+      const up = a && a.uploaded;
+      const state = up
+        ? `<span class="akstate done">${esc(a.filename)} &middot; ${a.size ? Math.max(1, Math.round(a.size / 1024)) + " KB &middot; " : ""}${esc((a.uploaded || "").slice(0, 10))}</span>`
+        : `<span class="akstate miss">Not uploaded</span>`;
+      return `<div class="akrow">
+        <span class="akname">${k.name}<em>${k.spec}</em></span>
+        <span>${state}<span class="akwhere">${k.where}</span></span>
+        <span class="akact">
+          ${up ? `<a class="mini" href="/api/assets/${esc(st)}/${k.slug}" title="The final version, for any admin on any device">Download</a>` : ""}
+          <button class="mini${up ? " ghost" : ""}" data-aupload="${esc(st)}|${k.slug}" ${assetStorage ? "" : 'disabled title="Link the R2 bucket first; see the note above"'}>${up ? "Replace" : "Upload"}</button>
+          ${a && a.canva ? `<a class="mini ghost" href="${esc(a.canva)}" target="_blank" rel="noopener" title="Opens the design in Canva for editing">Canva</a>` : ""}
+          <button class="mini ghost" data-acanva="${esc(st)}|${k.slug}" title="Save the Canva address where this piece is edited">${a && a.canva ? "Edit link" : "Canva link"}</button>
+          ${up ? `<button class="mini ghost" data-adelete="${esc(st)}|${k.slug}">Remove file</button>` : ""}
+        </span></div>`;
+    }).join("");
+  }
+
+  function assetCard(g, sub) {
+    const st = stem(g.head);
+    return `<div class="acard"><div class="ahead" data-chev>
+      <span><span class="at">${esc(g.head.Title)}</span><span class="asub">${sub} &middot; <code>${esc(st)}</code> &middot; ${kitCount(st)} of 6 uploaded</span></span>
+      <span class="chev">&rsaquo;</span></div>
+      <div class="aklist">${kitRowsHtml(st)}</div></div>`;
+  }
+
   function renderAssets() {
     const box = $("#assets"); if (!box) return;
     const note = $("#assets-storage");
     if (note) note.style.display = assetStorage ? "none" : "";
-    const gs = groups().filter(g => g.status !== "Archived");
+    const all = groups();
+    const gs = all.filter(g => !inArchive(g));
+    const archived = all.length - gs.length;
+    const ce = $("#arch-count-e"), ca = $("#arch-count-a");
+    if (ce) ce.textContent = archived;
+    if (ca) ca.textContent = archived;
+    box.innerHTML = gs.map(g => assetCard(g, esc(g.series ? g.head.Series : fmt(g.head.Date)))).join("")
+      || '<div class="nodata">Nothing current. New events bring their kits with them.</div>';
+    renderArchive(all.filter(inArchive));
+  }
+
+  function renderArchive(gs) {
+    const box = $("#archlist"); if (!box) return;
+    gs.sort((a, b) => b.rows[b.rows.length - 1].Date.localeCompare(a.rows[a.rows.length - 1].Date));
+    $("#archcount").textContent = gs.length
+      ? `${gs.length} listing${gs.length === 1 ? "" : "s"}, newest first. Files and Canva links stay live for reference.`
+      : "Empty so far. Events arrive here on their own once their last date passes.";
     box.innerHTML = gs.map(g => {
-      const st = stem(g.head);
-      const rows = KITINFO.map(k => {
-        const a = assetOf(st, k.slug);
-        const up = a && a.uploaded;
-        const state = up
-          ? `<span class="akstate done">${esc(a.filename)} &middot; ${a.size ? Math.max(1, Math.round(a.size / 1024)) + " KB &middot; " : ""}${esc((a.uploaded || "").slice(0, 10))}</span>`
-          : `<span class="akstate miss">Not uploaded</span>`;
-        return `<div class="akrow">
-          <span class="akname">${k.name}<em>${k.spec}</em></span>
-          <span>${state}<span class="akwhere">${k.where}</span></span>
-          <span class="akact">
-            ${up ? `<a class="mini" href="/api/assets/${esc(st)}/${k.slug}" title="The final version, for any admin on any device">Download</a>` : ""}
-            <button class="mini${up ? " ghost" : ""}" data-aupload="${esc(st)}|${k.slug}" ${assetStorage ? "" : 'disabled title="Link the R2 bucket first; see the note above"'}>${up ? "Replace" : "Upload"}</button>
-            ${a && a.canva ? `<a class="mini ghost" href="${esc(a.canva)}" target="_blank" rel="noopener" title="Opens the design in Canva for editing">Canva</a>` : ""}
-            <button class="mini ghost" data-acanva="${esc(st)}|${k.slug}" title="Save the Canva address where this piece is edited">${a && a.canva ? "Edit link" : "Canva link"}</button>
-            ${up ? `<button class="mini ghost" data-adelete="${esc(st)}|${k.slug}">Remove file</button>` : ""}
-          </span></div>`;
-      }).join("");
-      return `<div class="acard"><div class="ahead"><span class="at">${esc(g.head.Title)}</span><span class="asub">${esc(g.series ? g.head.Series : fmt(g.head.Date))} &middot; <code>${esc(st)}</code> &middot; ${kitCount(st)} of 6 uploaded</span></div><div class="aklist">${rows}</div></div>`;
+      const first = g.rows[0].Date, last = g.rows[g.rows.length - 1].Date;
+      const span = g.series ? `${fmt(first)} to ${fmt(last)}` : fmt(g.head.Date);
+      const why = g.status === "Archived" ? "Archived" : g.status === "Unpublished" ? "Cancelled" : "Passed";
+      const sub = `${esc(span)} &middot; <span class="pill ${cls(g.status === "Live" ? "archived" : g.status)}">${why}</span> <button class="mini ghost" data-edit="${esc(g.key)}" style="margin-left:8px">Open</button>`;
+      return assetCard(g, sub);
     }).join("");
   }
 
@@ -1136,6 +1174,11 @@
   document.addEventListener("click", ev => {
     const b = ev.target.closest("#ed-cancel");
     if (b && !b.disabled) cancelEvent();
+  });
+  document.addEventListener("click", ev => {
+    const head = ev.target.closest("[data-chev]");
+    if (!head || ev.target.closest("button,a,.mini")) return;
+    head.closest(".acard").classList.toggle("open");
   });
 
   // Sign out must clear BOTH Access sessions: this site's cookie, and the one
