@@ -556,7 +556,9 @@ HTML = f'''<!DOCTYPE html>
       <div class="hint">Every file in this kit is named from this stem, so it stays identifiable in Canva, on Nixplay, or at the print shop.</div></div>
     <div class="field f-full"><label class="fl">Asset kit</label>
       <div class="aklist" id="ak"></div>
-      <div class="hint">Files and Canva links are managed on the Assets screen; each row there says what the piece is and where it goes. Specs under Instructions &rarr; Screens &amp; Print.</div></div>
+      <div class="hint">What this date actually shows. A series carries one master kit under Assets that every date inherits;
+      <strong>Override this date</strong> gives just this one its own file, and <strong>Back to series kit</strong> hands it back.
+      Specs under Instructions &rarr; Screens &amp; Print.</div></div>
   </div>
 
   <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:30px" id="ed-actions">

@@ -560,7 +560,9 @@
       <div class="hint">Every file in this kit is named from this stem, so it stays identifiable in Canva, on Nixplay, or at the print shop.</div></div>
     <div class="field f-full"><label class="fl">Asset kit</label>
       <div class="aklist" id="ak"></div>
-      <div class="hint">Files and Canva links are managed on the Assets screen; each row there says what the piece is and where it goes. Specs under Instructions &rarr; Screens &amp; Print.</div></div>
+      <div class="hint">What this date actually shows. A series carries one master kit under Assets that every date inherits;
+      <strong>Override this date</strong> gives just this one its own file, and <strong>Back to series kit</strong> hands it back.
+      Specs under Instructions &rarr; Screens &amp; Print.</div></div>
   </div>
 
   <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:30px" id="ed-actions">
@@ -922,6 +924,11 @@
   ];
   let assets = [], assetStorage = false;
   const assetOf = (st, slug) => assets.find(a => a.stem === st && a.kind === slug);
+  // The MASTER kit lives on the event family itself (its slug): one upload,
+  // every date of a series inherits it. A single date may carry its own
+  // override, keyed by that date's full stem, which wins for that day alone.
+  const masterKey = e => e.Slug || slugify(e.Title || "");
+  const resolvedAsset = (e, kindSlug) => assetOf(stem(e), kindSlug) || assetOf(masterKey(e), kindSlug);
   const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "June", "July", "Aug", "Sept", "Oct", "Nov", "Dec"];
   const DOW = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
@@ -1070,11 +1077,12 @@
       const counts = rsvpForGroup(g);
       const rsvp = h.RSVP === "None" || !h.RSVP ? "Drop in"
         : `${counts.heads}${h.Capacity && !g.series ? ` of ${h.Capacity}` : ""}${counts.wait ? ` · ${counts.wait} waiting` : ""}`;
+      const kits = kitCount(masterKey(h));
       return `<div class="erow ${cls(g.status)}${g.mixed ? " live" : ""}" data-key="${esc(g.key)}">
         <div class="ecell etitle"><span class="et">${esc(h.Title)}${extra}</span><span class="esub">${esc(h.Category)} &middot; ${when}${g.series ? ` &middot; ${g.upcoming.length} upcoming` : ""}</span></div>
         <div class="ecell"><span class="pill ${cls(g.status)}">${esc(g.mixed ? "Mixed" : g.status)}</span></div>
         <div class="ecell"><span class="lbl">RSVPs</span>${rsvp}</div>
-        <div class="ecell"><span class="lbl">Asset kit</span>${kitCount(stem(h))} of 6</div>
+        <div class="ecell"><span class="lbl">Asset kit</span>${kits} of 6</div>
         <div class="ecell eact">${g.series ? `<button class="mini ghost" data-dates="${esc(g.key)}">${g.rows.length} dates</button>` : ""}<button class="mini ghost" data-copylink="${esc(stem(h))}" title="Copies this date's page address, for emails and reminders">Link</button><button class="mini" data-edit="${esc(g.key)}">Edit</button>${g.status !== "Archived" ? `<button class="mini ghost" data-archive="${esc(g.key)}">Archive</button>` : ""}</div>
       </div>
       <div class="edates" data-dates-for="${esc(g.key)}" style="display:none">${g.rows.map(r => `
@@ -1129,14 +1137,7 @@
           ? "Cancelling pulls this date from the calendar, holds its RSVPs, and opens a note to everyone signed up."
           : "Nobody has RSVP'd to this date yet; a quiet Unpublish from the status picks does the job.")
       : "";
-    const edStem = stem({ Date: e.Date, Slug: e.Slug, Title: e.Title });
-    $("#ak").innerHTML = KITINFO.map(k => {
-      const a = assetOf(edStem, k.slug);
-      const up = a && a.uploaded;
-      return `<div class="akrow"><span class="akname">${k.name}<em>${k.spec}</em></span>
-        <span class="akstate ${up ? "done" : "miss"}">${up ? `Uploaded ${esc((a.uploaded || "").slice(0, 10))}` : "Not uploaded"}${a && a.canva ? " &middot; Canva linked" : ""}</span>
-        <span class="akact"><label class="mini ghost" for="s-assets" title="Files and Canva links are managed on the Assets screen">Manage</label></span></div>`;
-    }).join("");
+    renderEditorKit();
     go("editor");
   }
 
@@ -1681,10 +1682,47 @@
     }).join("");
   }
 
+  // The editor shows a date's EFFECTIVE kit: its own override when one exists,
+  // else what it inherits from the series master. Overriding touches this date
+  // alone; "Back to series kit" hands the date back to the master.
+  function renderEditorKit() {
+    const box = $("#ak"); if (!box || !editing) return;
+    const row = editing.row;
+    if (!row) {
+      box.innerHTML = '<div class="akrow"><span class="akstate miss">Save the event first; its kit then lives under Assets, and each date can override it here.</span></div>';
+      return;
+    }
+    const mk = masterKey(row), dk = stem(row);
+    const isSeries = !!(editing.group && editing.group.series);
+    box.innerHTML = KITINFO.map(k => {
+      const own = isSeries ? assetOf(dk, k.slug) : null;
+      const mast = assetOf(mk, k.slug);
+      const ownUp = own && own.uploaded, mastUp = mast && mast.uploaded;
+      const eff = ownUp ? own : (mastUp ? mast : null);
+      const effKey = ownUp ? dk : mk;
+      let state;
+      if (ownUp) state = `<span class="akstate done">This date&rsquo;s own &middot; ${esc(own.filename)} &middot; ${esc((own.uploaded || "").slice(0, 10))}</span>`;
+      else if (mastUp) state = `<span class="akstate done">${isSeries ? "From the series kit" : "Uploaded"} &middot; ${esc(mast.filename)} &middot; ${esc((mast.uploaded || "").slice(0, 10))}</span>`;
+      else state = `<span class="akstate miss">Not uploaded${isSeries ? " &middot; the series kit lives under Assets" : ""}</span>`;
+      const canva = (own && own.canva) || (mast && mast.canva);
+      const acts = [
+        eff ? `<a class="mini" href="/api/assets/${esc(effKey)}/${k.slug}">Download</a>` : "",
+        isSeries
+          ? `<button class="mini ghost" data-aupload="${esc(dk)}|${k.slug}" ${assetStorage ? "" : 'disabled title="Link the R2 bucket first"'}>${ownUp ? "Replace override" : "Override this date"}</button>`
+          : `<button class="mini${eff ? " ghost" : ""}" data-aupload="${esc(mk)}|${k.slug}" ${assetStorage ? "" : 'disabled title="Link the R2 bucket first"'}>${eff ? "Replace" : "Upload"}</button>`,
+        ownUp ? `<button class="mini ghost" data-adelete="${esc(dk)}|${k.slug}" title="This date returns to the series kit">Back to series kit</button>` : "",
+        canva ? `<a class="mini ghost" href="${esc(canva)}" target="_blank" rel="noopener">Canva</a>` : "",
+      ].join("");
+      return `<div class="akrow"><span class="akname">${k.name}<em>${k.spec}</em></span><span>${state}</span><span class="akact">${acts}</span></div>`;
+    }).join("");
+  }
+
   function assetCard(g, sub) {
-    const st = stem(g.head);
+    const st = masterKey(g.head);
+    const overrides = g.series ? assets.filter(a => a.stem !== st && a.stem.endsWith("_" + st)).length : 0;
+    const inherit = g.series ? ` &middot; every date inherits this kit${overrides ? `, ${overrides} date override${overrides === 1 ? "" : "s"} (see the date in the editor)` : ""}` : "";
     return `<div class="acard"><div class="ahead" data-chev>
-      <span><span class="at">${esc(g.head.Title)}</span><span class="asub">${sub} &middot; <code>${esc(st)}</code> &middot; ${kitCount(st)} of 6 uploaded</span></span>
+      <span><span class="at">${esc(g.head.Title)}</span><span class="asub">${sub} &middot; <code>${esc(st)}</code> &middot; ${kitCount(st)} of 6 uploaded${inherit}</span></span>
       <span class="chev">&rsaquo;</span></div>
       <div class="aklist">${kitRowsHtml(st)}</div></div>`;
   }
@@ -1744,7 +1782,7 @@
       const d = await r.json();
       if (!r.ok) throw new Error(d.error || "Upload failed: " + r.status);
       assets = assets.filter(a => !(a.stem === st && a.kind === slug)).concat([d.asset]);
-      renderAssets(); renderEvents();
+      renderAssets(); renderEvents(); renderEditorKit();
       toast(`${file.name} is up. Any admin can download it from here now.`);
     } catch (e) { toast(e.message, "warn"); }
   }
@@ -1757,7 +1795,7 @@
       .then(d => {
         assets = assets.filter(x => !(x.stem === st && x.kind === slug));
         if (d.asset) assets.push(d.asset);
-        renderAssets();
+        renderAssets(); renderEditorKit();
         toast(v.trim() ? "Canva link saved." : "Canva link removed.");
       })
       .catch(e => toast(e.message, "warn"));
@@ -1982,7 +2020,7 @@
             .then(d => {
               assets = assets.filter(x => !(x.stem === st && x.kind === slug));
               if (d.asset) assets.push(d.asset);
-              renderAssets(); renderEvents();
+              renderAssets(); renderEvents(); renderEditorKit();
               toast("File removed.");
             })
             .catch(e => toast(e.message, "warn"));
