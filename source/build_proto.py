@@ -27,6 +27,12 @@ def slug(e):
 
 ICS_FILES = {}   # filename -> file body; build_site writes these into site/ics/
 
+# Version stamps let a re-added event REPLACE its old entry on the resident's
+# calendar instead of duplicating: SEQUENCE grows with every build day, and
+# calendar apps treat the higher number as the newer truth.
+BUILD_STAMP = _dt.utcnow().strftime("%Y%m%dT%H%M%SZ")
+BUILD_SEQ = (_dt.utcnow().date() - _dt(2026, 1, 1).date()).days
+
 def ics_href(e):
     """A real .ics file served from the site. A data: URL looks the same on a laptop
     but does nothing at all on an iPhone, which is most of the audience."""
@@ -37,7 +43,9 @@ def ics_href(e):
     body = "\r\n".join([
         "BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//181 Fremont//Resident Experiences//EN",
         "BEGIN:VEVENT", f"UID:181fremont-{e['slug']}-{d}@181residents.com",
-        f"DTSTAMP:{d}T000000Z",
+        f"DTSTAMP:{BUILD_STAMP}",
+        f"SEQUENCE:{BUILD_SEQ}",
+        f"LAST-MODIFIED:{BUILD_STAMP}",
         f"DTSTART:{d}T{e['t24']}00",
         f"DTEND:{d}T{h24}{ehm}00",
         f"SUMMARY:{plain(e['title'])}", f"LOCATION:181 Fremont - {plain(e['loc'])}",
@@ -411,6 +419,11 @@ HTML = f'''<!DOCTYPE html>
   .fact dd{{margin:0;flex:1;font-size:20px;color:var(--ink)}}
   .e-copy p{{color:var(--ink-body);font-size:20px;line-height:1.65;margin:0 0 18px}}
 
+  .rlink{{display:inline-flex;align-items:center;min-height:54px;font-size:14px;letter-spacing:.1em;
+    text-transform:uppercase;font-weight:600;color:var(--red);border-bottom:1px solid currentColor;padding-bottom:2px}}
+  .rlink:hover{{color:#a5171d}}
+  .urlline{{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:15px;background:var(--paper);
+    border:1px solid var(--line);border-radius:var(--radius);padding:12px 14px;margin-top:12px;overflow-wrap:anywhere}}
   .guestbox{{background:var(--paper-2);border:1px solid var(--line);border-radius:var(--radius);padding:24px;margin:8px 0 26px}}
   .gq{{font-family:var(--fd);font-size:24px;color:var(--ink);line-height:1.25}}
   .gh{{font-size:17px;color:var(--ink-soft);margin-top:8px}}
@@ -562,7 +575,16 @@ HTML = f'''<!DOCTYPE html>
 
     {MONTH_BLOCKS}
 
-    <div class="listwrap"><div class="wrap">{LIST}<div style="height:70px"></div></div></div>
+    <div class="listwrap"><div class="wrap">{LIST}<div style="height:24px"></div></div></div>
+
+    <div class="wrap"><div class="guestbox" style="margin:14px 0 70px">
+      <div class="gq">Keep the whole calendar in your pocket</div>
+      <div class="gh">Subscribe once, and every event lives in your own calendar and keeps itself current:
+      new dates appear, changes follow along, and anything cancelled slips away on its own. On an iPhone or iPad,
+      <a class="rlink" href="webcal://181residents.com/calendar/feed">tap here to subscribe</a>.
+      In Google Calendar or Outlook, add a calendar from this address:</div>
+      <div class="urlline">https://181residents.com/calendar/feed</div>
+    </div></div>
   </section>
 
   <section class="screen" id="scr-msg">
@@ -787,6 +809,12 @@ T_MY = '''<a class="back" href="/">&larr; Back to the calendar</a>
 <span class="ev-go">&rarr;</span></a><!--/ROW-->
 </div>
 <p class="note">Tap any RSVP to change your party or cancel.</p><!--/ROWS-->
+<div class="guestbox"><div class="gq">Your RSVPs, living in your own calendar</div>
+<div class="gh">Subscribe once, and this page follows you: every event you say yes to appears in your
+calendar by itself, moves when a date moves, and slips away if it is cancelled. On an iPhone or iPad,
+<a class="rlink" style="min-height:0;margin:0" href="{{FEEDWEBCAL}}">tap here to subscribe</a>.
+In Google Calendar or Outlook, add a calendar from this address. It is yours alone, so keep it to yourself:</div>
+<div class="urlline">{{FEEDURL}}</div></div>
 <form method="post" action="/signout" class="signoutform"><button type="submit">Sign out of this device</button></form>'''
 
 RSVP_CHIPS = '''<div class="flabel2">{{COUNTLABEL}}</div>

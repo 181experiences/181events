@@ -3,11 +3,13 @@ VERSION:2.0
 PRODID:-//181 Fremont//Resident Experiences//EN
 BEGIN:VEVENT
 UID:181fremont-moss-wall-workshop-20260902@181residents.com
-DTSTAMP:20260902T000000Z
+DTSTAMP:20260827T031845Z
+SEQUENCE:238
+LAST-MODIFIED:20260827T031845Z
 DTSTART:20260902T180000
 DTEND:20260902T193000
 SUMMARY:Moss Wall Workshop
-LOCATION:181 Fremont - Level 39, Residents' Club
-DESCRIPTION:An evening of hands-on botanical art. You'll build a moss wall to take home, with every material provided and no experience needed.
+LOCATION:181 Fremont - Level 39, Residents’ Club
+DESCRIPTION:An evening of hands-on botanical art. You’ll build a moss wall to take home, with every material provided and no experience needed.
 END:VEVENT
 END:VCALENDAR

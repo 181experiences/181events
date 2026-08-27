@@ -167,10 +167,12 @@ export function forbidden() {
 // The CREATE IF NOT EXISTS batch matters exactly once per database; remembering
 // that it ran keeps a six-statement round trip off every later request this
 // isolate serves (handlers may call this freely, even twice per request).
+// Columns added after launch arrive as ALTERs that fail quietly once present.
 let tablesEnsured = false;
 export async function ensureResidentTables(env) {
   if (tablesEnsured) return;
   await env.DB.batch(RESIDENT_TABLES.map(s => env.DB.prepare(s)));
+  try { await env.DB.prepare("ALTER TABLE residents ADD COLUMN feed_token TEXT").run(); } catch (e) {}
   tablesEnsured = true;
 }
 
@@ -191,6 +193,25 @@ export function makeCode() {
 }
 export function normalizeCode(s) {
   return String(s || "").toUpperCase().replace(/[^A-Z0-9]/g, "");
+}
+// A personal feed address: long enough that guessing is hopeless, short enough
+// to survive being pasted into a calendar app by hand.
+export function makeFeedToken() {
+  const buf = new Uint8Array(20);
+  crypto.getRandomValues(buf);
+  let out = "";
+  for (const b of buf) out += CODE_ALPHABET[b % CODE_ALPHABET.length].toLowerCase();
+  return out;
+}
+
+// iCalendar version stamps. SEQUENCE grows with each build day, so re-adding a
+// changed event replaces the old entry on the resident's calendar in place.
+export function icsStamp() {
+  const now = new Date();
+  return {
+    seq: Math.floor((now.getTime() - Date.parse("2026-01-01")) / 86400000),
+    stamp: now.toISOString().replace(/[-:]/g, "").slice(0, 15) + "Z",
+  };
 }
 export function prettyCode(c) {
   return c.length === 8 ? c.slice(0, 4) + "-" + c.slice(4) : c;

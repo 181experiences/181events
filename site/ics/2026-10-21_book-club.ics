@@ -3,11 +3,13 @@ VERSION:2.0
 PRODID:-//181 Fremont//Resident Experiences//EN
 BEGIN:VEVENT
 UID:181fremont-book-club-20261021@181residents.com
-DTSTAMP:20261021T000000Z
+DTSTAMP:20260827T031845Z
+SEQUENCE:238
+LAST-MODIFIED:20260827T031845Z
 DTSTART:20261021T163000
 DTEND:20261021T180000
 SUMMARY:Book Club
-LOCATION:181 Fremont - Level 39, Residents' Club
+LOCATION:181 Fremont - Level 39, Residents’ Club
 DESCRIPTION:Moved a week early this month. The Spooky Speakeasy has Level 39 on the 28th, and we return to the last Wednesday in November.
 END:VEVENT
 END:VCALENDAR

@@ -230,8 +230,14 @@
     const counted = e.Counted === true || e.Counted === "True";
     $("#co-0").checked = counted; $("#co-1").checked = !counted;
     $("#f-stem").textContent = stem({ Date: e.Date, Slug: e.Slug, Title: e.Title });
-    $("#ed-cancel").disabled = true;
-    $("#ed-cancel-note").textContent = status.email ? "" : "Guest notifications switch on once RSVPs are collected on the site.";
+    const edStemNow = row ? stem(row) : null;
+    const hasRsvpers = !!edStemNow && rsvps.some(x => x.event_key === edStemNow);
+    $("#ed-cancel").disabled = !(row && row.Status === "Live" && hasRsvpers);
+    $("#ed-cancel-note").textContent = row && row.Status === "Live"
+      ? (hasRsvpers
+          ? "Cancelling pulls this date from the calendar, holds its RSVPs, and opens a note to everyone signed up."
+          : "Nobody has RSVP'd to this date yet; a quiet Unpublish from the status picks does the job.")
+      : "";
     const edStem = stem({ Date: e.Date, Slug: e.Slug, Title: e.Title });
     $("#ak").innerHTML = KITINFO.map(k => {
       const a = assetOf(edStem, k.slug);
@@ -281,6 +287,7 @@
       if (editing.row) {
         const applyAll = editing.group && editing.group.series && $("#f-scope").checked;
         const targets = applyAll ? editing.group.upcoming : [editing.row];
+        const priors = targets.map(r => ({ Date: r.Date, Start: r.Start, End: r.End, Location: r.Location, Title: r.Title, Slug: r.Slug, Status: r.Status }));
         let done = 0, failed = 0, firstErr = "";
         for (const r of targets) {
           const patch = r.id === editing.row.id ? f : Object.fromEntries(SERIES_FIELDS.map(k => [k, f[k]]));
@@ -291,6 +298,13 @@
         }
         if (failed) { toast(`Saved ${done} of ${targets.length} dates. ${failed} failed: ${firstErr}`, "warn"); told = true; }
         else if (targets.length > 1) { toast(`Saved all ${done} upcoming dates.`); told = true; }
+        const changed = [];
+        targets.forEach((r, i) => {
+          const o = priors[i];
+          if (o.Status === "Live" && (o.Date !== r.Date || o.Start !== r.Start || o.End !== r.End || o.Location !== r.Location))
+            changed.push({ o, n: r });
+        });
+        if (changed.length) { notifyEventChange(changed); told = true; }
       } else if (rp.mode !== "none") {
         const dates = ruleDates(f.Date);
         if (!dates.length) { toast("The repeat rule produces no dates. Check the start date.", "warn"); return; }
@@ -406,6 +420,75 @@
     }
     rsvpCache = [...by.values()].sort((a, b) => a.date.localeCompare(b.date));
     return rsvpCache;
+  }
+
+  // When a Live event with sign-ups moves or is cancelled, everyone affected
+  // deserves one email naming the change. The addresses come from the RSVPs;
+  // the draft opens BCC'd in the operator's own mail program, one click to send.
+  function rsvperEmails(stems) {
+    const set = new Set();
+    for (const r of rsvps) if (stems.has(r.event_key) && r.email) set.add(r.email.toLowerCase());
+    return [...set];
+  }
+
+  function openBccDraft(subject, body, emails) {
+    window.location.href = "mailto:?bcc=" + encodeURIComponent(emails.join(","))
+      + "&subject=" + encodeURIComponent(subject) + "&body=" + encodeURIComponent(body);
+  }
+
+  function notifyEventChange(changed) {
+    const oldStems = new Set(changed.map(c => stem(c.o)));
+    const affected = rsvps.filter(r => oldStems.has(r.event_key));
+    if (!affected.length) return;
+    const emails = rsvperEmails(oldStems);
+    // the local rsvp rows follow the server's re-addressing, so counts stay true
+    for (const rv of rsvps) {
+      const c = changed.find(x => stem(x.o) === rv.event_key);
+      if (c) { rv.event_key = stem(c.n); rv.event_date = c.n.Date; rv.event_title = c.n.Title; }
+    }
+    rsvpCache = null;
+    if (!emails.length) {
+      toast("Saved. Those signed up have no email on file, so a call or a word at the desk carries the change.");
+      return;
+    }
+    const lines = changed.map(c => {
+      const bits = [];
+      if (c.o.Date !== c.n.Date || c.o.Start !== c.n.Start || c.o.End !== c.n.End)
+        bits.push(`now ${fmt(c.n.Date)}, ${c.n.Start}${c.n.End ? " to " + c.n.End : ""} (was ${fmt(c.o.Date)}, ${c.o.Start})`);
+      if (c.o.Location !== c.n.Location) bits.push(`now in ${c.n.Location}`);
+      return `${c.n.Title}: ${bits.join("; ")}`;
+    });
+    const first = changed[0].n;
+    const body = `Hello,\n\nA change to an event you RSVP'd for:\n\n${lines.join("\n")}\n\n`
+      + `If you added it to your calendar, open the event and tap Add to My Calendar again; the entry updates itself in place. `
+      + `If you subscribe to the calendar, it updates on its own.\n\n`
+      + `https://181residents.com/rsvp/${stem(first)}\n\nWarmly,\nResident Experiences\n181 Fremont`;
+    toast("Saved. A note to everyone signed up is opening; send it so nobody arrives at the wrong hour.");
+    openBccDraft(`Update: ${first.Title}`, body, emails);
+  }
+
+  function cancelEvent() {
+    const row = editing && editing.row; if (!row) return;
+    const st = stem(row);
+    if (!confirm(`Cancel "${row.Title}" on ${fmt(row.Date)}? It leaves the calendar, its RSVPs stay held, and a note opens to everyone signed up.`)) return;
+    api("/api/events/" + encodeURIComponent(row.id), { method: "PATCH", body: JSON.stringify({ Status: "Unpublished" }) })
+      .then(upd => {
+        Object.assign(row, upd);
+        renderAll();
+        if (status.publish) api("/api/publish", { method: "POST" }).catch(() => {});
+        const emails = rsvperEmails(new Set([st]));
+        if (emails.length) {
+          const body = `Hello,\n\nWith our apologies, ${row.Title} on ${fmt(row.Date)} is cancelled.\n\n`
+            + `If you added it to your calendar, kindly remove that entry. If you subscribe to the calendar, it disappears on its own.\n\n`
+            + `Warmly,\nResident Experiences\n181 Fremont`;
+          openBccDraft(`Cancelled: ${row.Title}, ${fmt(row.Date)}`, body, emails);
+          toast("Cancelled. The note to everyone signed up is opening; send it and nobody shows up to an empty room.");
+        } else {
+          toast("Cancelled and pulled from the calendar. Those signed up have no email on file; a call closes the loop.");
+        }
+        go("events");
+      })
+      .catch(e => toast(e.message, "warn"));
   }
 
   // A change made on someone's behalf deserves a word to them. No mail service
@@ -1049,6 +1132,10 @@
     if (ev.target.id === "afile" && pendingAsset && ev.target.files && ev.target.files[0]) {
       sendAssetFile(ev.target.files[0]);
     }
+  });
+  document.addEventListener("click", ev => {
+    const b = ev.target.closest("#ed-cancel");
+    if (b && !b.disabled) cancelEvent();
   });
 
   // Sign out must clear BOTH Access sessions: this site's cookie, and the one

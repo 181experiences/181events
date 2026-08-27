@@ -3,11 +3,13 @@ VERSION:2.0
 PRODID:-//181 Fremont//Resident Experiences//EN
 BEGIN:VEVENT
 UID:181fremont-lights-camera-gala-20261218@181residents.com
-DTSTAMP:20261218T000000Z
+DTSTAMP:20260827T031845Z
+SEQUENCE:238
+LAST-MODIFIED:20260827T031845Z
 DTSTART:20261218T183000
 DTEND:20261218T210000
 SUMMARY:Lights, Camera, Gala
-LOCATION:181 Fremont - Level 39, Residents' Club
+LOCATION:181 Fremont - Level 39, Residents’ Club
 DESCRIPTION:Our end-of-year party, and the one evening the whole building comes together. A red-carpet gala in the spirit of Old Hollywood. Black tie if you have it, and glamour however you care to define it.
 END:VEVENT
 END:VCALENDAR

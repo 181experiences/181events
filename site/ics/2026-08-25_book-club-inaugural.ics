@@ -3,11 +3,13 @@ VERSION:2.0
 PRODID:-//181 Fremont//Resident Experiences//EN
 BEGIN:VEVENT
 UID:181fremont-book-club-inaugural-20260825@181residents.com
-DTSTAMP:20260825T000000Z
+DTSTAMP:20260827T031845Z
+SEQUENCE:238
+LAST-MODIFIED:20260827T031845Z
 DTSTART:20260825T163000
 DTEND:20260825T180000
 SUMMARY:Book Club: Inaugural Meeting
-LOCATION:181 Fremont - Level 39, Residents' Club
-DESCRIPTION:The first meeting of the 181 Fremont book club. We're beginning with London Falling: A Mysterious Death in a Gilded City and a Family's Search for Truth by Patrick Radden Keefe.
+LOCATION:181 Fremont - Level 39, Residents’ Club
+DESCRIPTION:The first meeting of the 181 Fremont book club. We’re beginning with London Falling: A Mysterious Death in a Gilded City and a Family’s Search for Truth by Patrick Radden Keefe.
 END:VEVENT
 END:VCALENDAR

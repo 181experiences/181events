@@ -3,11 +3,13 @@ VERSION:2.0
 PRODID:-//181 Fremont//Resident Experiences//EN
 BEGIN:VEVENT
 UID:181fremont-natural-skincare-sugar-scrubs-20260916@181residents.com
-DTSTAMP:20260916T000000Z
+DTSTAMP:20260827T031845Z
+SEQUENCE:238
+LAST-MODIFIED:20260827T031845Z
 DTSTART:20260916T180000
 DTEND:20260916T190000
 SUMMARY:Natural Skincare: Sugar Scrubs
-LOCATION:181 Fremont - Level 39, Residents' Club
-DESCRIPTION:An all-natural skincare workshop. You'll make three sugar scrubs to take home, blended with essential oils of your choosing.
+LOCATION:181 Fremont - Level 39, Residents’ Club
+DESCRIPTION:An all-natural skincare workshop. You’ll make three sugar scrubs to take home, blended with essential oils of your choosing.
 END:VEVENT
 END:VCALENDAR

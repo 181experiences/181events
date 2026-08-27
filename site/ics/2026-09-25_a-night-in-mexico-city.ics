@@ -3,11 +3,13 @@ VERSION:2.0
 PRODID:-//181 Fremont//Resident Experiences//EN
 BEGIN:VEVENT
 UID:181fremont-a-night-in-mexico-city-20260925@181residents.com
-DTSTAMP:20260925T000000Z
+DTSTAMP:20260827T031845Z
+SEQUENCE:238
+LAST-MODIFIED:20260827T031845Z
 DTSTART:20260925T180000
 DTEND:20260925T200000
 SUMMARY:A Night in Mexico City
-LOCATION:181 Fremont - Level 39, Residents' Club
+LOCATION:181 Fremont - Level 39, Residents’ Club
 DESCRIPTION:The marquee evening of our season. A tribute to Michelin-level, Latin-inspired cooking, drawing on the techniques of Californios here in San Francisco and the celebrated kitchens of Mexico City.
 END:VEVENT
 END:VCALENDAR

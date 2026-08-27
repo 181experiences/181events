@@ -282,6 +282,18 @@ def rsvp_page(e, key, me):
         COUNTLABEL="Outside guests" if rsvp_type == "guest" else "Your party", BTNTEXT=btn)))
     return shell_page(e["Title"], body, me)
 
+def feed_token_of(me):
+    if me.get("feed_token"):
+        return me["feed_token"]
+    token = "".join(secrets.choice(CODE_ALPHABET.lower()) for _ in range(20))
+    residents = load_store("residents", [])
+    for r in residents:
+        if r["id"] == me["id"] and not r.get("feed_token"):
+            r["feed_token"] = token
+    save_store("residents", residents)
+    me["feed_token"] = token
+    return token
+
 def my_page(me):
     rows = [r for r in load_store("rsvps", [])
             if r["resident_id"] == me["id"] and r["status"] != "Cancelled" and r["event_date"] >= today()]
@@ -306,7 +318,11 @@ def my_page(me):
         body = cut(cut(tpl, "EMPTY", None), "ROWS", cut(inner(tpl, "ROWS"), "ROW", rendered))
     else:
         body = cut(cut(tpl, "ROWS", None), "EMPTY", inner(tpl, "EMPTY"))
-    return shell_page("My RSVPs", fill(body, dict(LABEL=esc(me["label"]))), me)
+    token = feed_token_of(me)
+    return shell_page("My RSVPs", fill(body, dict(
+        LABEL=esc(me["label"]),
+        FEEDURL=f"http://localhost:{PORT}/calendar/my/{token}",
+        FEEDWEBCAL=f"webcal://localhost:{PORT}/calendar/my/{token}")), me)
 
 def board_rows():
     return sorted([e for e in load_events()
@@ -547,11 +563,33 @@ class H(SimpleHTTPRequestHandler):
             return self._redirect("/")
         if p.path == "/my":
             if not me: return self._redirect("/signin?to=/my")
-            return self._html(my_page(me))
+            return self._html(my_page(me), cookie=session_cookie(issue_session(me)))
         if p.path == "/message":
             return self._redirect("/")
         if p.path == "/board":
             return self._html(board_page(me))
+        if p.path.startswith("/calendar/my/"):
+            token = p.path.rsplit("/", 1)[1]
+            me2 = next((r for r in load_store("residents", [])
+                        if r.get("feed_token") == token and r["status"] == "Active"
+                        and (not r.get("ends") or r["ends"] >= today())), None)
+            out = ["BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//181 Fremont//My RSVPs//EN",
+                   "X-WR-CALNAME:My 181 Fremont RSVPs"]
+            if me2:
+                by_key = {f"{e['Date']}_{e.get('Slug')}": e for e in load_events() if e.get("Status") == "Live"}
+                for r in sorted(load_store("rsvps", []), key=lambda r: r["event_date"]):
+                    e = by_key.get(r["event_key"])
+                    if not e or r["resident_id"] != me2["id"] or r["status"] != "Confirmed" or r["event_date"] < today():
+                        continue
+                    d = e["Date"].replace("-", "")
+                    start = e.get("Start24") or to24(e.get("Start"))
+                    end = to24(e.get("End")) if e.get("End") else start
+                    party = f" (party of {r['count']})" if r["count"] > 1 else ""
+                    out += ["BEGIN:VEVENT", f"UID:181fremont-{e.get('Slug') or 'event'}-{d}@181residents.com",
+                            f"DTSTAMP:{d}T000000Z", f"DTSTART:{d}T{start}00", f"DTEND:{d}T{end}00",
+                            f"SUMMARY:{e['Title']}{party}", f"LOCATION:181 Fremont - {e.get('Location') or 'Level 39'}",
+                            "END:VEVENT"]
+            return self._text("\r\n".join(out) + "\r\n" + "END:VCALENDAR", "text/calendar; charset=utf-8")
         if p.path == "/calendar/feed":
             rows = sorted([e for e in load_events()
                            if e.get("Status") == "Live" and e.get("Category") != "Board Meeting"
@@ -597,7 +635,7 @@ class H(SimpleHTTPRequestHandler):
                 return self._html(done_page(me, "That date has passed",
                     "This event has already happened. The calendar has what&rsquo;s coming next.",
                     "/", "Back to the calendar"))
-            return self._html(rsvp_page(e, key, me))
+            return self._html(rsvp_page(e, key, me), cookie=session_cookie(issue_session(me)) if me else None)
         return super().do_GET()
 
     # ------------------------------------------------------------ POST
@@ -848,7 +886,15 @@ class H(SimpleHTTPRequestHandler):
             rid = p.path.rsplit("/", 1)[1]; events = load_events(); body = self._body_json()
             for e in events:
                 if e["id"] == rid:
+                    old_key = f"{e.get('Date')}_{e.get('Slug')}"; old_title = e.get("Title")
                     e.update({k: v for k, v in body.items() if k != "id"}); save_store("events", events)
+                    new_key = f"{e.get('Date')}_{e.get('Slug')}"
+                    if old_key != new_key or old_title != e.get("Title"):
+                        rsvps = load_store("rsvps", [])
+                        for r in rsvps:
+                            if r["event_key"] == old_key:
+                                r.update(event_key=new_key, event_date=e["Date"], event_title=e["Title"])
+                        save_store("rsvps", rsvps)
                     return self._json(e)
             return self._json({"error": "no such event"}, 404)
         if p.path.startswith("/api/residents/"):

@@ -3,11 +3,13 @@ VERSION:2.0
 PRODID:-//181 Fremont//Resident Experiences//EN
 BEGIN:VEVENT
 UID:181fremont-spooky-speakeasy-20261028@181residents.com
-DTSTAMP:20261028T000000Z
+DTSTAMP:20260827T031845Z
+SEQUENCE:238
+LAST-MODIFIED:20260827T031845Z
 DTSTART:20261028T173000
 DTEND:20261028T200000
 SUMMARY:Spooky Speakeasy
-LOCATION:181 Fremont - Level 39, Residents' Club
-DESCRIPTION:A speakeasy on Level 39 for one night only. We'd love for you to come in your best spooky speakeasy attire, and there are prizes for the costumes that earn them.
+LOCATION:181 Fremont - Level 39, Residents’ Club
+DESCRIPTION:A speakeasy on Level 39 for one night only. We’d love for you to come in your best spooky speakeasy attire, and there are prizes for the costumes that earn them.
 END:VEVENT
 END:VCALENDAR

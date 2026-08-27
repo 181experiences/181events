@@ -2,7 +2,7 @@
 import { esc } from "./_lib.js";
 import {
   currentResident, upcomingRsvps, template, fill, cut, inner, page, seeOther, notReady,
-  MONTHS_S, DOW_S,
+  feedTokenOf, slideSession, MONTHS_S, DOW_S,
 } from "./_resident.js";
 
 function rowSlots(r) {
@@ -41,6 +41,12 @@ export async function onRequestGet(context) {
   } else {
     body = cut(cut(tpl, "ROWS", null), "EMPTY", inner(tpl, "EMPTY"));
   }
-  body = fill(body, { LABEL: esc(me.label) });
-  return page(context, "My RSVPs", body, me);
+  const token = await feedTokenOf(env, me);
+  body = fill(body, {
+    LABEL: esc(me.label),
+    FEEDURL: `https://181residents.com/calendar/my/${token}`,
+    FEEDWEBCAL: `webcal://181residents.com/calendar/my/${token}`,
+  });
+  const res = await page(context, "My RSVPs", body, me);
+  return slideSession(res, env, me);
 }

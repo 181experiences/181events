@@ -129,6 +129,15 @@ Uploads cap at about 95 MB per file; keep video masters in Canva and upload the 
 
 - `https://181residents.com/calendar/feed` is the whole resident calendar as a live iCal feed:
   subscribe once in Apple, Google, or Outlook and it maintains itself, cancellations included.
+  A "keep the calendar in your pocket" box at the foot of the calendar screen offers it.
+- Every resident's My RSVPs page offers a **private feed of just their events** at an
+  unguessable address: subscribe once and their calendar carries what they said yes to,
+  follows dates when staff move them, and lets go of cancellations. Disabling the person
+  quiets their feed.
+- Calendar files carry version stamps, so re-tapping Add to My Calendar after a change
+  updates the entry in place instead of duplicating it.
+- When a Live event with sign-ups changes date, time, or place, or is cancelled with the
+  editor's Cancel button, the admin opens one email BCC'd to everyone signed up, pre-written.
 - `https://181residents.com/board/feed` is the same for Board meetings.
 - Each event page (`/rsvp/{date}_{slug}`) is the shareable address for one event; the admin's
   **Link** buttons copy it, ready for emails.

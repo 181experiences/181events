@@ -10,7 +10,7 @@
 import { esc, ensureResidentTables, todayPacific } from "../_lib.js";
 import {
   currentResident, liveEvent, seatsTaken, myRsvp, unitMates, othersWaiting, confirmedHeads,
-  template, fill, cut, inner, page, seeOther, notReady,
+  template, fill, cut, inner, page, seeOther, notReady, slideSession,
   MONTHS_S, DOW,
 } from "../_resident.js";
 
@@ -157,7 +157,8 @@ export async function onRequestGet(context) {
       "This event has already happened. The calendar has what&rsquo;s coming next.",
       "/", "Back to the calendar");
   }
-  return rsvpPage(context, ev, key, me);
+  const res = await rsvpPage(context, ev, key, me);
+  return me ? slideSession(res, context.env, me) : res;
 }
 
 export async function onRequestPost(context) {

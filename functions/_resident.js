@@ -7,7 +7,7 @@
 // fetched through env.ASSETS and filled in. Copy and styling live in the templates,
 // so the resident voice is written in one place: source/build_proto.py.
 
-import { esc, ensureResidentTables, normalizeCode, todayPacific, labelOf } from "./_lib.js";
+import { esc, ensureResidentTables, normalizeCode, todayPacific, labelOf, makeFeedToken } from "./_lib.js";
 
 export const COOKIE = "r181s";
 const MONTH_SECONDS = 30 * 24 * 60 * 60;
@@ -212,6 +212,24 @@ export async function upcomingRsvps(env, residentId) {
     "SELECT * FROM rsvps WHERE resident_id=? AND status != 'Cancelled' AND event_date >= ? ORDER BY event_date")
     .bind(residentId, todayPacific()).all();
   return results;
+}
+
+// The resident's private feed address, minted the first time it is needed.
+export async function feedTokenOf(env, me) {
+  if (me.feed_token) return me.feed_token;
+  const token = makeFeedToken();
+  await env.DB.prepare("UPDATE residents SET feed_token=? WHERE id=? AND feed_token IS NULL")
+    .bind(token, me.id).run();
+  const row = await env.DB.prepare("SELECT feed_token FROM residents WHERE id=?").bind(me.id).first();
+  return row.feed_token;
+}
+
+// Activity keeps a session alive: each signed-in page view re-issues the cookie,
+// so a device in regular use never asks for the code again, while a dormant one
+// quietly expires after its month.
+export async function slideSession(res, env, me) {
+  try { res.headers.append("set-cookie", sessionCookie(await issueSession(env, me))); } catch (e) {}
+  return res;
 }
 
 // The rest of a unit's picture for one event: who else from the same unit is
