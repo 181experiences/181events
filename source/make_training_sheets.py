@@ -4,8 +4,8 @@
 Three pieces, written to ../print/training/, each 8.5 x 11 portrait at 300 DPI
 as both PDF (for the printer) and PNG (for email and preview):
 
-  desk-cheat-sheet         the front desk: sign-in, the code rescue, phoned-in
-                           RSVPs, spaces, sign-out, and what the desk leaves alone
+  desk-cheat-sheet         the front desk: sign-in (and staying signed in), the code
+                           rescue, phoned-in RSVPs, and what the desk leaves alone
   leadership-cheat-sheet   Scott, Leigh Anne, Carley-Ann: events, series, waitlists,
                            notices, asset kits, the archive, the dashboard
   residents-welcome        one gracious page for residents, with a QR code on its
@@ -190,6 +190,7 @@ DESK_COL1 = [
     ("b", "Enter **concierge@181sf.com** and ask for the emailed code. It arrives in the desk mailbox; type it in and you are through."),
     ("b", "The first code often comes back \u201calready been used.\u201d That is the mail scanner opening the link before you can, not a mistake of yours. **Request a new code**; the second one works."),
     ("b", "You land on the Dashboard. Your tabs: **Dashboard · Residents · Spaces · Messages**."),
+    ("b", "**Stay signed in** on the desk computer; there is no need to sign out between shifts, and each fresh sign-in costs another emailed code."),
     ("h", "2 · The lost code, any hour"),
     ("b", "**Residents** tab. Find the person; the list is grouped by unit."),
     ("b", "**Rotate** issues a fresh code. The old one stops working everywhere, on every device, right away."),
@@ -199,28 +200,23 @@ DESK_COL1 = [
     ("b", "A renter or a visiting family member gets their own row: unit, name, email, and an **Access ends** date. The code simply stops working after it."),
     ("b", "**Ends** on any row sets or clears that date."),
     ("b", "Someone moved out? **Disable** keeps their history. Leave **Delete** alone; it is for typos."),
-    ("h", "4 · Spaces"),
-    ("b", "**Spaces** tab: the space, the date, from, until, and a note, then **Reserve the Space**."),
-    ("b", "Residents only ever see \u201cReserved\u201d: the room, the date, the hours. The note, who booked it and what for, stays in this admin."),
 ]
 
 DESK_COL2 = [
-    ("h", "5 · RSVPs by phone, or in passing"),
+    ("h", "4 · RSVPs by phone, or in passing"),
     ("b", "**Dashboard**, RSVPs section, **Add an RSVP for someone**."),
     ("b", "Pick the person, the event, the party size (1 to 6), names if offered, then **Save RSVP**."),
     ("b", "If they already had an RSVP for that event, saving updates theirs."),
     ("b", "If the event is full or others are waiting, the RSVP joins the waitlist, the same queue as the site. Say so kindly; nobody skips the line at the desk."),
-    ("h", "6 · Changes and cancellations"),
+    ("h", "5 · Changes and cancellations"),
     ("b", "Every RSVP row has **Edit** for the party size and **Cancel**."),
     ("b", "**Confirm seats** appears on a waitlist row once seats free up. Freed seats are never handed out on their own; pressing it gives them to that party."),
     ("b", "After any change, an email to the resident opens prefilled, ready to send from the desk mailbox. Read it, then send it."),
     ("b", "No email on file? The screen says so. A call, or a word in the lobby, closes the loop."),
-    ("h", "7 · Sign out, every time"),
-    ("b", "The desk computer is shared. **Sign out**, top right, ends the session for this site and for Cloudflare both. Make it the habit whenever you step away."),
-    ("h", "8 · What the desk view leaves alone"),
+    ("h", "6 · What the desk view leaves alone"),
     ("b", "Events, the calendar itself, publishing, and Assets belong to Resident Experiences. If a resident asks about event content, take a note or send them to Leo."),
     ("b", "Message text is private to Leo. You see who wrote and when, never the words."),
-    ("b", "The grey bar at the top reports on itself and stays quiet when all is well. If something looks wrong: reload, or sign out and back in, then call Leo."),
+    ("b", "The grey bar at the top reports on itself and stays quiet when all is well. If something looks wrong: reload the page; still wrong, call Leo and read him what the bar says."),
 ]
 
 # ================================================================ leadership
@@ -334,7 +330,7 @@ dense_sheet("desk-cheat-sheet",
             "181residents.com/admin  ·  sign in as concierge@181sf.com  ·  keep beside the desk phone",
             DESK_COL1, DESK_COL2,
             "181 Fremont Residences  ·  Resident Experiences  ·  August 2026",
-            body_size=38, leading=54, head_size=58)
+            body_size=42, leading=60, head_size=62, top=680)
 
 dense_sheet("leadership-cheat-sheet",
             "LEADERSHIP · RESIDENT EVENTS ADMIN",
