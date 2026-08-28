@@ -6,14 +6,19 @@ CSS :checked selectors, so it works in any renderer including sandboxed previews
 from events_data import (EVENTS, MONTHS, MONTH_BY_KEY, dow_of, dow_s, month_name,
                          short_month, evs_on, days_with_events)
 
-# The Next Event tile aims at the first date on or after the day the site is
-# built, Pacific time; the nightly rebuild keeps that honest every morning.
+# The Next Event tile aims at the first event that has not started yet at build
+# time, Pacific: today's later events still count, and once one begins the tile
+# moves on to the next. Each rebuild during the day keeps that honest, so the
+# cron schedule decides how quickly the tile turns over. TODAY also drives the
+# past-day muting, which stays a whole-day affair on purpose.
 from datetime import datetime as _dt
 try:
     from zoneinfo import ZoneInfo as _Zone
-    TODAY = _dt.now(_Zone("America/Los_Angeles")).date()
+    _pacific_now = _dt.now(_Zone("America/Los_Angeles"))
 except Exception:
-    TODAY = _dt.utcnow().date()
+    _pacific_now = _dt.utcnow()
+TODAY = _pacific_now.date()
+NOW_HHMM = _pacific_now.strftime("%H%M")
 
 def plain(s):
     for a, b in [("&rsquo;", "'"), ("&amp;", "&"), ("&middot;", "-"), ("&mdash;", "-"),
@@ -253,7 +258,11 @@ def event_screen(e):
 EVENT_SCREENS = "".join(event_screen(e) for e in EVENTS)
 
 # ------------------------------------------------------------------ next event tile
-NEXT = next((e for e in EVENTS if e["on"] >= TODAY), EVENTS[-1])
+# EVENTS arrives ordered by date then start time, so the first not-yet-started
+# entry is the tile. A day with several events hands the tile from one to the
+# next as each begins; when the calendar is spent, its last event stays up.
+NEXT = next((e for e in EVENTS if e["on"] > TODAY
+             or (e["on"] == TODAY and e.get("t24", "2359") > NOW_HHMM)), EVENTS[-1])
 
 # ------------------------------------------------------------------ month nav
 MONTH_RADIOS = "\n    ".join(
