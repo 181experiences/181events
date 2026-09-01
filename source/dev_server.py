@@ -387,6 +387,38 @@ def board_page(me):
         body = cut(cut(tpl, "ROWS", None), "EMPTY", inner(tpl, "EMPTY"))
     return shell_page("Board Meetings", body, me)
 
+# The private-event registration page, mirroring functions/register/[token].js.
+def guest_heads(bid):
+    rows = [g for g in load_store("guests", []) if g["booking_id"] == bid]
+    return sum(2 if g.get("plus_one") else 1 for g in rows)
+
+def reg_state(b):
+    if not b.get("reg_open"):
+        return ("Registration for this event is closed. If you are expected, the front desk will have you "
+                "on the list; otherwise, kindly check with your host.")
+    if b["date"] < today():
+        return "This event has passed."
+    if b.get("guest_cap") and guest_heads(b["id"]) >= int(b["guest_cap"]):
+        return ("The guest list is full. If you were invited, kindly check with your host; there may be room "
+                "for adjustments.")
+    return None
+
+def register_page(b):
+    tpl = template("register")
+    d = datetime.date.fromisoformat(b["date"])
+    when = f"{DOW[(d.weekday() + 1) % 7]}, {MONTHS_S[d.month - 1]} {d.day}"
+    if b.get("start"):
+        when += f"<br>{esc(b['start'])}" + (f" &ndash; {esc(b['end_time'])}" if b.get("end_time") else "")
+    body = fill(tpl, dict(EVENT=esc(b.get("event_name") or "A private event"), WHEN=when,
+                          WHERE=esc(b.get("space") or "Level 39, Residents’ Club")))
+    body = cut(body, "HOST", fill(inner(tpl, "HOST"), dict(HOST=esc(b["host"]))) if b.get("host") else None)
+    state = reg_state(b)
+    if state:
+        body = cut(cut(body, "FORM", None), "CLOSED", fill(inner(tpl, "CLOSED"), dict(CLOSEDMSG=state)))
+    else:
+        body = cut(cut(body, "CLOSED", None), "FORM", fill(inner(tpl, "FORM"), dict(TOKEN=esc(b["reg_token"]))))
+    return shell_page(b.get("event_name") or "Private event", body, None)
+
 def spaces_page(me):
     rows = sorted([b for b in load_store("bookings", []) if b["date"] >= today()],
                   key=lambda b: (b["date"], b.get("start24") or ""))
@@ -646,7 +678,28 @@ class H(SimpleHTTPRequestHandler):
             out.sort(key=lambda m: m["state"] != "New")
             return self._json({"role": self._role(), "messages": out})
         if p.path == "/api/bookings":
-            return self._json({"bookings": load_store("bookings", [])})
+            guests = load_store("guests", [])
+            out = []
+            for b in load_store("bookings", []):
+                mine = [g for g in guests if g["booking_id"] == b["id"]]
+                out.append(dict(b, guest_parties=len(mine),
+                                guest_heads=sum(2 if g.get("plus_one") else 1 for g in mine),
+                                guest_arrived=sum(1 for g in mine if g.get("arrived"))))
+            return self._json({"bookings": out})
+        if p.path == "/api/guests":
+            bid = int((q.get("booking") or ["0"])[0] or 0)
+            return self._json({"guests": [g for g in load_store("guests", []) if g["booking_id"] == bid]})
+        if p.path.startswith("/register/"):
+            token = p.path[len("/register/"):]
+            b = next((x for x in load_store("bookings", []) if x.get("reg_token") == token), None)
+            if not b:
+                tpl = template("done")
+                body = fill(cut(cut(tpl, "LINK", inner(tpl, "LINK")), "ICON", None), dict(
+                    HEAD="That page isn&rsquo;t here",
+                    SUB="The address may have been mistyped, or the invitation withdrawn. Kindly check with whoever sent it.",
+                    LINKHREF="/", LINKTEXT="181 Fremont"))
+                return self._html(shell_page("Not found", body, None, 404))
+            return self._html(register_page(b))
         if p.path == "/api/assets":
             if self._role() == "desk": return self._json({"error": "forbidden"}, 403)
             return self._json({"storage": True, "assets": load_store("assets", [])})
@@ -851,13 +904,51 @@ class H(SimpleHTTPRequestHandler):
             if not space or not re.match(r"^\d{4}-\d{2}-\d{2}$", date):
                 return self._json({"error": "A space and a date are needed."}, 400)
             bookings = load_store("bookings", [])
+            cap = None
+            if b.get("guest_cap"):
+                try: cap = max(1, min(1000, int(b["guest_cap"])))
+                except (TypeError, ValueError): cap = None
             row = dict(id=max([x["id"] for x in bookings] or [0]) + 1, space=space, date=date,
                        start=(b.get("start") or "").strip(), end_time=(b.get("end") or "").strip(),
-                       start24=to24(b.get("start")), note=(b.get("note") or "").strip(), created=now_iso())
+                       start24=to24(b.get("start")), note=(b.get("note") or "").strip(), created=now_iso(),
+                       event_name=(b.get("event_name") or "").strip() or None,
+                       host=(b.get("host") or "").strip() or None,
+                       reg_token="".join(secrets.choice("abcdefghjkmnpqrstuvwxyz23456789") for _ in range(20)),
+                       reg_open=0, guest_cap=cap)
             bookings.append(row); save_store("bookings", bookings)
-            return self._json({"booking": row}, 201)
+            return self._json({"booking": dict(row, guest_parties=0, guest_heads=0, guest_arrived=0)}, 201)
+        if p.path == "/api/guests":
+            b = self._body_json()
+            name = (b.get("name") or "").strip()[:80]
+            bid = int(b.get("booking_id") or 0)
+            if not name or not bid: return self._json({"error": "A booking and a name are needed."}, 400)
+            guests = load_store("guests", [])
+            row = dict(id=max([g["id"] for g in guests] or [0]) + 1, booking_id=bid, name=name,
+                       plus_one=(b.get("plus_one") or "").strip()[:80] or None,
+                       created=now_iso(), arrived=None)
+            guests.append(row); save_store("guests", guests)
+            return self._json({"guest": row}, 201)
         if p.path.startswith("/api/"):
             return self._json({"error": "not found"}, 404)
+        if p.path.startswith("/register/"):
+            token = p.path[len("/register/"):]
+            b = next((x for x in load_store("bookings", []) if x.get("reg_token") == token), None)
+            if not b: return self._redirect("/")
+            form = self._body_form()
+            name = (form.get("name") or "").strip()[:80]
+            plus = (form.get("plus") or "").strip()[:80]
+            if reg_state(b) or not name: return self._redirect(f"/register/{token}")
+            if not (form.get("website") or "").strip():   # the honeypot stays empty for people
+                guests = load_store("guests", [])
+                guests.append(dict(id=max([g["id"] for g in guests] or [0]) + 1, booking_id=b["id"],
+                                   name=name, plus_one=plus or None, created=now_iso(), arrived=None))
+                save_store("guests", guests)
+            tpl = template("done")
+            body = fill(cut(tpl, "LINK", None), dict(
+                HEAD="You&rsquo;re on the list",
+                SUB=f"{esc(name)}{' and ' + esc(plus) if plus else ''}, registered for {esc(b.get('event_name') or 'the event')}. "
+                    "On the day, come to the 181 Fremont lobby and give the event name; the front desk will be expecting you."))
+            return self._html(shell_page("Registered", body, None))
 
         # ---- resident forms
         if p.path == "/signin":
@@ -1118,6 +1209,29 @@ class H(SimpleHTTPRequestHandler):
                     return self._json({"id": r["id"], "status": r["status"], "count": r["count"],
                                        "names": r.get("names") or ""})
             return self._json({"error": "No such RSVP"}, 404)
+        if p.path.startswith("/api/bookings/"):
+            bid = p.path.rsplit("/", 1)[1]; body = self._body_json()
+            bookings = load_store("bookings", [])
+            for b in bookings:
+                if str(b["id"]) == bid:
+                    if "reg_open" in body: b["reg_open"] = 1 if body["reg_open"] else 0
+                    for f in ("event_name", "host", "note"):
+                        if f in body: b[f] = (str(body[f] or "")).strip() or None
+                    if "guest_cap" in body:
+                        try: b["guest_cap"] = max(1, min(1000, int(body["guest_cap"]))) if body["guest_cap"] else None
+                        except (TypeError, ValueError): b["guest_cap"] = None
+                    save_store("bookings", bookings)
+                    return self._json({"booking": b})
+            return self._json({"error": "No such reservation"}, 404)
+        if p.path.startswith("/api/guests/"):
+            gid = p.path.rsplit("/", 1)[1]; body = self._body_json()
+            guests = load_store("guests", [])
+            for g in guests:
+                if str(g["id"]) == gid and "arrived" in body:
+                    g["arrived"] = now_iso() if body["arrived"] else None
+                    save_store("guests", guests)
+                    return self._json({"guest": g})
+            return self._json({"error": "No such registration"}, 404)
         if p.path.startswith("/api/messages/"):
             if self._role() != "owner": return self._json({"error": "forbidden"}, 403)
             mid = p.path.rsplit("/", 1)[1]; body = self._body_json()
@@ -1161,6 +1275,14 @@ class H(SimpleHTTPRequestHandler):
             kept = [b for b in bookings if str(b["id"]) != bid]
             if len(kept) == len(bookings): return self._json({"error": "No such reservation"}, 404)
             save_store("bookings", kept)
+            save_store("guests", [g for g in load_store("guests", []) if str(g["booking_id"]) != bid])
+            return self._json({"ok": True})
+        if p.path.startswith("/api/guests/"):
+            gid = p.path.rsplit("/", 1)[1]
+            guests = load_store("guests", [])
+            kept = [g for g in guests if str(g["id"]) != gid]
+            if len(kept) == len(guests): return self._json({"error": "No such registration"}, 404)
+            save_store("guests", kept)
             return self._json({"ok": True})
         return self._json({"error": "not found"}, 404)
 

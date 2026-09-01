@@ -527,10 +527,10 @@ HTML = f'''<!DOCTYPE html>
     <div class="field"><label class="fl" for="f-date">Date</label><input class="inp" type="date" id="f-date"></div>
     <div class="field"><label class="fl" for="f-start">Start time</label><input class="inp" id="f-start" placeholder="5:30 PM" inputmode="text"></div>
     <div class="field"><label class="fl" for="f-end">End time</label><input class="inp" id="f-end" placeholder="7:30 PM"></div>
-    <div class="field"><label class="fl" for="f-loc">Location</label><input class="inp" id="f-loc" list="locs"><datalist id="locs"><option value="Level 39, Residentsâ€™ Club"><option value="Level 7 Terrace"><option value="Lobby"><option value="Fitness Center"></datalist></div>
+    <div class="field"><label class="fl" for="f-loc">Location</label><input class="inp" id="f-loc" list="locs"><datalist id="locs"><option value="Level 39, Residents’ Club"><option value="Level 7 Terrace"><option value="Lobby"><option value="Fitness Center"></datalist></div>
     <div class="field"><label class="fl" for="f-host">Hosted by</label><input class="inp" id="f-host" list="hosts" autocapitalize="words"><datalist id="hosts"><option value="Resident Experiences"><option value="Leigh Anne"><option value="Front desk"></datalist>
       <div class="hint">Shown on the event page so residents know who to ask.</div></div>
-    <div class="field"><label class="fl">Count in engagement reporting</label><div class="picks">{picks("co", ["Count it", "List only, donâ€™t count"])}</div>
+    <div class="field"><label class="fl">Count in engagement reporting</label><div class="picks">{picks("co", ["Count it", "List only, don’t count"])}</div>
       <div class="hint">Choose List only whenever the host is not Resident Experiences, so nothing credits you with someone else&rsquo;s attendance.</div></div>
     <div class="field f-full" id="rp-builder"><label class="fl">Repeats</label>
       <div class="picks" id="rp-picks">
@@ -700,16 +700,26 @@ HTML = f'''<!DOCTYPE html>
     <strong>Residents see only &ldquo;Reserved.&rdquo;</strong> The public Spaces page shows the room, the date, and
     the hours, and nothing else, so a private reservation stays private. The note field below is for this
     admin alone: who booked it, what for, whatever the desk needs to remember.
+    <br><br><strong>A reservation can also be a private event with outside guests.</strong> Give it an event
+    name and open its registration: an unguessable link the host sends to invitees, who put their name and a
+    plus one on the list. Arrivals are checked off right here, the printed list is what security runs from,
+    and guests buzz in from the street by giving the event name.
   </div>
   <div class="card" style="margin-bottom:18px">
     <div style="display:grid;gap:12px 16px;grid-template-columns:repeat(auto-fit,minmax(150px,1fr))">
-      <div class="field"><label class="fl" for="bk-space">Space</label><input class="inp" id="bk-space" list="spaces" autocapitalize="words" placeholder="Conference Room"><datalist id="spaces"><option value="Conference Room"><option value="Dining Room"><option value="Residentsâ€™ Club"><option value="Level 7 Terrace"></datalist></div>
+      <div class="field"><label class="fl" for="bk-space">Space</label><input class="inp" id="bk-space" list="spaces" autocapitalize="words" placeholder="Conference Room"><datalist id="spaces"><option value="Conference Room"><option value="Dining Room"><option value="Residents’ Club"><option value="Level 7 Terrace"></datalist></div>
       <div class="field"><label class="fl" for="bk-date">Date</label><input class="inp" id="bk-date" type="date"></div>
       <div class="field"><label class="fl" for="bk-start">From</label><input class="inp" id="bk-start" placeholder="2:00 PM"></div>
       <div class="field"><label class="fl" for="bk-end">Until</label><input class="inp" id="bk-end" placeholder="5:00 PM"></div>
       <div class="field"><label class="fl" for="bk-note">Note, staff only</label><input class="inp" id="bk-note" placeholder="Who and what, never shown to residents"></div>
+      <div class="field"><label class="fl" for="bk-event">Event name, for private events</label><input class="inp" id="bk-event" autocapitalize="words" placeholder="What guests give at the door"></div>
+      <div class="field"><label class="fl" for="bk-host">Hosted by</label><input class="inp" id="bk-host" autocapitalize="words" placeholder="The resident hosting"></div>
+      <div class="field"><label class="fl" for="bk-cap">Guest cap</label><input class="inp" id="bk-cap" type="number" inputmode="numeric" placeholder="Blank for none"></div>
     </div>
-    <div style="margin-top:14px"><button class="btn" data-addbooking>Reserve the Space</button></div>
+    <div style="margin-top:14px;display:flex;gap:12px;align-items:center;flex-wrap:wrap">
+      <button class="btn" data-addbooking>Reserve the Space</button>
+      <span class="hint" style="margin:0">Registration starts closed; open it from the reservation&rsquo;s guest panel below.</span>
+    </div>
   </div>
   <div class="evlist" id="bklist"></div>
 </div></section>
@@ -805,7 +815,7 @@ HTML = f'''<!DOCTYPE html>
   those two buttons is the difference between a quiet edit and someone arriving on Level 39 to an empty room.</div>
 
   <div class="callout"><strong>Archive, never delete.</strong> An archived event disappears from the resident calendar but keeps its
-  views, RSVPs, and attendance. Delete it and the monthly report loses that history permanently â€” and a comparison to last
+  views, RSVPs, and attendance. Delete it and the monthly report loses that history permanently — and a comparison to last
   year&rsquo;s version of the same event is the most useful number you will ever hand the Board.</div>
 
   <h2>The four categories</h2>
@@ -887,7 +897,7 @@ HTML = f'''<!DOCTYPE html>
     <li>Export all six, named with the stem plus the asset type.</li>
     <li>Upload the kit here under Assets.</li>
   </ol>
-  <p>An event image is optional. If there isn&rsquo;t a good photo, the event page falls back to a typographic card automatically â€” that is by design, so a rushed event never gets a bad stock photo.</p>
+  <p>An event image is optional. If there isn&rsquo;t a good photo, the event page falls back to a typographic card automatically — that is by design, so a rushed event never gets a bad stock photo.</p>
 </div></section>
 
 <section class="screen" id="scr-inst-screens"><div class="wrap prose">

@@ -1095,6 +1095,28 @@ your request joins the waitlist, lands with Resident Experiences, and we reach o
 </form><!--/FORM-->
 <p class="note">Full details for this event are on <a href="/">the calendar</a>.</p>'''
 
+T_REGISTER = '''<div class="e-eyebrow">Private event &middot; 181 Fremont</div>
+<h1 class="e-title">{{EVENT}}</h1>
+<dl class="e-facts">
+<div class="fact"><dt>When</dt><dd>{{WHEN}}</dd></div>
+<div class="fact"><dt>Where</dt><dd>{{WHERE}}, 181 Fremont, San Francisco</dd></div>
+<!--HOST--><div class="fact"><dt>Hosted by</dt><dd>{{HOST}}</dd></div><!--/HOST-->
+</dl>
+<!--FORM--><div class="pagehead"><h2>May we have your name?</h2>
+<p>Register below and the front desk will be expecting you. Bringing someone?
+Add their name as your plus one, and you&rsquo;re both on the list.</p></div>
+<form method="post" action="/register/{{TOKEN}}" class="pageform">
+<label class="field"><span>Your name</span>
+<input type="text" name="name" autocomplete="name" autocapitalize="words" maxlength="80" required></label>
+<label class="field"><span>Plus one, if you&rsquo;re bringing someone</span>
+<input type="text" name="plus" autocomplete="off" autocapitalize="words" maxlength="80" placeholder="Optional"></label>
+<div style="position:absolute;left:-9999px" aria-hidden="true"><input type="text" name="website" tabindex="-1" autocomplete="off"></div>
+<button class="btn" type="submit">Register</button>
+</form><!--/FORM-->
+<!--CLOSED--><div class="fullnote">{{CLOSEDMSG}}</div><!--/CLOSED-->
+<p class="note">On the day: come to the 181 Fremont lobby and give the event name. Questions go to your host,
+or to the front desk at 181 Fremont.</p>'''
+
 T_DONE = '''<div class="msgsent">
 <!--ICON--><div class="check2"><svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 12.8l5 5 10-11"/></svg></div><!--/ICON-->
 <h1>{{HEAD}}</h1>
@@ -1163,6 +1185,7 @@ TEMPLATES = {
     "signin": T_SIGNIN,
     "my": T_MY,
     "rsvp": T_RSVP,
+    "register": T_REGISTER,
     "done": T_DONE,
     "msgstep": T_MSGSTEP,
     "board": T_BOARD,

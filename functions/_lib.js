@@ -106,8 +106,16 @@ export const RESIDENT_TABLES = [
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     space TEXT NOT NULL, date TEXT NOT NULL,
     start TEXT, end_time TEXT, start24 TEXT,
-    note TEXT, created TEXT NOT NULL
+    note TEXT, created TEXT NOT NULL,
+    event_name TEXT, host TEXT, reg_token TEXT, reg_open INTEGER DEFAULT 0, guest_cap INTEGER
   )`,
+  `CREATE TABLE IF NOT EXISTS guests (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    booking_id INTEGER NOT NULL,
+    name TEXT NOT NULL, plus_one TEXT,
+    created TEXT NOT NULL, arrived TEXT
+  )`,
+  `CREATE INDEX IF NOT EXISTS guests_by_booking ON guests(booking_id, id)`,
   `CREATE TABLE IF NOT EXISTS assets (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     stem TEXT NOT NULL, kind TEXT NOT NULL,
@@ -234,6 +242,10 @@ export async function ensureResidentTables(env) {
   await env.DB.batch(RESIDENT_TABLES.map(s => env.DB.prepare(s)));
   try { await env.DB.prepare("ALTER TABLE residents ADD COLUMN feed_token TEXT").run(); } catch (e) {}
   try { await env.DB.prepare("ALTER TABLE residents ADD COLUMN tenure TEXT").run(); } catch (e) {}
+  for (const col of ["event_name TEXT", "host TEXT", "reg_token TEXT",
+                     "reg_open INTEGER DEFAULT 0", "guest_cap INTEGER"]) {
+    try { await env.DB.prepare(`ALTER TABLE bookings ADD COLUMN ${col}`).run(); } catch (e) {}
+  }
   tablesEnsured = true;
 }
 

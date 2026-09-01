@@ -28,7 +28,8 @@ export async function onRequest(context) {
   // traffic (their cookie belongs to 181residents.com); on a gated preview they
   // run in place, with their own cookie on the preview host, for staff testing.
   if (url.hostname.endsWith(".pages.dev") && !gated &&
-      (p === "/signin" || p === "/signout" || p === "/my" || p === "/message" || p.startsWith("/rsvp/"))) {
+      (p === "/signin" || p === "/signout" || p === "/my" || p === "/message" ||
+       p.startsWith("/rsvp/") || p.startsWith("/register/"))) {
     return Response.redirect("https://181residents.com" + url.pathname + url.search, 301);
   }
   if ((p === "/admin" || p === "/admin.html") && url.pathname !== "/admin") {

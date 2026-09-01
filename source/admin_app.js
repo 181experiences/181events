@@ -570,8 +570,12 @@
 
   function renderDash() {
     const t = today();
+    // Time-aware like the resident site's Next Event tile: once an event has
+    // started, the dashboard's Next up and Coming up move on to what is ahead.
+    const nowHM = new Date().toTimeString().slice(0, 5).replace(":", "");
     const live = events.filter(e => e.Status === "Live");
-    const upcoming = live.filter(e => e.Date >= t && e.Category !== "Board Meeting")
+    const upcoming = live.filter(e => (e.Date > t || (e.Date === t && (e.Start24 || "2359") > nowHM))
+        && e.Category !== "Board Meeting")
       .sort((a, b) => (a.Date + a.Start24).localeCompare(b.Date + b.Start24));
     const a = analytics || { pageviews: 0, visits: 0, byDay: [], bySource: [], byDevice: [], sample: false, configured: false };
     $("#dash-period").textContent = `Last ${days} days · ${UNITS} occupied units`;
@@ -1195,6 +1199,42 @@
   // space and hours on /spaces; the note stays in this admin.
   let bookings = [];
 
+  // The guest lists behind private events, fetched per reservation when its
+  // panel opens and kept for the session.
+  let guestsByBooking = {};
+  const openGuestPanels = new Set();
+
+  function guestPanel(b) {
+    const g = guestsByBooking[b.id];
+    const link = `https://181residents.com/register/${b.reg_token}`;
+    const heads = r => r.plus_one ? 2 : 1;
+    const rows = !g ? '<div class="nodata" style="padding:12px">Loading&hellip;</div>'
+      : !g.length ? '<div class="nodata" style="padding:12px">Nobody registered yet. Copy the link and the host sends it to the invitees.</div>'
+      : g.map(r => `<div class="srow">
+          <span class="slab">${esc(r.name)}${r.plus_one ? ` <span style="color:var(--stone)">+ ${esc(r.plus_one)}</span>` : ""}</span>
+          <span class="sgrow" style="font-size:12px;color:var(--stone)">${esc((r.created || "").slice(0, 10))}${r.arrived ? ` · in at ${new Date(r.arrived).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })}` : ""}</span>
+          <span class="eact">
+            <button class="mini${r.arrived ? "" : " ghost"}" data-garrive="${r.id}|${b.id}">${r.arrived ? "Arrived ✓" : "Arrived"}</button>
+            <button class="mini ghost" data-gdel="${r.id}|${b.id}" title="Remove this registration">Remove</button>
+          </span></div>`).join("");
+    const total = (g || []).reduce((a, r) => a + heads(r), 0);
+    const inCount = (g || []).filter(r => r.arrived).length;
+    return `<div class="card" data-gpanel="${b.id}" style="margin:4px 0 12px">
+      <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:12px">
+        <button class="mini" data-bkreg="${b.id}">${b.reg_open ? "Close registration" : "Open registration"}</button>
+        <button class="mini ghost" data-bkcopy="${b.id}" title="The unguessable page the host sends to invitees">Copy registration link</button>
+        <button class="mini ghost" data-bkprint="${b.id}" title="The list the desk and security run from">Print guest list</button>
+        <span class="hint" style="margin:0">${b.reg_open ? "Registration is open" : "Registration is closed"}${b.guest_cap ? ` · cap ${b.guest_cap}` : ""}${g ? ` · ${g.length} ${g.length === 1 ? "party" : "parties"}, ${total} guests, ${inCount} arrived` : ""}</span>
+      </div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;margin-bottom:6px">
+        <div class="field" style="margin:0"><label class="fl" for="g-name-${b.id}">Add at the desk</label><input class="inp" id="g-name-${b.id}" autocapitalize="words" placeholder="Guest name"></div>
+        <div class="field" style="margin:0"><label class="fl" for="g-plus-${b.id}">Plus one</label><input class="inp" id="g-plus-${b.id}" autocapitalize="words" placeholder="Optional"></div>
+        <button class="mini" data-gadd="${b.id}" style="margin-bottom:2px">Add</button>
+      </div>
+      ${rows}
+    </div>`;
+  }
+
   function renderBookings() {
     const box = $("#bklist"); if (!box) return;
     const t = today();
@@ -1203,12 +1243,53 @@
       ? `${ahead.length} reservation${ahead.length === 1 ? "" : "s"} ahead. Residents see the space and hours only, marked Reserved, never who or why.`
       : "Nothing reserved ahead. Residents see open rooms and can walk in anytime.";
     box.innerHTML = ahead.map(b => `<div class="rrow">
-      <span class="rname">${esc(b.space)}${b.note ? `<em>${esc(b.note)} · staff only</em>` : ""}</span>
+      <span class="rname">${b.event_name ? `${esc(b.event_name)}<em>${esc(b.space)}${b.host ? " · hosted by " + esc(b.host) : ""}${b.note ? " · " + esc(b.note) : ""}</em>` : `${esc(b.space)}${b.note ? `<em>${esc(b.note)} · staff only</em>` : ""}`}</span>
       <span class="ecell">${esc(fmt(b.date))}</span>
       <span class="ecell">${esc(b.start || "")}${b.end_time ? " – " + esc(b.end_time) : ""}</span>
-      <span></span>
-      <span class="eact"><button class="mini ghost" data-unbook="${b.id}">Remove</button></span>
-    </div>`).join("");
+      <span class="eact">
+        ${b.event_name ? `<button class="mini${openGuestPanels.has(b.id) ? "" : " ghost"}" data-bkguests="${b.id}">Guests · ${b.guest_parties || 0}</button>` : ""}
+        <button class="mini ghost" data-unbook="${b.id}">Remove</button>
+      </span>
+    </div>${b.event_name && openGuestPanels.has(b.id) ? guestPanel(b) : ""}`).join("");
+  }
+
+  async function loadGuests(bookingId) {
+    try {
+      const d = await api("/api/guests?booking=" + bookingId);
+      guestsByBooking[bookingId] = d.guests;
+    } catch (e) { toast(e.message, "warn"); guestsByBooking[bookingId] = []; }
+    renderBookings();
+  }
+
+  function printGuestList(b) {
+    const g = guestsByBooking[b.id] || [];
+    const lines = [];
+    let n = 0;
+    for (const r of g) {
+      n++; lines.push({ n, name: r.name, note: "" });
+      if (r.plus_one) { n++; lines.push({ n, name: r.plus_one, note: `guest of ${r.name}` }); }
+    }
+    const w = window.open("", "_blank");
+    w.document.write(`<!DOCTYPE html><html><head><title>${esc(b.event_name || "Guest list")}</title><style>
+      body{font-family:Georgia,serif;color:#16161a;margin:40px;font-size:14px}
+      h1{font-size:22px;margin:0 0 2px} .sub{color:#55555f;margin:0 0 6px}
+      .meta{font-size:12px;color:#7a7266;margin-bottom:20px}
+      table{width:100%;border-collapse:collapse}
+      th{text-align:left;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:#7a7266;padding:6px 8px;border-bottom:2px solid #16161a}
+      td{padding:8px;border-bottom:1px solid #ddd6cb}
+      .box{display:inline-block;width:14px;height:14px;border:1.5px solid #16161a}
+      .n{color:#7a7266;width:30px} .note{color:#7a7266;font-style:italic}
+      @media print{ body{margin:16px} }
+    </style></head><body>
+    <h1>${esc(b.event_name || "Private event")} &middot; Guest List</h1>
+    <p class="sub">${esc(b.space)}, 181 Fremont &middot; ${esc(fmt(b.date))}${b.start ? ` &middot; ${esc(b.start)}${b.end_time ? " – " + esc(b.end_time) : ""}` : ""}${b.host ? ` &middot; hosted by ${esc(b.host)}` : ""}</p>
+    <p class="meta">${g.length} ${g.length === 1 ? "party" : "parties"}, ${lines.length} expected guests &middot; guests give the event name at the door &middot; printed ${new Date().toLocaleString([], { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" })}</p>
+    <table><tr><th></th><th>#</th><th>Guest</th><th></th></tr>
+    ${lines.map(l => `<tr><td><span class="box"></span></td><td class="n">${l.n}</td><td>${esc(l.name)}</td><td class="note">${esc(l.note)}</td></tr>`).join("")}
+    </table></body></html>`);
+    w.document.close();
+    w.focus();
+    w.print();
   }
 
   async function loadBookings() {
@@ -1226,13 +1307,17 @@
       space: $("#bk-space").value.trim(), date: $("#bk-date").value,
       start: $("#bk-start").value.trim(), end: $("#bk-end").value.trim(),
       note: $("#bk-note").value.trim(),
+      event_name: $("#bk-event").value.trim(), host: $("#bk-host").value.trim(),
+      guest_cap: $("#bk-cap").value ? Number($("#bk-cap").value) : null,
     };
     if (!body.space || !body.date) { toast("A space and a date are needed.", "warn"); return; }
     try {
       const d = await api("/api/bookings", { method: "POST", body: JSON.stringify(body) });
       bookings.push(d.booking); renderBookings();
-      ["#bk-space", "#bk-date", "#bk-start", "#bk-end", "#bk-note"].forEach(s => $(s).value = "");
-      toast("Reserved. It shows on the Spaces page immediately.");
+      ["#bk-space", "#bk-date", "#bk-start", "#bk-end", "#bk-note", "#bk-event", "#bk-host", "#bk-cap"].forEach(s => $(s).value = "");
+      toast(body.event_name
+        ? "Reserved. Open its Guests panel to switch on registration and copy the link for the host."
+        : "Reserved. It shows on the Spaces page immediately.");
     } catch (e) { toast(e.message, "warn"); }
   }
 
@@ -1343,8 +1428,79 @@
   }
 
   document.addEventListener("click", ev => {
-    const r = ev.target.closest("[data-rotate],[data-ends],[data-toggle],[data-rdelete],[data-resedit],[data-saveres],[data-cancelres],[data-edittoggle],[data-editdelete],[data-addres],[data-addbulk],[data-printcards],[data-mreplied],[data-marchive],[data-wconfirm],[data-redit],[data-rcancel],[data-addrsvp],[data-savearsvp],[data-closearsvp],[data-copylink],[data-aupload],[data-acanva],[data-adelete],[data-rsvpkey],[data-addbooking],[data-unbook]");
+    const r = ev.target.closest("[data-rotate],[data-ends],[data-toggle],[data-rdelete],[data-resedit],[data-saveres],[data-cancelres],[data-edittoggle],[data-editdelete],[data-addres],[data-addbulk],[data-printcards],[data-mreplied],[data-marchive],[data-wconfirm],[data-redit],[data-rcancel],[data-addrsvp],[data-savearsvp],[data-closearsvp],[data-copylink],[data-aupload],[data-acanva],[data-adelete],[data-rsvpkey],[data-addbooking],[data-unbook],[data-bkguests],[data-bkreg],[data-bkcopy],[data-bkprint],[data-gadd],[data-garrive],[data-gdel]");
     if (r) {
+      if (r.dataset.bkguests) {
+        const id = Number(r.dataset.bkguests);
+        if (openGuestPanels.has(id)) openGuestPanels.delete(id);
+        else { openGuestPanels.add(id); if (!guestsByBooking[id]) loadGuests(id); }
+        renderBookings();
+        return;
+      }
+      if (r.dataset.bkreg) {
+        const b = bookings.find(x => String(x.id) === r.dataset.bkreg); if (!b) return;
+        api("/api/bookings/" + b.id, { method: "PATCH", body: JSON.stringify({ reg_open: !b.reg_open }) })
+          .then(d => {
+            Object.assign(b, d.booking); renderBookings();
+            toast(b.reg_open
+              ? "Registration is open. Copy the link and hand it to the host."
+              : "Registration is closed. The list stands; the page politely turns latecomers to their host.");
+          }).catch(e => toast(e.message, "warn"));
+        return;
+      }
+      if (r.dataset.bkcopy) {
+        const b = bookings.find(x => String(x.id) === r.dataset.bkcopy); if (!b) return;
+        const link = `https://181residents.com/register/${b.reg_token}`;
+        (navigator.clipboard ? navigator.clipboard.writeText(link) : Promise.reject())
+          .then(() => toast("Registration link copied. The host sends it to the invitees."))
+          .catch(() => prompt("Copy the registration link:", link));
+        return;
+      }
+      if (r.dataset.bkprint) {
+        const b = bookings.find(x => String(x.id) === r.dataset.bkprint); if (!b) return;
+        if (!guestsByBooking[b.id]) { toast("Open the Guests panel first, so the list is loaded."); return; }
+        printGuestList(b);
+        return;
+      }
+      if (r.dataset.gadd) {
+        const id = Number(r.dataset.gadd);
+        const name = $(`#g-name-${id}`).value.trim();
+        if (!name) { toast("A guest name is needed.", "warn"); return; }
+        api("/api/guests", { method: "POST", body: JSON.stringify({ booking_id: id, name, plus_one: $(`#g-plus-${id}`).value.trim() }) })
+          .then(d => {
+            (guestsByBooking[id] = guestsByBooking[id] || []).push(d.guest);
+            const b = bookings.find(x => x.id === id);
+            if (b) { b.guest_parties = (b.guest_parties || 0) + 1; b.guest_heads = (b.guest_heads || 0) + (d.guest.plus_one ? 2 : 1); }
+            renderBookings();
+            toast(`${d.guest.name} is on the list.`);
+          }).catch(e => toast(e.message, "warn"));
+        return;
+      }
+      if (r.dataset.garrive) {
+        const [gid, bid] = r.dataset.garrive.split("|").map(Number);
+        const row = (guestsByBooking[bid] || []).find(x => x.id === gid); if (!row) return;
+        api("/api/guests/" + gid, { method: "PATCH", body: JSON.stringify({ arrived: !row.arrived }) })
+          .then(d => {
+            Object.assign(row, d.guest);
+            const b = bookings.find(x => x.id === bid);
+            if (b) b.guest_arrived = (guestsByBooking[bid] || []).filter(x => x.arrived).length;
+            renderBookings();
+          }).catch(e => toast(e.message, "warn"));
+        return;
+      }
+      if (r.dataset.gdel) {
+        const [gid, bid] = r.dataset.gdel.split("|").map(Number);
+        const row = (guestsByBooking[bid] || []).find(x => x.id === gid);
+        if (!row || !confirm(`Remove ${row.name}${row.plus_one ? " and " + row.plus_one : ""} from the list?`)) return;
+        api("/api/guests/" + gid, { method: "DELETE" })
+          .then(() => {
+            guestsByBooking[bid] = (guestsByBooking[bid] || []).filter(x => x.id !== gid);
+            const b = bookings.find(x => x.id === bid);
+            if (b) { b.guest_parties = Math.max(0, (b.guest_parties || 0) - 1); b.guest_heads = Math.max(0, (b.guest_heads || 0) - (row.plus_one ? 2 : 1)); }
+            renderBookings();
+          }).catch(e => toast(e.message, "warn"));
+        return;
+      }
       if (r.dataset.rotate) {
         const p = residents.find(x => String(x.id) === r.dataset.rotate);
         if (p && confirm(`Rotate ${p.label}'s code? The old one stops working everywhere, on every device, right away.`))
