@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+﻿#!/usr/bin/env python3
 """181 Fremont Resident Experiences admin.
 Screens and tabs run on CSS :checked selectors; the data comes from /api/* via admin_app.js,
 which is inlined at build time. Staff only, so JavaScript is fine here."""
@@ -18,7 +18,7 @@ NAV_OF = {"dash": "dash", "events": "events", "editor": "events", "assets": "ass
           "inst-events": "inst", "inst-brand": "inst", "inst-email": "inst",
           "inst-screens": "inst"}
 NAV = [("dash", "Dashboard"), ("events", "Events"), ("assets", "Assets"),
-       ("res", "Residents"), ("spaces", "Spaces"), ("msgs", "Messages"), ("inst", "Instructions")]
+       ("res", "Residents"), ("spaces", "Spaces"), ("msgs", "Messages"), ("inst", "Settings")]
 
 rules = [f'#s-{s}:checked ~ .body #scr-{s}{{display:block}}' for s in SCREENS]
 for s, nav in NAV_OF.items():
@@ -176,6 +176,12 @@ HTML = f'''<!DOCTYPE html>
   .pill.draft{{background:#f4ecd9;color:#6d5518}}
   .pill.unpublished{{background:#f0e2e2;color:#8a2b2b}}
   .pill.archived{{background:#eae4da;color:#5c5548}}
+  .pill.tenant{{background:#f2e3b3;color:#6b5416}}
+  .setchip{{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--line);background:var(--paper);
+    border-radius:100px;padding:6px 8px 6px 14px;font-size:13.5px;color:var(--ink)}}
+  .setchip .x{{border:none;background:#eae3d8;border-radius:100px;width:22px;height:22px;cursor:pointer;
+    color:#6d5f4d;font-size:13px;line-height:1;display:inline-flex;align-items:center;justify-content:center}}
+  .setchip .x:hover{{background:var(--red);color:#fff}}
   .badge2{{display:inline-block;font-size:10px;letter-spacing:.14em;text-transform:uppercase;font-weight:600;
     border:1px solid var(--line);border-radius:100px;padding:3px 9px;color:var(--stone);vertical-align:middle;
     margin-left:6px;font-family:var(--fb)}}
@@ -272,7 +278,8 @@ HTML = f'''<!DOCTYPE html>
     padding:14px 16px 6px;letter-spacing:.04em}}
   .flagmany{{display:inline-block;font-size:10px;letter-spacing:.12em;text-transform:uppercase;font-weight:600;
     background:#f0e2e2;color:#8a2b2b;border-radius:100px;padding:3px 10px}}
-  .rrow{{display:grid;gap:12px;grid-template-columns:1.3fr 1.6fr 1.1fr .9fr auto;align-items:center;
+  .rpills{{display:flex;gap:6px;flex-wrap:wrap;align-items:center}}
+  .rrow{{display:grid;gap:12px;grid-template-columns:1.6fr 1fr 1.1fr auto;align-items:center;
     padding:10px 16px;border-top:1px solid var(--line-2)}}
   .rname{{font-size:14px;color:var(--ink);font-weight:500}}
   .rname em{{display:block;font-style:normal;font-size:12px;color:var(--stone);font-weight:400;margin-top:2px}}
@@ -500,10 +507,10 @@ HTML = f'''<!DOCTYPE html>
     <div class="field"><label class="fl" for="f-date">Date</label><input class="inp" type="date" id="f-date"></div>
     <div class="field"><label class="fl" for="f-start">Start time</label><input class="inp" id="f-start" placeholder="5:30 PM" inputmode="text"></div>
     <div class="field"><label class="fl" for="f-end">End time</label><input class="inp" id="f-end" placeholder="7:30 PM"></div>
-    <div class="field"><label class="fl" for="f-loc">Location</label><input class="inp" id="f-loc" list="locs"><datalist id="locs"><option value="Level 39, Residents’ Club"><option value="Level 7 Terrace"><option value="Lobby"><option value="Fitness Center"></datalist></div>
+    <div class="field"><label class="fl" for="f-loc">Location</label><input class="inp" id="f-loc" list="locs"><datalist id="locs"><option value="Level 39, Residentsâ€™ Club"><option value="Level 7 Terrace"><option value="Lobby"><option value="Fitness Center"></datalist></div>
     <div class="field"><label class="fl" for="f-host">Hosted by</label><input class="inp" id="f-host" list="hosts" autocapitalize="words"><datalist id="hosts"><option value="Resident Experiences"><option value="Leigh Anne"><option value="Front desk"></datalist>
       <div class="hint">Shown on the event page so residents know who to ask.</div></div>
-    <div class="field"><label class="fl">Count in engagement reporting</label><div class="picks">{picks("co", ["Count it", "List only, don’t count"])}</div>
+    <div class="field"><label class="fl">Count in engagement reporting</label><div class="picks">{picks("co", ["Count it", "List only, donâ€™t count"])}</div>
       <div class="hint">Choose List only whenever the host is not Resident Experiences, so nothing credits you with someone else&rsquo;s attendance.</div></div>
     <div class="field f-full" id="rp-builder"><label class="fl">Repeats</label>
       <div class="picks" id="rp-picks">
@@ -572,7 +579,7 @@ HTML = f'''<!DOCTYPE html>
       <div class="aklist" id="ak"></div>
       <div class="hint">What this date actually shows. A series carries one master kit under Assets that every date inherits;
       <strong>Override this date</strong> gives just this one its own file, and <strong>Back to series kit</strong> hands it back.
-      Specs under Instructions &rarr; Screens &amp; Print.</div></div>
+      Specs under Settings &rarr; Screens &amp; Print.</div></div>
   </div>
 
   <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:30px;align-items:center" id="ed-actions">
@@ -630,24 +637,32 @@ HTML = f'''<!DOCTYPE html>
   <div class="psub" id="rescount">Loading&hellip;</div>
   <div class="callout" style="margin:0 0 18px">
     <strong>One code per person, grouped by unit.</strong> Couples each get their own. A renter or a visiting
-    family member gets their own row with an <strong>end date</strong>, and the code simply stops working after it.
-    Rotate a code and the old one dies everywhere at once; that is the whole late-night rescue:
-    look the person up, rotate, read the new code over the phone or email it from your own mailbox.
+    family member gets their own row with an <strong>end date</strong>, and the code simply stops working after it;
+    mark them a <strong>tenant</strong> and a yellow pill says so at a glance. Rotate a code and the old one dies
+    everywhere at once; that is the whole late-night rescue: look the person up, rotate, read the new code over the
+    phone or email it from your own mailbox. <strong>Edit</strong> on any row fixes spelling, emails, end dates,
+    and standing.
   </div>
   <div class="card" style="margin-bottom:18px">
+    <div id="res-formhead" style="display:none;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--red);font-weight:600;margin-bottom:12px"></div>
     <div style="display:grid;gap:12px 16px;grid-template-columns:repeat(auto-fit,minmax(150px,1fr))">
       <div class="field"><label class="fl" for="r-unit">Unit</label><input class="inp" id="r-unit" autocapitalize="characters" placeholder="12A"></div>
       <div class="field"><label class="fl" for="r-name">Name</label><input class="inp" id="r-name" autocapitalize="words" placeholder="Margaret"></div>
       <div class="field"><label class="fl" for="r-email">Email, for sending the code</label><input class="inp" id="r-email" type="email" autocapitalize="none" placeholder="Optional"></div>
+      <div class="field"><label class="fl" for="r-tenure">Owner or tenant</label><select class="inp" id="r-tenure"><option value="">Not said</option><option value="owner">Owner</option><option value="tenant">Tenant</option></select></div>
       <div class="field"><label class="fl" for="r-ends">Access ends</label><input class="inp" id="r-ends" type="date"><div class="hint">Only for temporary stays.</div></div>
     </div>
     <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:14px">
       <button class="btn" data-addres>Add Person</button>
-      <label class="check" style="font-size:13.5px"><input type="checkbox" id="r-role"> Role account, no unit (front desk, building services)</label>
+      <label class="check" id="res-rolecheck" style="font-size:13.5px"><input type="checkbox" id="r-role"> Role account, no unit (front desk, building services)</label>
+      <button class="btn" data-saveres style="display:none">Save Changes</button>
+      <button class="mini ghost" data-cancelres style="display:none">Close</button>
+      <button class="mini ghost" data-edittoggle style="display:none"></button>
+      <button class="mini ghost" data-editdelete style="display:none" title="Remove entirely, for typos and test rows. Someone who moved out should be Disabled instead, which keeps their history.">Delete</button>
     </div>
-    <div class="sec" style="margin-top:18px">
+    <div class="sec" id="res-bulk" style="margin-top:18px">
       <label class="fl" for="r-bulk" style="display:block;font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--stone);margin-bottom:5px;font-weight:600">Add several at once</label>
-      <textarea class="inp" id="r-bulk" rows="3" placeholder="One person per line: unit, name, email &#10;12A, Margaret, margaret@example.com&#10;12A, Robert"></textarea>
+      <textarea class="inp" id="r-bulk" rows="3" placeholder="One person per line: unit, name, email, owner or tenant&#10;12A, Margaret, margaret@example.com, owner&#10;7C, Elena, , tenant"></textarea>
       <div style="margin-top:10px"><button class="mini" data-addbulk>Add Everyone Listed</button></div>
     </div>
   </div>
@@ -665,7 +680,7 @@ HTML = f'''<!DOCTYPE html>
   </div>
   <div class="card" style="margin-bottom:18px">
     <div style="display:grid;gap:12px 16px;grid-template-columns:repeat(auto-fit,minmax(150px,1fr))">
-      <div class="field"><label class="fl" for="bk-space">Space</label><input class="inp" id="bk-space" list="spaces" autocapitalize="words" placeholder="Conference Room"><datalist id="spaces"><option value="Conference Room"><option value="Dining Room"><option value="Residents’ Club"><option value="Level 7 Terrace"></datalist></div>
+      <div class="field"><label class="fl" for="bk-space">Space</label><input class="inp" id="bk-space" list="spaces" autocapitalize="words" placeholder="Conference Room"><datalist id="spaces"><option value="Conference Room"><option value="Dining Room"><option value="Residentsâ€™ Club"><option value="Level 7 Terrace"></datalist></div>
       <div class="field"><label class="fl" for="bk-date">Date</label><input class="inp" id="bk-date" type="date"></div>
       <div class="field"><label class="fl" for="bk-start">From</label><input class="inp" id="bk-start" placeholder="2:00 PM"></div>
       <div class="field"><label class="fl" for="bk-end">Until</label><input class="inp" id="bk-end" placeholder="5:00 PM"></div>
@@ -689,8 +704,10 @@ HTML = f'''<!DOCTYPE html>
 
 <!-- ================= INSTRUCTIONS ================= -->
 <section class="screen" id="scr-inst"><div class="wrap">
-  <div class="phead"><h1>Instructions</h1></div>
-  <div class="psub">The document center. Everything needed to run this without having to remember it, and to hand over to whoever covers for you.</div>
+  <div class="phead"><h1>Settings</h1></div>
+  <div class="psub">The reference shelf and the working lists: instructions for running things, and the names the event form offers.</div>
+
+  <h2 style="margin:6px 0 12px">Instructions</h2>
   <div class="docs">
     <label class="doc" for="s-inst-events"><span class="dt">Creating &amp; archiving events</span>
       <span class="dd">The full loop: draft, asset kit, publish, promote, archive.</span><span class="dm">Updated Aug 2026</span></label>
@@ -701,10 +718,34 @@ HTML = f'''<!DOCTYPE html>
     <label class="doc" for="s-inst-email"><span class="dt">Email templates</span>
       <span class="dd">Campaign and automated sequence copy.</span><span class="dm">Awaiting content</span></label>
   </div>
+
+  <div class="sec" style="margin-top:34px">
+    <h2>Locations</h2>
+    <div class="sd">The places events happen, named once. The event editor offers these under Location.</div>
+    <div class="card">
+      <div class="chips" id="set-locs" style="margin-bottom:14px"></div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
+        <input class="inp" id="loc-new" placeholder="Level 39, Residents&rsquo; Club" autocapitalize="words" style="max-width:320px">
+        <button class="mini" data-addloc>Add Location</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="sec" style="margin-top:26px">
+    <h2>Hosts</h2>
+    <div class="sd">Who an event can be hosted by. The event editor offers these under Hosted by, and the name shows on the event page so residents know who to ask.</div>
+    <div class="card">
+      <div class="chips" id="set-hosts" style="margin-bottom:14px"></div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
+        <input class="inp" id="host-new" placeholder="Resident Experiences" autocapitalize="words" style="max-width:320px">
+        <button class="mini" data-addhost>Add Host</button>
+      </div>
+    </div>
+  </div>
 </div></section>
 
 <section class="screen" id="scr-inst-events"><div class="wrap prose">
-  <label class="back" for="s-inst">&larr; Instructions</label>
+  <label class="back" for="s-inst">&larr; Settings</label>
   <h1 style="font-size:34px">Creating &amp; archiving events</h1>
 
   <h2>The loop</h2>
@@ -741,7 +782,7 @@ HTML = f'''<!DOCTYPE html>
   those two buttons is the difference between a quiet edit and someone arriving on Level 39 to an empty room.</div>
 
   <div class="callout"><strong>Archive, never delete.</strong> An archived event disappears from the resident calendar but keeps its
-  views, RSVPs, and attendance. Delete it and the monthly report loses that history permanently — and a comparison to last
+  views, RSVPs, and attendance. Delete it and the monthly report loses that history permanently â€” and a comparison to last
   year&rsquo;s version of the same event is the most useful number you will ever hand the Board.</div>
 
   <h2>The four categories</h2>
@@ -777,7 +818,7 @@ HTML = f'''<!DOCTYPE html>
 </div></section>
 
 <section class="screen" id="scr-inst-brand"><div class="wrap prose">
-  <label class="back" for="s-inst">&larr; Instructions</label>
+  <label class="back" for="s-inst">&larr; Settings</label>
   <h1 style="font-size:34px">Brand &amp; Canva templates</h1>
 
   <h2>Palette</h2>
@@ -823,11 +864,11 @@ HTML = f'''<!DOCTYPE html>
     <li>Export all six, named with the stem plus the asset type.</li>
     <li>Upload the kit here under Assets.</li>
   </ol>
-  <p>An event image is optional. If there isn&rsquo;t a good photo, the event page falls back to a typographic card automatically — that is by design, so a rushed event never gets a bad stock photo.</p>
+  <p>An event image is optional. If there isn&rsquo;t a good photo, the event page falls back to a typographic card automatically â€” that is by design, so a rushed event never gets a bad stock photo.</p>
 </div></section>
 
 <section class="screen" id="scr-inst-screens"><div class="wrap prose">
-  <label class="back" for="s-inst">&larr; Instructions</label>
+  <label class="back" for="s-inst">&larr; Settings</label>
   <h1 style="font-size:34px">Screens &amp; print</h1>
 
   <h2>The three screens</h2>
@@ -902,7 +943,7 @@ HTML = f'''<!DOCTYPE html>
 </div></section>
 
 <section class="screen" id="scr-inst-email"><div class="wrap prose">
-  <label class="back" for="s-inst">&larr; Instructions</label>
+  <label class="back" for="s-inst">&larr; Settings</label>
   <h1 style="font-size:34px">Email templates</h1>
   <div class="callout"><strong>Awaiting your templates.</strong> Send them over and they will be formatted into this section, with the merge fields and send timing documented alongside each one.</div>
   <h2>What this section will hold</h2>

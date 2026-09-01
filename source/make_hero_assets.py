@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+﻿#!/usr/bin/env python3
 """Renders each event's web hero as real files, ready for the Assets screen.
 
 For every distinct event design in the calendar, two files land in ../print/heroes/:
@@ -28,8 +28,19 @@ os.makedirs(OUT, exist_ok=True)
 W, H = 1600, 900
 INK = (22, 22, 26); PAPER = (247, 244, 239); RED = (196, 31, 38); STONE = (168, 160, 148)
 
-HANKEN = os.path.normpath(os.path.join(HERE, "..", "..", "..", "..", "tidemere",
-                                       "2_Marketing", "brand", "fonts", "HankenGrotesk-Variable.ttf"))
+def _find_hanken():
+    d = HERE
+    for _ in range(10):
+        p = os.path.join(d, "tidemere", "2_Marketing", "brand", "fonts", "HankenGrotesk-Variable.ttf")
+        if os.path.exists(p):
+            return p
+        nd = os.path.dirname(d)
+        if nd == d:
+            break
+        d = nd
+    return "C:/Windows/Fonts/segoeui.ttf"
+
+HANKEN = _find_hanken()
 MARCELLUS = os.path.join(HERE, "marcellus.ttf")
 GEORGIA = "C:/Windows/Fonts/georgia.ttf"
 

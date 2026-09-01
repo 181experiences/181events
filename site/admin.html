@@ -170,6 +170,12 @@
   .pill.draft{background:#f4ecd9;color:#6d5518}
   .pill.unpublished{background:#f0e2e2;color:#8a2b2b}
   .pill.archived{background:#eae4da;color:#5c5548}
+  .pill.tenant{background:#f2e3b3;color:#6b5416}
+  .setchip{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--line);background:var(--paper);
+    border-radius:100px;padding:6px 8px 6px 14px;font-size:13.5px;color:var(--ink)}
+  .setchip .x{border:none;background:#eae3d8;border-radius:100px;width:22px;height:22px;cursor:pointer;
+    color:#6d5f4d;font-size:13px;line-height:1;display:inline-flex;align-items:center;justify-content:center}
+  .setchip .x:hover{background:var(--red);color:#fff}
   .badge2{display:inline-block;font-size:10px;letter-spacing:.14em;text-transform:uppercase;font-weight:600;
     border:1px solid var(--line);border-radius:100px;padding:3px 9px;color:var(--stone);vertical-align:middle;
     margin-left:6px;font-family:var(--fb)}
@@ -266,7 +272,8 @@
     padding:14px 16px 6px;letter-spacing:.04em}
   .flagmany{display:inline-block;font-size:10px;letter-spacing:.12em;text-transform:uppercase;font-weight:600;
     background:#f0e2e2;color:#8a2b2b;border-radius:100px;padding:3px 10px}
-  .rrow{display:grid;gap:12px;grid-template-columns:1.3fr 1.6fr 1.1fr .9fr auto;align-items:center;
+  .rpills{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+  .rrow{display:grid;gap:12px;grid-template-columns:1.6fr 1fr 1.1fr auto;align-items:center;
     padding:10px 16px;border-top:1px solid var(--line-2)}
   .rname{font-size:14px;color:var(--ink);font-weight:500}
   .rname em{display:block;font-style:normal;font-size:12px;color:var(--stone);font-weight:400;margin-top:2px}
@@ -373,7 +380,7 @@
   </div>
 </div></div>
 <nav class="navbar"><div class="inner">
-  <label for="s-dash">Dashboard</label><label for="s-events">Events</label><label for="s-assets">Assets</label><label for="s-res">Residents</label><label for="s-spaces">Spaces</label><label for="s-msgs">Messages</label><label for="s-inst">Instructions</label>
+  <label for="s-dash">Dashboard</label><label for="s-events">Events</label><label for="s-assets">Assets</label><label for="s-res">Residents</label><label for="s-spaces">Spaces</label><label for="s-msgs">Messages</label><label for="s-inst">Settings</label>
 </div></nav>
 </div>
 
@@ -504,10 +511,10 @@
     <div class="field"><label class="fl" for="f-date">Date</label><input class="inp" type="date" id="f-date"></div>
     <div class="field"><label class="fl" for="f-start">Start time</label><input class="inp" id="f-start" placeholder="5:30 PM" inputmode="text"></div>
     <div class="field"><label class="fl" for="f-end">End time</label><input class="inp" id="f-end" placeholder="7:30 PM"></div>
-    <div class="field"><label class="fl" for="f-loc">Location</label><input class="inp" id="f-loc" list="locs"><datalist id="locs"><option value="Level 39, Residents’ Club"><option value="Level 7 Terrace"><option value="Lobby"><option value="Fitness Center"></datalist></div>
+    <div class="field"><label class="fl" for="f-loc">Location</label><input class="inp" id="f-loc" list="locs"><datalist id="locs"><option value="Level 39, Residentsâ€™ Club"><option value="Level 7 Terrace"><option value="Lobby"><option value="Fitness Center"></datalist></div>
     <div class="field"><label class="fl" for="f-host">Hosted by</label><input class="inp" id="f-host" list="hosts" autocapitalize="words"><datalist id="hosts"><option value="Resident Experiences"><option value="Leigh Anne"><option value="Front desk"></datalist>
       <div class="hint">Shown on the event page so residents know who to ask.</div></div>
-    <div class="field"><label class="fl">Count in engagement reporting</label><div class="picks"><label class="pick" for="co-0">Count it</label><label class="pick" for="co-1">List only, don’t count</label></div>
+    <div class="field"><label class="fl">Count in engagement reporting</label><div class="picks"><label class="pick" for="co-0">Count it</label><label class="pick" for="co-1">List only, donâ€™t count</label></div>
       <div class="hint">Choose List only whenever the host is not Resident Experiences, so nothing credits you with someone else&rsquo;s attendance.</div></div>
     <div class="field f-full" id="rp-builder"><label class="fl">Repeats</label>
       <div class="picks" id="rp-picks">
@@ -576,7 +583,7 @@
       <div class="aklist" id="ak"></div>
       <div class="hint">What this date actually shows. A series carries one master kit under Assets that every date inherits;
       <strong>Override this date</strong> gives just this one its own file, and <strong>Back to series kit</strong> hands it back.
-      Specs under Instructions &rarr; Screens &amp; Print.</div></div>
+      Specs under Settings &rarr; Screens &amp; Print.</div></div>
   </div>
 
   <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:30px;align-items:center" id="ed-actions">
@@ -634,24 +641,32 @@
   <div class="psub" id="rescount">Loading&hellip;</div>
   <div class="callout" style="margin:0 0 18px">
     <strong>One code per person, grouped by unit.</strong> Couples each get their own. A renter or a visiting
-    family member gets their own row with an <strong>end date</strong>, and the code simply stops working after it.
-    Rotate a code and the old one dies everywhere at once; that is the whole late-night rescue:
-    look the person up, rotate, read the new code over the phone or email it from your own mailbox.
+    family member gets their own row with an <strong>end date</strong>, and the code simply stops working after it;
+    mark them a <strong>tenant</strong> and a yellow pill says so at a glance. Rotate a code and the old one dies
+    everywhere at once; that is the whole late-night rescue: look the person up, rotate, read the new code over the
+    phone or email it from your own mailbox. <strong>Edit</strong> on any row fixes spelling, emails, end dates,
+    and standing.
   </div>
   <div class="card" style="margin-bottom:18px">
+    <div id="res-formhead" style="display:none;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--red);font-weight:600;margin-bottom:12px"></div>
     <div style="display:grid;gap:12px 16px;grid-template-columns:repeat(auto-fit,minmax(150px,1fr))">
       <div class="field"><label class="fl" for="r-unit">Unit</label><input class="inp" id="r-unit" autocapitalize="characters" placeholder="12A"></div>
       <div class="field"><label class="fl" for="r-name">Name</label><input class="inp" id="r-name" autocapitalize="words" placeholder="Margaret"></div>
       <div class="field"><label class="fl" for="r-email">Email, for sending the code</label><input class="inp" id="r-email" type="email" autocapitalize="none" placeholder="Optional"></div>
+      <div class="field"><label class="fl" for="r-tenure">Owner or tenant</label><select class="inp" id="r-tenure"><option value="">Not said</option><option value="owner">Owner</option><option value="tenant">Tenant</option></select></div>
       <div class="field"><label class="fl" for="r-ends">Access ends</label><input class="inp" id="r-ends" type="date"><div class="hint">Only for temporary stays.</div></div>
     </div>
     <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:14px">
       <button class="btn" data-addres>Add Person</button>
-      <label class="check" style="font-size:13.5px"><input type="checkbox" id="r-role"> Role account, no unit (front desk, building services)</label>
+      <label class="check" id="res-rolecheck" style="font-size:13.5px"><input type="checkbox" id="r-role"> Role account, no unit (front desk, building services)</label>
+      <button class="btn" data-saveres style="display:none">Save Changes</button>
+      <button class="mini ghost" data-cancelres style="display:none">Close</button>
+      <button class="mini ghost" data-edittoggle style="display:none"></button>
+      <button class="mini ghost" data-editdelete style="display:none" title="Remove entirely, for typos and test rows. Someone who moved out should be Disabled instead, which keeps their history.">Delete</button>
     </div>
-    <div class="sec" style="margin-top:18px">
+    <div class="sec" id="res-bulk" style="margin-top:18px">
       <label class="fl" for="r-bulk" style="display:block;font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--stone);margin-bottom:5px;font-weight:600">Add several at once</label>
-      <textarea class="inp" id="r-bulk" rows="3" placeholder="One person per line: unit, name, email &#10;12A, Margaret, margaret@example.com&#10;12A, Robert"></textarea>
+      <textarea class="inp" id="r-bulk" rows="3" placeholder="One person per line: unit, name, email, owner or tenant&#10;12A, Margaret, margaret@example.com, owner&#10;7C, Elena, , tenant"></textarea>
       <div style="margin-top:10px"><button class="mini" data-addbulk>Add Everyone Listed</button></div>
     </div>
   </div>
@@ -669,7 +684,7 @@
   </div>
   <div class="card" style="margin-bottom:18px">
     <div style="display:grid;gap:12px 16px;grid-template-columns:repeat(auto-fit,minmax(150px,1fr))">
-      <div class="field"><label class="fl" for="bk-space">Space</label><input class="inp" id="bk-space" list="spaces" autocapitalize="words" placeholder="Conference Room"><datalist id="spaces"><option value="Conference Room"><option value="Dining Room"><option value="Residents’ Club"><option value="Level 7 Terrace"></datalist></div>
+      <div class="field"><label class="fl" for="bk-space">Space</label><input class="inp" id="bk-space" list="spaces" autocapitalize="words" placeholder="Conference Room"><datalist id="spaces"><option value="Conference Room"><option value="Dining Room"><option value="Residentsâ€™ Club"><option value="Level 7 Terrace"></datalist></div>
       <div class="field"><label class="fl" for="bk-date">Date</label><input class="inp" id="bk-date" type="date"></div>
       <div class="field"><label class="fl" for="bk-start">From</label><input class="inp" id="bk-start" placeholder="2:00 PM"></div>
       <div class="field"><label class="fl" for="bk-end">Until</label><input class="inp" id="bk-end" placeholder="5:00 PM"></div>
@@ -693,8 +708,10 @@
 
 <!-- ================= INSTRUCTIONS ================= -->
 <section class="screen" id="scr-inst"><div class="wrap">
-  <div class="phead"><h1>Instructions</h1></div>
-  <div class="psub">The document center. Everything needed to run this without having to remember it, and to hand over to whoever covers for you.</div>
+  <div class="phead"><h1>Settings</h1></div>
+  <div class="psub">The reference shelf and the working lists: instructions for running things, and the names the event form offers.</div>
+
+  <h2 style="margin:6px 0 12px">Instructions</h2>
   <div class="docs">
     <label class="doc" for="s-inst-events"><span class="dt">Creating &amp; archiving events</span>
       <span class="dd">The full loop: draft, asset kit, publish, promote, archive.</span><span class="dm">Updated Aug 2026</span></label>
@@ -705,10 +722,34 @@
     <label class="doc" for="s-inst-email"><span class="dt">Email templates</span>
       <span class="dd">Campaign and automated sequence copy.</span><span class="dm">Awaiting content</span></label>
   </div>
+
+  <div class="sec" style="margin-top:34px">
+    <h2>Locations</h2>
+    <div class="sd">The places events happen, named once. The event editor offers these under Location.</div>
+    <div class="card">
+      <div class="chips" id="set-locs" style="margin-bottom:14px"></div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
+        <input class="inp" id="loc-new" placeholder="Level 39, Residents&rsquo; Club" autocapitalize="words" style="max-width:320px">
+        <button class="mini" data-addloc>Add Location</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="sec" style="margin-top:26px">
+    <h2>Hosts</h2>
+    <div class="sd">Who an event can be hosted by. The event editor offers these under Hosted by, and the name shows on the event page so residents know who to ask.</div>
+    <div class="card">
+      <div class="chips" id="set-hosts" style="margin-bottom:14px"></div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
+        <input class="inp" id="host-new" placeholder="Resident Experiences" autocapitalize="words" style="max-width:320px">
+        <button class="mini" data-addhost>Add Host</button>
+      </div>
+    </div>
+  </div>
 </div></section>
 
 <section class="screen" id="scr-inst-events"><div class="wrap prose">
-  <label class="back" for="s-inst">&larr; Instructions</label>
+  <label class="back" for="s-inst">&larr; Settings</label>
   <h1 style="font-size:34px">Creating &amp; archiving events</h1>
 
   <h2>The loop</h2>
@@ -745,7 +786,7 @@
   those two buttons is the difference between a quiet edit and someone arriving on Level 39 to an empty room.</div>
 
   <div class="callout"><strong>Archive, never delete.</strong> An archived event disappears from the resident calendar but keeps its
-  views, RSVPs, and attendance. Delete it and the monthly report loses that history permanently — and a comparison to last
+  views, RSVPs, and attendance. Delete it and the monthly report loses that history permanently â€” and a comparison to last
   year&rsquo;s version of the same event is the most useful number you will ever hand the Board.</div>
 
   <h2>The four categories</h2>
@@ -781,7 +822,7 @@
 </div></section>
 
 <section class="screen" id="scr-inst-brand"><div class="wrap prose">
-  <label class="back" for="s-inst">&larr; Instructions</label>
+  <label class="back" for="s-inst">&larr; Settings</label>
   <h1 style="font-size:34px">Brand &amp; Canva templates</h1>
 
   <h2>Palette</h2>
@@ -827,11 +868,11 @@
     <li>Export all six, named with the stem plus the asset type.</li>
     <li>Upload the kit here under Assets.</li>
   </ol>
-  <p>An event image is optional. If there isn&rsquo;t a good photo, the event page falls back to a typographic card automatically — that is by design, so a rushed event never gets a bad stock photo.</p>
+  <p>An event image is optional. If there isn&rsquo;t a good photo, the event page falls back to a typographic card automatically â€” that is by design, so a rushed event never gets a bad stock photo.</p>
 </div></section>
 
 <section class="screen" id="scr-inst-screens"><div class="wrap prose">
-  <label class="back" for="s-inst">&larr; Instructions</label>
+  <label class="back" for="s-inst">&larr; Settings</label>
   <h1 style="font-size:34px">Screens &amp; print</h1>
 
   <h2>The three screens</h2>
@@ -906,7 +947,7 @@
 </div></section>
 
 <section class="screen" id="scr-inst-email"><div class="wrap prose">
-  <label class="back" for="s-inst">&larr; Instructions</label>
+  <label class="back" for="s-inst">&larr; Settings</label>
   <h1 style="font-size:34px">Email templates</h1>
   <div class="callout"><strong>Awaiting your templates.</strong> Send them over and they will be formatted into this section, with the merge fields and send timing documented alongside each one.</div>
   <h2>What this section will hold</h2>
@@ -1410,13 +1451,43 @@
     save("Archived");
   }
 
-  // ------------------------------------------------------------ calendar window
+  // ---------------------------------------------------- settings: window + lists
+  // Locations and hosts are named once on the Settings screen and offered in
+  // the event editor's dropdowns; the calendar window dials live on Events.
+  const DEFAULT_LOCATIONS = ["Level 39, Residents’ Club", "Level 7 Terrace", "Lobby", "Fitness Center"];
+  const DEFAULT_HOSTS = ["Resident Experiences", "181 Fremont Residences Association", "The Board",
+                         "Leo Ramirez", "Leigh Anne", "Carley-Ann", "Scott"];
+  let listSettings = { locations: DEFAULT_LOCATIONS.slice(), hosts: DEFAULT_HOSTS.slice() };
+
+  function renderListSettings() {
+    const chip = (v, attr, i) => `<span class="setchip">${esc(v)}<button class="x" ${attr}="${i}" title="Remove from the list">&times;</button></span>`;
+    const l = $("#set-locs"), h = $("#set-hosts");
+    if (l) l.innerHTML = listSettings.locations.map((v, i) => chip(v, "data-delloc", i)).join("")
+      || '<span class="hint">Nothing listed yet.</span>';
+    if (h) h.innerHTML = listSettings.hosts.map((v, i) => chip(v, "data-delhost", i)).join("")
+      || '<span class="hint">Nothing listed yet.</span>';
+    const dl = document.getElementById("locs"), dh = document.getElementById("hosts");
+    if (dl) dl.innerHTML = listSettings.locations.map(v => `<option value="${esc(v)}">`).join("");
+    if (dh) dh.innerHTML = listSettings.hosts.map(v => `<option value="${esc(v)}">`).join("");
+  }
+
+  async function saveLists() {
+    renderListSettings();
+    try {
+      await api("/api/settings", { method: "PUT", body: JSON.stringify(
+        { locations: listSettings.locations, hosts: listSettings.hosts }) });
+    } catch (e) { toast(e.message, "warn"); }
+  }
+
   async function loadWindow() {
     try {
       const w = await api("/api/settings");
       $("#w-weeks").value = String(w.detail_weeks);
       $("#w-months").value = String(w.horizon_months);
+      if (Array.isArray(w.locations) && w.locations.length) listSettings.locations = w.locations;
+      if (Array.isArray(w.hosts) && w.hosts.length) listSettings.hosts = w.hosts;
     } catch (e) {}   // the desk tier has no events screen, and no business here
+    renderListSettings();
   }
   async function saveWindow(btn) {
     btn.disabled = true;
@@ -1720,17 +1791,17 @@
     const mailHref = p => "mailto:" + encodeURIComponent(p.email)
       + "?subject=" + encodeURIComponent("Your 181 Fremont resident code")
       + "&body=" + encodeURIComponent(`Hello ${p.name},\n\nYour personal code for 181residents.com is:\n\n    ${p.code}\n\nTap RSVP on any event, enter the code once, and you stay signed in for a month on that device. Your RSVPs and notes to us save under your name.\n\nWarmly,\nResident Experiences\n181 Fremont`);
+    // Three buttons, no more: the two the desk reaches for at 10 pm, and Edit,
+    // which opens everything else (end dates, standing, disable, delete) in the
+    // card above, one deliberate step away from the row.
     const row = p => `<div class="rrow${p.status !== "Active" || p.expired ? " off" : ""}">
       <span class="rname">${esc(p.name)}${p.email ? `<em>${esc(p.email)}</em>` : ""}</span>
       <span><span class="rcode">${esc(p.code)}</span></span>
-      <span>${pill(p)}</span>
-      <span class="ecell" style="font-size:12px;color:var(--stone)">${esc((p.created || "").slice(0, 10))}</span>
+      <span class="rpills">${pill(p)}${p.tenure === "tenant" ? '<span class="pill tenant">Tenant</span>' : ""}</span>
       <span class="eact">
         ${p.email && p.status === "Active" ? `<a class="mini" href="${mailHref(p)}" title="Opens your own mail app with the code written out">Email code</a>` : ""}
         <button class="mini" data-rotate="${p.id}" title="A fresh code; the old one stops working everywhere">Rotate</button>
-        <button class="mini ghost" data-ends="${p.id}" title="Set or clear the date this code stops working">Ends</button>
-        <button class="mini ghost" data-toggle="${p.id}">${p.status === "Active" ? "Disable" : "Restore"}</button>
-        <button class="mini ghost" data-rdelete="${p.id}" title="Remove entirely, for typos and test rows. Someone who moved out should be Disabled instead, which keeps their history.">Delete</button>
+        <button class="mini ghost" data-resedit="${p.id}" title="Name, email, unit, tenant, end date, disable, delete">Edit</button>
       </span></div>`;
 
     let html = "";
@@ -1763,11 +1834,12 @@
       kind: isRole ? "role" : "resident",
       unit: $("#r-unit").value.trim(), name: $("#r-name").value.trim(),
       email: $("#r-email").value.trim(), ends: $("#r-ends").value,
+      tenure: $("#r-tenure").value,
     };
     try {
       const d = await api("/api/residents", { method: "POST", body: JSON.stringify(body) });
       residents.push(...d.residents); renderResidents();
-      ["#r-unit", "#r-name", "#r-email", "#r-ends"].forEach(s => $(s).value = "");
+      ["#r-unit", "#r-name", "#r-email", "#r-ends", "#r-tenure"].forEach(s => $(s).value = "");
       $("#r-role").checked = false;
       toast(`Added ${d.residents[0].label}. Their code: ${d.residents[0].code}`);
     } catch (e) { toast(e.message, "warn"); }
@@ -1782,6 +1854,49 @@
       $("#r-bulk").value = "";
       toast(`Added ${d.residents.length} ${d.residents.length === 1 ? "person" : "people"}. Codes are in the list.`);
     } catch (e) { toast(e.message, "warn"); }
+  }
+
+  // ------------------------------------------------------- resident edit mode
+  // The add-person card doubles as the editor: Edit on a row fills it, the
+  // buttons swap, and the rarely-used levers (disable, delete) live here,
+  // one deliberate step off the row.
+  let editingResId = null;
+  function enterResEdit(p) {
+    editingResId = p.id;
+    $("#r-unit").value = p.unit || ""; $("#r-name").value = p.name || "";
+    $("#r-email").value = p.email || ""; $("#r-ends").value = p.ends || "";
+    $("#r-tenure").value = p.tenure || "";
+    $("#res-formhead").style.display = "";
+    $("#res-formhead").textContent = `Editing ${p.label} · added ${(p.created || "").slice(0, 10)}`;
+    document.querySelector("[data-addres]").style.display = "none";
+    $("#res-rolecheck").style.display = "none";
+    $("#res-bulk").style.display = "none";
+    document.querySelector("[data-saveres]").style.display = "";
+    document.querySelector("[data-cancelres]").style.display = "";
+    const t = document.querySelector("[data-edittoggle]");
+    t.style.display = ""; t.textContent = p.status === "Active" ? "Disable" : "Restore";
+    document.querySelector("[data-editdelete]").style.display = "";
+    $("#res-formhead").closest(".card").scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+  function exitResEdit() {
+    editingResId = null;
+    ["r-unit", "r-name", "r-email", "r-ends", "r-tenure"].forEach(id => { $("#" + id).value = ""; });
+    $("#res-formhead").style.display = "none";
+    document.querySelector("[data-addres]").style.display = "";
+    $("#res-rolecheck").style.display = "";
+    $("#res-bulk").style.display = "";
+    ["[data-saveres]", "[data-cancelres]", "[data-edittoggle]", "[data-editdelete]"]
+      .forEach(s => { document.querySelector(s).style.display = "none"; });
+  }
+  async function saveResEdit() {
+    if (!editingResId) return;
+    const name = $("#r-name").value.trim();
+    if (!name) { toast("A name is needed.", "warn"); return; }
+    await patchResident(editingResId, {
+      name, unit: $("#r-unit").value.trim(), email: $("#r-email").value.trim(),
+      ends: $("#r-ends").value, tenure: $("#r-tenure").value,
+    }, u => `Saved ${u.label}.`);
+    exitResEdit();
   }
 
   async function patchResident(id, body, note) {
@@ -2162,7 +2277,7 @@
   }
 
   document.addEventListener("click", ev => {
-    const r = ev.target.closest("[data-rotate],[data-ends],[data-toggle],[data-rdelete],[data-addres],[data-addbulk],[data-printcards],[data-mreplied],[data-marchive],[data-wconfirm],[data-redit],[data-rcancel],[data-addrsvp],[data-savearsvp],[data-closearsvp],[data-copylink],[data-aupload],[data-acanva],[data-adelete],[data-rsvpkey],[data-addbooking],[data-unbook]");
+    const r = ev.target.closest("[data-rotate],[data-ends],[data-toggle],[data-rdelete],[data-resedit],[data-saveres],[data-cancelres],[data-edittoggle],[data-editdelete],[data-addres],[data-addbulk],[data-printcards],[data-mreplied],[data-marchive],[data-wconfirm],[data-redit],[data-rcancel],[data-addrsvp],[data-savearsvp],[data-closearsvp],[data-copylink],[data-aupload],[data-acanva],[data-adelete],[data-rsvpkey],[data-addbooking],[data-unbook]");
     if (r) {
       if (r.dataset.rotate) {
         const p = residents.find(x => String(x.id) === r.dataset.rotate);
@@ -2185,6 +2300,32 @@
           api("/api/residents/" + r.dataset.rdelete, { method: "DELETE" })
             .then(() => {
               residents = residents.filter(x => String(x.id) !== r.dataset.rdelete);
+              renderResidents();
+              toast(`${p.label} is deleted.`);
+            })
+            .catch(e => toast(e.message, "warn"));
+        }
+      } else if (r.dataset.resedit) {
+        const p = residents.find(x => String(x.id) === r.dataset.resedit);
+        if (p) enterResEdit(p);
+      } else if (r.dataset.saveres !== undefined) saveResEdit();
+      else if (r.dataset.cancelres !== undefined) exitResEdit();
+      else if (r.dataset.edittoggle !== undefined) {
+        const p = residents.find(x => String(x.id) === String(editingResId));
+        if (p) patchResident(p.id, { status: p.status === "Active" ? "Disabled" : "Active" },
+          u => u.status === "Active" ? `${u.label} is restored.` : `${u.label} is disabled and signed out everywhere.`)
+          .then(() => {
+            const t = document.querySelector("[data-edittoggle]");
+            const q = residents.find(x => String(x.id) === String(editingResId));
+            if (t && q) t.textContent = q.status === "Active" ? "Disable" : "Restore";
+          });
+      } else if (r.dataset.editdelete !== undefined) {
+        const p = residents.find(x => String(x.id) === String(editingResId));
+        if (p && confirm(`Delete ${p.label} entirely? Their code and any RSVPs they made are removed for good. For someone who moved out, Disable is the better choice; it keeps their history.`)) {
+          api("/api/residents/" + p.id, { method: "DELETE" })
+            .then(() => {
+              residents = residents.filter(x => String(x.id) !== String(p.id));
+              exitResEdit();
               renderResidents();
               toast(`${p.label} is deleted.`);
             })
@@ -2268,7 +2409,7 @@
       }
       return;
     }
-    const b = ev.target.closest("[data-edit],[data-archive],[data-new],[data-edpublish],[data-edsavedraft],[data-eddiscard],[data-edarchive],[data-histload],[data-savewindow],[data-period],[data-publish],[data-fmt],[data-dates],[data-editrow],[data-export]");
+    const b = ev.target.closest("[data-edit],[data-archive],[data-new],[data-edpublish],[data-edsavedraft],[data-eddiscard],[data-edarchive],[data-histload],[data-savewindow],[data-addloc],[data-addhost],[data-delloc],[data-delhost],[data-period],[data-publish],[data-fmt],[data-dates],[data-editrow],[data-export]");
     if (!b) return;
     if (b.dataset.export !== undefined) { exportCsv(); return; }
     if (b.dataset.dates) {
@@ -2297,6 +2438,23 @@
     else if (b.dataset.edarchive !== undefined) edArchiveClick();
     else if (b.dataset.histload !== undefined) loadVersion(b.dataset.histload);
     else if (b.dataset.savewindow !== undefined) saveWindow(b);
+    else if (b.dataset.addloc !== undefined) {
+      const v = $("#loc-new").value.trim();
+      if (!v) return;
+      if (!listSettings.locations.includes(v)) { listSettings.locations.push(v); saveLists(); }
+      $("#loc-new").value = "";
+      toast("Location saved. The event editor offers it now.");
+    } else if (b.dataset.addhost !== undefined) {
+      const v = $("#host-new").value.trim();
+      if (!v) return;
+      if (!listSettings.hosts.includes(v)) { listSettings.hosts.push(v); saveLists(); }
+      $("#host-new").value = "";
+      toast("Host saved. The event editor offers them now.");
+    } else if (b.dataset.delloc !== undefined) {
+      listSettings.locations.splice(Number(b.dataset.delloc), 1); saveLists();
+    } else if (b.dataset.delhost !== undefined) {
+      listSettings.hosts.splice(Number(b.dataset.delhost), 1); saveLists();
+    }
     else if (b.dataset.period) { days = Number(b.dataset.period); loadAnalytics(); }
     else if (b.dataset.publish !== undefined) { b.disabled = true; api("/api/publish", { method: "POST" }).then(r => toast(r.note || "Publishing.")).catch(e => toast(e.message, "warn")).finally(() => b.disabled = false); }
   });

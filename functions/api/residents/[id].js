@@ -1,5 +1,5 @@
 import {
-  json, noDb, adminRole, forbidden, ensureResidentTables, makeCode, residentView,
+  json, noDb, adminRole, forbidden, ensureResidentTables, makeCode, residentView, tenureOf,
 } from "../../_lib.js";
 
 // PATCH /api/residents/:id -> rotate a code, disable or restore a person, set an
@@ -25,6 +25,7 @@ export async function onRequestPatch({ request, params, env }) {
       vals.push(f === "unit" ? (v.toUpperCase() || null) : (v || null));
     }
   }
+  if ("tenure" in body) { sets.push("tenure=?"); vals.push(tenureOf(body.tenure) || null); }
   if (!sets.length) return json({ error: "Nothing to change" }, 400);
 
   const row = await env.DB.prepare(

@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+﻿#!/usr/bin/env python3
 """QR signage pointing residents at 181residents.com, in the site's own look.
 
 Two pieces, written to ../print/:
@@ -25,8 +25,19 @@ INK = "#16161a"; INK_BODY = "#3a3a43"; INK_SOFT = "#55555f"
 PAPER = "#f7f4ef"; PAPER2 = "#fffdfa"; LINE = "#ddd6cb"
 RED = "#c41f26"; STONE = "#7a7266"
 
-HANKEN = os.path.normpath(os.path.join(HERE, "..", "..", "..", "..", "tidemere",
-                                       "2_Marketing", "brand", "fonts", "HankenGrotesk-Variable.ttf"))
+def _find_hanken():
+    d = HERE
+    for _ in range(10):
+        p = os.path.join(d, "tidemere", "2_Marketing", "brand", "fonts", "HankenGrotesk-Variable.ttf")
+        if os.path.exists(p):
+            return p
+        nd = os.path.dirname(d)
+        if nd == d:
+            break
+        d = nd
+    return "C:/Windows/Fonts/segoeui.ttf"
+
+HANKEN = _find_hanken()
 MARCELLUS = os.path.join(HERE, "marcellus.ttf")   # optional upgrade, auto-detected
 GEORGIA = "C:/Windows/Fonts/georgia.ttf"
 
@@ -101,7 +112,7 @@ centered(d, cx, bottom + 405, "See the calendar, RSVP to events, and message Res
 centered(d, cx, bottom + 470, "Sign in once with your resident code, from the front desk.",
          body_font(44), INK_BODY)
 
-centered(d, cx, H - 130, "181 Fremont Residences  ·  Resident Experiences  ·  Questions? Leo at Level 39",
+centered(d, cx, H - 130, "181 Fremont Residences  Â·  Resident Experiences  Â·  Questions? Leo at Level 39",
          body_font(38), STONE)
 
 img.save(os.path.join(OUT, "bar-sign.png"))
@@ -126,7 +137,7 @@ bottom = qr_panel(img, d, cx, 720, "https://181residents.com/q/screens/", 640, 5
 centered(d, cx, bottom + 90, "Point your camera at the code", body_font(42, 500), INK)
 centered(d, cx, bottom + 165, "181residents.com", body_font(54, 600), INK)
 
-centered(d, cx, H - 130, "Resident Experiences  ·  Level 39", body_font(28), STONE)
+centered(d, cx, H - 130, "Resident Experiences  Â·  Level 39", body_font(28), STONE)
 
 img.save(os.path.join(OUT, "nixplay-qr.png"))
 print("nixplay still:", os.path.join(OUT, "nixplay-qr.png"))

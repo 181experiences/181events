@@ -26,8 +26,21 @@ INK = "#16161a"; INK_BODY = "#3a3a43"; INK_SOFT = "#55555f"
 PAPER = "#f7f4ef"; PAPER2 = "#fffdfa"; LINE = "#ddd6cb"
 RED = "#c41f26"; STONE = "#7a7266"
 
-HANKEN = os.path.normpath(os.path.join(HERE, "..", "..", "..", "..", "tidemere",
-                                       "2_Marketing", "brand", "fonts", "HankenGrotesk-Variable.ttf"))
+def _find_hanken():
+    """The brand font lives in the tidemere folder, somewhere above this repo;
+    walk upward so reorganizing the folders never breaks the print scripts."""
+    d = HERE
+    for _ in range(10):
+        p = os.path.join(d, "tidemere", "2_Marketing", "brand", "fonts", "HankenGrotesk-Variable.ttf")
+        if os.path.exists(p):
+            return p
+        nd = os.path.dirname(d)
+        if nd == d:
+            break
+        d = nd
+    return "C:/Windows/Fonts/segoeui.ttf"   # last resort, so a render never dies
+
+HANKEN = _find_hanken()
 MARCELLUS = os.path.join(HERE, "marcellus.ttf")   # optional upgrade, auto-detected
 GEORGIA = "C:/Windows/Fonts/georgia.ttf"
 
@@ -335,7 +348,7 @@ dense_sheet("desk-cheat-sheet",
 dense_sheet("leadership-cheat-sheet",
             "LEADERSHIP · RESIDENT EVENTS ADMIN",
             "Running the calendar",
-            "181residents.com/admin  ·  sign in with your own email  ·  the full guides live under Instructions",
+            "181residents.com/admin  ·  sign in with your own email  ·  the full guides live under Settings",
             LEAD_COL1, LEAD_COL2,
             "181 Fremont Residences  ·  Resident Experiences  ·  August 2026",
             body_size=33, leading=45, head_size=48)

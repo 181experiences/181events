@@ -484,13 +484,43 @@
     save("Archived");
   }
 
-  // ------------------------------------------------------------ calendar window
+  // ---------------------------------------------------- settings: window + lists
+  // Locations and hosts are named once on the Settings screen and offered in
+  // the event editor's dropdowns; the calendar window dials live on Events.
+  const DEFAULT_LOCATIONS = ["Level 39, Residents’ Club", "Level 7 Terrace", "Lobby", "Fitness Center"];
+  const DEFAULT_HOSTS = ["Resident Experiences", "181 Fremont Residences Association", "The Board",
+                         "Leo Ramirez", "Leigh Anne", "Carley-Ann", "Scott"];
+  let listSettings = { locations: DEFAULT_LOCATIONS.slice(), hosts: DEFAULT_HOSTS.slice() };
+
+  function renderListSettings() {
+    const chip = (v, attr, i) => `<span class="setchip">${esc(v)}<button class="x" ${attr}="${i}" title="Remove from the list">&times;</button></span>`;
+    const l = $("#set-locs"), h = $("#set-hosts");
+    if (l) l.innerHTML = listSettings.locations.map((v, i) => chip(v, "data-delloc", i)).join("")
+      || '<span class="hint">Nothing listed yet.</span>';
+    if (h) h.innerHTML = listSettings.hosts.map((v, i) => chip(v, "data-delhost", i)).join("")
+      || '<span class="hint">Nothing listed yet.</span>';
+    const dl = document.getElementById("locs"), dh = document.getElementById("hosts");
+    if (dl) dl.innerHTML = listSettings.locations.map(v => `<option value="${esc(v)}">`).join("");
+    if (dh) dh.innerHTML = listSettings.hosts.map(v => `<option value="${esc(v)}">`).join("");
+  }
+
+  async function saveLists() {
+    renderListSettings();
+    try {
+      await api("/api/settings", { method: "PUT", body: JSON.stringify(
+        { locations: listSettings.locations, hosts: listSettings.hosts }) });
+    } catch (e) { toast(e.message, "warn"); }
+  }
+
   async function loadWindow() {
     try {
       const w = await api("/api/settings");
       $("#w-weeks").value = String(w.detail_weeks);
       $("#w-months").value = String(w.horizon_months);
+      if (Array.isArray(w.locations) && w.locations.length) listSettings.locations = w.locations;
+      if (Array.isArray(w.hosts) && w.hosts.length) listSettings.hosts = w.hosts;
     } catch (e) {}   // the desk tier has no events screen, and no business here
+    renderListSettings();
   }
   async function saveWindow(btn) {
     btn.disabled = true;
@@ -794,17 +824,17 @@
     const mailHref = p => "mailto:" + encodeURIComponent(p.email)
       + "?subject=" + encodeURIComponent("Your 181 Fremont resident code")
       + "&body=" + encodeURIComponent(`Hello ${p.name},\n\nYour personal code for 181residents.com is:\n\n    ${p.code}\n\nTap RSVP on any event, enter the code once, and you stay signed in for a month on that device. Your RSVPs and notes to us save under your name.\n\nWarmly,\nResident Experiences\n181 Fremont`);
+    // Three buttons, no more: the two the desk reaches for at 10 pm, and Edit,
+    // which opens everything else (end dates, standing, disable, delete) in the
+    // card above, one deliberate step away from the row.
     const row = p => `<div class="rrow${p.status !== "Active" || p.expired ? " off" : ""}">
       <span class="rname">${esc(p.name)}${p.email ? `<em>${esc(p.email)}</em>` : ""}</span>
       <span><span class="rcode">${esc(p.code)}</span></span>
-      <span>${pill(p)}</span>
-      <span class="ecell" style="font-size:12px;color:var(--stone)">${esc((p.created || "").slice(0, 10))}</span>
+      <span class="rpills">${pill(p)}${p.tenure === "tenant" ? '<span class="pill tenant">Tenant</span>' : ""}</span>
       <span class="eact">
         ${p.email && p.status === "Active" ? `<a class="mini" href="${mailHref(p)}" title="Opens your own mail app with the code written out">Email code</a>` : ""}
         <button class="mini" data-rotate="${p.id}" title="A fresh code; the old one stops working everywhere">Rotate</button>
-        <button class="mini ghost" data-ends="${p.id}" title="Set or clear the date this code stops working">Ends</button>
-        <button class="mini ghost" data-toggle="${p.id}">${p.status === "Active" ? "Disable" : "Restore"}</button>
-        <button class="mini ghost" data-rdelete="${p.id}" title="Remove entirely, for typos and test rows. Someone who moved out should be Disabled instead, which keeps their history.">Delete</button>
+        <button class="mini ghost" data-resedit="${p.id}" title="Name, email, unit, tenant, end date, disable, delete">Edit</button>
       </span></div>`;
 
     let html = "";
@@ -837,11 +867,12 @@
       kind: isRole ? "role" : "resident",
       unit: $("#r-unit").value.trim(), name: $("#r-name").value.trim(),
       email: $("#r-email").value.trim(), ends: $("#r-ends").value,
+      tenure: $("#r-tenure").value,
     };
     try {
       const d = await api("/api/residents", { method: "POST", body: JSON.stringify(body) });
       residents.push(...d.residents); renderResidents();
-      ["#r-unit", "#r-name", "#r-email", "#r-ends"].forEach(s => $(s).value = "");
+      ["#r-unit", "#r-name", "#r-email", "#r-ends", "#r-tenure"].forEach(s => $(s).value = "");
       $("#r-role").checked = false;
       toast(`Added ${d.residents[0].label}. Their code: ${d.residents[0].code}`);
     } catch (e) { toast(e.message, "warn"); }
@@ -856,6 +887,49 @@
       $("#r-bulk").value = "";
       toast(`Added ${d.residents.length} ${d.residents.length === 1 ? "person" : "people"}. Codes are in the list.`);
     } catch (e) { toast(e.message, "warn"); }
+  }
+
+  // ------------------------------------------------------- resident edit mode
+  // The add-person card doubles as the editor: Edit on a row fills it, the
+  // buttons swap, and the rarely-used levers (disable, delete) live here,
+  // one deliberate step off the row.
+  let editingResId = null;
+  function enterResEdit(p) {
+    editingResId = p.id;
+    $("#r-unit").value = p.unit || ""; $("#r-name").value = p.name || "";
+    $("#r-email").value = p.email || ""; $("#r-ends").value = p.ends || "";
+    $("#r-tenure").value = p.tenure || "";
+    $("#res-formhead").style.display = "";
+    $("#res-formhead").textContent = `Editing ${p.label} · added ${(p.created || "").slice(0, 10)}`;
+    document.querySelector("[data-addres]").style.display = "none";
+    $("#res-rolecheck").style.display = "none";
+    $("#res-bulk").style.display = "none";
+    document.querySelector("[data-saveres]").style.display = "";
+    document.querySelector("[data-cancelres]").style.display = "";
+    const t = document.querySelector("[data-edittoggle]");
+    t.style.display = ""; t.textContent = p.status === "Active" ? "Disable" : "Restore";
+    document.querySelector("[data-editdelete]").style.display = "";
+    $("#res-formhead").closest(".card").scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+  function exitResEdit() {
+    editingResId = null;
+    ["r-unit", "r-name", "r-email", "r-ends", "r-tenure"].forEach(id => { $("#" + id).value = ""; });
+    $("#res-formhead").style.display = "none";
+    document.querySelector("[data-addres]").style.display = "";
+    $("#res-rolecheck").style.display = "";
+    $("#res-bulk").style.display = "";
+    ["[data-saveres]", "[data-cancelres]", "[data-edittoggle]", "[data-editdelete]"]
+      .forEach(s => { document.querySelector(s).style.display = "none"; });
+  }
+  async function saveResEdit() {
+    if (!editingResId) return;
+    const name = $("#r-name").value.trim();
+    if (!name) { toast("A name is needed.", "warn"); return; }
+    await patchResident(editingResId, {
+      name, unit: $("#r-unit").value.trim(), email: $("#r-email").value.trim(),
+      ends: $("#r-ends").value, tenure: $("#r-tenure").value,
+    }, u => `Saved ${u.label}.`);
+    exitResEdit();
   }
 
   async function patchResident(id, body, note) {
@@ -1236,7 +1310,7 @@
   }
 
   document.addEventListener("click", ev => {
-    const r = ev.target.closest("[data-rotate],[data-ends],[data-toggle],[data-rdelete],[data-addres],[data-addbulk],[data-printcards],[data-mreplied],[data-marchive],[data-wconfirm],[data-redit],[data-rcancel],[data-addrsvp],[data-savearsvp],[data-closearsvp],[data-copylink],[data-aupload],[data-acanva],[data-adelete],[data-rsvpkey],[data-addbooking],[data-unbook]");
+    const r = ev.target.closest("[data-rotate],[data-ends],[data-toggle],[data-rdelete],[data-resedit],[data-saveres],[data-cancelres],[data-edittoggle],[data-editdelete],[data-addres],[data-addbulk],[data-printcards],[data-mreplied],[data-marchive],[data-wconfirm],[data-redit],[data-rcancel],[data-addrsvp],[data-savearsvp],[data-closearsvp],[data-copylink],[data-aupload],[data-acanva],[data-adelete],[data-rsvpkey],[data-addbooking],[data-unbook]");
     if (r) {
       if (r.dataset.rotate) {
         const p = residents.find(x => String(x.id) === r.dataset.rotate);
@@ -1259,6 +1333,32 @@
           api("/api/residents/" + r.dataset.rdelete, { method: "DELETE" })
             .then(() => {
               residents = residents.filter(x => String(x.id) !== r.dataset.rdelete);
+              renderResidents();
+              toast(`${p.label} is deleted.`);
+            })
+            .catch(e => toast(e.message, "warn"));
+        }
+      } else if (r.dataset.resedit) {
+        const p = residents.find(x => String(x.id) === r.dataset.resedit);
+        if (p) enterResEdit(p);
+      } else if (r.dataset.saveres !== undefined) saveResEdit();
+      else if (r.dataset.cancelres !== undefined) exitResEdit();
+      else if (r.dataset.edittoggle !== undefined) {
+        const p = residents.find(x => String(x.id) === String(editingResId));
+        if (p) patchResident(p.id, { status: p.status === "Active" ? "Disabled" : "Active" },
+          u => u.status === "Active" ? `${u.label} is restored.` : `${u.label} is disabled and signed out everywhere.`)
+          .then(() => {
+            const t = document.querySelector("[data-edittoggle]");
+            const q = residents.find(x => String(x.id) === String(editingResId));
+            if (t && q) t.textContent = q.status === "Active" ? "Disable" : "Restore";
+          });
+      } else if (r.dataset.editdelete !== undefined) {
+        const p = residents.find(x => String(x.id) === String(editingResId));
+        if (p && confirm(`Delete ${p.label} entirely? Their code and any RSVPs they made are removed for good. For someone who moved out, Disable is the better choice; it keeps their history.`)) {
+          api("/api/residents/" + p.id, { method: "DELETE" })
+            .then(() => {
+              residents = residents.filter(x => String(x.id) !== String(p.id));
+              exitResEdit();
               renderResidents();
               toast(`${p.label} is deleted.`);
             })
@@ -1342,7 +1442,7 @@
       }
       return;
     }
-    const b = ev.target.closest("[data-edit],[data-archive],[data-new],[data-edpublish],[data-edsavedraft],[data-eddiscard],[data-edarchive],[data-histload],[data-savewindow],[data-period],[data-publish],[data-fmt],[data-dates],[data-editrow],[data-export]");
+    const b = ev.target.closest("[data-edit],[data-archive],[data-new],[data-edpublish],[data-edsavedraft],[data-eddiscard],[data-edarchive],[data-histload],[data-savewindow],[data-addloc],[data-addhost],[data-delloc],[data-delhost],[data-period],[data-publish],[data-fmt],[data-dates],[data-editrow],[data-export]");
     if (!b) return;
     if (b.dataset.export !== undefined) { exportCsv(); return; }
     if (b.dataset.dates) {
@@ -1371,6 +1471,23 @@
     else if (b.dataset.edarchive !== undefined) edArchiveClick();
     else if (b.dataset.histload !== undefined) loadVersion(b.dataset.histload);
     else if (b.dataset.savewindow !== undefined) saveWindow(b);
+    else if (b.dataset.addloc !== undefined) {
+      const v = $("#loc-new").value.trim();
+      if (!v) return;
+      if (!listSettings.locations.includes(v)) { listSettings.locations.push(v); saveLists(); }
+      $("#loc-new").value = "";
+      toast("Location saved. The event editor offers it now.");
+    } else if (b.dataset.addhost !== undefined) {
+      const v = $("#host-new").value.trim();
+      if (!v) return;
+      if (!listSettings.hosts.includes(v)) { listSettings.hosts.push(v); saveLists(); }
+      $("#host-new").value = "";
+      toast("Host saved. The event editor offers them now.");
+    } else if (b.dataset.delloc !== undefined) {
+      listSettings.locations.splice(Number(b.dataset.delloc), 1); saveLists();
+    } else if (b.dataset.delhost !== undefined) {
+      listSettings.hosts.splice(Number(b.dataset.delhost), 1); saveLists();
+    }
     else if (b.dataset.period) { days = Number(b.dataset.period); loadAnalytics(); }
     else if (b.dataset.publish !== undefined) { b.disabled = true; api("/api/publish", { method: "POST" }).then(r => toast(r.note || "Publishing.")).catch(e => toast(e.message, "warn")).finally(() => b.disabled = false); }
   });

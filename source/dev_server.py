@@ -144,10 +144,15 @@ def ensure_front_desk():
         save_store("residents", residents)
     return residents
 
+def tenure_of(v):
+    t = (v or "").strip().lower()
+    return t if t in ("tenant", "owner") else ""
+
 def shape_resident(r):
     return dict(id=r["id"], kind=r["kind"], unit=r.get("unit") or "", name=r["name"],
                 email=r.get("email") or "", code=pretty_code(r["code"]), status=r["status"],
                 ends=r.get("ends") or "", created=r["created"], label=label_of(r),
+                tenure=r.get("tenure") or "",
                 expired=bool(r.get("ends") and r["ends"] < today()))
 
 def live_event(key):
@@ -439,6 +444,37 @@ def detail_end():
     win = load_window()
     return (datetime.date.today() + datetime.timedelta(days=win["detail_weeks"] * 7)).isoformat()
 
+# Locations and hosts ride in the same settings file; the build ignores them,
+# the admin's event editor offers them.
+LIST_DEFAULTS = {
+    "locations": ["Level 39, Residents’ Club", "Level 7 Terrace", "Lobby", "Fitness Center"],
+    "hosts": ["Resident Experiences", "181 Fremont Residences Association", "The Board",
+              "Leo Ramirez", "Leigh Anne", "Carley-Ann", "Scott"],
+}
+
+def clean_list(v, key):
+    if not isinstance(v, list):
+        return list(LIST_DEFAULTS[key])
+    out = []
+    for item in v:
+        s = str(item or "").strip()[:80]
+        if s and s not in out:
+            out.append(s)
+        if len(out) >= 60:
+            break
+    return out
+
+def load_all_settings():
+    out = dict(load_window(), **{k: list(v) for k, v in LIST_DEFAULTS.items()})
+    try:
+        raw = json.load(open(os.path.join(HERE, "settings_live.json"), encoding="utf-8"))
+        for k in LIST_DEFAULTS:
+            if isinstance(raw.get(k), list) and raw[k]:
+                out[k] = clean_list(raw[k], k)
+    except Exception:
+        pass
+    return out
+
 def log_history(role, event_id, action, changes=None, snapshot=None):
     rows = load_store("history", [])
     rows.append(dict(id=max([h["id"] for h in rows] or [0]) + 1, event_id=event_id,
@@ -574,7 +610,7 @@ class H(SimpleHTTPRequestHandler):
             return self._json({"events": load_events()})   # reading is open to every tier
         if p.path == "/api/settings":
             if self._role() == "desk": return self._json({"error": "forbidden"}, 403)
-            return self._json(load_window())
+            return self._json(load_all_settings())
         if p.path == "/api/history":
             if self._role() == "desk": return self._json({"error": "forbidden"}, 403)
             eid = (q.get("event") or [""])[0]
@@ -753,9 +789,10 @@ class H(SimpleHTTPRequestHandler):
                         nid += 1
                         made.append(dict(id=nid, kind="resident", unit=parts[0].upper(), name=parts[1],
                                          email=parts[2] if len(parts) > 2 else "", code=make_code(),
+                                         tenure=tenure_of(parts[3] if len(parts) > 3 else "") or None,
                                          epoch=1, status="Active", ends=None, created=now_iso()))
                 if not made:
-                    return self._json({"error": "No lines matched. Each line: unit, name, email (email optional)."}, 400)
+                    return self._json({"error": "No lines matched. Each line: unit, name, email, owner or tenant (the last two optional)."}, 400)
             else:
                 kind = "role" if body.get("kind") == "role" else "resident"
                 name = (body.get("name") or "").strip()
@@ -765,6 +802,7 @@ class H(SimpleHTTPRequestHandler):
                 nid += 1
                 made.append(dict(id=nid, kind=kind, unit=unit or None, name=name,
                                  email=(body.get("email") or "").strip(), code=make_code(),
+                                 tenure=tenure_of(body.get("tenure")) or None,
                                  epoch=1, status="Active", ends=(body.get("ends") or "").strip() or None,
                                  created=now_iso()))
             residents += made; save_store("residents", residents)
@@ -959,10 +997,22 @@ class H(SimpleHTTPRequestHandler):
         if p.path == "/api/settings":
             if self._role() == "desk": return self._json({"error": "forbidden"}, 403)
             body = self._body_json()
-            win = {"detail_weeks": min(12, max(1, int(body.get("detail_weeks") or 8))),
-                   "horizon_months": min(4, max(1, int(body.get("horizon_months") or 4)))}
-            json.dump(win, open(os.path.join(HERE, "settings_live.json"), "w", encoding="utf-8"))
-            return self._json(win)
+            # Only the keys sent are written, so saving one list never
+            # disturbs the window dials, and the other way round.
+            try:
+                stored = json.load(open(os.path.join(HERE, "settings_live.json"), encoding="utf-8"))
+            except Exception:
+                stored = {}
+            if "detail_weeks" in body:
+                stored["detail_weeks"] = min(12, max(1, int(body.get("detail_weeks") or 8)))
+            if "horizon_months" in body:
+                stored["horizon_months"] = min(4, max(1, int(body.get("horizon_months") or 4)))
+            for k in LIST_DEFAULTS:
+                if k in body:
+                    stored[k] = clean_list(body[k], k)
+            json.dump(stored, open(os.path.join(HERE, "settings_live.json"), "w", encoding="utf-8"),
+                      ensure_ascii=False)
+            return self._json(load_all_settings())
         if p.path.startswith("/api/assets/") and len(parts) == 5 and parts[4] in ASSET_KINDS:
             if self._role() == "desk": return self._json({"error": "forbidden"}, 403)
             os.makedirs(ASSET_DIR, exist_ok=True)
@@ -1027,6 +1077,8 @@ class H(SimpleHTTPRequestHandler):
                         if f in body:
                             v = (str(body[f] or "")).strip()
                             r[f] = (v.upper() or None) if f == "unit" else (v or None)
+                    if "tenure" in body:
+                        r["tenure"] = tenure_of(body["tenure"]) or None
                     save_store("residents", residents)
                     return self._json(shape_resident(r))
             return self._json({"error": "No such person"}, 404)

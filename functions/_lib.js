@@ -84,7 +84,7 @@ export const RESIDENT_TABLES = [
     unit TEXT, name TEXT NOT NULL, email TEXT,
     code TEXT NOT NULL, epoch INTEGER NOT NULL DEFAULT 1,
     status TEXT NOT NULL DEFAULT 'Active', ends TEXT,
-    created TEXT NOT NULL
+    created TEXT NOT NULL, tenure TEXT
   )`,
   `CREATE TABLE IF NOT EXISTS rsvps (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -133,9 +133,16 @@ export function residentView(r) {
   return {
     id: r.id, kind: r.kind, unit: r.unit || "", name: r.name, email: r.email || "",
     code: prettyCode(r.code), status: r.status, ends: r.ends || "",
-    created: r.created, label: labelOf(r),
+    created: r.created, label: labelOf(r), tenure: r.tenure || "",
     expired: !!(r.ends && r.ends < todayPacific()),
   };
+}
+
+// "owner" and "tenant" are the only words the tenure column speaks; anything
+// else stays quiet. Only tenant is worn visibly, as a yellow pill.
+export function tenureOf(v) {
+  const t = String(v || "").trim().toLowerCase();
+  return t === "tenant" ? "tenant" : t === "owner" ? "owner" : "";
 }
 
 // ---------------------------------------------------------------- admin roles
@@ -226,6 +233,7 @@ export async function ensureResidentTables(env) {
   if (tablesEnsured) return;
   await env.DB.batch(RESIDENT_TABLES.map(s => env.DB.prepare(s)));
   try { await env.DB.prepare("ALTER TABLE residents ADD COLUMN feed_token TEXT").run(); } catch (e) {}
+  try { await env.DB.prepare("ALTER TABLE residents ADD COLUMN tenure TEXT").run(); } catch (e) {}
   tablesEnsured = true;
 }
 

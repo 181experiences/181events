@@ -1,5 +1,5 @@
 import {
-  json, noDb, adminRole, forbidden, ensureResidentTables, makeCode, residentView,
+  json, noDb, adminRole, forbidden, ensureResidentTables, makeCode, residentView, tenureOf,
 } from "../../_lib.js";
 
 // The person registry: every admin tier may work here, including the front desk,
@@ -37,9 +37,10 @@ export async function onRequestPost({ request, env }) {
     for (const line of body.bulk.split(/\r?\n/)) {
       const parts = line.split(",").map(s => s.trim());
       if (!parts[0] || !parts[1]) continue;
-      people.push({ unit: parts[0].toUpperCase(), name: parts[1], email: parts[2] || "", ends: "", kind: "resident" });
+      people.push({ unit: parts[0].toUpperCase(), name: parts[1], email: parts[2] || "",
+        tenure: tenureOf(parts[3]), ends: "", kind: "resident" });
     }
-    if (!people.length) return json({ error: "No lines matched. Each line: unit, name, email (email optional)." }, 400);
+    if (!people.length) return json({ error: "No lines matched. Each line: unit, name, email, owner or tenant (the last two optional)." }, 400);
   } else {
     const kind = body.kind === "role" ? "role" : "resident";
     const name = String(body.name || "").trim();
@@ -50,16 +51,17 @@ export async function onRequestPost({ request, env }) {
       unit, name, kind,
       email: String(body.email || "").trim(),
       ends: String(body.ends || "").trim(),
+      tenure: tenureOf(body.tenure),
     });
   }
 
   const made = [];
   for (const p of people) {
     const row = await env.DB.prepare(
-      `INSERT INTO residents (kind, unit, name, email, code, ends, created)
-       VALUES (?, ?, ?, ?, ?, ?, ?) RETURNING *`)
+      `INSERT INTO residents (kind, unit, name, email, code, ends, created, tenure)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?) RETURNING *`)
       .bind(p.kind, p.unit || null, p.name, p.email || null, makeCode(),
-        p.ends || null, now).first();
+        p.ends || null, now, p.tenure || null).first();
     made.push(residentView(row));
   }
   return json({ residents: made }, 201);
