@@ -2,13 +2,14 @@
 // The API speaks the same field names the admin and the build use: Status, Date, Title, ...
 
 export const FIELDS = ["Status","Date","Title","Category","Start","End","Start24","Location","Host",
-  "RSVP","Capacity","Price","Series","Description","Cutoff","Marquee","Counted","Moved","Image","Slug"];
+  "RSVP","Capacity","Price","Series","Description","Cutoff","Marquee","Counted","Moved","Image","Slug","Teaser"];
 
 // SQL column per field. "End" would collide with the SQL keyword, so it gets its own name.
 export const COLS = { Status: "status", Date: "date", Title: "title", Category: "category",
   Start: "start", End: "end_time", Start24: "start24", Location: "location", Host: "host",
   RSVP: "rsvp", Capacity: "capacity", Price: "price", Series: "series", Description: "description",
-  Cutoff: "cutoff", Marquee: "marquee", Counted: "counted", Moved: "moved", Image: "image", Slug: "slug" };
+  Cutoff: "cutoff", Marquee: "marquee", Counted: "counted", Moved: "moved", Image: "image", Slug: "slug",
+  Teaser: "teaser" };
 
 export const CREATE_SQL = `CREATE TABLE IF NOT EXISTS events (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -16,8 +17,60 @@ export const CREATE_SQL = `CREATE TABLE IF NOT EXISTS events (
   category TEXT, start TEXT, end_time TEXT, start24 TEXT, location TEXT, host TEXT,
   rsvp TEXT, capacity INTEGER, price TEXT, series TEXT, description TEXT, cutoff TEXT,
   marquee INTEGER DEFAULT 0, counted INTEGER DEFAULT 1, moved INTEGER DEFAULT 0,
-  image TEXT, slug TEXT
+  image TEXT, slug TEXT, teaser INTEGER DEFAULT 0, draft_json TEXT
 )`;
+
+// Change history: one row per meaningful edit, carrying who, when, what changed
+// (field: [old, new]) and the full snapshot AFTER the change, so any version can
+// be loaded back into the editor. settings holds the calendar window dials.
+export const EVENT_SIDE_TABLES = [
+  `CREATE TABLE IF NOT EXISTS event_history (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    event_id INTEGER NOT NULL, at TEXT NOT NULL, who TEXT,
+    action TEXT NOT NULL, changes TEXT, snapshot TEXT
+  )`,
+  `CREATE INDEX IF NOT EXISTS event_history_by_event ON event_history(event_id, id)`,
+  `CREATE TABLE IF NOT EXISTS settings (key TEXT PRIMARY KEY, value TEXT)`,
+];
+
+// The events table predates teaser and draft_json, so they arrive as ALTERs
+// that fail quietly once present (same pattern as residents.feed_token).
+let eventTablesEnsured = false;
+export async function ensureEventTables(env) {
+  if (eventTablesEnsured) return;
+  await env.DB.prepare(CREATE_SQL).run();
+  try { await env.DB.prepare("ALTER TABLE events ADD COLUMN teaser INTEGER DEFAULT 0").run(); } catch (e) {}
+  try { await env.DB.prepare("ALTER TABLE events ADD COLUMN draft_json TEXT").run(); } catch (e) {}
+  await env.DB.batch(EVENT_SIDE_TABLES.map(s => env.DB.prepare(s)));
+  eventTablesEnsured = true;
+}
+
+// The calendar window: how far out full detail pages run (weeks), and how far
+// out the calendar shows anything at all (months). Defaults match the launch
+// posture; the admin's Calendar window card writes these keys.
+export const WINDOW_DEFAULTS = { detail_weeks: 8, horizon_months: 4 };
+export async function getWindow(env) {
+  const out = { ...WINDOW_DEFAULTS };
+  try {
+    await ensureEventTables(env);
+    const { results } = await env.DB.prepare(
+      "SELECT key, value FROM settings WHERE key IN ('detail_weeks','horizon_months')").all();
+    for (const r of results) {
+      const n = Number(r.value);
+      if (r.key === "detail_weeks" && n >= 1 && n <= 12) out.detail_weeks = n;
+      if (r.key === "horizon_months" && n >= 1 && n <= 4) out.horizon_months = n;
+    }
+  } catch (e) {}
+  return out;
+}
+
+// Last date (YYYY-MM-DD, Pacific) still inside the detail window.
+export function detailEnd(win) {
+  const t = todayPacific();
+  const d = new Date(t + "T12:00:00Z");
+  d.setUTCDate(d.getUTCDate() + win.detail_weeks * 7);
+  return d.toISOString().slice(0, 10);
+}
 
 // Resident sign-in, RSVPs, and messages. One residents row per PERSON, each with
 // their own code, grouped by the unit they belong to. Role accounts (kind 'role',
@@ -242,15 +295,18 @@ export function noDb(env) {
   return env.DB ? null : json({ error: "The events database is not linked yet. Add the D1 binding named DB in the Pages settings." }, 503);
 }
 
-// SQL row -> API shape.
+// SQL row -> API shape. Draft carries a Live event's saved-but-unpublished
+// working copy, parsed for the editor; it is not a FIELD, so generic field
+// writes can never touch it by accident.
 export function fromRow(r) {
   const out = { id: String(r.id) };
   for (const f of FIELDS) {
     let v = r[COLS[f]];
-    if (["Marquee", "Counted", "Moved"].includes(f)) v = !!v;
+    if (["Marquee", "Counted", "Moved", "Teaser"].includes(f)) v = !!v;
     if (v === null) v = f === "Capacity" ? null : "";
     out[f] = v;
   }
+  try { out.Draft = r.draft_json ? JSON.parse(r.draft_json) : null; } catch (e) { out.Draft = null; }
   return out;
 }
 
@@ -261,8 +317,30 @@ export function toCols(fields) {
     if (!(f in fields)) continue;
     let v = fields[f];
     if (f === "Capacity") v = (v === "" || v == null) ? null : Number(v);
-    if (["Marquee", "Counted", "Moved"].includes(f)) v = v ? 1 : 0;
+    if (["Marquee", "Counted", "Moved", "Teaser"].includes(f)) v = v ? 1 : 0;
     cols.push(COLS[f]); vals.push(v === undefined ? null : v);
   }
   return { cols, vals };
+}
+
+// The history line for one write: which fields changed, old -> new.
+export function fieldDiff(beforeRow, afterRow) {
+  const changes = {};
+  const a = beforeRow ? fromRow(beforeRow) : null, b = fromRow(afterRow);
+  for (const f of FIELDS) {
+    const o = a ? a[f] : undefined, n = b[f];
+    if (JSON.stringify(o) !== JSON.stringify(n)) changes[f] = [o === undefined ? null : o, n];
+  }
+  return changes;
+}
+
+export async function logHistory(env, request, eventId, action, changes, snapshotRow) {
+  try {
+    const who = (await accessEmail(request)) || env.DEV_ROLE || "";
+    await env.DB.prepare(
+      "INSERT INTO event_history (event_id, at, who, action, changes, snapshot) VALUES (?,?,?,?,?,?)")
+      .bind(eventId, new Date().toISOString(), who, action,
+            changes ? JSON.stringify(changes) : null,
+            snapshotRow ? JSON.stringify(fromRow(snapshotRow)) : null).run();
+  } catch (e) {}
 }

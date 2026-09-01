@@ -386,6 +386,40 @@ def board_ics(rows, name):
     return "\r\n".join(out) + "\r\nEND:VCALENDAR\r\n"
 
 # ---------------------------------------------------------------- misc
+# The calendar window dials live in settings_live.json, the same file the real
+# build reads, so the local rebuild honors them exactly as production does.
+WINDOW_DEFAULTS = {"detail_weeks": 8, "horizon_months": 4}
+def load_window():
+    out = dict(WINDOW_DEFAULTS)
+    try:
+        raw = json.load(open(os.path.join(HERE, "settings_live.json"), encoding="utf-8"))
+        out.update({k: int(raw[k]) for k in out if k in raw})
+    except Exception:
+        pass
+    out["detail_weeks"] = min(12, max(1, out["detail_weeks"]))
+    out["horizon_months"] = min(4, max(1, out["horizon_months"]))
+    return out
+
+def detail_end():
+    win = load_window()
+    return (datetime.date.today() + datetime.timedelta(days=win["detail_weeks"] * 7)).isoformat()
+
+def log_history(role, event_id, action, changes=None, snapshot=None):
+    rows = load_store("history", [])
+    rows.append(dict(id=max([h["id"] for h in rows] or [0]) + 1, event_id=event_id,
+                     at=now_iso(), who=f"{role}@local.dev", action=action,
+                     changes=changes, snapshot=snapshot))
+    save_store("history", rows)
+
+def field_changes(before, after):
+    from fields import FIELDS
+    out = {}
+    for f in FIELDS:
+        o, n = (before or {}).get(f), after.get(f)
+        if o != n:
+            out[f] = [o, n]
+    return out
+
 def rebuild():
     events = load_events()
     live = [dict(e, _id=e["id"]) for e in events]
@@ -503,6 +537,15 @@ class H(SimpleHTTPRequestHandler):
             return self._redirect("/admin.html", status=302)
         if p.path == "/api/events":
             return self._json({"events": load_events()})   # reading is open to every tier
+        if p.path == "/api/settings":
+            if self._role() == "desk": return self._json({"error": "forbidden"}, 403)
+            return self._json(load_window())
+        if p.path == "/api/history":
+            if self._role() == "desk": return self._json({"error": "forbidden"}, 403)
+            eid = (q.get("event") or [""])[0]
+            rows = [h for h in load_store("history", []) if str(h["event_id"]) == str(eid)]
+            rows.sort(key=lambda h: h["id"], reverse=True)
+            return self._json({"history": rows[:100]})
         if p.path == "/api/analytics":
             days = max(1, min(90, int((q.get("days") or ["30"])[0])))
             return self._json(sample_analytics(days))
@@ -593,7 +636,7 @@ class H(SimpleHTTPRequestHandler):
         if p.path == "/calendar/feed":
             rows = sorted([e for e in load_events()
                            if e.get("Status") == "Live" and e.get("Category") != "Board Meeting"
-                           and e.get("Date", "") >= today()],
+                           and today() <= e.get("Date", "") <= detail_end() and not e.get("Teaser")],
                           key=lambda e: (e["Date"], e.get("Start24") or ""))
             out = ["BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//181 Fremont//Resident Events//EN",
                    "X-WR-CALNAME:181 Fremont Resident Events"]
@@ -635,6 +678,10 @@ class H(SimpleHTTPRequestHandler):
                 return self._html(done_page(me, "That date has passed",
                     "This event has already happened. The calendar has what&rsquo;s coming next.",
                     "/", "Back to the calendar"))
+            if e.get("Teaser") or e["Date"] > detail_end():
+                return self._html(done_page(me, e["Title"],
+                    "This one is still coming together. The full details arrive right here, and RSVP opens with them.",
+                    "/", "Back to the calendar"))
             return self._html(rsvp_page(e, key, me), cookie=session_cookie(issue_session(me)) if me else None)
         return super().do_GET()
 
@@ -650,6 +697,7 @@ class H(SimpleHTTPRequestHandler):
             events = load_events(); body = self._body_json()
             body["id"] = f"dev{len(events) + 1:03d}"
             events.append(body); save_store("events", events)
+            log_history(self._role(), body["id"], "Created", field_changes(None, body), dict(body))
             return self._json(body, 201)
         if p.path == "/api/publish":
             if self._role() == "desk": return self._json({"error": "forbidden"}, 403)
@@ -791,6 +839,7 @@ class H(SimpleHTTPRequestHandler):
             if not e or e["RSVP"] not in TYPE_OF: return self._redirect("/")
             if not me: return self._redirect(f"/rsvp/{key}")
             if e["Date"] < today(): return self._redirect(f"/rsvp/{key}")
+            if e.get("Teaser") or e["Date"] > detail_end(): return self._redirect(f"/rsvp/{key}")
             rsvp_type = TYPE_OF[e["RSVP"]]
             form = self._body_form()
             rsvps = load_store("rsvps", [])
@@ -859,6 +908,13 @@ class H(SimpleHTTPRequestHandler):
     def do_PUT(self):
         p = urlparse(self.path)
         parts = p.path.split("/")
+        if p.path == "/api/settings":
+            if self._role() == "desk": return self._json({"error": "forbidden"}, 403)
+            body = self._body_json()
+            win = {"detail_weeks": min(12, max(1, int(body.get("detail_weeks") or 8))),
+                   "horizon_months": min(4, max(1, int(body.get("horizon_months") or 4)))}
+            json.dump(win, open(os.path.join(HERE, "settings_live.json"), "w", encoding="utf-8"))
+            return self._json(win)
         if p.path.startswith("/api/assets/") and len(parts) == 5 and parts[4] in ASSET_KINDS:
             if self._role() == "desk": return self._json({"error": "forbidden"}, 403)
             os.makedirs(ASSET_DIR, exist_ok=True)
@@ -886,8 +942,18 @@ class H(SimpleHTTPRequestHandler):
             rid = p.path.rsplit("/", 1)[1]; events = load_events(); body = self._body_json()
             for e in events:
                 if e["id"] == rid:
+                    # {__draft: {...}} stores a working copy beside the row; the
+                    # published fields and the resident site stay untouched.
+                    if "__draft" in body:
+                        e["Draft"] = body["__draft"] or None
+                        save_store("events", events)
+                        log_history(self._role(), rid, "Draft saved" if e["Draft"] else "Draft discarded")
+                        return self._json(e)
+                    before = dict(e)
                     old_key = f"{e.get('Date')}_{e.get('Slug')}"; old_title = e.get("Title")
-                    e.update({k: v for k, v in body.items() if k != "id"}); save_store("events", events)
+                    e.update({k: v for k, v in body.items() if k != "id"})
+                    e["Draft"] = None   # publishing or saving fields IS the apply
+                    save_store("events", events)
                     new_key = f"{e.get('Date')}_{e.get('Slug')}"
                     if old_key != new_key or old_title != e.get("Title"):
                         rsvps = load_store("rsvps", [])
@@ -895,6 +961,11 @@ class H(SimpleHTTPRequestHandler):
                             if r["event_key"] == old_key:
                                 r.update(event_key=new_key, event_date=e["Date"], event_title=e["Title"])
                         save_store("rsvps", rsvps)
+                    ch = field_changes(before, e)
+                    if ch:
+                        action = (f"Status: {before.get('Status') or 'Draft'} → {e.get('Status')}"
+                                  if "Status" in ch else "Edited")
+                        log_history(self._role(), rid, action, ch, {k: v for k, v in e.items() if k != "Draft"})
                     return self._json(e)
             return self._json({"error": "no such event"}, 404)
         if p.path.startswith("/api/residents/"):

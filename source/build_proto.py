@@ -20,6 +20,40 @@ except Exception:
 TODAY = _pacific_now.date()
 NOW_HHMM = _pacific_now.strftime("%H%M")
 
+# ---------------------------------------------------------------- calendar window
+# Two dials, set on the admin's Events screen and pulled from the database at
+# build time (settings_live.json, written by publish.py): how many weeks out an
+# event shows its full page, and how many months out the calendar shows anything
+# at all. Inside the detail line, events are themselves. Past it but inside the
+# horizon they appear shaded and quiet, like the past: the date is spoken for,
+# the details wait, nothing can be RSVP'd or saved to a calendar, so plans can
+# still pivot. Past the horizon they stay offstage. Every rebuild slides both
+# windows forward; nobody opens anything by hand.
+import json as _json, os as _os
+from datetime import timedelta as _td
+WINDOW = {"detail_weeks": 8, "horizon_months": 4}
+try:
+    _sl = _json.load(open(_os.path.join(_os.path.dirname(_os.path.abspath(__file__)),
+                                        "settings_live.json"), encoding="utf-8"))
+    WINDOW.update({k: int(_sl[k]) for k in WINDOW if k in _sl})
+except Exception:
+    pass
+WINDOW["detail_weeks"] = min(12, max(1, WINDOW["detail_weeks"]))
+WINDOW["horizon_months"] = min(4, max(1, WINDOW["horizon_months"]))
+
+DETAIL_END = TODAY + _td(days=WINDOW["detail_weeks"] * 7)
+_hy, _hm = TODAY.year, TODAY.month + WINDOW["horizon_months"]
+while _hm > 12:
+    _hm -= 12; _hy += 1
+
+# In-place, so events_data's own helpers see the same trimmed lists.
+_kept = [m for m in MONTHS if (m["yr"], m["num"]) <= (_hy, _hm)]
+MONTHS[:] = _kept if _kept else MONTHS[:1]
+_mkeys = {m["key"] for m in MONTHS}
+EVENTS[:] = [e for e in EVENTS if (e["on"].year, e["on"].month) <= (_hy, _hm) and e["m"] in _mkeys]
+for _e in EVENTS:
+    _e["far"] = _e["on"] > DETAIL_END
+
 def plain(s):
     for a, b in [("&rsquo;", "'"), ("&amp;", "&"), ("&middot;", "-"), ("&mdash;", "-"),
                  ("<em>", ""), ("</em>", ""), ("<strong>", ""), ("</strong>", ""),
@@ -60,6 +94,10 @@ def ics_href(e):
     return f"/ics/{fname}"
 
 def tag_for(e):
+    if e.get("far"):
+        return '<span class="tag">Details to come</span>'
+    if e.get("teaser"):
+        return '<span class="tag">Coming soon</span>'
     if e["rsvp"] == "guest":
         return '<span class="tag">Drop in &middot; guests welcome</span>'
     if e["rsvp"] == "paid":
@@ -72,7 +110,7 @@ def tag_for(e):
 
 # ------------------------------------------------------------------ generated CSS
 rules = []
-for s in ["home", "cal", "msg"] + [f"ev{e['id']}" for e in EVENTS]:
+for s in ["home", "cal", "msg"] + [f"ev{e['id']}" for e in EVENTS if not e.get("far")]:
     rules.append(f'#r-{s}:checked ~ .screens #scr-{s}{{display:block}}')
 for m in MONTHS:
     k = m["key"]
@@ -102,6 +140,11 @@ def month_block(m):
         dots = '<span class="dots">' + '<span class="dot"></span>' * min(len(evs), 3) + '</span>'
         if not evs:
             cells.append(f'<div class="cell plain{gone}"><span>{d}</span><span class="dots"></span></div>')
+        elif all(e.get("far") for e in evs):
+            # Beyond the detail window the date is visibly spoken for, but there
+            # is nowhere to go yet: a quiet cell, not a doorway.
+            cells.append(f'<div class="cell has far" '
+                         f'aria-label="{dow_of(k,d)} {short_month(k)} {d}, details to come"><span>{d}</span>{dots}</div>')
         elif len(evs) == 1:
             cells.append(f'<label class="cell has{gone}" for="r-ev{evs[0]["id"]}" '
                          f'aria-label="{dow_of(k,d)} {short_month(k)} {d}, 1 event"><span>{d}</span>{dots}</label>')
@@ -115,11 +158,16 @@ def month_block(m):
             continue
         gone = " past" if day_is_past(m, d) else ""
         rows = "".join(
-            f'<label class="ev{gone}" for="r-ev{e["id"]}">'
-            f'<span class="ev-time">{e["time"]}</span>'
-            f'<span class="ev-body"><span class="ev-title">{e["title"]}</span>'
-            f'<span class="ev-meta">{e["loc"]}</span>{tag_for(e)}</span>'
-            f'<span class="ev-go">&rarr;</span></label>' for e in evs)
+            (f'<div class="ev far">'
+             f'<span class="ev-time">{e["time"]}</span>'
+             f'<span class="ev-body"><span class="ev-title">{e["title"]}</span>'
+             f'<span class="ev-meta">{e["loc"]}</span>{tag_for(e)}</span></div>')
+            if e.get("far") else
+            (f'<label class="ev{gone}" for="r-ev{e["id"]}">'
+             f'<span class="ev-time">{e["time"]}</span>'
+             f'<span class="ev-body"><span class="ev-title">{e["title"]}</span>'
+             f'<span class="ev-meta">{e["loc"]}</span>{tag_for(e)}</span>'
+             f'<span class="ev-go">&rarr;</span></label>') for e in evs)
         panels.append(f'<div class="daypanel" data-d="{d}">'
                       f'<div class="d-date">{dow_of(k,d)}, {short_month(k)} {d}</div>'
                       f'<div class="d-count">{len(evs)} events</div>{rows}</div>')
@@ -141,6 +189,13 @@ for m in MONTHS:
         for i, e in enumerate(evs_on(k, d)):
             datecell = (f'<span class="dnum">{d}</span><span class="dday">{dow_s(k,d)}</span>'
                         if i == 0 else '')
+            if e.get("far"):
+                rows.append(
+                    f'<div class="lrow far">'
+                    f'<span class="ldate">{datecell}</span>'
+                    f'<span class="ev-body"><span class="ev-title">{e["title"]}</span>'
+                    f'<span class="ev-meta">{e["time"]} &middot; {e["loc"]}</span>{tag_for(e)}</span></div>')
+                continue
             rows.append(
                 f'<label class="lrow{" marquee" if e["marquee"] else ""}{" past" if day_is_past(m, d) else ""}" for="r-ev{e["id"]}">'
                 f'<span class="ldate">{datecell}</span>'
@@ -213,6 +268,30 @@ def event_screen(e):
     </div>
   </section>'''
 
+    if e.get("teaser"):
+        # Published on purpose before it is fully formed: the date is claimed and
+        # the anticipation is real, but nothing can be RSVP'd or saved to a
+        # calendar until the details settle, so plans can still pivot cleanly.
+        if e["rsvp"] in ("guest", "paid", "standard"):
+            cta += '<span class="btn off">RSVP Opens Soon</span>'
+        cta += '<span class="btn ghost off">Add to My Calendar</span></div>'
+        box = ('<div class="note" style="margin-top:14px">We&rsquo;re still putting this one together. '
+               'The full details arrive right here, and RSVP and Add to My Calendar open with them.</div>')
+        return f'''<section class="screen" id="scr-ev{i}">
+    <div class="wrap">
+      <label class="back" for="r-cal">&larr; Back to calendar</label>
+      <div class="ebody">
+        {hero}
+        <div class="e-eyebrow">{e["sub"] or e["cat"]} &middot; Coming soon</div>
+        <h1 class="e-title">{e["title"]}</h1>
+        {facts}
+        <div class="e-copy">{"".join(f"<p>{p}</p>" for p in e["desc"])}</div>
+        {box}
+        {cta}
+      </div>
+    </div>
+  </section>'''
+
     if e["rsvp"] == "guest":
         guest_ui = ('<div class="guestbox"><div class="gq">Bringing someone from outside the building?</div>'
                     '<div class="gh">You&rsquo;re always welcome on your own, with no RSVP needed. We only ask for a '
@@ -255,14 +334,20 @@ def event_screen(e):
     </div>
   </section>'''
 
-EVENT_SCREENS = "".join(event_screen(e) for e in EVENTS)
+EVENT_SCREENS = "".join(event_screen(e) for e in EVENTS if not e.get("far"))
 
 # ------------------------------------------------------------------ next event tile
 # EVENTS arrives ordered by date then start time, so the first not-yet-started
-# entry is the tile. A day with several events hands the tile from one to the
-# next as each begins; when the calendar is spent, its last event stays up.
-NEXT = next((e for e in EVENTS if e["on"] > TODAY
-             or (e["on"] == TODAY and e.get("t24", "2359") > NOW_HHMM)), EVENTS[-1])
+# entry inside the detail window is the tile. A day with several events hands
+# the tile from one to the next as each begins. If nothing detailed is ahead
+# (a very short window over a quiet stretch), the tile points at the calendar
+# itself rather than at a page that does not exist.
+NEXT = next((e for e in EVENTS if not e.get("far")
+             and (e["on"] > TODAY or (e["on"] == TODAY and e.get("t24", "2359") > NOW_HHMM))), None)
+if NEXT is None:
+    NEXT = next((e for e in reversed(EVENTS) if not e.get("far")), None)
+NEXT_FOR = f'r-ev{NEXT["id"]}' if NEXT else "r-cal"
+NEXT_SUB = f'{dow_s(NEXT["m"], NEXT["d"])}, {short_month(NEXT["m"])} {NEXT["d"]}' if NEXT else "See the calendar"
 
 # ------------------------------------------------------------------ month nav
 # The calendar opens on the month the building is living in, clamped to the
@@ -520,6 +605,14 @@ HTML = f'''<!DOCTYPE html>
   .ev.past .ev-meta,.lrow.past .ev-meta,.lrow.past .ldate .dnum{{color:#b8b0a4}}
   .ev.past .tag,.lrow.past .tag{{opacity:.55}}
   .lrow.past.marquee{{background:none;border-left-color:#d9b3b5}}
+  /* Beyond the detail window: present, spoken for, and quiet. The translucency
+     says "not yet" the way the muting says "already was". */
+  .cell.far{{background:#f2eee7;border-color:#e7e0d5;color:#c3bbae;cursor:default;opacity:.8}}
+  .cell.far .dot{{background:#d9b3b5}}
+  .ev.far,.lrow.far{{cursor:default;opacity:.75}}
+  .ev.far .ev-title,.lrow.far .ev-title{{color:#a9a196}}
+  .ev.far .ev-meta,.lrow.far .ev-meta,.lrow.far .ldate .dnum{{color:#b8b0a4}}
+  .ev.far .tag,.lrow.far .tag{{opacity:.7}}
   .rsvpbtn .s-on{{display:none}}
   .note{{font-size:16px;color:var(--stone);margin:0 0 80px}}
   .rsvpbox{{background:var(--paper-2);border:1px solid var(--line);border-left:3px solid var(--red);
@@ -592,7 +685,7 @@ HTML = f'''<!DOCTYPE html>
 <input class="state" type="radio" name="scr" id="r-home" checked>
 <input class="state" type="radio" name="scr" id="r-cal">
 <input class="state" type="radio" name="scr" id="r-msg">
-{"".join(f'<input class="state" type="radio" name="scr" id="r-ev{e["id"]}">' for e in EVENTS)}
+{"".join(f'<input class="state" type="radio" name="scr" id="r-ev{e["id"]}">' for e in EVENTS if not e.get("far"))}
 
 <div class="screens">
 
@@ -609,9 +702,9 @@ HTML = f'''<!DOCTYPE html>
           <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/><circle cx="8.5" cy="14.5" r="1.1" fill="currentColor" stroke="none"/><circle cx="12" cy="14.5" r="1.1" fill="currentColor" stroke="none"/><circle cx="15.5" cy="17.6" r="1.1" fill="currentColor" stroke="none"/></svg></span>
           <span class="label">Calendar</span><span class="sub">Month &amp; list</span>
         </label>
-        <label class="sq" for="r-ev{NEXT["id"]}">
+        <label class="sq" for="{NEXT_FOR}">
           <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5.4l3.4 2"/></svg></span>
-          <span class="label">Next Event</span><span class="sub">{dow_s(NEXT["m"],NEXT["d"])}, {short_month(NEXT["m"])} {NEXT["d"]}</span>
+          <span class="label">Next Event</span><span class="sub">{NEXT_SUB}</span>
         </label>
         <a class="sq" href="/my">
           <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M8.2 12.4l2.6 2.6 5-5.4"/></svg></span>

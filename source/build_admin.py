@@ -219,10 +219,6 @@ HTML = f'''<!DOCTYPE html>
   #cat-4:checked ~ .form label[for="cat-4"]{{background:var(--ink);color:var(--paper-2);border-color:var(--ink)}}
   #cat-5:checked ~ .form label[for="cat-5"]{{background:var(--ink);color:var(--paper-2);border-color:var(--ink)}}
   #cat-6:checked ~ .form label[for="cat-6"]{{background:var(--ink);color:var(--paper-2);border-color:var(--ink)}}
-  #st-0:checked ~ .form label[for="st-0"]{{background:var(--ink);color:var(--paper-2);border-color:var(--ink)}}
-  #st-1:checked ~ .form label[for="st-1"]{{background:var(--ink);color:var(--paper-2);border-color:var(--ink)}}
-  #st-2:checked ~ .form label[for="st-2"]{{background:var(--ink);color:var(--paper-2);border-color:var(--ink)}}
-  #st-3:checked ~ .form label[for="st-3"]{{background:var(--ink);color:var(--paper-2);border-color:var(--ink)}}
   #rep-0:checked ~ .form label[for="rep-0"]{{background:var(--ink);color:var(--paper-2);border-color:var(--ink)}}
   #rep-1:checked ~ .form label[for="rep-1"]{{background:var(--ink);color:var(--paper-2);border-color:var(--ink)}}
   #rep-2:checked ~ .form label[for="rep-2"]{{background:var(--ink);color:var(--paper-2);border-color:var(--ink)}}
@@ -464,6 +460,20 @@ HTML = f'''<!DOCTYPE html>
     <div class="phead"><h1>Events</h1><div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center"><label class="mini ghost" for="s-arch" style="min-height:38px;display:inline-flex;align-items:center" title="Passed and cancelled events, with their asset kits, kept for reference">Archive &middot;&nbsp;<span id="arch-count-e">0</span></label><button class="btn ghost" data-publish title="Rebuild the resident calendar from what is saved">Publish calendar</button><button class="btn" data-new>+ New Event</button></div></div>
     <div class="psub" id="evcount">Loading&hellip;</div>
   </div>
+  <div class="wrap">
+    <div class="card" style="margin-bottom:16px">
+      <div style="display:flex;gap:16px 22px;flex-wrap:wrap;align-items:flex-end">
+        <div class="field"><label class="fl" for="w-weeks">Full details, weeks out</label>
+          <select class="inp" id="w-weeks" style="width:auto">{"".join(f'<option value="{n}">{n} week{"s" if n > 1 else ""}</option>' for n in range(1, 13))}</select></div>
+        <div class="field"><label class="fl" for="w-months">Calendar shows, months out</label>
+          <select class="inp" id="w-months" style="width:auto">{"".join(f'<option value="{n}">{n} month{"s" if n > 1 else ""}</option>' for n in range(1, 5))}</select></div>
+        <button class="mini" data-savewindow style="margin-bottom:2px">Save window</button>
+      </div>
+      <div class="hint" style="margin-top:10px">The calendar window. Inside the first number, an event is fully open: its page, RSVP, and
+      Add to My Calendar. Beyond it but inside the second, the date shows shaded with its title, nothing clickable, so plans can still
+      change. Past the second number the calendar ends. Both slide forward on their own with every rebuild.</div>
+    </div>
+  </div>
   <div class="wrap"><div class="tabs">
     <label for="f-all">All</label><label for="f-live">Live</label><label for="f-draft">Drafts</label><label for="f-unpublished">Unpublished</label><label for="f-archived">Archived</label>
   </div></div>
@@ -475,11 +485,11 @@ HTML = f'''<!DOCTYPE html>
 <section class="screen" id="scr-editor"><div class="wrap">
   <label class="back" for="s-events">&larr; Back to events</label>
   {radios("cat", CATEGORIES, 4)}
-  {radios("st", STATUSES, 0)}
   {radios("co", ["Count it", "List only"], 0)}
   {radios("rt", RSVP_TYPES, 2)}
   <div class="phead"><h1 id="ed-title">Edit event</h1><span class="pill draft" id="ed-pill">Draft</span></div>
   <div class="psub" id="ed-sub"></div>
+  <div class="callout" id="ed-draftnote" style="display:none;margin:14px 0 4px"></div>
 
   <div class="form">
     <div class="field f-full" id="ed-occ" style="display:none"><label class="fl" for="f-occ">Which date of this series</label>
@@ -487,7 +497,6 @@ HTML = f'''<!DOCTYPE html>
       <div class="hint">A series is one row per date, so a single week can be moved or skipped without touching the rest.</div></div>
     <div class="field f-full"><label class="fl" for="f-title">Event title</label><input class="inp" id="f-title" autocapitalize="words"></div>
     <div class="field f-full"><label class="fl">Category</label><div class="picks">{picks("cat", CATEGORIES)}</div><div class="hint">Categories match the budget line items, so the monthly report rolls up against what Scott already sees.</div></div>
-    <div class="field"><label class="fl">Status</label><div class="picks">{picks("st", STATUSES)}</div><div class="hint">Draft is never published. Unpublished is pulled from the site with RSVPs held, ready to go back up. Archived is over, hidden, and kept for reporting.</div></div>
     <div class="field"><label class="fl" for="f-date">Date</label><input class="inp" type="date" id="f-date"></div>
     <div class="field"><label class="fl" for="f-start">Start time</label><input class="inp" id="f-start" placeholder="5:30 PM" inputmode="text"></div>
     <div class="field"><label class="fl" for="f-end">End time</label><input class="inp" id="f-end" placeholder="7:30 PM"></div>
@@ -549,6 +558,9 @@ HTML = f'''<!DOCTYPE html>
       <textarea class="inp" id="f-desc" rows="7" placeholder="Write it as if the reader knows nothing about the event. It shows exactly as typed: a return starts a new line, a blank line starts a new paragraph."></textarea>
       <div class="hint">Select some text, then B, I, or U. Titles of books and films take italics. Line breaks show exactly as typed: a return is a new line (menus read one item per line), a blank line is a new paragraph. Sizes are set by the calendar itself.</div></div>
     <div class="field f-full"><label class="check"><input type="checkbox" id="f-marquee"> Feature this on the home screen as the marquee event</label></div>
+    <div class="field f-full"><label class="check"><input type="checkbox" id="f-teaser"> Coming soon: publish the date and title, hold the details</label>
+      <div class="hint">For an event still taking shape. It appears on the calendar with a Coming soon note; RSVP and
+      Add to My Calendar stay closed until this is unticked, so plans can still change without anyone rebooking.</div></div>
     <div class="field f-full" id="ed-scope" style="display:none"><label class="check"><input type="checkbox" id="f-scope" checked> Apply these changes to every upcoming date of this series (<span id="f-scope-n">0</span>)</label>
       <div class="hint">Untick to change only the date chosen above, for example to move or re-time a single week.</div></div>
     <div class="field f-full"><label class="fl" for="f-slug">File name stem, generated from the date and title</label>
@@ -561,13 +573,22 @@ HTML = f'''<!DOCTYPE html>
       Specs under Instructions &rarr; Screens &amp; Print.</div></div>
   </div>
 
-  <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:30px" id="ed-actions">
-    <button class="btn" data-save="keep">Save changes</button>
-    <button class="btn ghost" data-save="Draft">Save as draft</button>
-    <button class="btn ghost" data-save="Archived">Archive event</button>
+  <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:30px;align-items:center" id="ed-actions">
+    <button class="btn" id="ed-publish" data-edpublish>Publish</button>
+    <button class="btn ghost" id="ed-savedraft" data-edsavedraft>Save draft</button>
+    <button class="mini ghost" id="ed-discard" data-eddiscard style="display:none">Discard draft</button>
+    <button class="btn ghost" id="ed-archivebtn" data-edarchive disabled title="For safety, an event is archived from Unpublished, never straight off the calendar">Archive</button>
     <button class="btn ghost" id="ed-cancel" style="border-color:var(--red);color:var(--red)" disabled>Cancel &amp; notify guests</button>
   </div>
-  <div class="hint" id="ed-cancel-note" style="margin-top:10px"></div>
+  <div class="hint" id="ed-actions-note" style="margin-top:10px"></div>
+  <div class="hint" id="ed-cancel-note" style="margin-top:4px"></div>
+
+  <div class="sec" id="ed-history-sec" style="display:none;margin-top:36px">
+    <h2>Change history</h2>
+    <div class="sd">Who changed what, and when, newest first. Load an earlier version to review it in the editor;
+    nothing on the resident site changes until you publish or save what is loaded.</div>
+    <div class="card" id="ed-history"></div>
+  </div>
 </div></section>
 
 <!-- ================= ASSETS ================= -->
@@ -686,13 +707,23 @@ HTML = f'''<!DOCTYPE html>
 
   <h2>The loop</h2>
   <ol>
-    <li><strong>Create the draft.</strong> Events &rarr; New Event. Fill in title, category, date, time, location, and capacity. Leave status on <em>Draft</em>, so nothing is visible to residents yet.</li>
+    <li><strong>Create the draft.</strong> Events &rarr; New Event. Fill in title, category, date, time, location, and capacity, then <em>Save draft</em>: nothing is visible to residents yet.</li>
     <li><strong>Write both descriptions.</strong> The short one is a single line and appears in the list view. The full one appears on the event page. Write the full one as if the reader knows nothing about the event.</li>
     <li><strong>Build the asset kit.</strong> Six pieces, same six every time. See <em>Brand &amp; Canva templates</em> for sizes.</li>
-    <li><strong>Publish.</strong> Change status to <em>Live</em>. It appears on the calendar immediately.</li>
+    <li><strong>Publish.</strong> The <em>Publish</em> button puts it on the calendar; the same button reads <em>Unpublish</em> once it is out. An event whose details are still settling can go out early with the <em>Coming soon</em> box ticked: the date and title show, RSVP and calendars wait.</li>
     <li><strong>Promote, in this order:</strong> Mailchimp campaign, then the Nixplay playlist, then the printed signs. All three point at the same event page.</li>
-    <li><strong>After it happens:</strong> record actual attendance, then set status to <em>Archived</em>.</li>
+    <li><strong>After it happens:</strong> record actual attendance. The Archive files passed events on its own; <em>Archive</em> by hand only from Unpublished.</li>
   </ol>
+
+  <div class="callout"><strong>Editing something already published.</strong> On a Live event, <em>Save draft</em> keeps your
+  edits as a working copy that residents never see; the editor says so, and <em>Publish changes</em> sends them out when
+  you are ready (or <em>Discard draft</em> lets them go). Every save lands in the event&rsquo;s <strong>change history</strong>
+  at the foot of the editor: who, when, and what changed, with <em>Load this version</em> to bring any earlier version back
+  into the form for review.</div>
+
+  <div class="callout"><strong>The calendar window.</strong> Two dials atop the Events screen decide how far ahead residents
+  see: full pages with RSVP out to a number of weeks, then quiet shaded dates out to a number of months, then nothing. The
+  windows slide forward on their own with every rebuild, so an event simply wakes up as its date approaches.</div>
 
   <h2>Pulling an event back down</h2>
   <table>

@@ -4,15 +4,22 @@
 // vanish, and nothing needs adding one date at a time. This is the calendar in
 // machine-readable form; the per-event .ics files remain for one-tap adds.
 
-import { ensureResidentTables, todayPacific, to24, icsStamp } from "../_lib.js";
+import { ensureResidentTables, ensureEventTables, todayPacific, to24, icsStamp,
+         getWindow, detailEnd } from "../_lib.js";
 
+// The feed honors the calendar window: an event beyond the detail line, or one
+// still marked coming-soon, stays out of subscribers' calendars until its
+// details settle, so nothing half-formed takes root on a resident's phone.
 export async function onRequestGet({ env }) {
   let rows = [];
   if (env.DB) {
     await ensureResidentTables(env);
+    await ensureEventTables(env);
+    const win = await getWindow(env);
     const r = await env.DB.prepare(
       `SELECT * FROM events WHERE status='Live' AND (category IS NULL OR category != 'Board Meeting')
-       AND date >= ? ORDER BY date, start24`).bind(todayPacific()).all();
+       AND date >= ? AND date <= ? AND (teaser IS NULL OR teaser = 0) ORDER BY date, start24`)
+      .bind(todayPacific(), detailEnd(win)).all();
     rows = r.results;
   }
   const out = ["BEGIN:VCALENDAR", "VERSION:2.0",

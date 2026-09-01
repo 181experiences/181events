@@ -213,10 +213,6 @@
   #cat-4:checked ~ .form label[for="cat-4"]{background:var(--ink);color:var(--paper-2);border-color:var(--ink)}
   #cat-5:checked ~ .form label[for="cat-5"]{background:var(--ink);color:var(--paper-2);border-color:var(--ink)}
   #cat-6:checked ~ .form label[for="cat-6"]{background:var(--ink);color:var(--paper-2);border-color:var(--ink)}
-  #st-0:checked ~ .form label[for="st-0"]{background:var(--ink);color:var(--paper-2);border-color:var(--ink)}
-  #st-1:checked ~ .form label[for="st-1"]{background:var(--ink);color:var(--paper-2);border-color:var(--ink)}
-  #st-2:checked ~ .form label[for="st-2"]{background:var(--ink);color:var(--paper-2);border-color:var(--ink)}
-  #st-3:checked ~ .form label[for="st-3"]{background:var(--ink);color:var(--paper-2);border-color:var(--ink)}
   #rep-0:checked ~ .form label[for="rep-0"]{background:var(--ink);color:var(--paper-2);border-color:var(--ink)}
   #rep-1:checked ~ .form label[for="rep-1"]{background:var(--ink);color:var(--paper-2);border-color:var(--ink)}
   #rep-2:checked ~ .form label[for="rep-2"]{background:var(--ink);color:var(--paper-2);border-color:var(--ink)}
@@ -468,6 +464,20 @@
     <div class="phead"><h1>Events</h1><div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center"><label class="mini ghost" for="s-arch" style="min-height:38px;display:inline-flex;align-items:center" title="Passed and cancelled events, with their asset kits, kept for reference">Archive &middot;&nbsp;<span id="arch-count-e">0</span></label><button class="btn ghost" data-publish title="Rebuild the resident calendar from what is saved">Publish calendar</button><button class="btn" data-new>+ New Event</button></div></div>
     <div class="psub" id="evcount">Loading&hellip;</div>
   </div>
+  <div class="wrap">
+    <div class="card" style="margin-bottom:16px">
+      <div style="display:flex;gap:16px 22px;flex-wrap:wrap;align-items:flex-end">
+        <div class="field"><label class="fl" for="w-weeks">Full details, weeks out</label>
+          <select class="inp" id="w-weeks" style="width:auto"><option value="1">1 week</option><option value="2">2 weeks</option><option value="3">3 weeks</option><option value="4">4 weeks</option><option value="5">5 weeks</option><option value="6">6 weeks</option><option value="7">7 weeks</option><option value="8">8 weeks</option><option value="9">9 weeks</option><option value="10">10 weeks</option><option value="11">11 weeks</option><option value="12">12 weeks</option></select></div>
+        <div class="field"><label class="fl" for="w-months">Calendar shows, months out</label>
+          <select class="inp" id="w-months" style="width:auto"><option value="1">1 month</option><option value="2">2 months</option><option value="3">3 months</option><option value="4">4 months</option></select></div>
+        <button class="mini" data-savewindow style="margin-bottom:2px">Save window</button>
+      </div>
+      <div class="hint" style="margin-top:10px">The calendar window. Inside the first number, an event is fully open: its page, RSVP, and
+      Add to My Calendar. Beyond it but inside the second, the date shows shaded with its title, nothing clickable, so plans can still
+      change. Past the second number the calendar ends. Both slide forward on their own with every rebuild.</div>
+    </div>
+  </div>
   <div class="wrap"><div class="tabs">
     <label for="f-all">All</label><label for="f-live">Live</label><label for="f-draft">Drafts</label><label for="f-unpublished">Unpublished</label><label for="f-archived">Archived</label>
   </div></div>
@@ -479,11 +489,11 @@
 <section class="screen" id="scr-editor"><div class="wrap">
   <label class="back" for="s-events">&larr; Back to events</label>
   <input class="state" type="radio" name="cat" id="cat-0"><input class="state" type="radio" name="cat" id="cat-1"><input class="state" type="radio" name="cat" id="cat-2"><input class="state" type="radio" name="cat" id="cat-3"><input class="state" type="radio" name="cat" id="cat-4" checked><input class="state" type="radio" name="cat" id="cat-5"><input class="state" type="radio" name="cat" id="cat-6">
-  <input class="state" type="radio" name="st" id="st-0" checked><input class="state" type="radio" name="st" id="st-1"><input class="state" type="radio" name="st" id="st-2"><input class="state" type="radio" name="st" id="st-3">
   <input class="state" type="radio" name="co" id="co-0" checked><input class="state" type="radio" name="co" id="co-1">
   <input class="state" type="radio" name="rt" id="rt-0"><input class="state" type="radio" name="rt" id="rt-1"><input class="state" type="radio" name="rt" id="rt-2" checked><input class="state" type="radio" name="rt" id="rt-3">
   <div class="phead"><h1 id="ed-title">Edit event</h1><span class="pill draft" id="ed-pill">Draft</span></div>
   <div class="psub" id="ed-sub"></div>
+  <div class="callout" id="ed-draftnote" style="display:none;margin:14px 0 4px"></div>
 
   <div class="form">
     <div class="field f-full" id="ed-occ" style="display:none"><label class="fl" for="f-occ">Which date of this series</label>
@@ -491,7 +501,6 @@
       <div class="hint">A series is one row per date, so a single week can be moved or skipped without touching the rest.</div></div>
     <div class="field f-full"><label class="fl" for="f-title">Event title</label><input class="inp" id="f-title" autocapitalize="words"></div>
     <div class="field f-full"><label class="fl">Category</label><div class="picks"><label class="pick" for="cat-0">Morning Offering</label><label class="pick" for="cat-1">Happy Hour</label><label class="pick" for="cat-2">Community Dinner</label><label class="pick" for="cat-3">Culinary Experience</label><label class="pick" for="cat-4">Enrichment Experience</label><label class="pick" for="cat-5">Signature Event</label><label class="pick" for="cat-6">Board Meeting</label></div><div class="hint">Categories match the budget line items, so the monthly report rolls up against what Scott already sees.</div></div>
-    <div class="field"><label class="fl">Status</label><div class="picks"><label class="pick" for="st-0">Draft</label><label class="pick" for="st-1">Live</label><label class="pick" for="st-2">Unpublished</label><label class="pick" for="st-3">Archived</label></div><div class="hint">Draft is never published. Unpublished is pulled from the site with RSVPs held, ready to go back up. Archived is over, hidden, and kept for reporting.</div></div>
     <div class="field"><label class="fl" for="f-date">Date</label><input class="inp" type="date" id="f-date"></div>
     <div class="field"><label class="fl" for="f-start">Start time</label><input class="inp" id="f-start" placeholder="5:30 PM" inputmode="text"></div>
     <div class="field"><label class="fl" for="f-end">End time</label><input class="inp" id="f-end" placeholder="7:30 PM"></div>
@@ -553,6 +562,9 @@
       <textarea class="inp" id="f-desc" rows="7" placeholder="Write it as if the reader knows nothing about the event. It shows exactly as typed: a return starts a new line, a blank line starts a new paragraph."></textarea>
       <div class="hint">Select some text, then B, I, or U. Titles of books and films take italics. Line breaks show exactly as typed: a return is a new line (menus read one item per line), a blank line is a new paragraph. Sizes are set by the calendar itself.</div></div>
     <div class="field f-full"><label class="check"><input type="checkbox" id="f-marquee"> Feature this on the home screen as the marquee event</label></div>
+    <div class="field f-full"><label class="check"><input type="checkbox" id="f-teaser"> Coming soon: publish the date and title, hold the details</label>
+      <div class="hint">For an event still taking shape. It appears on the calendar with a Coming soon note; RSVP and
+      Add to My Calendar stay closed until this is unticked, so plans can still change without anyone rebooking.</div></div>
     <div class="field f-full" id="ed-scope" style="display:none"><label class="check"><input type="checkbox" id="f-scope" checked> Apply these changes to every upcoming date of this series (<span id="f-scope-n">0</span>)</label>
       <div class="hint">Untick to change only the date chosen above, for example to move or re-time a single week.</div></div>
     <div class="field f-full"><label class="fl" for="f-slug">File name stem, generated from the date and title</label>
@@ -565,13 +577,22 @@
       Specs under Instructions &rarr; Screens &amp; Print.</div></div>
   </div>
 
-  <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:30px" id="ed-actions">
-    <button class="btn" data-save="keep">Save changes</button>
-    <button class="btn ghost" data-save="Draft">Save as draft</button>
-    <button class="btn ghost" data-save="Archived">Archive event</button>
+  <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:30px;align-items:center" id="ed-actions">
+    <button class="btn" id="ed-publish" data-edpublish>Publish</button>
+    <button class="btn ghost" id="ed-savedraft" data-edsavedraft>Save draft</button>
+    <button class="mini ghost" id="ed-discard" data-eddiscard style="display:none">Discard draft</button>
+    <button class="btn ghost" id="ed-archivebtn" data-edarchive disabled title="For safety, an event is archived from Unpublished, never straight off the calendar">Archive</button>
     <button class="btn ghost" id="ed-cancel" style="border-color:var(--red);color:var(--red)" disabled>Cancel &amp; notify guests</button>
   </div>
-  <div class="hint" id="ed-cancel-note" style="margin-top:10px"></div>
+  <div class="hint" id="ed-actions-note" style="margin-top:10px"></div>
+  <div class="hint" id="ed-cancel-note" style="margin-top:4px"></div>
+
+  <div class="sec" id="ed-history-sec" style="display:none;margin-top:36px">
+    <h2>Change history</h2>
+    <div class="sd">Who changed what, and when, newest first. Load an earlier version to review it in the editor;
+    nothing on the resident site changes until you publish or save what is loaded.</div>
+    <div class="card" id="ed-history"></div>
+  </div>
 </div></section>
 
 <!-- ================= ASSETS ================= -->
@@ -690,13 +711,23 @@
 
   <h2>The loop</h2>
   <ol>
-    <li><strong>Create the draft.</strong> Events &rarr; New Event. Fill in title, category, date, time, location, and capacity. Leave status on <em>Draft</em>, so nothing is visible to residents yet.</li>
+    <li><strong>Create the draft.</strong> Events &rarr; New Event. Fill in title, category, date, time, location, and capacity, then <em>Save draft</em>: nothing is visible to residents yet.</li>
     <li><strong>Write both descriptions.</strong> The short one is a single line and appears in the list view. The full one appears on the event page. Write the full one as if the reader knows nothing about the event.</li>
     <li><strong>Build the asset kit.</strong> Six pieces, same six every time. See <em>Brand &amp; Canva templates</em> for sizes.</li>
-    <li><strong>Publish.</strong> Change status to <em>Live</em>. It appears on the calendar immediately.</li>
+    <li><strong>Publish.</strong> The <em>Publish</em> button puts it on the calendar; the same button reads <em>Unpublish</em> once it is out. An event whose details are still settling can go out early with the <em>Coming soon</em> box ticked: the date and title show, RSVP and calendars wait.</li>
     <li><strong>Promote, in this order:</strong> Mailchimp campaign, then the Nixplay playlist, then the printed signs. All three point at the same event page.</li>
-    <li><strong>After it happens:</strong> record actual attendance, then set status to <em>Archived</em>.</li>
+    <li><strong>After it happens:</strong> record actual attendance. The Archive files passed events on its own; <em>Archive</em> by hand only from Unpublished.</li>
   </ol>
+
+  <div class="callout"><strong>Editing something already published.</strong> On a Live event, <em>Save draft</em> keeps your
+  edits as a working copy that residents never see; the editor says so, and <em>Publish changes</em> sends them out when
+  you are ready (or <em>Discard draft</em> lets them go). Every save lands in the event&rsquo;s <strong>change history</strong>
+  at the foot of the editor: who, when, and what changed, with <em>Load this version</em> to bring any earlier version back
+  into the form for review.</div>
+
+  <div class="callout"><strong>The calendar window.</strong> Two dials atop the Events screen decide how far ahead residents
+  see: full pages with RSVP out to a number of weeks, then quiet shaded dates out to a number of months, then nothing. The
+  windows slide forward on their own with every rebuild, so an event simply wakes up as its date approaches.</div>
 
   <h2>Pulling an event back down</h2>
   <table>
@@ -1083,7 +1114,7 @@
         <div class="ecell"><span class="pill ${cls(g.status)}">${esc(g.mixed ? "Mixed" : g.status)}</span></div>
         <div class="ecell"><span class="lbl">RSVPs</span>${rsvp}</div>
         <div class="ecell"><span class="lbl">Asset kit</span>${kits} of 6</div>
-        <div class="ecell eact">${g.series ? `<button class="mini ghost" data-dates="${esc(g.key)}">${g.rows.length} dates</button>` : ""}<button class="mini ghost" data-copylink="${esc(stem(h))}" title="Copies this date's page address, for emails and reminders">Link</button><button class="mini" data-edit="${esc(g.key)}">Edit</button>${g.status !== "Archived" ? `<button class="mini ghost" data-archive="${esc(g.key)}">Archive</button>` : ""}</div>
+        <div class="ecell eact">${g.series ? `<button class="mini ghost" data-dates="${esc(g.key)}">${g.rows.length} dates</button>` : ""}<button class="mini ghost" data-copylink="${esc(stem(h))}" title="Copies this date's page address, for emails and reminders">Link</button><button class="mini" data-edit="${esc(g.key)}">Edit</button>${g.status === "Unpublished" ? `<button class="mini ghost" data-archive="${esc(g.key)}" title="Filed away, kept for reporting">Archive</button>` : ""}</div>
       </div>
       <div class="edates" data-dates-for="${esc(g.key)}" style="display:none">${g.rows.map(r => `
         <div class="edrow"><span class="edwhen">${esc(fmt(r.Date))} &middot; ${esc(r.Start)}</span>
@@ -1097,14 +1128,68 @@
   }
 
   // ---------------------------------------------------------------- editor
+  // The form's field inputs, set from one place so the editor and the change
+  // history's "Load this version" fill them identically.
+  function applyFields(e) {
+    const set = (id, v) => { $(id).value = v == null ? "" : v; };
+    set("#f-title", e.Title); set("#f-date", e.Date); set("#f-start", e.Start); set("#f-end", e.End);
+    set("#f-loc", e.Location); set("#f-host", e.Host); set("#f-series", e.Series); set("#f-cap", e.Capacity);
+    set("#f-price", e.Price); set("#f-cutoff", e.Cutoff); set("#f-desc", e.Description); set("#f-slug", e.Slug || "");
+    $("#f-marquee").checked = e.Marquee === true || e.Marquee === "True";
+    $("#f-teaser").checked = e.Teaser === true || e.Teaser === "True";
+    $$("input[name=cat]").forEach((r, i) => r.checked = CATS[i] === e.Category);
+    $$("input[name=rt]").forEach((r, i) => r.checked = RSVPS[i] === (e.RSVP || "None"));
+    const counted = e.Counted === true || e.Counted === "True";
+    $("#co-0").checked = counted; $("#co-1").checked = !counted;
+    $("#f-stem").textContent = stem({ Date: e.Date, Slug: e.Slug, Title: e.Title });
+  }
+
+  // Buttons follow the row: Publish turns to Unpublish once an event is out,
+  // and to Publish changes when a working copy waits; Archive only wakes from
+  // Unpublished; Cancel & notify stands ready on any published event that
+  // takes RSVPs, sign-ups or not.
+  function refreshEdActions() {
+    const row = editing && editing.row;
+    const live = !!(row && row.Status === "Live");
+    const draft = !!(row && row.Draft);
+    $("#ed-pill").className = "pill " + cls(row ? row.Status : "Draft");
+    $("#ed-pill").textContent = (row ? row.Status || "Draft" : "Draft") + (draft ? " · draft pending" : "");
+    $("#ed-publish").textContent = live ? (draft ? "Publish changes" : "Unpublish") : "Publish";
+    $("#ed-discard").style.display = draft ? "" : "none";
+    $("#ed-archivebtn").disabled = !(row && row.Status === "Unpublished");
+    $("#ed-draftnote").style.display = draft ? "" : "none";
+    if (draft) $("#ed-draftnote").innerHTML =
+      "<strong>A saved draft is loaded below, and it is not on the resident site.</strong> " +
+      "Residents still see the published version. <strong>Publish changes</strong> applies what you see; " +
+      "<strong>Discard draft</strong> lets it go.";
+    $("#ed-actions-note").textContent = !row
+      ? "Publish puts it on the calendar; Save draft keeps it here, unpublished, until it is ready."
+      : live
+        ? (draft ? "" : "Edits to a published event save as a draft first, then go out with Publish changes.")
+        : row.Status === "Unpublished"
+          ? "Off the calendar with its RSVPs held. Publish puts it back; Archive files it away."
+          : "";
+    const rsvpOn = !!(row && row.RSVP && row.RSVP !== "None");
+    const edStemNow = row ? stem(row) : null;
+    const hasRsvpers = !!edStemNow && rsvps.some(x => x.event_key === edStemNow);
+    $("#ed-cancel").disabled = !(live && rsvpOn);
+    $("#ed-cancel-note").textContent = live && rsvpOn
+      ? (hasRsvpers
+          ? "Cancelling pulls this date from the calendar, holds its RSVPs, and opens a note to everyone signed up."
+          : "Cancelling pulls this date from the calendar. Nobody has signed up yet, so there is nobody to notify.")
+      : "";
+  }
+
   function openEditor(key, rowId) {
     const g = key ? groups().find(x => x.key === key) : null;
     const row = g ? (rowId ? g.rows.find(r => r.id === rowId) : g.head) : null;
     editing = { group: g, row };
-    const e = row || { Status: "Draft", Category: "Enrichment Experience", Location: "Level 39, Residents’ Club", Host: "Resident Experiences", RSVP: "Seat", Counted: true, Date: today() };
+    // A Live row with a working copy opens showing the working copy; the row
+    // itself, what residents see, stays untouched underneath.
+    const e = row ? (row.Draft ? { ...row, ...row.Draft } : row)
+      : { Status: "Draft", Category: "Enrichment Experience", Location: "Level 39, Residents’ Club", Host: "Resident Experiences", RSVP: "Seat", Counted: true, Date: today() };
     $("#ed-title").textContent = row ? "Edit event" : "New event";
-    $("#ed-pill").className = "pill " + cls(e.Status); $("#ed-pill").textContent = e.Status || "Draft";
-    $("#ed-sub").textContent = row ? `${e.Title} · ${fmtLong(e.Date)}` : "Fill in the essentials, save as a draft, and come back to it.";
+    $("#ed-sub").textContent = row ? `${e.Title} · ${fmtLong(e.Date)}` : "Fill in the essentials, save a draft, and come back to it.";
     // occurrence picker for a series
     const occ = $("#ed-occ");
     if (g && g.series) {
@@ -1118,27 +1203,43 @@
     // An existing series is edited through the occurrence picker above.
     $("#rp-builder").style.display = row ? "none" : "";
     if (!row) { rp = { mode: "none", days: new Set(), ord: "Last", wd: 0, end: "cal", times: 6, until: "" }; rpRefresh(); }
-    const set = (id, v) => { $(id).value = v == null ? "" : v; };
-    set("#f-title", e.Title); set("#f-date", e.Date); set("#f-start", e.Start); set("#f-end", e.End);
-    set("#f-loc", e.Location); set("#f-host", e.Host); set("#f-series", e.Series); set("#f-cap", e.Capacity);
-    set("#f-price", e.Price); set("#f-cutoff", e.Cutoff); set("#f-desc", e.Description); set("#f-slug", e.Slug || "");
-    $("#f-marquee").checked = e.Marquee === true || e.Marquee === "True";
-    $$("input[name=cat]").forEach((r, i) => r.checked = CATS[i] === e.Category);
-    $$("input[name=st]").forEach((r, i) => r.checked = STATUSES[i] === (e.Status || "Draft"));
-    $$("input[name=rt]").forEach((r, i) => r.checked = RSVPS[i] === (e.RSVP || "None"));
-    const counted = e.Counted === true || e.Counted === "True";
-    $("#co-0").checked = counted; $("#co-1").checked = !counted;
-    $("#f-stem").textContent = stem({ Date: e.Date, Slug: e.Slug, Title: e.Title });
-    const edStemNow = row ? stem(row) : null;
-    const hasRsvpers = !!edStemNow && rsvps.some(x => x.event_key === edStemNow);
-    $("#ed-cancel").disabled = !(row && row.Status === "Live" && hasRsvpers);
-    $("#ed-cancel-note").textContent = row && row.Status === "Live"
-      ? (hasRsvpers
-          ? "Cancelling pulls this date from the calendar, holds its RSVPs, and opens a note to everyone signed up."
-          : "Nobody has RSVP'd to this date yet; a quiet Unpublish from the status picks does the job.")
-      : "";
+    applyFields(e);
+    refreshEdActions();
+    loadHistory(row);
     renderEditorKit();
     go("editor");
+  }
+
+  // ------------------------------------------------------------ change history
+  let edHistory = [];
+  async function loadHistory(row) {
+    const sec = $("#ed-history-sec");
+    edHistory = [];
+    if (!row) { sec.style.display = "none"; return; }
+    try { edHistory = (await api("/api/history?event=" + encodeURIComponent(row.id))).history || []; }
+    catch (e) { edHistory = []; }
+    if (editing.row !== row) return;   // the editor moved on while we fetched
+    sec.style.display = edHistory.length ? "" : "none";
+    $("#ed-history").innerHTML = edHistory.map((h, i) => {
+      const when = new Date(h.at).toLocaleString([], { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" });
+      const fields = h.changes ? Object.keys(h.changes).filter(k => k !== "Status") : [];
+      const what = esc(h.action) + (fields.length && h.action !== "Created" ? " · " + fields.join(", ") : "");
+      return `<div class="edrow" style="display:flex;gap:14px;align-items:baseline;flex-wrap:wrap;padding:9px 0">`
+        + `<span style="white-space:nowrap;color:var(--ink)">${esc(when)}</span>`
+        + `<span style="color:var(--ink-soft)">${esc(h.who || "")}</span>`
+        + `<span class="sgrow" style="color:var(--ink-soft)">${what}</span>`
+        + (h.snapshot ? `<button class="mini ghost" data-histload="${i}">Load this version</button>` : "")
+        + `</div>`;
+    }).join("");
+  }
+
+  function loadVersion(i) {
+    const h = edHistory[Number(i)];
+    if (!h || !h.snapshot || !editing.row) return;
+    applyFields(h.snapshot);
+    const when = new Date(h.at).toLocaleString([], { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" });
+    toast(`Loaded the version from ${when}. Nothing changes until you publish it or save it as a draft.`);
+    window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
   function readForm() {
@@ -1147,10 +1248,11 @@
     const f = {
       Title: title, Date: $("#f-date").value, Start: $("#f-start").value.trim(), End: $("#f-end").value.trim(),
       Start24: to24($("#f-start").value), Location: $("#f-loc").value.trim(), Host: $("#f-host").value.trim() || "Resident Experiences",
-      Category: pick("cat", CATS), Status: pick("st", STATUSES), RSVP: pick("rt", RSVPS),
+      Category: pick("cat", CATS), RSVP: pick("rt", RSVPS),
       Capacity: $("#f-cap").value ? Number($("#f-cap").value) : null, Price: $("#f-price").value.trim(),
       Series: $("#f-series").value.trim(), Cutoff: $("#f-cutoff").value.trim(), Description: $("#f-desc").value.trim(),
-      Marquee: $("#f-marquee").checked, Counted: $("#co-0").checked, Moved: editing.row ? !!editing.row.Moved : false,
+      Marquee: $("#f-marquee").checked, Teaser: $("#f-teaser").checked,
+      Counted: $("#co-0").checked, Moved: editing.row ? !!editing.row.Moved : false,
       Slug: $("#f-slug").value.trim() || slugify(title),
     };
     return f;
@@ -1160,16 +1262,17 @@
     if (!f.Title) return "Give the event a title.";
     if (!f.Date) return "Pick a date.";
     if (!f.Start) return "Add a start time, like 5:30 PM.";
-    if (f.Status === "Live" && !f.Description) return "A Live event needs a description, since residents will read it.";
+    if (f.Status === "Live" && !f.Description && !f.Teaser)
+      return "A published event needs a description, since residents will read it. Tick Coming soon to publish it without one.";
     return null;
   }
 
   // Which field changes ripple across a series when "apply to every upcoming occurrence" is ticked.
-  const SERIES_FIELDS = ["Title", "Start", "End", "Start24", "Location", "Host", "Category", "RSVP", "Capacity", "Price", "Series", "Cutoff", "Description", "Counted", "Image", "Status"];
+  const SERIES_FIELDS = ["Title", "Start", "End", "Start24", "Location", "Host", "Category", "RSVP", "Capacity", "Price", "Series", "Cutoff", "Description", "Counted", "Image", "Status", "Teaser"];
 
-  async function save(overrideStatus) {
+  async function save(status) {
     const f = readForm();
-    if (overrideStatus) f.Status = overrideStatus;
+    f.Status = status;
     const err = validate(f); if (err) { toast(err, "warn"); return; }
     let told = false;
     const wasLive = editing.row && editing.row.Status === "Live";
@@ -1220,7 +1323,87 @@
       }
       go("events");
     } catch (e) { toast(e.message, "warn"); }
-    finally { btns.forEach(b => b.disabled = false); $("#ed-cancel").disabled = true; }
+    finally { btns.forEach(b => b.disabled = false); refreshEdActions(); }
+  }
+
+  // A published event's edits live in a working copy: residents keep seeing
+  // the published version until Publish changes applies it. With apply-to-all
+  // ticked, the copy rides to every upcoming Live date of the series.
+  async function saveWorkingCopy() {
+    const f = readForm();
+    if (!f.Title) { toast("Give the event a title.", "warn"); return; }
+    const applyAll = editing.group && editing.group.series && $("#f-scope").checked;
+    const targets = applyAll ? editing.group.upcoming.filter(r => r.Status === "Live") : [editing.row];
+    const btns = $$("#ed-actions button"); btns.forEach(b => b.disabled = true);
+    try {
+      for (const r of targets) {
+        const copy = r.id === editing.row.id ? f
+          : Object.fromEntries(SERIES_FIELDS.filter(k => k !== "Status").map(k => [k, f[k]]));
+        const upd = await api("/api/events/" + encodeURIComponent(r.id),
+          { method: "PATCH", body: JSON.stringify({ __draft: copy }) });
+        Object.assign(r, upd);
+      }
+      toast(targets.length > 1
+        ? `Draft saved on ${targets.length} dates. Residents still see the published version.`
+        : "Draft saved. Residents see the published version until you publish the changes.");
+    } catch (e) { toast(e.message, "warn"); }
+    finally { btns.forEach(b => b.disabled = false); refreshEdActions(); }
+  }
+
+  async function discardWorkingCopy() {
+    const row = editing && editing.row; if (!row || !row.Draft) return;
+    if (!confirm("Let the saved draft go? The editor returns to what residents see.")) return;
+    const applyAll = editing.group && editing.group.series && $("#f-scope").checked;
+    const targets = applyAll ? editing.group.upcoming.filter(r => r.Draft) : [row];
+    try {
+      for (const r of targets) {
+        const upd = await api("/api/events/" + encodeURIComponent(r.id),
+          { method: "PATCH", body: JSON.stringify({ __draft: null }) });
+        Object.assign(r, upd);
+      }
+      openEditor(editing.group ? editing.group.key : null, row.id);
+      toast("Draft discarded. This is what residents see.");
+    } catch (e) { toast(e.message, "warn"); }
+  }
+
+  // The three verb buttons. Publish is the only road onto the calendar,
+  // Unpublish the only quiet road off it, and Archive waits behind Unpublish
+  // on purpose, so nothing leaves the calendar and the records in one motion.
+  function edPublishClick() {
+    const row = editing && editing.row;
+    if (row && row.Status === "Live" && !row.Draft) { save("Unpublished"); return; }
+    save("Live");
+  }
+  function edSaveDraftClick() {
+    const row = editing && editing.row;
+    if (row && row.Status === "Live") { saveWorkingCopy(); return; }
+    save(row ? row.Status || "Draft" : "Draft");
+  }
+  function edArchiveClick() {
+    const row = editing && editing.row; if (!row || row.Status !== "Unpublished") return;
+    if (!confirm(`Archive "${row.Title}"? It is filed away and stays in reporting; publishing it again walks it back out.`)) return;
+    save("Archived");
+  }
+
+  // ------------------------------------------------------------ calendar window
+  async function loadWindow() {
+    try {
+      const w = await api("/api/settings");
+      $("#w-weeks").value = String(w.detail_weeks);
+      $("#w-months").value = String(w.horizon_months);
+    } catch (e) {}   // the desk tier has no events screen, and no business here
+  }
+  async function saveWindow(btn) {
+    btn.disabled = true;
+    try {
+      await api("/api/settings", { method: "PUT", body: JSON.stringify({
+        detail_weeks: Number($("#w-weeks").value), horizon_months: Number($("#w-months").value) }) });
+      if (status.publish) {
+        toast("Window saved. The calendar is rebuilding with it, live in a couple of minutes.");
+        api("/api/publish", { method: "POST" }).catch(() => {});
+      } else toast("Window saved. It takes effect at the next publish.");
+    } catch (e) { toast(e.message, "warn"); }
+    finally { btn.disabled = false; }
   }
 
   async function archiveGroup(key) {
@@ -1905,10 +2088,23 @@
   async function boot() {
     try { status = await api("/api/status"); } catch (e) { status = {}; }
     let whoEmail = "";
-    try { const w = await api("/api/whoami"); role = w.role || "staff"; whoEmail = w.email || ""; }
-    catch (e) { role = "staff"; }
+    // Fail closed: if the identity check cannot answer, nobody is staff. The
+    // shell shows nothing but a sign-in card until a real tier comes back.
+    try { const w = await api("/api/whoami"); role = w.role || "none"; whoEmail = w.email || ""; }
+    catch (e) { role = "none"; }
+    if (role === "none") {
+      const nav = document.querySelector(".navbar"); if (nav) nav.style.display = "none";
+      document.querySelector(".body").innerHTML = `<div class="wrap" style="max-width:520px;padding:70px 20px;text-align:center">
+        <h1 style="font-size:21px">Sign in to continue</h1>
+        <p style="color:var(--ink-soft);margin:12px 0 22px">This is the staff side of 181residents.com. Your sign-in
+        did not carry through, so nothing is shown. Reload to try again, or sign out above and sign back in.</p>
+        <button class="btn" onclick="location.reload()">Reload</button></div>`;
+      $("#who").innerHTML = "Not signed in";
+      const gbar = $("#sysbar"); if (gbar) gbar.textContent = "Sign-in required · nothing loads without it";
+      return;
+    }
     document.body.classList.add("role-" + role);
-    const roleName = { owner: "owner", staff: "staff", desk: "front desk", none: "no access" }[role] || role;
+    const roleName = { owner: "owner", staff: "staff", desk: "front desk" }[role] || role;
     $("#who").innerHTML = `Signed in as ${esc(roleName)}<strong>${esc(whoEmail || "181 Fremont · Level 39")}</strong>`;
     const bar = $("#sysbar");
     if (status.mode === "local") bar.textContent = `Local preview · saving to this computer, publishing rebuilds the local calendar · signed in as ${role}`;
@@ -1937,6 +2133,7 @@
     loadResidents();
     loadMsgs();
     loadBookings();
+    loadWindow();
   }
 
   document.addEventListener("click", ev => {
@@ -2046,7 +2243,7 @@
       }
       return;
     }
-    const b = ev.target.closest("[data-edit],[data-archive],[data-new],[data-save],[data-period],[data-publish],[data-fmt],[data-dates],[data-editrow],[data-export]");
+    const b = ev.target.closest("[data-edit],[data-archive],[data-new],[data-edpublish],[data-edsavedraft],[data-eddiscard],[data-edarchive],[data-histload],[data-savewindow],[data-period],[data-publish],[data-fmt],[data-dates],[data-editrow],[data-export]");
     if (!b) return;
     if (b.dataset.export !== undefined) { exportCsv(); return; }
     if (b.dataset.dates) {
@@ -2069,7 +2266,12 @@
     if (b.dataset.edit) openEditor(b.dataset.edit);
     else if (b.dataset.archive) archiveGroup(b.dataset.archive);
     else if (b.dataset.new !== undefined) openEditor(null);
-    else if (b.dataset.save) save(b.dataset.save === "keep" ? null : b.dataset.save);
+    else if (b.dataset.edpublish !== undefined) edPublishClick();
+    else if (b.dataset.edsavedraft !== undefined) edSaveDraftClick();
+    else if (b.dataset.eddiscard !== undefined) discardWorkingCopy();
+    else if (b.dataset.edarchive !== undefined) edArchiveClick();
+    else if (b.dataset.histload !== undefined) loadVersion(b.dataset.histload);
+    else if (b.dataset.savewindow !== undefined) saveWindow(b);
     else if (b.dataset.period) { days = Number(b.dataset.period); loadAnalytics(); }
     else if (b.dataset.publish !== undefined) { b.disabled = true; api("/api/publish", { method: "POST" }).then(r => toast(r.note || "Publishing.")).catch(e => toast(e.message, "warn")).finally(() => b.disabled = false); }
   });

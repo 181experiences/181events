@@ -190,7 +190,7 @@
         <div class="ecell"><span class="pill ${cls(g.status)}">${esc(g.mixed ? "Mixed" : g.status)}</span></div>
         <div class="ecell"><span class="lbl">RSVPs</span>${rsvp}</div>
         <div class="ecell"><span class="lbl">Asset kit</span>${kits} of 6</div>
-        <div class="ecell eact">${g.series ? `<button class="mini ghost" data-dates="${esc(g.key)}">${g.rows.length} dates</button>` : ""}<button class="mini ghost" data-copylink="${esc(stem(h))}" title="Copies this date's page address, for emails and reminders">Link</button><button class="mini" data-edit="${esc(g.key)}">Edit</button>${g.status !== "Archived" ? `<button class="mini ghost" data-archive="${esc(g.key)}">Archive</button>` : ""}</div>
+        <div class="ecell eact">${g.series ? `<button class="mini ghost" data-dates="${esc(g.key)}">${g.rows.length} dates</button>` : ""}<button class="mini ghost" data-copylink="${esc(stem(h))}" title="Copies this date's page address, for emails and reminders">Link</button><button class="mini" data-edit="${esc(g.key)}">Edit</button>${g.status === "Unpublished" ? `<button class="mini ghost" data-archive="${esc(g.key)}" title="Filed away, kept for reporting">Archive</button>` : ""}</div>
       </div>
       <div class="edates" data-dates-for="${esc(g.key)}" style="display:none">${g.rows.map(r => `
         <div class="edrow"><span class="edwhen">${esc(fmt(r.Date))} &middot; ${esc(r.Start)}</span>
@@ -204,14 +204,68 @@
   }
 
   // ---------------------------------------------------------------- editor
+  // The form's field inputs, set from one place so the editor and the change
+  // history's "Load this version" fill them identically.
+  function applyFields(e) {
+    const set = (id, v) => { $(id).value = v == null ? "" : v; };
+    set("#f-title", e.Title); set("#f-date", e.Date); set("#f-start", e.Start); set("#f-end", e.End);
+    set("#f-loc", e.Location); set("#f-host", e.Host); set("#f-series", e.Series); set("#f-cap", e.Capacity);
+    set("#f-price", e.Price); set("#f-cutoff", e.Cutoff); set("#f-desc", e.Description); set("#f-slug", e.Slug || "");
+    $("#f-marquee").checked = e.Marquee === true || e.Marquee === "True";
+    $("#f-teaser").checked = e.Teaser === true || e.Teaser === "True";
+    $$("input[name=cat]").forEach((r, i) => r.checked = CATS[i] === e.Category);
+    $$("input[name=rt]").forEach((r, i) => r.checked = RSVPS[i] === (e.RSVP || "None"));
+    const counted = e.Counted === true || e.Counted === "True";
+    $("#co-0").checked = counted; $("#co-1").checked = !counted;
+    $("#f-stem").textContent = stem({ Date: e.Date, Slug: e.Slug, Title: e.Title });
+  }
+
+  // Buttons follow the row: Publish turns to Unpublish once an event is out,
+  // and to Publish changes when a working copy waits; Archive only wakes from
+  // Unpublished; Cancel & notify stands ready on any published event that
+  // takes RSVPs, sign-ups or not.
+  function refreshEdActions() {
+    const row = editing && editing.row;
+    const live = !!(row && row.Status === "Live");
+    const draft = !!(row && row.Draft);
+    $("#ed-pill").className = "pill " + cls(row ? row.Status : "Draft");
+    $("#ed-pill").textContent = (row ? row.Status || "Draft" : "Draft") + (draft ? " · draft pending" : "");
+    $("#ed-publish").textContent = live ? (draft ? "Publish changes" : "Unpublish") : "Publish";
+    $("#ed-discard").style.display = draft ? "" : "none";
+    $("#ed-archivebtn").disabled = !(row && row.Status === "Unpublished");
+    $("#ed-draftnote").style.display = draft ? "" : "none";
+    if (draft) $("#ed-draftnote").innerHTML =
+      "<strong>A saved draft is loaded below, and it is not on the resident site.</strong> " +
+      "Residents still see the published version. <strong>Publish changes</strong> applies what you see; " +
+      "<strong>Discard draft</strong> lets it go.";
+    $("#ed-actions-note").textContent = !row
+      ? "Publish puts it on the calendar; Save draft keeps it here, unpublished, until it is ready."
+      : live
+        ? (draft ? "" : "Edits to a published event save as a draft first, then go out with Publish changes.")
+        : row.Status === "Unpublished"
+          ? "Off the calendar with its RSVPs held. Publish puts it back; Archive files it away."
+          : "";
+    const rsvpOn = !!(row && row.RSVP && row.RSVP !== "None");
+    const edStemNow = row ? stem(row) : null;
+    const hasRsvpers = !!edStemNow && rsvps.some(x => x.event_key === edStemNow);
+    $("#ed-cancel").disabled = !(live && rsvpOn);
+    $("#ed-cancel-note").textContent = live && rsvpOn
+      ? (hasRsvpers
+          ? "Cancelling pulls this date from the calendar, holds its RSVPs, and opens a note to everyone signed up."
+          : "Cancelling pulls this date from the calendar. Nobody has signed up yet, so there is nobody to notify.")
+      : "";
+  }
+
   function openEditor(key, rowId) {
     const g = key ? groups().find(x => x.key === key) : null;
     const row = g ? (rowId ? g.rows.find(r => r.id === rowId) : g.head) : null;
     editing = { group: g, row };
-    const e = row || { Status: "Draft", Category: "Enrichment Experience", Location: "Level 39, Residents’ Club", Host: "Resident Experiences", RSVP: "Seat", Counted: true, Date: today() };
+    // A Live row with a working copy opens showing the working copy; the row
+    // itself, what residents see, stays untouched underneath.
+    const e = row ? (row.Draft ? { ...row, ...row.Draft } : row)
+      : { Status: "Draft", Category: "Enrichment Experience", Location: "Level 39, Residents’ Club", Host: "Resident Experiences", RSVP: "Seat", Counted: true, Date: today() };
     $("#ed-title").textContent = row ? "Edit event" : "New event";
-    $("#ed-pill").className = "pill " + cls(e.Status); $("#ed-pill").textContent = e.Status || "Draft";
-    $("#ed-sub").textContent = row ? `${e.Title} · ${fmtLong(e.Date)}` : "Fill in the essentials, save as a draft, and come back to it.";
+    $("#ed-sub").textContent = row ? `${e.Title} · ${fmtLong(e.Date)}` : "Fill in the essentials, save a draft, and come back to it.";
     // occurrence picker for a series
     const occ = $("#ed-occ");
     if (g && g.series) {
@@ -225,27 +279,43 @@
     // An existing series is edited through the occurrence picker above.
     $("#rp-builder").style.display = row ? "none" : "";
     if (!row) { rp = { mode: "none", days: new Set(), ord: "Last", wd: 0, end: "cal", times: 6, until: "" }; rpRefresh(); }
-    const set = (id, v) => { $(id).value = v == null ? "" : v; };
-    set("#f-title", e.Title); set("#f-date", e.Date); set("#f-start", e.Start); set("#f-end", e.End);
-    set("#f-loc", e.Location); set("#f-host", e.Host); set("#f-series", e.Series); set("#f-cap", e.Capacity);
-    set("#f-price", e.Price); set("#f-cutoff", e.Cutoff); set("#f-desc", e.Description); set("#f-slug", e.Slug || "");
-    $("#f-marquee").checked = e.Marquee === true || e.Marquee === "True";
-    $$("input[name=cat]").forEach((r, i) => r.checked = CATS[i] === e.Category);
-    $$("input[name=st]").forEach((r, i) => r.checked = STATUSES[i] === (e.Status || "Draft"));
-    $$("input[name=rt]").forEach((r, i) => r.checked = RSVPS[i] === (e.RSVP || "None"));
-    const counted = e.Counted === true || e.Counted === "True";
-    $("#co-0").checked = counted; $("#co-1").checked = !counted;
-    $("#f-stem").textContent = stem({ Date: e.Date, Slug: e.Slug, Title: e.Title });
-    const edStemNow = row ? stem(row) : null;
-    const hasRsvpers = !!edStemNow && rsvps.some(x => x.event_key === edStemNow);
-    $("#ed-cancel").disabled = !(row && row.Status === "Live" && hasRsvpers);
-    $("#ed-cancel-note").textContent = row && row.Status === "Live"
-      ? (hasRsvpers
-          ? "Cancelling pulls this date from the calendar, holds its RSVPs, and opens a note to everyone signed up."
-          : "Nobody has RSVP'd to this date yet; a quiet Unpublish from the status picks does the job.")
-      : "";
+    applyFields(e);
+    refreshEdActions();
+    loadHistory(row);
     renderEditorKit();
     go("editor");
+  }
+
+  // ------------------------------------------------------------ change history
+  let edHistory = [];
+  async function loadHistory(row) {
+    const sec = $("#ed-history-sec");
+    edHistory = [];
+    if (!row) { sec.style.display = "none"; return; }
+    try { edHistory = (await api("/api/history?event=" + encodeURIComponent(row.id))).history || []; }
+    catch (e) { edHistory = []; }
+    if (editing.row !== row) return;   // the editor moved on while we fetched
+    sec.style.display = edHistory.length ? "" : "none";
+    $("#ed-history").innerHTML = edHistory.map((h, i) => {
+      const when = new Date(h.at).toLocaleString([], { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" });
+      const fields = h.changes ? Object.keys(h.changes).filter(k => k !== "Status") : [];
+      const what = esc(h.action) + (fields.length && h.action !== "Created" ? " · " + fields.join(", ") : "");
+      return `<div class="edrow" style="display:flex;gap:14px;align-items:baseline;flex-wrap:wrap;padding:9px 0">`
+        + `<span style="white-space:nowrap;color:var(--ink)">${esc(when)}</span>`
+        + `<span style="color:var(--ink-soft)">${esc(h.who || "")}</span>`
+        + `<span class="sgrow" style="color:var(--ink-soft)">${what}</span>`
+        + (h.snapshot ? `<button class="mini ghost" data-histload="${i}">Load this version</button>` : "")
+        + `</div>`;
+    }).join("");
+  }
+
+  function loadVersion(i) {
+    const h = edHistory[Number(i)];
+    if (!h || !h.snapshot || !editing.row) return;
+    applyFields(h.snapshot);
+    const when = new Date(h.at).toLocaleString([], { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" });
+    toast(`Loaded the version from ${when}. Nothing changes until you publish it or save it as a draft.`);
+    window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
   function readForm() {
@@ -254,10 +324,11 @@
     const f = {
       Title: title, Date: $("#f-date").value, Start: $("#f-start").value.trim(), End: $("#f-end").value.trim(),
       Start24: to24($("#f-start").value), Location: $("#f-loc").value.trim(), Host: $("#f-host").value.trim() || "Resident Experiences",
-      Category: pick("cat", CATS), Status: pick("st", STATUSES), RSVP: pick("rt", RSVPS),
+      Category: pick("cat", CATS), RSVP: pick("rt", RSVPS),
       Capacity: $("#f-cap").value ? Number($("#f-cap").value) : null, Price: $("#f-price").value.trim(),
       Series: $("#f-series").value.trim(), Cutoff: $("#f-cutoff").value.trim(), Description: $("#f-desc").value.trim(),
-      Marquee: $("#f-marquee").checked, Counted: $("#co-0").checked, Moved: editing.row ? !!editing.row.Moved : false,
+      Marquee: $("#f-marquee").checked, Teaser: $("#f-teaser").checked,
+      Counted: $("#co-0").checked, Moved: editing.row ? !!editing.row.Moved : false,
       Slug: $("#f-slug").value.trim() || slugify(title),
     };
     return f;
@@ -267,16 +338,17 @@
     if (!f.Title) return "Give the event a title.";
     if (!f.Date) return "Pick a date.";
     if (!f.Start) return "Add a start time, like 5:30 PM.";
-    if (f.Status === "Live" && !f.Description) return "A Live event needs a description, since residents will read it.";
+    if (f.Status === "Live" && !f.Description && !f.Teaser)
+      return "A published event needs a description, since residents will read it. Tick Coming soon to publish it without one.";
     return null;
   }
 
   // Which field changes ripple across a series when "apply to every upcoming occurrence" is ticked.
-  const SERIES_FIELDS = ["Title", "Start", "End", "Start24", "Location", "Host", "Category", "RSVP", "Capacity", "Price", "Series", "Cutoff", "Description", "Counted", "Image", "Status"];
+  const SERIES_FIELDS = ["Title", "Start", "End", "Start24", "Location", "Host", "Category", "RSVP", "Capacity", "Price", "Series", "Cutoff", "Description", "Counted", "Image", "Status", "Teaser"];
 
-  async function save(overrideStatus) {
+  async function save(status) {
     const f = readForm();
-    if (overrideStatus) f.Status = overrideStatus;
+    f.Status = status;
     const err = validate(f); if (err) { toast(err, "warn"); return; }
     let told = false;
     const wasLive = editing.row && editing.row.Status === "Live";
@@ -327,7 +399,87 @@
       }
       go("events");
     } catch (e) { toast(e.message, "warn"); }
-    finally { btns.forEach(b => b.disabled = false); $("#ed-cancel").disabled = true; }
+    finally { btns.forEach(b => b.disabled = false); refreshEdActions(); }
+  }
+
+  // A published event's edits live in a working copy: residents keep seeing
+  // the published version until Publish changes applies it. With apply-to-all
+  // ticked, the copy rides to every upcoming Live date of the series.
+  async function saveWorkingCopy() {
+    const f = readForm();
+    if (!f.Title) { toast("Give the event a title.", "warn"); return; }
+    const applyAll = editing.group && editing.group.series && $("#f-scope").checked;
+    const targets = applyAll ? editing.group.upcoming.filter(r => r.Status === "Live") : [editing.row];
+    const btns = $$("#ed-actions button"); btns.forEach(b => b.disabled = true);
+    try {
+      for (const r of targets) {
+        const copy = r.id === editing.row.id ? f
+          : Object.fromEntries(SERIES_FIELDS.filter(k => k !== "Status").map(k => [k, f[k]]));
+        const upd = await api("/api/events/" + encodeURIComponent(r.id),
+          { method: "PATCH", body: JSON.stringify({ __draft: copy }) });
+        Object.assign(r, upd);
+      }
+      toast(targets.length > 1
+        ? `Draft saved on ${targets.length} dates. Residents still see the published version.`
+        : "Draft saved. Residents see the published version until you publish the changes.");
+    } catch (e) { toast(e.message, "warn"); }
+    finally { btns.forEach(b => b.disabled = false); refreshEdActions(); }
+  }
+
+  async function discardWorkingCopy() {
+    const row = editing && editing.row; if (!row || !row.Draft) return;
+    if (!confirm("Let the saved draft go? The editor returns to what residents see.")) return;
+    const applyAll = editing.group && editing.group.series && $("#f-scope").checked;
+    const targets = applyAll ? editing.group.upcoming.filter(r => r.Draft) : [row];
+    try {
+      for (const r of targets) {
+        const upd = await api("/api/events/" + encodeURIComponent(r.id),
+          { method: "PATCH", body: JSON.stringify({ __draft: null }) });
+        Object.assign(r, upd);
+      }
+      openEditor(editing.group ? editing.group.key : null, row.id);
+      toast("Draft discarded. This is what residents see.");
+    } catch (e) { toast(e.message, "warn"); }
+  }
+
+  // The three verb buttons. Publish is the only road onto the calendar,
+  // Unpublish the only quiet road off it, and Archive waits behind Unpublish
+  // on purpose, so nothing leaves the calendar and the records in one motion.
+  function edPublishClick() {
+    const row = editing && editing.row;
+    if (row && row.Status === "Live" && !row.Draft) { save("Unpublished"); return; }
+    save("Live");
+  }
+  function edSaveDraftClick() {
+    const row = editing && editing.row;
+    if (row && row.Status === "Live") { saveWorkingCopy(); return; }
+    save(row ? row.Status || "Draft" : "Draft");
+  }
+  function edArchiveClick() {
+    const row = editing && editing.row; if (!row || row.Status !== "Unpublished") return;
+    if (!confirm(`Archive "${row.Title}"? It is filed away and stays in reporting; publishing it again walks it back out.`)) return;
+    save("Archived");
+  }
+
+  // ------------------------------------------------------------ calendar window
+  async function loadWindow() {
+    try {
+      const w = await api("/api/settings");
+      $("#w-weeks").value = String(w.detail_weeks);
+      $("#w-months").value = String(w.horizon_months);
+    } catch (e) {}   // the desk tier has no events screen, and no business here
+  }
+  async function saveWindow(btn) {
+    btn.disabled = true;
+    try {
+      await api("/api/settings", { method: "PUT", body: JSON.stringify({
+        detail_weeks: Number($("#w-weeks").value), horizon_months: Number($("#w-months").value) }) });
+      if (status.publish) {
+        toast("Window saved. The calendar is rebuilding with it, live in a couple of minutes.");
+        api("/api/publish", { method: "POST" }).catch(() => {});
+      } else toast("Window saved. It takes effect at the next publish.");
+    } catch (e) { toast(e.message, "warn"); }
+    finally { btn.disabled = false; }
   }
 
   async function archiveGroup(key) {
@@ -1012,10 +1164,23 @@
   async function boot() {
     try { status = await api("/api/status"); } catch (e) { status = {}; }
     let whoEmail = "";
-    try { const w = await api("/api/whoami"); role = w.role || "staff"; whoEmail = w.email || ""; }
-    catch (e) { role = "staff"; }
+    // Fail closed: if the identity check cannot answer, nobody is staff. The
+    // shell shows nothing but a sign-in card until a real tier comes back.
+    try { const w = await api("/api/whoami"); role = w.role || "none"; whoEmail = w.email || ""; }
+    catch (e) { role = "none"; }
+    if (role === "none") {
+      const nav = document.querySelector(".navbar"); if (nav) nav.style.display = "none";
+      document.querySelector(".body").innerHTML = `<div class="wrap" style="max-width:520px;padding:70px 20px;text-align:center">
+        <h1 style="font-size:21px">Sign in to continue</h1>
+        <p style="color:var(--ink-soft);margin:12px 0 22px">This is the staff side of 181residents.com. Your sign-in
+        did not carry through, so nothing is shown. Reload to try again, or sign out above and sign back in.</p>
+        <button class="btn" onclick="location.reload()">Reload</button></div>`;
+      $("#who").innerHTML = "Not signed in";
+      const gbar = $("#sysbar"); if (gbar) gbar.textContent = "Sign-in required · nothing loads without it";
+      return;
+    }
     document.body.classList.add("role-" + role);
-    const roleName = { owner: "owner", staff: "staff", desk: "front desk", none: "no access" }[role] || role;
+    const roleName = { owner: "owner", staff: "staff", desk: "front desk" }[role] || role;
     $("#who").innerHTML = `Signed in as ${esc(roleName)}<strong>${esc(whoEmail || "181 Fremont · Level 39")}</strong>`;
     const bar = $("#sysbar");
     if (status.mode === "local") bar.textContent = `Local preview · saving to this computer, publishing rebuilds the local calendar · signed in as ${role}`;
@@ -1044,6 +1209,7 @@
     loadResidents();
     loadMsgs();
     loadBookings();
+    loadWindow();
   }
 
   document.addEventListener("click", ev => {
@@ -1153,7 +1319,7 @@
       }
       return;
     }
-    const b = ev.target.closest("[data-edit],[data-archive],[data-new],[data-save],[data-period],[data-publish],[data-fmt],[data-dates],[data-editrow],[data-export]");
+    const b = ev.target.closest("[data-edit],[data-archive],[data-new],[data-edpublish],[data-edsavedraft],[data-eddiscard],[data-edarchive],[data-histload],[data-savewindow],[data-period],[data-publish],[data-fmt],[data-dates],[data-editrow],[data-export]");
     if (!b) return;
     if (b.dataset.export !== undefined) { exportCsv(); return; }
     if (b.dataset.dates) {
@@ -1176,7 +1342,12 @@
     if (b.dataset.edit) openEditor(b.dataset.edit);
     else if (b.dataset.archive) archiveGroup(b.dataset.archive);
     else if (b.dataset.new !== undefined) openEditor(null);
-    else if (b.dataset.save) save(b.dataset.save === "keep" ? null : b.dataset.save);
+    else if (b.dataset.edpublish !== undefined) edPublishClick();
+    else if (b.dataset.edsavedraft !== undefined) edSaveDraftClick();
+    else if (b.dataset.eddiscard !== undefined) discardWorkingCopy();
+    else if (b.dataset.edarchive !== undefined) edArchiveClick();
+    else if (b.dataset.histload !== undefined) loadVersion(b.dataset.histload);
+    else if (b.dataset.savewindow !== undefined) saveWindow(b);
     else if (b.dataset.period) { days = Number(b.dataset.period); loadAnalytics(); }
     else if (b.dataset.publish !== undefined) { b.disabled = true; api("/api/publish", { method: "POST" }).then(r => toast(r.note || "Publishing.")).catch(e => toast(e.message, "warn")).finally(() => b.disabled = false); }
   });

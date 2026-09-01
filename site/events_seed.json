@@ -19,7 +19,8 @@
   "Counted": false,
   "Moved": false,
   "Image": "linear-gradient(160deg,#3b2a1c 0%,#7a5636 48%,#c9a377 100%)",
-  "Slug": "cafe-181"
+  "Slug": "cafe-181",
+  "Teaser": false
  },
  {
   "Status": "Live",
@@ -41,7 +42,8 @@
   "Counted": true,
   "Moved": false,
   "Image": "",
-  "Slug": "book-club-inaugural"
+  "Slug": "book-club-inaugural",
+  "Teaser": false
  },
  {
   "Status": "Live",
@@ -63,7 +65,8 @@
   "Counted": true,
   "Moved": false,
   "Image": "linear-gradient(160deg,#6d2c2f 0%,#a8524a 46%,#dba078 100%)",
-  "Slug": "wine-beer-happy-hour"
+  "Slug": "wine-beer-happy-hour",
+  "Teaser": false
  },
  {
   "Status": "Live",
@@ -85,7 +88,8 @@
   "Counted": false,
   "Moved": false,
   "Image": "linear-gradient(160deg,#3b2a1c 0%,#7a5636 48%,#c9a377 100%)",
-  "Slug": "cafe-181"
+  "Slug": "cafe-181",
+  "Teaser": false
  },
  {
   "Status": "Live",
@@ -107,7 +111,8 @@
   "Counted": true,
   "Moved": false,
   "Image": "linear-gradient(160deg,#7d3b1f 0%,#c8632f 45%,#e6a066 100%)",
-  "Slug": "happy-hour-bites"
+  "Slug": "happy-hour-bites",
+  "Teaser": false
  },
  {
   "Status": "Live",
@@ -129,7 +134,8 @@
   "Counted": true,
   "Moved": false,
   "Image": "linear-gradient(155deg,#8a6a34 0%,#c9a15c 48%,#efd9a8 100%)",
-  "Slug": "sunday-brunch"
+  "Slug": "sunday-brunch",
+  "Teaser": false
  },
  {
   "Status": "Live",
@@ -151,7 +157,8 @@
   "Counted": false,
   "Moved": false,
   "Image": "linear-gradient(160deg,#3b2a1c 0%,#7a5636 48%,#c9a377 100%)",
-  "Slug": "cafe-181"
+  "Slug": "cafe-181",
+  "Teaser": false
  },
  {
   "Status": "Live",
@@ -173,7 +180,8 @@
   "Counted": true,
   "Moved": false,
   "Image": "linear-gradient(160deg,#6d2c2f 0%,#a8524a 46%,#dba078 100%)",
-  "Slug": "wine-beer-happy-hour"
+  "Slug": "wine-beer-happy-hour",
+  "Teaser": false
  },
  {
   "Status": "Live",
@@ -195,7 +203,8 @@
   "Counted": true,
   "Moved": false,
   "Image": "linear-gradient(155deg,#2c3d2a 0%,#4e6b45 50%,#93b083 100%)",
-  "Slug": "moss-wall-workshop"
+  "Slug": "moss-wall-workshop",
+  "Teaser": false
  },
  {
   "Status": "Live",
@@ -217,7 +226,8 @@
   "Counted": false,
   "Moved": false,
   "Image": "linear-gradient(160deg,#3b2a1c 0%,#7a5636 48%,#c9a377 100%)",
-  "Slug": "cafe-181"
+  "Slug": "cafe-181",
+  "Teaser": false
  },
  {
   "Status": "Live",
@@ -239,7 +249,8 @@
   "Counted": true,
   "Moved": false,
   "Image": "linear-gradient(160deg,#7d3b1f 0%,#c8632f 45%,#e6a066 100%)",
-  "Slug": "happy-hour-bites"
+  "Slug": "happy-hour-bites",
+  "Teaser": false
  },
  {
   "Status": "Live",
@@ -261,7 +272,8 @@
   "Counted": false,
   "Moved": false,
   "Image": "linear-gradient(160deg,#3b2a1c 0%,#7a5636 48%,#c9a377 100%)",
-  "Slug": "cafe-181"
+  "Slug": "cafe-181",
+  "Teaser": false
  },
  {
   "Status": "Live",
@@ -283,7 +295,8 @@
   "Counted": true,
   "Moved": false,
   "Image": "linear-gradient(160deg,#6d2c2f 0%,#a8524a 46%,#dba078 100%)",
-  "Slug": "wine-beer-happy-hour"
+  "Slug": "wine-beer-happy-hour",
+  "Teaser": false
  },
  {
   "Status": "Live",
@@ -305,7 +318,8 @@
   "Counted": false,
   "Moved": false,
   "Image": "linear-gradient(160deg,#3b2a1c 0%,#7a5636 48%,#c9a377 100%)",
-  "Slug": "cafe-181"
+  "Slug": "cafe-181",
+  "Teaser": false
  },
  {
   "Status": "Live",
@@ -327,7 +341,8 @@
   "Counted": true,
   "Moved": false,
   "Image": "linear-gradient(160deg,#7d3b1f 0%,#c8632f 45%,#e6a066 100%)",
-  "Slug": "happy-hour-bites"
+  "Slug": "happy-hour-bites",
+  "Teaser": false
  },
  {
   "Status": "Live",
@@ -349,7 +364,8 @@
   "Counted": false,
   "Moved": false,
   "Image": "linear-gradient(160deg,#3b2a1c 0%,#7a5636 48%,#c9a377 100%)",
-  "Slug": "cafe-181"
+  "Slug": "cafe-181",
+  "Teaser": false
  },
  {
   "Status": "Live",
@@ -371,7 +387,8 @@
   "Counted": true,
   "Moved": false,
   "Image": "linear-gradient(160deg,#6d2c2f 0%,#a8524a 46%,#dba078 100%)",
-  "Slug": "wine-beer-happy-hour"
+  "Slug": "wine-beer-happy-hour",
+  "Teaser": false
  },
  {
   "Status": "Live",
@@ -393,7 +410,8 @@
   "Counted": true,
   "Moved": false,
   "Image": "",
-  "Slug": "natural-skincare-sugar-scrubs"
+  "Slug": "natural-skincare-sugar-scrubs",
+  "Teaser": false
  },
  {
   "Status": "Live",
@@ -415,7 +433,8 @@
   "Counted": false,
   "Moved": false,
   "Image": "linear-gradient(160deg,#3b2a1c 0%,#7a5636 48%,#c9a377 100%)",
-  "Slug": "cafe-181"
+  "Slug": "cafe-181",
+  "Teaser": false
  },
  {
   "Status": "Live",
@@ -437,7 +456,8 @@
   "Counted": true,
   "Moved": false,
   "Image": "linear-gradient(160deg,#7d3b1f 0%,#c8632f 45%,#e6a066 100%)",
-  "Slug": "happy-hour-bites"
+  "Slug": "happy-hour-bites",
+  "Teaser": false
  },
  {
   "Status": "Live",
@@ -459,7 +479,8 @@
   "Counted": false,
   "Moved": false,
   "Image": "linear-gradient(160deg,#3b2a1c 0%,#7a5636 48%,#c9a377 100%)",
-  "Slug": "cafe-181"
+  "Slug": "cafe-181",
+  "Teaser": false
  },
  {
   "Status": "Live",
@@ -481,7 +502,8 @@
   "Counted": true,
   "Moved": false,
   "Image": "linear-gradient(160deg,#6d2c2f 0%,#a8524a 46%,#dba078 100%)",
-  "Slug": "wine-beer-happy-hour"
+  "Slug": "wine-beer-happy-hour",
+  "Teaser": false
  },
  {
   "Status": "Live",
@@ -503,7 +525,8 @@
   "Counted": false,
   "Moved": false,
   "Image": "linear-gradient(160deg,#3b2a1c 0%,#7a5636 48%,#c9a377 100%)",
-  "Slug": "cafe-181"
+  "Slug": "cafe-181",
+  "Teaser": false
  },
  {
   "Status": "Live",
@@ -525,7 +548,8 @@
   "Counted": true,
   "Moved": false,
   "Image": "linear-gradient(160deg,#7d3b1f 0%,#c8632f 45%,#e6a066 100%)",
-  "Slug": "happy-hour-bites"
+  "Slug": "happy-hour-bites",
+  "Teaser": false
  },
  {
   "Status": "Live",
@@ -547,7 +571,8 @@
   "Counted": true,
   "Moved": false,
   "Image": "linear-gradient(145deg,#1d1512 0%,#6b2f22 42%,#c4713a 78%,#e8b06a 100%)",
-  "Slug": "a-night-in-mexico-city"
+  "Slug": "a-night-in-mexico-city",
+  "Teaser": false
  },
  {
   "Status": "Live",
@@ -569,7 +594,8 @@
   "Counted": true,
   "Moved": false,
   "Image": "linear-gradient(155deg,#8a6a34 0%,#c9a15c 48%,#efd9a8 100%)",
-  "Slug": "sunday-brunch"
+  "Slug": "sunday-brunch",
+  "Teaser": false
  },
  {
   "Status": "Live",
@@ -591,7 +617,8 @@
   "Counted": false,
   "Moved": false,
   "Image": "linear-gradient(160deg,#3b2a1c 0%,#7a5636 48%,#c9a377 100%)",
-  "Slug": "cafe-181"
+  "Slug": "cafe-181",
+  "Teaser": false
  },
  {
   "Status": "Live",
@@ -613,7 +640,8 @@
   "Counted": true,
   "Moved": false,
   "Image": "linear-gradient(160deg,#6d2c2f 0%,#a8524a 46%,#dba078 100%)",
-  "Slug": "wine-beer-happy-hour"
+  "Slug": "wine-beer-happy-hour",
+  "Teaser": false
  },
  {
   "Status": "Live",
@@ -635,7 +663,8 @@
   "Counted": true,
   "Moved": false,
   "Image": "",
-  "Slug": "book-club"
+  "Slug": "book-club",
+  "Teaser": false
  },
  {
   "Status": "Live",
@@ -657,7 +686,8 @@
   "Counted": false,
   "Moved": false,
   "Image": "linear-gradient(160deg,#3b2a1c 0%,#7a5636 48%,#c9a377 100%)",
-  "Slug": "cafe-181"
+  "Slug": "cafe-181",
+  "Teaser": false
  },
  {
   "Status": "Live",
@@ -679,7 +709,8 @@
   "Counted": true,
   "Moved": false,
   "Image": "linear-gradient(160deg,#7d3b1f 0%,#c8632f 45%,#e6a066 100%)",
-  "Slug": "happy-hour-bites"
+  "Slug": "happy-hour-bites",
+  "Teaser": false
  },
  {
   "Status": "Live",
@@ -701,7 +732,8 @@
   "Counted": false,
   "Moved": false,
   "Image": "linear-gradient(160deg,#3b2a1c 0%,#7a5636 48%,#c9a377 100%)",
-  "Slug": "cafe-181"
+  "Slug": "cafe-181",
+  "Teaser": false
  },
  {
   "Status": "Live",
@@ -723,7 +755,8 @@
   "Counted": true,
   "Moved": false,
   "Image": "linear-gradient(160deg,#6d2c2f 0%,#a8524a 46%,#dba078 100%)",
-  "Slug": "wine-beer-happy-hour"
+  "Slug": "wine-beer-happy-hour",
+  "Teaser": false
  },
  {
   "Status": "Live",
@@ -745,7 +778,8 @@
   "Counted": true,
   "Moved": false,
   "Image": "linear-gradient(150deg,#5a2f14 0%,#a8632a 44%,#e2a95c 74%,#b9c39a 100%)",
-  "Slug": "succulent-pumpkin-workshop"
+  "Slug": "succulent-pumpkin-workshop",
+  "Teaser": false
  },
  {
   "Status": "Live",
@@ -767,7 +801,8 @@
   "Counted": false,
   "Moved": false,
   "Image": "linear-gradient(160deg,#3b2a1c 0%,#7a5636 48%,#c9a377 100%)",
-  "Slug": "cafe-181"
+  "Slug": "cafe-181",
+  "Teaser": false
  },
  {
   "Status": "Live",
@@ -789,7 +824,8 @@
   "Counted": true,
   "Moved": false,
   "Image": "linear-gradient(160deg,#7d3b1f 0%,#c8632f 45%,#e6a066 100%)",
-  "Slug": "happy-hour-bites"
+  "Slug": "happy-hour-bites",
+  "Teaser": false
  },
  {
   "Status": "Live",
@@ -811,7 +847,8 @@
   "Counted": false,
   "Moved": false,
   "Image": "linear-gradient(160deg,#3b2a1c 0%,#7a5636 48%,#c9a377 100%)",
-  "Slug": "cafe-181"
+  "Slug": "cafe-181",
+  "Teaser": false
  },
  {
   "Status": "Live",
@@ -833,7 +870,8 @@
   "Counted": true,
   "Moved": false,
   "Image": "linear-gradient(160deg,#6d2c2f 0%,#a8524a 46%,#dba078 100%)",
-  "Slug": "wine-beer-happy-hour"
+  "Slug": "wine-beer-happy-hour",
+  "Teaser": false
  },
  {
   "Status": "Live",
@@ -855,7 +893,8 @@
   "Counted": false,
   "Moved": false,
   "Image": "linear-gradient(160deg,#3b2a1c 0%,#7a5636 48%,#c9a377 100%)",
-  "Slug": "cafe-181"
+  "Slug": "cafe-181",
+  "Teaser": false
  },
  {
   "Status": "Live",
@@ -877,7 +916,8 @@
   "Counted": true,
   "Moved": false,
   "Image": "linear-gradient(160deg,#7d3b1f 0%,#c8632f 45%,#e6a066 100%)",
-  "Slug": "happy-hour-bites"
+  "Slug": "happy-hour-bites",
+  "Teaser": false
  },
  {
   "Status": "Live",
@@ -899,7 +939,8 @@
   "Counted": false,
   "Moved": false,
   "Image": "linear-gradient(160deg,#3b2a1c 0%,#7a5636 48%,#c9a377 100%)",
-  "Slug": "cafe-181"
+  "Slug": "cafe-181",
+  "Teaser": false
  },
  {
   "Status": "Live",
@@ -921,7 +962,8 @@
   "Counted": true,
   "Moved": false,
   "Image": "linear-gradient(160deg,#6d2c2f 0%,#a8524a 46%,#dba078 100%)",
-  "Slug": "wine-beer-happy-hour"
+  "Slug": "wine-beer-happy-hour",
+  "Teaser": false
  },
  {
   "Status": "Live",
@@ -943,7 +985,8 @@
   "Counted": true,
   "Moved": true,
   "Image": "",
-  "Slug": "book-club"
+  "Slug": "book-club",
+  "Teaser": false
  },
  {
   "Status": "Live",
@@ -965,7 +1008,8 @@
   "Counted": false,
   "Moved": false,
   "Image": "linear-gradient(160deg,#3b2a1c 0%,#7a5636 48%,#c9a377 100%)",
-  "Slug": "cafe-181"
+  "Slug": "cafe-181",
+  "Teaser": false
  },
  {
   "Status": "Live",
@@ -987,7 +1031,8 @@
   "Counted": true,
   "Moved": false,
   "Image": "linear-gradient(160deg,#7d3b1f 0%,#c8632f 45%,#e6a066 100%)",
-  "Slug": "happy-hour-bites"
+  "Slug": "happy-hour-bites",
+  "Teaser": false
  },
  {
   "Status": "Live",
@@ -1009,7 +1054,8 @@
   "Counted": true,
   "Moved": false,
   "Image": "linear-gradient(155deg,#8a6a34 0%,#c9a15c 48%,#efd9a8 100%)",
-  "Slug": "sunday-brunch"
+  "Slug": "sunday-brunch",
+  "Teaser": false
  },
  {
   "Status": "Live",
@@ -1031,7 +1077,8 @@
   "Counted": false,
   "Moved": false,
   "Image": "linear-gradient(160deg,#3b2a1c 0%,#7a5636 48%,#c9a377 100%)",
-  "Slug": "cafe-181"
+  "Slug": "cafe-181",
+  "Teaser": false
  },
  {
   "Status": "Live",
@@ -1053,7 +1100,8 @@
   "Counted": true,
   "Moved": false,
   "Image": "linear-gradient(160deg,#6d2c2f 0%,#a8524a 46%,#dba078 100%)",
-  "Slug": "wine-beer-happy-hour"
+  "Slug": "wine-beer-happy-hour",
+  "Teaser": false
  },
  {
   "Status": "Live",
@@ -1075,7 +1123,8 @@
   "Counted": true,
   "Moved": false,
   "Image": "linear-gradient(150deg,#12101a 0%,#2f1c33 42%,#7a3f2c 76%,#d08a3f 100%)",
-  "Slug": "spooky-speakeasy"
+  "Slug": "spooky-speakeasy",
+  "Teaser": false
  },
  {
   "Status": "Live",
@@ -1097,7 +1146,8 @@
   "Counted": false,
   "Moved": false,
   "Image": "linear-gradient(160deg,#3b2a1c 0%,#7a5636 48%,#c9a377 100%)",
-  "Slug": "cafe-181"
+  "Slug": "cafe-181",
+  "Teaser": false
  },
  {
   "Status": "Live",
@@ -1119,7 +1169,8 @@
   "Counted": true,
   "Moved": false,
   "Image": "linear-gradient(160deg,#7d3b1f 0%,#c8632f 45%,#e6a066 100%)",
-  "Slug": "happy-hour-bites"
+  "Slug": "happy-hour-bites",
+  "Teaser": false
  },
  {
   "Status": "Live",
@@ -1141,7 +1192,8 @@
   "Counted": false,
   "Moved": false,
   "Image": "linear-gradient(160deg,#3b2a1c 0%,#7a5636 48%,#c9a377 100%)",
-  "Slug": "cafe-181"
+  "Slug": "cafe-181",
+  "Teaser": false
  },
  {
   "Status": "Live",
@@ -1163,7 +1215,8 @@
   "Counted": true,
   "Moved": false,
   "Image": "linear-gradient(160deg,#6d2c2f 0%,#a8524a 46%,#dba078 100%)",
-  "Slug": "wine-beer-happy-hour"
+  "Slug": "wine-beer-happy-hour",
+  "Teaser": false
  },
  {
   "Status": "Live",
@@ -1185,7 +1238,8 @@
   "Counted": false,
   "Moved": false,
   "Image": "linear-gradient(160deg,#3b2a1c 0%,#7a5636 48%,#c9a377 100%)",
-  "Slug": "cafe-181"
+  "Slug": "cafe-181",
+  "Teaser": false
  },
  {
   "Status": "Live",
@@ -1207,7 +1261,8 @@
   "Counted": true,
   "Moved": false,
   "Image": "linear-gradient(160deg,#7d3b1f 0%,#c8632f 45%,#e6a066 100%)",
-  "Slug": "happy-hour-bites"
+  "Slug": "happy-hour-bites",
+  "Teaser": false
  },
  {
   "Status": "Live",
@@ -1229,7 +1284,8 @@
   "Counted": false,
   "Moved": false,
   "Image": "linear-gradient(160deg,#3b2a1c 0%,#7a5636 48%,#c9a377 100%)",
-  "Slug": "cafe-181"
+  "Slug": "cafe-181",
+  "Teaser": false
  },
  {
   "Status": "Live",
@@ -1251,7 +1307,8 @@
   "Counted": true,
   "Moved": false,
   "Image": "linear-gradient(160deg,#6d2c2f 0%,#a8524a 46%,#dba078 100%)",
-  "Slug": "wine-beer-happy-hour"
+  "Slug": "wine-beer-happy-hour",
+  "Teaser": false
  },
  {
   "Status": "Live",
@@ -1273,7 +1330,8 @@
   "Counted": true,
   "Moved": false,
   "Image": "linear-gradient(150deg,#3a3f33 0%,#6b7358 48%,#c3c4a5 100%)",
-  "Slug": "kokedama"
+  "Slug": "kokedama",
+  "Teaser": false
  },
  {
   "Status": "Live",
@@ -1295,7 +1353,8 @@
   "Counted": false,
   "Moved": false,
   "Image": "linear-gradient(160deg,#3b2a1c 0%,#7a5636 48%,#c9a377 100%)",
-  "Slug": "cafe-181"
+  "Slug": "cafe-181",
+  "Teaser": false
  },
  {
   "Status": "Live",
@@ -1317,7 +1376,8 @@
   "Counted": true,
   "Moved": false,
   "Image": "linear-gradient(160deg,#7d3b1f 0%,#c8632f 45%,#e6a066 100%)",
-  "Slug": "happy-hour-bites"
+  "Slug": "happy-hour-bites",
+  "Teaser": false
  },
  {
   "Status": "Live",
@@ -1339,7 +1399,8 @@
   "Counted": false,
   "Moved": false,
   "Image": "linear-gradient(160deg,#3b2a1c 0%,#7a5636 48%,#c9a377 100%)",
-  "Slug": "cafe-181"
+  "Slug": "cafe-181",
+  "Teaser": false
  },
  {
   "Status": "Live",
@@ -1361,7 +1422,8 @@
   "Counted": true,
   "Moved": false,
   "Image": "linear-gradient(160deg,#6d2c2f 0%,#a8524a 46%,#dba078 100%)",
-  "Slug": "wine-beer-happy-hour"
+  "Slug": "wine-beer-happy-hour",
+  "Teaser": false
  },
  {
   "Status": "Live",
@@ -1383,7 +1445,8 @@
   "Counted": true,
   "Moved": true,
   "Image": "",
-  "Slug": "book-club"
+  "Slug": "book-club",
+  "Teaser": false
  },
  {
   "Status": "Live",
@@ -1405,7 +1468,8 @@
   "Counted": true,
   "Moved": false,
   "Image": "linear-gradient(155deg,#191d2b 0%,#39415e 46%,#7b85a8 74%,#cfd4e2 100%)",
-  "Slug": "a-moment-of-zen"
+  "Slug": "a-moment-of-zen",
+  "Teaser": false
  },
  {
   "Status": "Live",
@@ -1427,7 +1491,8 @@
   "Counted": false,
   "Moved": false,
   "Image": "linear-gradient(160deg,#3b2a1c 0%,#7a5636 48%,#c9a377 100%)",
-  "Slug": "cafe-181"
+  "Slug": "cafe-181",
+  "Teaser": false
  },
  {
   "Status": "Live",
@@ -1449,7 +1514,8 @@
   "Counted": true,
   "Moved": false,
   "Image": "linear-gradient(160deg,#7d3b1f 0%,#c8632f 45%,#e6a066 100%)",
-  "Slug": "happy-hour-bites"
+  "Slug": "happy-hour-bites",
+  "Teaser": false
  },
  {
   "Status": "Live",
@@ -1471,7 +1537,8 @@
   "Counted": true,
   "Moved": true,
   "Image": "linear-gradient(155deg,#8a6a34 0%,#c9a15c 48%,#efd9a8 100%)",
-  "Slug": "sunday-brunch"
+  "Slug": "sunday-brunch",
+  "Teaser": false
  },
  {
   "Status": "Live",
@@ -1493,7 +1560,8 @@
   "Counted": false,
   "Moved": false,
   "Image": "linear-gradient(160deg,#3b2a1c 0%,#7a5636 48%,#c9a377 100%)",
-  "Slug": "cafe-181"
+  "Slug": "cafe-181",
+  "Teaser": false
  },
  {
   "Status": "Live",
@@ -1515,7 +1583,8 @@
   "Counted": true,
   "Moved": false,
   "Image": "linear-gradient(160deg,#6d2c2f 0%,#a8524a 46%,#dba078 100%)",
-  "Slug": "wine-beer-happy-hour"
+  "Slug": "wine-beer-happy-hour",
+  "Teaser": false
  },
  {
   "Status": "Live",
@@ -1537,7 +1606,8 @@
   "Counted": false,
   "Moved": false,
   "Image": "linear-gradient(160deg,#3b2a1c 0%,#7a5636 48%,#c9a377 100%)",
-  "Slug": "cafe-181"
+  "Slug": "cafe-181",
+  "Teaser": false
  },
  {
   "Status": "Live",
@@ -1559,7 +1629,8 @@
   "Counted": true,
   "Moved": false,
   "Image": "linear-gradient(160deg,#6d2c2f 0%,#a8524a 46%,#dba078 100%)",
-  "Slug": "wine-beer-happy-hour"
+  "Slug": "wine-beer-happy-hour",
+  "Teaser": false
  },
  {
   "Status": "Live",
@@ -1581,7 +1652,8 @@
   "Counted": false,
   "Moved": false,
   "Image": "linear-gradient(160deg,#3b2a1c 0%,#7a5636 48%,#c9a377 100%)",
-  "Slug": "cafe-181"
+  "Slug": "cafe-181",
+  "Teaser": false
  },
  {
   "Status": "Live",
@@ -1603,7 +1675,8 @@
   "Counted": true,
   "Moved": false,
   "Image": "linear-gradient(160deg,#7d3b1f 0%,#c8632f 45%,#e6a066 100%)",
-  "Slug": "happy-hour-bites"
+  "Slug": "happy-hour-bites",
+  "Teaser": false
  },
  {
   "Status": "Live",
@@ -1625,7 +1698,8 @@
   "Counted": false,
   "Moved": false,
   "Image": "linear-gradient(160deg,#3b2a1c 0%,#7a5636 48%,#c9a377 100%)",
-  "Slug": "cafe-181"
+  "Slug": "cafe-181",
+  "Teaser": false
  },
  {
   "Status": "Live",
@@ -1647,7 +1721,8 @@
   "Counted": true,
   "Moved": false,
   "Image": "linear-gradient(160deg,#6d2c2f 0%,#a8524a 46%,#dba078 100%)",
-  "Slug": "wine-beer-happy-hour"
+  "Slug": "wine-beer-happy-hour",
+  "Teaser": false
  },
  {
   "Status": "Live",
@@ -1669,7 +1744,8 @@
   "Counted": true,
   "Moved": false,
   "Image": "linear-gradient(150deg,#1e2a1c 0%,#425a34 44%,#9db877 74%,#e6d9a8 100%)",
-  "Slug": "healthy-holiday-appetizers"
+  "Slug": "healthy-holiday-appetizers",
+  "Teaser": false
  },
  {
   "Status": "Live",
@@ -1691,7 +1767,8 @@
   "Counted": false,
   "Moved": false,
   "Image": "linear-gradient(160deg,#3b2a1c 0%,#7a5636 48%,#c9a377 100%)",
-  "Slug": "cafe-181"
+  "Slug": "cafe-181",
+  "Teaser": false
  },
  {
   "Status": "Live",
@@ -1713,7 +1790,8 @@
   "Counted": true,
   "Moved": false,
   "Image": "linear-gradient(160deg,#7d3b1f 0%,#c8632f 45%,#e6a066 100%)",
-  "Slug": "happy-hour-bites"
+  "Slug": "happy-hour-bites",
+  "Teaser": false
  },
  {
   "Status": "Live",
@@ -1735,7 +1813,8 @@
   "Counted": false,
   "Moved": false,
   "Image": "linear-gradient(160deg,#3b2a1c 0%,#7a5636 48%,#c9a377 100%)",
-  "Slug": "cafe-181"
+  "Slug": "cafe-181",
+  "Teaser": false
  },
  {
   "Status": "Live",
@@ -1757,7 +1836,8 @@
   "Counted": true,
   "Moved": false,
   "Image": "linear-gradient(160deg,#6d2c2f 0%,#a8524a 46%,#dba078 100%)",
-  "Slug": "wine-beer-happy-hour"
+  "Slug": "wine-beer-happy-hour",
+  "Teaser": false
  },
  {
   "Status": "Live",
@@ -1779,7 +1859,8 @@
   "Counted": true,
   "Moved": true,
   "Image": "",
-  "Slug": "book-club"
+  "Slug": "book-club",
+  "Teaser": false
  },
  {
   "Status": "Live",
@@ -1801,7 +1882,8 @@
   "Counted": false,
   "Moved": false,
   "Image": "linear-gradient(160deg,#3b2a1c 0%,#7a5636 48%,#c9a377 100%)",
-  "Slug": "cafe-181"
+  "Slug": "cafe-181",
+  "Teaser": false
  },
  {
   "Status": "Live",
@@ -1823,7 +1905,8 @@
   "Counted": true,
   "Moved": false,
   "Image": "linear-gradient(160deg,#7d3b1f 0%,#c8632f 45%,#e6a066 100%)",
-  "Slug": "happy-hour-bites"
+  "Slug": "happy-hour-bites",
+  "Teaser": false
  },
  {
   "Status": "Live",
@@ -1845,7 +1928,8 @@
   "Counted": true,
   "Moved": false,
   "Image": "linear-gradient(150deg,#0e0b0e 0%,#3a0f16 38%,#7d1f22 66%,#d8a54e 100%)",
-  "Slug": "lights-camera-gala"
+  "Slug": "lights-camera-gala",
+  "Teaser": false
  },
  {
   "Status": "Live",
@@ -1867,6 +1951,7 @@
   "Counted": true,
   "Moved": true,
   "Image": "linear-gradient(155deg,#8a6a34 0%,#c9a15c 48%,#efd9a8 100%)",
-  "Slug": "sunday-brunch"
+  "Slug": "sunday-brunch",
+  "Teaser": false
  }
 ]

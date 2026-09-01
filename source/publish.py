@@ -50,5 +50,21 @@ if not rows:
 
 json.dump(rows, open(live, "w", encoding="utf-8"), indent=1, ensure_ascii=False)
 print(f"{len(rows)} live events pulled from the database")
+
+# The calendar window dials travel with the events. If the settings table is
+# missing or unreadable the last settings_live.json (or the build's defaults)
+# stands, so a hiccup here never blocks a build.
+try:
+    req = urllib.request.Request(url, method="POST",
+        data=json.dumps({"sql": "SELECT key, value FROM settings WHERE key IN ('detail_weeks','horizon_months')"}).encode(),
+        headers={"Authorization": f"Bearer {token}", "content-type": "application/json"})
+    with urllib.request.urlopen(req) as r:
+        srows = json.load(r)["result"][0]["results"]
+    win = {s["key"]: int(s["value"]) for s in srows}
+    if win:
+        json.dump(win, open(os.path.join(HERE, "settings_live.json"), "w", encoding="utf-8"))
+        print(f"calendar window: {win}")
+except Exception as ex:
+    print(f"calendar window settings not read ({ex}); building with what stands")
 subprocess.run([sys.executable, os.path.join(HERE, "build_site.py")], check=True)
 print("Built. On Cloudflare this deploys automatically; locally, the site/ folder is current.")

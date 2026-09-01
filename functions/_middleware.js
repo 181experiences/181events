@@ -5,6 +5,14 @@
 export async function onRequest(context) {
   const url = new URL(context.request.url);
   const p = url.pathname.toLowerCase().replace(/\/+$/, "");
+  // One canonical host. www serves the same project but sits outside the Access
+  // application's cover, so an admin address typed there would show the shell
+  // with every API refusing it: the hood open, the engine dark. Fold www onto
+  // the apex for every path, and there is one address, one cookie, one locked
+  // door.
+  if (url.hostname === "www.181residents.com") {
+    return Response.redirect("https://181residents.com" + url.pathname + url.search, 301);
+  }
   // The project also answers on *.pages.dev addresses, which the "181 admin"
   // Access application does not cover. When the project's own preview Access
   // policy is switched on, gated requests arrive carrying the Access login

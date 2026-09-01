@@ -1,4 +1,5 @@
-import { json, noDb, fromRow, toCols, CREATE_SQL, adminRole, forbidden } from "../../_lib.js";
+import { json, noDb, fromRow, toCols, ensureEventTables, adminRole, forbidden,
+         fieldDiff, logHistory } from "../../_lib.js";
 
 // The desk tier (front desk) manages people and codes only; events stay with
 // Leo, Scott, Leigh Anne, and Carley-Ann.
@@ -13,19 +14,20 @@ async function noEvents(request, env) {
 export async function onRequestGet({ request, env }) {
   const err = noDb(env); if (err) return err;
   if (!(await adminRole(request, env))) return forbidden();
-  await env.DB.prepare(CREATE_SQL).run();
+  await ensureEventTables(env);
   const { results } = await env.DB.prepare("SELECT * FROM events ORDER BY date, start24").all();
   return json({ events: results.map(fromRow) });
 }
 
-// POST /api/events {fields} -> a new row.
+// POST /api/events {fields} -> a new row, remembered in the change history.
 export async function onRequestPost({ request, env }) {
   const err = noDb(env); if (err) return err;
   if (await noEvents(request, env)) return forbidden();
   const { cols, vals } = toCols(await request.json());
   if (!cols.length) return json({ error: "Nothing to save" }, 400);
-  await env.DB.prepare(CREATE_SQL).run();
+  await ensureEventTables(env);
   const sql = `INSERT INTO events (${cols.join(",")}) VALUES (${cols.map(() => "?").join(",")}) RETURNING *`;
   const row = await env.DB.prepare(sql).bind(...vals).first();
+  await logHistory(env, request, row.id, "Created", fieldDiff(null, row), row);
   return json(fromRow(row), 201);
 }

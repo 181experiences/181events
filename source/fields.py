@@ -5,7 +5,7 @@ import html
 
 FIELDS = ["Status", "Date", "Title", "Category", "Start", "End", "Start24", "Location",
           "Host", "RSVP", "Capacity", "Price", "Series", "Description", "Cutoff", "Marquee",
-          "Counted", "Moved", "Image", "Slug"]
+          "Counted", "Moved", "Image", "Slug", "Teaser"]
 
 # SQL column per field in the D1 events table ("End" would collide with the SQL keyword).
 COLS = {f: f.lower() for f in FIELDS}
@@ -40,7 +40,7 @@ def to_record(e):
         "Capacity": e["cap"], "Price": e["price"] or "", "Series": e["series"] or "",
         "Description": "\n\n".join(plain(p) for p in e["desc"]), "Cutoff": e["cutoff"] or "",
         "Marquee": bool(e["marquee"]), "Counted": bool(e["counted"]), "Moved": bool(e["moved"]),
-        "Image": e["img"] or "", "Slug": e["slug"],
+        "Image": e["img"] or "", "Slug": e["slug"], "Teaser": bool(e.get("teaser")),
     }
 
 def from_record(f, month_keys):
@@ -60,5 +60,5 @@ def from_record(f, month_keys):
         series=f.get("Series") or None, desc=desc, cutoff=f.get("Cutoff") or None,
         marquee=bool(f.get("Marquee")), counted=bool(f.get("Counted", True)),
         moved=bool(f.get("Moved")), img=f.get("Image") or None, sub=None,
-        status=f.get("Status") or "Draft", rec=f.get("_id"),
+        status=f.get("Status") or "Draft", rec=f.get("_id"), teaser=bool(f.get("Teaser")),
     )

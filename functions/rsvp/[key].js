@@ -7,7 +7,8 @@
 // household never double-counts itself. Signed out, it offers the sign-in form
 // inline and returns here afterwards. Plain forms throughout; no JavaScript needed.
 
-import { esc, ensureResidentTables, todayPacific } from "../_lib.js";
+import { esc, ensureResidentTables, ensureEventTables, todayPacific,
+         getWindow, detailEnd } from "../_lib.js";
 import {
   currentResident, liveEvent, seatsTaken, myRsvp, unitMates, othersWaiting, confirmedHeads,
   template, fill, cut, inner, page, seeOther, notReady, slideSession,
@@ -157,6 +158,14 @@ export async function onRequestGet(context) {
       "This event has already happened. The calendar has what&rsquo;s coming next.",
       "/", "Back to the calendar");
   }
+  // The calendar window, honored here too, so a shared or guessed address can
+  // never open details, RSVPs, or calendar files ahead of their time.
+  await ensureEventTables(env);
+  if (ev.teaser || ev.date > detailEnd(await getWindow(env))) {
+    return donePage(context, me, esc(ev.title),
+      `${whenOf(ev)}<br><br>This one is still coming together. The full details arrive right here, and RSVP opens with them.`,
+      "/", "Back to the calendar");
+  }
   const res = await rsvpPage(context, ev, key, me);
   return me ? slideSession(res, context.env, me) : res;
 }
@@ -171,6 +180,8 @@ export async function onRequestPost(context) {
   if (!ev || !TYPE[ev.rsvp]) return seeOther("/");
   if (!me) return seeOther(`/rsvp/${key}`);
   if (ev.date < todayPacific()) return seeOther(`/rsvp/${key}`);
+  await ensureEventTables(env);
+  if (ev.teaser || ev.date > detailEnd(await getWindow(env))) return seeOther(`/rsvp/${key}`);
 
   const type = TYPE[ev.rsvp];
   const form = await request.formData();
