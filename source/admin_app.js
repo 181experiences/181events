@@ -841,18 +841,30 @@
         <button class="mini" data-rotate="${p.id}" title="A fresh code; the old one stops working everywhere">Rotate</button>
         <button class="mini ghost" data-resedit="${p.id}" title="Name, email, unit, tenant, end date, disable, delete">Edit</button>
       </span></div>`;
-    const card = (head, rows, cls) => `<div class="ucard"><div class="uhead${cls ? " " + cls : ""}">${head}</div>${rows.map(row).join("")}</div>`;
+    // Unit cards fold. A search narrows to the households that match and opens
+    // them; with nothing typed, cards keep whatever open state they were left
+    // in, role accounts leading and open by default.
+    const q = resFilter.trim().toLowerCase();
+    const matches = p => !q || `${p.name} ${p.email} ${p.unit} ${p.label}`.toLowerCase().includes(q);
+    const card = (head, rows, cls, key) => {
+      if (q && !rows.some(matches)) return "";
+      const open = q || openUnits.has(key);
+      return `<div class="ucard${open ? " open" : ""}">
+        <div class="uhead${cls ? " " + cls : ""}" data-uchev="${esc(key)}"><span class="chev">&#8250;</span>${head}<span class="ucount">${rows.length}</span></div>
+        <div class="ubody">${rows.map(row).join("")}</div></div>`;
+    };
 
     // Role accounts always lead, in their own dress, so staff never reads as a unit.
     let html = "";
-    if (roles.length) html += card("Role accounts", roles, "role");
+    if (roles.length) html += card("Role accounts", roles, "role", "__roles");
     html += units.map(u => {
       const rows = byUnit.get(u);
       const activeCodes = rows.filter(p => p.status === "Active" && !p.expired).length;
       const flag = activeCodes > 4 ? ` <span class="flagmany" title="More than four working codes on one unit is worth a look">${activeCodes} codes</span>` : "";
-      return card(`Unit ${esc(u)}${flag}`, rows);
+      return card(`Unit ${esc(u)}${flag}`, rows, "", u);
     }).join("");
     if (!people.length && !roles.length) html = '<div class="nodata" style="padding:20px">Nobody yet. Add people above, or paste the whole building at once.</div>';
+    else if (q && !html) html = `<div class="nodata" style="padding:20px">Nobody matches &ldquo;${esc(resFilter.trim())}&rdquo;.</div>`;
     box.innerHTML = html;
   }
 
@@ -893,6 +905,22 @@
       toast(`Added ${d.residents.length} ${d.residents.length === 1 ? "person" : "people"}. Codes are in the list.`);
     } catch (e) { toast(e.message, "warn"); }
   }
+
+  // Folding and finding. openUnits remembers which cards are open across
+  // re-renders; the find box overrides it while a search is typed.
+  let openUnits = new Set(["__roles"]);
+  let resFilter = "";
+  document.addEventListener("click", ev => {
+    const h = ev.target.closest("[data-uchev]");
+    if (!h || ev.target.closest("button,a,.mini")) return;
+    const cardEl = h.closest(".ucard");
+    cardEl.classList.toggle("open");
+    if (cardEl.classList.contains("open")) openUnits.add(h.dataset.uchev);
+    else openUnits.delete(h.dataset.uchev);
+  });
+  document.addEventListener("input", ev => {
+    if (ev.target.id === "r-find") { resFilter = ev.target.value; renderResidents(); }
+  });
 
   // ------------------------------------------------------- resident edit mode
   // The add-person card doubles as the editor: Edit on a row fills it, the

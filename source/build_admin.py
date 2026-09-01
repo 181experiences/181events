@@ -280,7 +280,15 @@ HTML = f'''<!DOCTYPE html>
   .ucard{{background:var(--paper-2);border:1px solid var(--line);border-radius:var(--radius);
     margin-bottom:14px;overflow:hidden}}
   .uhead{{display:flex;align-items:center;gap:10px;font-family:var(--fd);font-weight:600;font-size:14px;
-    color:var(--ink);padding:10px 16px;background:var(--paper);border-bottom:1px solid var(--line);letter-spacing:.04em}}
+    color:var(--ink);padding:10px 16px;background:var(--paper);border-bottom:1px solid var(--line);letter-spacing:.04em;
+    cursor:pointer;user-select:none}}
+  .uhead .chev{{color:var(--stone);font-size:18px;line-height:1;transition:transform .15s;flex:0 0 auto}}
+  .ucard.open .uhead .chev{{transform:rotate(90deg)}}
+  .uhead .ucount{{margin-left:auto;font-family:var(--fb);font-weight:400;font-size:12px;color:var(--stone);letter-spacing:0}}
+  .uhead.role .chev,.uhead.role .ucount{{color:#b7b0a5}}
+  .ucard .ubody{{display:none}}
+  .ucard.open .ubody{{display:block}}
+  .ucard:not(.open) .uhead{{border-bottom:none}}
   /* Staff, not a household: the role card wears ink so it never reads as a unit. */
   .uhead.role{{background:var(--ink);color:var(--paper);border-bottom-color:var(--ink);
     font-size:12px;letter-spacing:.14em;text-transform:uppercase}}
@@ -677,6 +685,9 @@ HTML = f'''<!DOCTYPE html>
       <textarea class="inp" id="r-bulk" rows="3" placeholder="One person per line: unit, name, email, owner or tenant&#10;12A, Margaret, margaret@example.com, owner&#10;7C, Elena, , tenant"></textarea>
       <div style="margin-top:10px"><button class="mini" data-addbulk>Add Everyone Listed</button></div>
     </div>
+  </div>
+  <div style="margin:0 0 14px;max-width:360px">
+    <input class="inp" id="r-find" placeholder="Find a person, unit, or email" autocapitalize="none" autocomplete="off">
   </div>
   <div id="reslist"></div>
 </div></section>
