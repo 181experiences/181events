@@ -227,6 +227,35 @@ def state_line(r):
         return "You have 1 seat held." if r["count"] == 1 else f"You have {r['count']} seats held."
     return "You&rsquo;re confirmed." if r["count"] == 1 else f"You&rsquo;re confirmed, party of {r['count']}."
 
+# "RSVP closes" enforcement, mirroring functions/rsvp/[key].js exactly: a date
+# (or legacy "Monday, Aug 31" text), closed from the morning after, after which
+# fresh RSVPs become waitlist requests and held parties may shrink but not grow.
+MON_NUM = {"jan": 1, "feb": 2, "mar": 3, "apr": 4, "may": 5, "jun": 6, "june": 6,
+           "jul": 7, "july": 7, "aug": 8, "sep": 9, "sept": 9, "oct": 10, "nov": 11, "dec": 12}
+MON_PRETTY = [None, "Jan", "Feb", "Mar", "Apr", "May", "June", "July", "Aug", "Sept", "Oct", "Nov", "Dec"]
+
+def cutoff_iso(e):
+    c = (e.get("Cutoff") or "").strip()
+    if not c: return None
+    if re.match(r"^\d{4}-\d{2}-\d{2}$", c): return c
+    m = re.search(r"([A-Za-z]{3,9})\.?\s+(\d{1,2})(?:st|nd|rd|th)?$", c)
+    if not m: return None
+    mon = MON_NUM.get(m.group(1).lower()[:4]) or MON_NUM.get(m.group(1).lower()[:3])
+    if not mon: return None
+    y = int(e["Date"][:4])
+    iso = f"{y}-{mon:02d}-{int(m.group(2)):02d}"
+    return f"{y - 1}-{mon:02d}-{int(m.group(2)):02d}" if iso > e["Date"] else iso
+
+def rsvp_closed(e):
+    c = cutoff_iso(e)
+    return bool(c and today() > c)
+
+def cutoff_pretty(e):
+    c = cutoff_iso(e)
+    if not c: return e.get("Cutoff") or ""
+    d = datetime.date.fromisoformat(c)
+    return f"{DOW[(d.weekday() + 1) % 7]}, {MON_PRETTY[d.month]} {d.day}"
+
 def rsvp_page(e, key, me):
     rsvp_type = TYPE_OF.get(e["RSVP"])   # None for drop-in events: facts, no forms
     tpl = template("rsvp")
@@ -244,7 +273,9 @@ def rsvp_page(e, key, me):
         seats_text = (f"{cap} at the table &middot; {esc(e['Price'])} per person" if e.get("Price")
                       else f"{cap} places")
     body = cut(body, "SEATS", fill(inner(tpl, "SEATS"), dict(SEATS=seats_text)) if seats_text else None)
-    body = cut(body, "CUTOFF", fill(inner(tpl, "CUTOFF"), dict(CUTOFF=esc(e["Cutoff"]))) if e.get("Cutoff") else None)
+    closed = rsvp_closed(e)
+    body = cut(body, "CUTOFF", fill(inner(tpl, "CUTOFF"),
+        dict(CUTOFF=esc(cutoff_pretty(e)) + (" &middot; now closed" if closed else ""))) if e.get("Cutoff") else None)
     if not rsvp_type:
         body = cut(cut(cut(cut(body, "ALSO", None), "SIGNIN", None), "EXISTING", None), "FORM", None)
         body = cut(body, "DROPIN", inner(tpl, "DROPIN"))
@@ -270,11 +301,15 @@ def rsvp_page(e, key, me):
         return shell_page(e["Title"], body, me)
 
     section = inner(tpl, "FORM")
-    for name, keep in [("STANDARD", rsvp_type == "standard"), ("GUEST", rsvp_type == "guest"),
-                       ("PAID", rsvp_type == "paid"), ("FULLNOTE", full and rsvp_type != "guest")]:
+    for name, keep in [("STANDARD", rsvp_type == "standard" and not closed),
+                       ("GUEST", rsvp_type == "guest" and not closed),
+                       ("PAID", rsvp_type == "paid" and not closed),
+                       ("FULLNOTE", full and not closed and rsvp_type != "guest")]:
         section = cut(section, name, inner(section, name) if keep else None)
+    section = cut(section, "CLOSEDNOTE",
+                  fill(inner(section, "CLOSEDNOTE"), dict(CLOSEDON=esc(cutoff_pretty(e)))) if closed else None)
     section = cut(section, "CHIP", chips_html(section, rsvp_type, 1))
-    if full and rsvp_type != "guest": btn = "Join the Waitlist"
+    if closed or (full and rsvp_type != "guest"): btn = "Join the Waitlist"
     elif rsvp_type == "guest": btn = "Register Guests"
     elif rsvp_type == "paid": btn = (f"{esc(e['Price'])} &middot; " if e.get("Price") else "") + "Request Seats"
     else: btn = "Confirm RSVP"
@@ -856,9 +891,18 @@ class H(SimpleHTTPRequestHandler):
             cap = int(e["Capacity"]) if e.get("Capacity") else None
             # Mirrors the Cloudflare rules exactly: a confirmed party never
             # forfeits seats by editing, growing must fit or nothing changes,
-            # and the queue is honored while anyone waits.
+            # the queue is honored while anyone waits, and after the close date
+            # fresh RSVPs become waitlist requests for staff to answer.
             held = mine if mine and mine["status"] == "Confirmed" else None
+            closed = rsvp_closed(e)
+            if closed and held and count > held["count"]:
+                n = held["count"]
+                return self._html(done_page(me, "RSVPs have closed",
+                    f"Your {'seat stands' if n == 1 else str(n) + ' seats stand'} exactly as they were. RSVPs closed {cutoff_pretty(e)}, so a larger party takes a word to Resident Experiences: send us a Message or ask the front desk, and we&rsquo;ll try.",
+                    "/my", "My RSVPs"))
             status = "Confirmed"
+            if closed and not held:
+                status = "Waitlist"
             if cap and rsvp_type != "guest":
                 if held and count <= held["count"]:
                     status = "Confirmed"
@@ -890,6 +934,10 @@ class H(SimpleHTTPRequestHandler):
                     row["status"] = status = "Waitlist"
             save_store("rsvps", rsvps)
             if status == "Waitlist":
+                if closed:
+                    return self._html(done_page(me, "Your request is in",
+                        f"RSVPs closed {cutoff_pretty(e)}, so this went to Resident Experiences as a request rather than a booking. We&rsquo;ll reach out with a yes or a no.",
+                        "/my", "My RSVPs"))
                 return self._html(done_page(me, "You&rsquo;re on the waitlist",
                     "Every seat is spoken for at the moment. You hold a place in the order requests arrived, and Resident Experiences will reach out if one opens.",
                     "/my", "My RSVPs"))

@@ -205,13 +205,30 @@
   }
 
   // ---------------------------------------------------------------- editor
+  // "RSVP closes" is a date input now; rows from before carry text like
+  // "Monday, Aug 31", which converts on open so nothing is lost or retyped.
+  const CUT_MON = { jan: 1, feb: 2, mar: 3, apr: 4, may: 5, jun: 6, june: 6,
+                    jul: 7, july: 7, aug: 8, sep: 9, sept: 9, oct: 10, nov: 11, dec: 12 };
+  function cutoffIso(cutoff, eventDate) {
+    const c = String(cutoff || "").trim();
+    if (!c) return "";
+    if (/^\d{4}-\d{2}-\d{2}$/.test(c)) return c;
+    const m = /([A-Za-z]{3,9})\.?\s+(\d{1,2})(?:st|nd|rd|th)?$/.exec(c);
+    if (!m) return "";
+    const mon = CUT_MON[m[1].toLowerCase().slice(0, 4)] || CUT_MON[m[1].toLowerCase().slice(0, 3)];
+    if (!mon || !eventDate) return "";
+    const mk = y => `${y}-${String(mon).padStart(2, "0")}-${String(m[2]).padStart(2, "0")}`;
+    const y = Number(String(eventDate).slice(0, 4));
+    return mk(y) > eventDate ? mk(y - 1) : mk(y);
+  }
+
   // The form's field inputs, set from one place so the editor and the change
   // history's "Load this version" fill them identically.
   function applyFields(e) {
     const set = (id, v) => { $(id).value = v == null ? "" : v; };
     set("#f-title", e.Title); set("#f-date", e.Date); set("#f-start", e.Start); set("#f-end", e.End);
     set("#f-loc", e.Location); set("#f-host", e.Host); set("#f-series", e.Series); set("#f-cap", e.Capacity);
-    set("#f-price", e.Price); set("#f-cutoff", e.Cutoff); set("#f-desc", e.Description); set("#f-slug", e.Slug || "");
+    set("#f-price", e.Price); set("#f-cutoff", cutoffIso(e.Cutoff, e.Date)); set("#f-desc", e.Description); set("#f-slug", e.Slug || "");
     $("#f-marquee").checked = e.Marquee === true || e.Marquee === "True";
     $("#f-teaser").checked = e.Teaser === true || e.Teaser === "True";
     $$("input[name=cat]").forEach((r, i) => r.checked = CATS[i] === e.Category);

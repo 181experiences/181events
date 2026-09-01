@@ -547,8 +547,10 @@ HTML = f'''<!DOCTYPE html>
     <div class="field"><label class="fl">RSVP type</label><div class="picks">{picks("rt", RSVP_TYPES)}</div><div class="hint">Guest count collects non-resident numbers only. Paid seat shows the price.</div></div>
     <div class="field"><label class="fl" for="f-cap">Capacity</label><input class="inp" type="number" id="f-cap" inputmode="numeric" placeholder="Leave blank for no limit"></div>
     <div class="field"><label class="fl" for="f-price">Price per person</label><input class="inp" id="f-price" placeholder="$75"></div>
-    <div class="field"><label class="fl" for="f-cutoff">RSVP closes</label><input class="inp" id="f-cutoff" placeholder="Monday, Aug 31">
-      <div class="hint">Workshops close the Monday of the event week, so materials can be ordered against a firm count.</div></div>
+    <div class="field"><label class="fl" for="f-cutoff">RSVP closes</label><input class="inp" type="date" id="f-cutoff">
+      <div class="hint">End of that day, Pacific. From the next morning the button reads Join the Waitlist, and requests
+      come to you for a yes or a no (Confirm seats is the yes). Blank keeps RSVPs open. Workshops close the Monday of the
+      event week, so materials are ordered against a firm count.</div></div>
     <div class="field f-full"><label class="fl" for="f-desc">Description</label>
       <div class="fmtbar">
         <button type="button" class="mini" data-fmt="strong" title="Bold the selected text"><strong>B</strong></button>

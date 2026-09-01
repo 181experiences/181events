@@ -17,6 +17,37 @@ import {
 
 const TYPE = { "Seat": "standard", "Paid seat": "paid", "Guest count": "guest" };
 
+// "RSVP closes" is a date (older rows carry "Monday, Aug 31"-style text, which
+// parses to the same thing). Closed means the end of that day, Pacific: after
+// it, a fresh RSVP becomes a waitlist request for Resident Experiences to
+// answer, a held party keeps its seats and may shrink or cancel, and growing
+// takes a word to staff instead of a tap. Keep in step with build_proto.py.
+const MON = { jan: 1, feb: 2, mar: 3, apr: 4, may: 5, jun: 6, june: 6,
+              jul: 7, july: 7, aug: 8, sep: 9, sept: 9, oct: 10, nov: 11, dec: 12 };
+function cutoffIso(ev) {
+  const c = String(ev.cutoff || "").trim();
+  if (!c) return null;
+  if (/^\d{4}-\d{2}-\d{2}$/.test(c)) return c;
+  const m = /([A-Za-z]{3,9})\.?\s+(\d{1,2})(?:st|nd|rd|th)?$/.exec(c);
+  if (!m) return null;
+  const mon = MON[m[1].toLowerCase().slice(0, 4)] || MON[m[1].toLowerCase().slice(0, 3)];
+  if (!mon) return null;
+  const mk = y => `${y}-${String(mon).padStart(2, "0")}-${String(m[2]).padStart(2, "0")}`;
+  const y = Number(ev.date.slice(0, 4));
+  return mk(y) > ev.date ? mk(y - 1) : mk(y);
+}
+function rsvpClosed(ev) {
+  const c = cutoffIso(ev);
+  return !!(c && todayPacific() > c);
+}
+const MON_PRETTY = [null, "Jan", "Feb", "Mar", "Apr", "May", "June", "July", "Aug", "Sept", "Oct", "Nov", "Dec"];
+function cutoffPretty(ev) {
+  const iso = cutoffIso(ev);
+  if (!iso) return String(ev.cutoff || "");
+  const d = new Date(iso + "T12:00:00");
+  return `${DOW[d.getDay()]}, ${MON_PRETTY[d.getMonth() + 1]} ${d.getDate()}`;
+}
+
 function whenOf(ev) {
   const d = new Date(ev.date + "T12:00:00");
   const day = `${DOW[d.getDay()]}, ${MONTHS_S[d.getMonth()]} ${d.getDate()}`;
@@ -86,7 +117,10 @@ async function rsvpPage(context, ev, key, me) {
           : `${ev.capacity} places`,
       })
     : null);
-  body = cut(body, "CUTOFF", ev.cutoff ? fill(inner(tpl, "CUTOFF"), { CUTOFF: esc(ev.cutoff) }) : null);
+  const closed = rsvpClosed(ev);
+  body = cut(body, "CUTOFF", ev.cutoff
+    ? fill(inner(tpl, "CUTOFF"), { CUTOFF: esc(cutoffPretty(ev)) + (closed ? " &middot; now closed" : "") })
+    : null);
 
   // Drop-in events still get their shareable page: the facts, a warm word, no forms.
   if (!type) {
@@ -124,12 +158,15 @@ async function rsvpPage(context, ev, key, me) {
   }
 
   let section = inner(tpl, "FORM");
-  section = cut(section, "STANDARD", type === "standard" ? inner(section, "STANDARD") : null);
-  section = cut(section, "GUEST", type === "guest" ? inner(section, "GUEST") : null);
-  section = cut(section, "PAID", type === "paid" ? inner(section, "PAID") : null);
-  section = cut(section, "FULLNOTE", full && type !== "guest" ? inner(section, "FULLNOTE") : null);
+  section = cut(section, "STANDARD", type === "standard" && !closed ? inner(section, "STANDARD") : null);
+  section = cut(section, "GUEST", type === "guest" && !closed ? inner(section, "GUEST") : null);
+  section = cut(section, "PAID", type === "paid" && !closed ? inner(section, "PAID") : null);
+  section = cut(section, "FULLNOTE", full && !closed && type !== "guest" ? inner(section, "FULLNOTE") : null);
+  section = cut(section, "CLOSEDNOTE", closed
+    ? fill(inner(section, "CLOSEDNOTE"), { CLOSEDON: esc(cutoffPretty(ev)) })
+    : null);
   section = cut(section, "CHIP", chips(section, type, 1));
-  const btn = full && type !== "guest" ? "Join the Waitlist"
+  const btn = closed || (full && type !== "guest") ? "Join the Waitlist"
     : type === "guest" ? "Register Guests"
     : type === "paid" ? `${esc(ev.price || "")}${ev.price ? " &middot; " : ""}Request Seats`
     : "Confirm RSVP";
@@ -206,10 +243,21 @@ export async function onRequestPost(context) {
   // Who holds what decides who gets what. A confirmed party never forfeits its
   // seats by editing; growing must fit or nothing changes; and while anyone is
   // waitlisted, a freed seat goes to the queue, never to whoever taps next.
+  // After the close date, the channel changes: a fresh RSVP becomes a request
+  // on the waitlist for Resident Experiences to answer, and a held party may
+  // shrink but not grow without a word to staff.
+  const closed = rsvpClosed(ev);
   const mine = await myRsvp(env, me.id, key);
   const held = mine && mine.status === "Confirmed" ? mine : null;
   let status = "Confirmed";
-  if (ev.capacity && type !== "guest") {
+  if (closed && held && count > held.count) {
+    return donePage(context, me, "RSVPs have closed",
+      `Your ${held.count === 1 ? "seat stands" : held.count + " seats stand"} exactly as they were. RSVPs closed ${cutoffPretty(ev)}, so a larger party takes a word to Resident Experiences: send us a Message or ask the front desk, and we&rsquo;ll try.`,
+      "/my", "My RSVPs");
+  }
+  if (closed && !held) {
+    status = "Waitlist";
+  } else if (ev.capacity && type !== "guest") {
     if (held && count <= held.count) {
       status = "Confirmed";
     } else if (held) {
@@ -249,6 +297,11 @@ export async function onRequestPost(context) {
   }
 
   if (status === "Waitlist") {
+    if (closed) {
+      return donePage(context, me, "Your request is in",
+        `RSVPs closed ${cutoffPretty(ev)}, so this went to Resident Experiences as a request rather than a booking. We&rsquo;ll reach out with a yes or a no.`,
+        "/my", "My RSVPs");
+    }
     return donePage(context, me, "You&rsquo;re on the waitlist",
       "Every seat is spoken for at the moment. You hold a place in the order requests arrived, and Resident Experiences will reach out if one opens.",
       "/my", "My RSVPs");

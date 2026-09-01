@@ -93,6 +93,48 @@ def ics_href(e):
     ICS_FILES[fname] = body
     return f"/ics/{fname}"
 
+# "RSVP closes" is a date now (the editor picks one); older rows carry text
+# like "Monday, Aug 31", which parses to the same thing. Closing means the end
+# of that day, Pacific: from the next morning the RSVP button turns into a
+# waitlist request that Resident Experiences answers with a yes or a no, via
+# the Confirm seats button it already owns.
+import re as _re
+_MON_NUM = {"jan": 1, "feb": 2, "mar": 3, "apr": 4, "may": 5, "jun": 6, "june": 6,
+            "jul": 7, "july": 7, "aug": 8, "sep": 9, "sept": 9, "oct": 10, "nov": 11, "dec": 12}
+_MON_PRETTY = [None, "Jan", "Feb", "Mar", "Apr", "May", "June", "July", "Aug", "Sept", "Oct", "Nov", "Dec"]
+
+def cutoff_date(e):
+    from datetime import date as _date
+    c = (e.get("cutoff") or "").strip()
+    if not c:
+        return None
+    if _re.match(r"^\d{4}-\d{2}-\d{2}$", c):
+        try:
+            return _date.fromisoformat(c)
+        except ValueError:
+            return None
+    m = _re.search(r"([A-Za-z]{3,9})\.?\s+(\d{1,2})(?:st|nd|rd|th)?$", c)
+    if not m:
+        return None
+    mon = _MON_NUM.get(m.group(1).lower()[:4]) or _MON_NUM.get(m.group(1).lower()[:3])
+    if not mon:
+        return None
+    try:
+        d = _date(e["on"].year, mon, int(m.group(2)))
+        return _date(e["on"].year - 1, mon, int(m.group(2))) if d > e["on"] else d
+    except ValueError:
+        return None
+
+def cutoff_pretty(e):
+    d = cutoff_date(e)
+    if not d:
+        return e.get("cutoff") or ""
+    return f'{d.strftime("%A")}, {_MON_PRETTY[d.month]} {d.day}'
+
+def rsvp_closed(e):
+    d = cutoff_date(e)
+    return bool(d and TODAY > d)
+
 def tag_for(e):
     if e.get("far"):
         return '<span class="tag">Details to come</span>'
@@ -223,7 +265,8 @@ def event_screen(e):
     elif e["cap"]:
         facts += f'<div class="fact"><dt>Capacity</dt><dd>{e["cap"]} places</dd></div>'
     if e["cutoff"]:
-        facts += f'<div class="fact"><dt>RSVP by</dt><dd>{e["cutoff"]}</dd></div>'
+        facts += (f'<div class="fact"><dt>RSVP by</dt><dd>{cutoff_pretty(e)}'
+                  f'{" &middot; now closed" if rsvp_closed(e) else ""}</dd></div>')
     if e["series"]:
         facts += f'<div class="fact"><dt>Repeats</dt><dd>{e["series"]}</dd></div>'
     facts += f'<div class="fact"><dt>Hosted by</dt><dd>{e["host"]}</dd></div></dl>'
@@ -292,7 +335,14 @@ def event_screen(e):
     </div>
   </section>'''
 
-    if e["rsvp"] == "guest":
+    if e["rsvp"] in ("guest", "paid", "standard") and rsvp_closed(e):
+        # Closed is not a wall; it is a change of channel. The button asks
+        # instead of books: the request lands on the waitlist, Resident
+        # Experiences sees it, and Confirm seats (or a call) is the answer.
+        cta += f'<a class="btn" href="{rsvp_href}">Join the Waitlist</a>'
+        note = (f"RSVPs closed {cutoff_pretty(e)}. You can still ask: a request joins the waitlist, "
+                "lands with Resident Experiences, and we reach out with a yes or a no.")
+    elif e["rsvp"] == "guest":
         guest_ui = ('<div class="guestbox"><div class="gq">Bringing someone from outside the building?</div>'
                     '<div class="gh">You&rsquo;re always welcome on your own, with no RSVP needed. We only ask for a '
                     'count of guests from outside the building, so we can pour and plate for them.</div></div>')
@@ -304,7 +354,7 @@ def event_screen(e):
         note = ("Seats are confirmed in the order requests arrive, and payment is arranged with "
                 "your confirmation. Sign in once with your resident code.")
     elif e["rsvp"] == "standard":
-        cutoff_line = (f" Kindly update your RSVP with any change of plans by {e['cutoff']}, as that is when we order materials."
+        cutoff_line = (f" Kindly update your RSVP with any change of plans by {cutoff_pretty(e)}, as that is when we order materials."
                        if e["cutoff"] else "")
         cta += f'<a class="btn" href="{rsvp_href}">RSVP</a>'
         note = ("Sign in once with your resident code, and your RSVP saves under My RSVPs, "
@@ -1036,6 +1086,8 @@ guests from outside the building, so we can pour and plate for them.</div></div>
 with your confirmation, never on this site.</p></div><!--/PAID-->
 <!--FULLNOTE--><div class="fullnote">Every seat is spoken for at the moment. Join the waitlist and
 you hold a place in line, in the order requests arrived.</div><!--/FULLNOTE-->
+<!--CLOSEDNOTE--><div class="fullnote">RSVPs for this one closed {{CLOSEDON}}. You can still ask:
+your request joins the waitlist, lands with Resident Experiences, and we reach out with a yes or a no.</div><!--/CLOSEDNOTE-->
 <form method="post" action="/rsvp/{{KEY}}" class="pageform">
 <input type="hidden" name="action" value="rsvp">
 ''' + RSVP_CHIPS + '''
