@@ -841,10 +841,11 @@
         <button class="mini" data-rotate="${p.id}" title="A fresh code; the old one stops working everywhere">Rotate</button>
         <button class="mini ghost" data-resedit="${p.id}" title="Name, email, unit, tenant, end date, disable, delete">Edit</button>
       </span></div>`;
-    const card = (head, rows) => `<div class="ucard"><div class="uhead">${head}</div>${rows.map(row).join("")}</div>`;
+    const card = (head, rows, cls) => `<div class="ucard"><div class="uhead${cls ? " " + cls : ""}">${head}</div>${rows.map(row).join("")}</div>`;
 
+    // Role accounts always lead, in their own dress, so staff never reads as a unit.
     let html = "";
-    if (roles.length) html += card("Role accounts", roles);
+    if (roles.length) html += card("Role accounts", roles, "role");
     html += units.map(u => {
       const rows = byUnit.get(u);
       const activeCodes = rows.filter(p => p.status === "Active" && !p.expired).length;

@@ -281,6 +281,9 @@ HTML = f'''<!DOCTYPE html>
     margin-bottom:14px;overflow:hidden}}
   .uhead{{display:flex;align-items:center;gap:10px;font-family:var(--fd);font-weight:600;font-size:14px;
     color:var(--ink);padding:10px 16px;background:var(--paper);border-bottom:1px solid var(--line);letter-spacing:.04em}}
+  /* Staff, not a household: the role card wears ink so it never reads as a unit. */
+  .uhead.role{{background:var(--ink);color:var(--paper);border-bottom-color:var(--ink);
+    font-size:12px;letter-spacing:.14em;text-transform:uppercase}}
   .mini.off{{background:transparent;border-color:var(--line-2);color:#c3bbae;cursor:default;pointer-events:none}}
   .unithead{{display:flex;align-items:center;gap:10px;font-family:var(--fd);font-weight:600;font-size:14px;color:var(--ink);
     padding:14px 16px 6px;letter-spacing:.04em}}
