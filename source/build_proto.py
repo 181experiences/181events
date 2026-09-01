@@ -580,8 +580,9 @@ HTML = f'''<!DOCTYPE html>
   .urlline{{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:15px;background:var(--paper);
     border:1px solid var(--line);border-radius:var(--radius);padding:12px 14px;margin-top:12px;overflow-wrap:anywhere}}
   .guestbox{{background:var(--paper-2);border:1px solid var(--line);border-radius:var(--radius);padding:24px;margin:8px 0 26px}}
-  .gq{{font-family:var(--fd);font-size:24px;color:var(--ink);line-height:1.25}}
-  .gh{{font-size:17px;color:var(--ink-soft);margin-top:8px}}
+  .gq{{font-family:var(--fd);font-size:clamp(19px,4.8vw,24px);color:var(--ink);line-height:1.25}}
+  .gh{{font-size:clamp(16px,4.2vw,17px);color:var(--ink-soft);margin-top:8px}}
+  .gh .rlink{{min-height:0;margin:0}}   /* inline in a paragraph: the tap-target floor would stretch its line */
   .glab{{font-size:13px;letter-spacing:.14em;text-transform:uppercase;color:var(--stone);font-weight:500;margin:20px 0 10px}}
   .gchips{{display:flex;gap:10px;flex-wrap:wrap}}
   .gchip{{min-width:62px;min-height:56px;display:flex;align-items:center;justify-content:center;
@@ -882,8 +883,9 @@ SHELL_CSS = '''
   .state:checked + .gchip{background:var(--ink);color:var(--paper-2);border-color:var(--ink)}
   .guestbox,.statebox{background:var(--paper-2);border:1px solid var(--line);border-radius:var(--radius);padding:24px;margin:26px 0 0}
   .statebox{border-left:3px solid var(--red)}
-  .gq,.statebox h2{font-family:var(--fd);font-size:24px;color:var(--ink);line-height:1.25}
-  .gh,.statebox p{font-size:17px;color:var(--ink-soft);margin:8px 0 0}
+  .gq,.statebox h2{font-family:var(--fd);font-size:clamp(19px,4.8vw,24px);color:var(--ink);line-height:1.25}
+  .gh,.statebox p{font-size:clamp(16px,4.2vw,17px);color:var(--ink-soft);margin:8px 0 0}
+  .gh .rlink{min-height:0;margin:0}
   .alsobox{background:#efe9e0;border-radius:var(--radius);padding:20px 22px;margin:26px 0 0;max-width:34em}
   .alsobox .al-t{font-size:13px;letter-spacing:.14em;text-transform:uppercase;color:#6d6355;font-weight:600;margin-bottom:8px}
   .alsobox p{margin:0;font-size:18px;color:var(--ink)}

@@ -70,8 +70,9 @@
   .state:checked + .gchip{background:var(--ink);color:var(--paper-2);border-color:var(--ink)}
   .guestbox,.statebox{background:var(--paper-2);border:1px solid var(--line);border-radius:var(--radius);padding:24px;margin:26px 0 0}
   .statebox{border-left:3px solid var(--red)}
-  .gq,.statebox h2{font-family:var(--fd);font-size:24px;color:var(--ink);line-height:1.25}
-  .gh,.statebox p{font-size:17px;color:var(--ink-soft);margin:8px 0 0}
+  .gq,.statebox h2{font-family:var(--fd);font-size:clamp(19px,4.8vw,24px);color:var(--ink);line-height:1.25}
+  .gh,.statebox p{font-size:clamp(16px,4.2vw,17px);color:var(--ink-soft);margin:8px 0 0}
+  .gh .rlink{min-height:0;margin:0}
   .alsobox{background:#efe9e0;border-radius:var(--radius);padding:20px 22px;margin:26px 0 0;max-width:34em}
   .alsobox .al-t{font-size:13px;letter-spacing:.14em;text-transform:uppercase;color:#6d6355;font-weight:600;margin-bottom:8px}
   .alsobox p{margin:0;font-size:18px;color:var(--ink)}
