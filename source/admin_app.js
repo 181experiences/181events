@@ -827,26 +827,30 @@
     // Three buttons, no more: the two the desk reaches for at 10 pm, and Edit,
     // which opens everything else (end dates, standing, disable, delete) in the
     // card above, one deliberate step away from the row.
+    // Every row carries the same three controls, so the columns line up whether
+    // or not an email is on file: an empty mailbox just shades its button.
+    const mailBtn = p => p.email && p.status === "Active"
+      ? `<a class="mini" href="${mailHref(p)}" title="Opens your own mail app with the code written out">Email code</a>`
+      : `<span class="mini off" title="${p.status !== "Active" || p.expired ? "Available once the code is active again" : "No email on file. Edit adds one."}">Email code</span>`;
     const row = p => `<div class="rrow${p.status !== "Active" || p.expired ? " off" : ""}">
       <span class="rname">${esc(p.name)}${p.email ? `<em>${esc(p.email)}</em>` : ""}</span>
       <span><span class="rcode">${esc(p.code)}</span></span>
       <span class="rpills">${pill(p)}${p.tenure === "tenant" ? '<span class="pill tenant">Tenant</span>' : ""}</span>
       <span class="eact">
-        ${p.email && p.status === "Active" ? `<a class="mini" href="${mailHref(p)}" title="Opens your own mail app with the code written out">Email code</a>` : ""}
+        ${mailBtn(p)}
         <button class="mini" data-rotate="${p.id}" title="A fresh code; the old one stops working everywhere">Rotate</button>
         <button class="mini ghost" data-resedit="${p.id}" title="Name, email, unit, tenant, end date, disable, delete">Edit</button>
       </span></div>`;
+    const card = (head, rows) => `<div class="ucard"><div class="uhead">${head}</div>${rows.map(row).join("")}</div>`;
 
     let html = "";
-    if (roles.length) {
-      html += `<div class="evlist" style="margin-bottom:14px"><div class="unithead">Role accounts</div>${roles.map(row).join("")}</div>`;
-    }
-    html += `<div class="evlist">` + units.map(u => {
+    if (roles.length) html += card("Role accounts", roles);
+    html += units.map(u => {
       const rows = byUnit.get(u);
       const activeCodes = rows.filter(p => p.status === "Active" && !p.expired).length;
       const flag = activeCodes > 4 ? ` <span class="flagmany" title="More than four working codes on one unit is worth a look">${activeCodes} codes</span>` : "";
-      return `<div class="unithead">Unit ${esc(u)}${flag}</div>` + rows.map(row).join("");
-    }).join("") + `</div>`;
+      return card(`Unit ${esc(u)}${flag}`, rows);
+    }).join("");
     if (!people.length && !roles.length) html = '<div class="nodata" style="padding:20px">Nobody yet. Add people above, or paste the whole building at once.</div>';
     box.innerHTML = html;
   }

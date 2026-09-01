@@ -274,13 +274,22 @@ HTML = f'''<!DOCTYPE html>
   body.role-desk .navbar label[for="s-inst"]{{display:none}}
 
   /* ---------- residents ---------- */
+  /* One card per unit: the header is a banner on its own ground, not a line
+     floating in a long list, so where a household starts and ends is never
+     in doubt. Rows sit tight inside. */
+  .ucard{{background:var(--paper-2);border:1px solid var(--line);border-radius:var(--radius);
+    margin-bottom:14px;overflow:hidden}}
+  .uhead{{display:flex;align-items:center;gap:10px;font-family:var(--fd);font-weight:600;font-size:14px;
+    color:var(--ink);padding:10px 16px;background:var(--paper);border-bottom:1px solid var(--line);letter-spacing:.04em}}
+  .mini.off{{background:transparent;border-color:var(--line-2);color:#c3bbae;cursor:default;pointer-events:none}}
   .unithead{{display:flex;align-items:center;gap:10px;font-family:var(--fd);font-weight:600;font-size:14px;color:var(--ink);
     padding:14px 16px 6px;letter-spacing:.04em}}
   .flagmany{{display:inline-block;font-size:10px;letter-spacing:.12em;text-transform:uppercase;font-weight:600;
     background:#f0e2e2;color:#8a2b2b;border-radius:100px;padding:3px 10px}}
   .rpills{{display:flex;gap:6px;flex-wrap:wrap;align-items:center}}
   .rrow{{display:grid;gap:12px;grid-template-columns:1.6fr 1fr 1.1fr auto;align-items:center;
-    padding:10px 16px;border-top:1px solid var(--line-2)}}
+    padding:8px 16px;border-top:1px solid var(--line-2)}}
+  .ucard .rrow:first-of-type{{border-top:none}}
   .rname{{font-size:14px;color:var(--ink);font-weight:500}}
   .rname em{{display:block;font-style:normal;font-size:12px;color:var(--stone);font-weight:400;margin-top:2px}}
   .rcode{{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:13px;background:#eae3d8;
