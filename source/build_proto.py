@@ -265,9 +265,35 @@ NEXT = next((e for e in EVENTS if e["on"] > TODAY
              or (e["on"] == TODAY and e.get("t24", "2359") > NOW_HHMM)), EVENTS[-1])
 
 # ------------------------------------------------------------------ month nav
+# The calendar opens on the month the building is living in, clamped to the
+# published range, and the home eyebrow reads from that month to the last one
+# published. Both re-settle at every rebuild, so the turn of a month needs
+# nobody's hands.
+def _open_month():
+    ym = (TODAY.year, TODAY.month)
+    if ym <= (MONTHS[0]["yr"], MONTHS[0]["num"]):
+        return MONTHS[0]
+    for m in MONTHS:
+        if (m["yr"], m["num"]) == ym:
+            return m
+    return MONTHS[-1]
+
+OPEN_MONTH = _open_month()
+
+def _eyebrow_range():
+    a, b = OPEN_MONTH, MONTHS[-1]
+    if a is b:
+        return a["name"]
+    a_name, a_yr = a["name"].rsplit(" ", 1)
+    if a_yr == b["name"].rsplit(" ", 1)[1]:
+        return f"{a_name} to {b['name']}"
+    return f"{a['name']} to {b['name']}"
+
+EYEBROW_RANGE = _eyebrow_range()
+
 MONTH_RADIOS = "\n    ".join(
-    f'<input class="state" type="radio" name="mon" id="m-{m["key"]}"{" checked" if i == 0 else ""}>'
-    for i, m in enumerate(MONTHS))
+    f'<input class="state" type="radio" name="mon" id="m-{m["key"]}"{" checked" if m is OPEN_MONTH else ""}>'
+    for m in MONTHS)
 
 MONTH_NAMES = "\n        ".join(
     f'<div class="mname" data-m="{m["key"]}">{m["name"]}</div>' for m in MONTHS)
@@ -573,7 +599,7 @@ HTML = f'''<!DOCTYPE html>
   <section class="screen" id="scr-home">
     <div class="wrap">
       <div class="hero">
-        <div class="eyebrow">August to December 2026</div>
+        <div class="eyebrow">{EYEBROW_RANGE}</div>
         <h1>What&rsquo;s happening at<br>The Residents&rsquo; Club</h1>
         <div class="rule"></div>
         <p>Everything on the calendar, in one place.</p>

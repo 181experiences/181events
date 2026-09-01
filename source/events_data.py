@@ -25,7 +25,7 @@ def _months_in_range():
     out, y, m = [], RANGE_START.year, RANGE_START.month
     while (y, m) <= (RANGE_END.year, RANGE_END.month):
         first = date(y, m, 1)
-        out.append(dict(key=MONTH_KEYS[m], name=f"{calendar.month_name[m]} {y}", num=m,
+        out.append(dict(key=MONTH_KEYS[m], name=f"{calendar.month_name[m]} {y}", num=m, yr=y,
                         first_dow=_sun_index(first), days=calendar.monthrange(y, m)[1]))
         m = 1 if m == 12 else m + 1
         y = y + 1 if m == 1 else y
