@@ -1114,14 +1114,15 @@
         <div class="ecell"><span class="pill ${cls(g.status)}">${esc(g.mixed ? "Mixed" : g.status)}</span></div>
         <div class="ecell"><span class="lbl">RSVPs</span>${rsvp}</div>
         <div class="ecell"><span class="lbl">Asset kit</span>${kits} of 6</div>
-        <div class="ecell eact">${g.series ? `<button class="mini ghost" data-dates="${esc(g.key)}">${g.rows.length} dates</button>` : ""}<button class="mini ghost" data-copylink="${esc(stem(h))}" title="Copies this date's page address, for emails and reminders">Link</button><button class="mini" data-edit="${esc(g.key)}">Edit</button>${g.status === "Unpublished" ? `<button class="mini ghost" data-archive="${esc(g.key)}" title="Filed away, kept for reporting">Archive</button>` : ""}</div>
+        <div class="ecell eact">${g.series ? `<button class="mini ghost" data-dates="${esc(g.key)}">${(g.upcoming.length || g.rows.length)} dates</button>` : ""}<button class="mini ghost" data-copylink="${esc(stem(h))}" title="Copies this date's page address, for emails and reminders">Link</button><button class="mini" data-edit="${esc(g.key)}">Edit</button>${g.status === "Unpublished" ? `<button class="mini ghost" data-archive="${esc(g.key)}" title="Filed away, kept for reporting">Archive</button>` : ""}</div>
       </div>
-      <div class="edates" data-dates-for="${esc(g.key)}" style="display:none">${g.rows.map(r => `
+      <div class="edates" data-dates-for="${esc(g.key)}" style="display:none">${(g.upcoming.length ? g.upcoming : g.rows).map(r => `
         <div class="edrow"><span class="edwhen">${esc(fmt(r.Date))} &middot; ${esc(r.Start)}</span>
           <span class="pill ${cls(r.Status)}">${esc(r.Status || "Draft")}</span>
           ${r.Moved ? '<span class="badge2">moved</span>' : ""}
           <button class="mini ghost" data-copylink="${esc(stem(r))}" title="Copies this date's page address">Link</button>
-          <button class="mini" data-editrow="${esc(g.key)}|${esc(r.id)}">Edit this date</button></div>`).join("")}
+          <button class="mini" data-editrow="${esc(g.key)}|${esc(r.id)}">Edit this date</button></div>`).join("")}${g.upcoming.length && g.rows.length > g.upcoming.length ? `
+        <div class="edrow" style="color:var(--stone)">${g.rows.length - g.upcoming.length} passed date${g.rows.length - g.upcoming.length === 1 ? "" : "s"} ride with the listing, in reporting and later in the Archive.</div>` : ""}
       </div>`;
     }).join("");
     $("#evcount").textContent = `${gs.length} current listings, ${events.filter(e => e.Status === "Live" && e.Date >= today()).length} live upcoming dates. Passed and cancelled listings rest in the Archive. Nothing appears on the resident site until its status is Live.`;
@@ -1194,7 +1195,12 @@
     const occ = $("#ed-occ");
     if (g && g.series) {
       occ.style.display = "";
-      $("#f-occ").innerHTML = g.rows.map(r => `<option value="${esc(r.id)}"${r.id === e.id ? " selected" : ""}>${esc(fmt(r.Date))} · ${esc(r.Status || "Draft")}${r.Moved ? " · moved" : ""}</option>`).join("");
+      // Passed dates leave the picker: time already filed them. If a passed
+      // date was opened anyway (an old link, the archive), it stays listed so
+      // the form matches what is on screen.
+      const occRows = g.upcoming.length ? [...g.upcoming] : [...g.rows];
+      if (row && !occRows.includes(row)) occRows.unshift(row);
+      $("#f-occ").innerHTML = occRows.map(r => `<option value="${esc(r.id)}"${r.id === e.id ? " selected" : ""}>${esc(fmt(r.Date))} · ${esc(r.Status || "Draft")}${r.Moved ? " · moved" : ""}${r.Date < today() ? " · passed" : ""}</option>`).join("");
       $("#ed-scope").style.display = "";
       $("#f-scope").checked = true;
       $("#f-scope-n").textContent = String(g.upcoming.length);
