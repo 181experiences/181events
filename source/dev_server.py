@@ -885,8 +885,8 @@ class H(SimpleHTTPRequestHandler):
             if e.get("RSVP") not in TYPE_OF:
                 return self._json({"error": f"{label_of(resident)} is always welcome: {e['Title']} is drop-in, no RSVP needed."}, 400)
             rsvp_type = TYPE_OF[e["RSVP"]]
-            mx = 6 if rsvp_type == "guest" else 4
-            try: count = max(1, min(mx, int(body.get("count") or 1)))
+            # Staff seat up to six, the fulfillment of the contact chip.
+            try: count = max(1, min(6, int(body.get("count") or 1)))
             except ValueError: count = 1
             names = str(body.get("names") or "").strip()[:120]
             rsvps = load_store("rsvps", [])

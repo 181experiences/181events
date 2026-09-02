@@ -1,7 +1,7 @@
 import { json, noDb, adminRole, forbidden, ensureResidentTables, labelOf } from "../_lib.js";
 import { liveEvent, seatsTaken, othersWaiting } from "../_resident.js";
 
-const ROW_SQL = `SELECT r.id, r.event_key, r.event_date, r.event_title, r.rsvp_type, r.count,
+const ROW_SQL = `SELECT r.id, r.resident_id, r.event_key, r.event_date, r.event_title, r.rsvp_type, r.count,
         r.names, r.status, r.created, r.updated, res.name, res.unit, res.email
  FROM rsvps r JOIN residents res ON res.id = r.resident_id`;
 
@@ -38,7 +38,9 @@ export async function onRequestPost({ request, env }) {
   const type = TYPE[ev.rsvp];
   if (!type) return json({ error: `${labelOf(resident)} is always welcome: ${ev.title} is drop-in, no RSVP needed.` }, 400);
 
-  const maxCount = type === "guest" ? 6 : 4;
+  // Staff seat up to six: this endpoint is the fulfillment of the resident
+  // side's "Please contact me" chip, so it must reach past the self-serve cap.
+  const maxCount = 6;
   let count = Math.round(Number(body.count));
   if (!Number.isFinite(count)) count = 1;
   count = Math.max(1, Math.min(maxCount, count));
