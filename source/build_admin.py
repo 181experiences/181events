@@ -720,6 +720,7 @@ HTML = f'''<!DOCTYPE html>
       <div class="field"><label class="fl" for="bk-event">Event name, for private events</label><input class="inp" id="bk-event" autocapitalize="words" placeholder="What guests give at the door"></div>
       <div class="field"><label class="fl" for="bk-host">Hosted by</label><input class="inp" id="bk-host" autocapitalize="words" placeholder="The resident hosting"></div>
       <div class="field"><label class="fl" for="bk-cap">Guest cap</label><input class="inp" id="bk-cap" type="number" inputmode="numeric" placeholder="Blank for none"></div>
+      <div class="field"><label class="fl" for="bk-slug">Custom address, optional</label><input class="inp" id="bk-slug" autocapitalize="none" placeholder="summit-reception"><div class="hint">Reads as 181residents.com/register/summit-reception. A written address can be guessed from the event name; add a number if that matters.</div></div>
     </div>
     <div style="margin-top:14px;display:flex;gap:12px;align-items:center;flex-wrap:wrap">
       <button class="btn" data-addbooking>Reserve the Space</button>

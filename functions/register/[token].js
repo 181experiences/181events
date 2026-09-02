@@ -14,8 +14,12 @@ function whenOf(b) {
 }
 
 async function findBooking(env, token) {
-  if (!/^[a-z0-9]{16,32}$/.test(String(token || ""))) return null;
-  return await env.DB.prepare("SELECT * FROM bookings WHERE reg_token=?").bind(token).first();
+  const t = String(token || "").toLowerCase();
+  if (!/^[a-z0-9][a-z0-9-]{2,63}$/.test(t)) return null;
+  // Answers to the unguessable token and, when one is written, the custom
+  // address; either spelling opens the same page.
+  return await env.DB.prepare(
+    "SELECT * FROM bookings WHERE reg_token=? OR reg_slug=?").bind(t, t).first();
 }
 
 async function headsOf(env, bookingId) {

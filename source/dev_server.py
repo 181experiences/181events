@@ -695,9 +695,16 @@ class H(SimpleHTTPRequestHandler):
         if p.path == "/api/guests":
             bid = int((q.get("booking") or ["0"])[0] or 0)
             return self._json({"guests": [g for g in load_store("guests", []) if g["booking_id"] == bid]})
+        if p.path.startswith("/e/"):
+            slug = p.path[len("/e/"):].lower()
+            live = [e for e in load_events() if e.get("Status") == "Live" and e.get("Slug") == slug]
+            ahead = sorted([e for e in live if e["Date"] >= today()], key=lambda e: e["Date"])
+            pick = ahead[0] if ahead else (sorted(live, key=lambda e: e["Date"])[-1] if live else None)
+            return self._redirect(f"/rsvp/{pick['Date']}_{pick['Slug']}" if pick else "/")
         if p.path.startswith("/register/"):
-            token = p.path[len("/register/"):]
-            b = next((x for x in load_store("bookings", []) if x.get("reg_token") == token), None)
+            token = p.path[len("/register/"):].lower()
+            b = next((x for x in load_store("bookings", [])
+                      if x.get("reg_token") == token or x.get("reg_slug") == token), None)
             if not b:
                 tpl = template("done")
                 body = fill(cut(cut(tpl, "LINK", inner(tpl, "LINK")), "ICON", None), dict(
@@ -914,13 +921,18 @@ class H(SimpleHTTPRequestHandler):
             if b.get("guest_cap"):
                 try: cap = max(1, min(1000, int(b["guest_cap"])))
                 except (TypeError, ValueError): cap = None
+            slug = re.sub(r"^-+|-+$", "", re.sub(r"[^a-z0-9]+", "-", (b.get("reg_slug") or "").lower().strip()))[:60]
+            if slug:
+                if len(slug) < 3: return self._json({"error": "A custom address needs at least three characters."}, 400)
+                if any(x.get("reg_slug") == slug for x in bookings):
+                    return self._json({"error": f"The address /register/{slug} is already taken by another reservation."}, 400)
             row = dict(id=max([x["id"] for x in bookings] or [0]) + 1, space=space, date=date,
                        start=(b.get("start") or "").strip(), end_time=(b.get("end") or "").strip(),
                        start24=to24(b.get("start")), note=(b.get("note") or "").strip(), created=now_iso(),
                        event_name=(b.get("event_name") or "").strip() or None,
                        host=(b.get("host") or "").strip() or None,
                        reg_token="".join(secrets.choice("abcdefghjkmnpqrstuvwxyz23456789") for _ in range(20)),
-                       reg_open=0, guest_cap=cap)
+                       reg_open=0, guest_cap=cap, reg_slug=slug or None)
             bookings.append(row); save_store("bookings", bookings)
             return self._json({"booking": dict(row, guest_parties=0, guest_heads=0, guest_arrived=0)}, 201)
         if p.path == "/api/guests":
@@ -937,8 +949,9 @@ class H(SimpleHTTPRequestHandler):
         if p.path.startswith("/api/"):
             return self._json({"error": "not found"}, 404)
         if p.path.startswith("/register/"):
-            token = p.path[len("/register/"):]
-            b = next((x for x in load_store("bookings", []) if x.get("reg_token") == token), None)
+            token = p.path[len("/register/"):].lower()
+            b = next((x for x in load_store("bookings", [])
+                      if x.get("reg_token") == token or x.get("reg_slug") == token), None)
             if not b: return self._redirect("/")
             form = self._body_form()
             name = (form.get("name") or "").strip()[:80]
@@ -1239,6 +1252,13 @@ class H(SimpleHTTPRequestHandler):
                     if "guest_cap" in body:
                         try: b["guest_cap"] = max(1, min(1000, int(body["guest_cap"]))) if body["guest_cap"] else None
                         except (TypeError, ValueError): b["guest_cap"] = None
+                    if "reg_slug" in body:
+                        slug = re.sub(r"^-+|-+$", "", re.sub(r"[^a-z0-9]+", "-", (str(body["reg_slug"] or "")).lower().strip()))[:60]
+                        if slug:
+                            if len(slug) < 3: return self._json({"error": "A custom address needs at least three characters."}, 400)
+                            if any(x.get("reg_slug") == slug and x["id"] != b["id"] for x in bookings):
+                                return self._json({"error": f"The address /register/{slug} is already taken by another reservation."}, 400)
+                        b["reg_slug"] = slug or None
                     save_store("bookings", bookings)
                     return self._json({"booking": b})
             return self._json({"error": "No such reservation"}, 404)

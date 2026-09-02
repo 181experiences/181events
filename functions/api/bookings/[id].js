@@ -35,6 +35,19 @@ export async function onRequestPatch({ request, params, env }) {
     const cap = b.guest_cap ? Math.max(1, Math.min(1000, Number(b.guest_cap) || 0)) || null : null;
     sets.push("guest_cap=?"); vals.push(cap);
   }
+  if ("reg_slug" in b) {
+    // A written address for the registration page. The token stays valid; this
+    // is the face. Lowercase words and hyphens, taken by at most one event.
+    const slug = String(b.reg_slug || "").toLowerCase().trim()
+      .replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 60);
+    if (slug) {
+      if (slug.length < 3) return json({ error: "A custom address needs at least three characters." }, 400);
+      const clash = await env.DB.prepare(
+        "SELECT id FROM bookings WHERE reg_slug=? AND id!=?").bind(slug, id).first();
+      if (clash) return json({ error: `The address /register/${slug} is already taken by another reservation.` }, 400);
+    }
+    sets.push("reg_slug=?"); vals.push(slug || null);
+  }
   if (!sets.length) return json({ error: "Nothing to change" }, 400);
   const row = await env.DB.prepare(
     `UPDATE bookings SET ${sets.join(",")} WHERE id=? RETURNING *`).bind(...vals, id).first();

@@ -1205,6 +1205,9 @@
   let guestsByBooking = {};
   const openGuestPanels = new Set();
 
+  // The registration page's address: the written one when set, else the token.
+  const regPath = b => `/register/${b.reg_slug || b.reg_token}`;
+
   function guestSection(b) {
     const g = guestsByBooking[b.id];
     const heads = r => r.plus_one ? 2 : 1;
@@ -1223,7 +1226,7 @@
       <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:14px 0 12px">
         <button class="mini" data-bkreg="${b.id}">${b.reg_open ? "Close registration" : "Open registration"}</button>
         <button class="mini ghost" data-bkcopy="${b.id}" title="The unguessable page the host sends to invitees">Copy registration link</button>
-        <a class="mini ghost" href="/register/${esc(b.reg_token)}" target="_blank" rel="noopener" title="The page invitees see, exactly as it stands">View page</a>
+        <a class="mini ghost" href="${esc(regPath(b))}" target="_blank" rel="noopener" title="The page invitees see, exactly as it stands">View page</a>
         <button class="mini ghost" data-bkprint="${b.id}" title="The list the desk and security run from">Print guest list</button>
         <span class="hint" style="margin:0">${b.reg_open ? "Registration is open" : "Registration is closed"}${b.guest_cap ? ` · cap ${b.guest_cap}` : ""}${g ? ` · ${g.length} ${g.length === 1 ? "party" : "parties"}, ${total} guests, ${inCount} arrived` : ""}</span>
       </div>
@@ -1325,6 +1328,7 @@
     $("#bk-start").value = b.start || ""; $("#bk-end").value = b.end_time || "";
     $("#bk-note").value = b.note || ""; $("#bk-event").value = b.event_name || "";
     $("#bk-host").value = b.host || ""; $("#bk-cap").value = b.guest_cap || "";
+    $("#bk-slug").value = b.reg_slug || "";
     $("#bk-formhead").style.display = "";
     $("#bk-formhead").textContent = `Editing ${b.event_name || b.space} · ${fmt(b.date)}`;
     document.querySelector("[data-addbooking]").style.display = "none";
@@ -1335,7 +1339,7 @@
   }
   function exitBkEdit() {
     editingBkId = null;
-    ["#bk-space", "#bk-date", "#bk-start", "#bk-end", "#bk-note", "#bk-event", "#bk-host", "#bk-cap"]
+    ["#bk-space", "#bk-date", "#bk-start", "#bk-end", "#bk-note", "#bk-event", "#bk-host", "#bk-cap", "#bk-slug"]
       .forEach(s => { $(s).value = ""; });
     $("#bk-formhead").style.display = "none";
     document.querySelector("[data-addbooking]").style.display = "";
@@ -1352,6 +1356,7 @@
         space, date, start: $("#bk-start").value.trim(), end: $("#bk-end").value.trim(),
         note: $("#bk-note").value.trim(), event_name: $("#bk-event").value.trim(),
         host: $("#bk-host").value.trim(), guest_cap: $("#bk-cap").value ? Number($("#bk-cap").value) : null,
+        reg_slug: $("#bk-slug").value.trim(),
       }) });
       Object.assign(b, d.booking);
       renderBookings();
@@ -1367,12 +1372,13 @@
       note: $("#bk-note").value.trim(),
       event_name: $("#bk-event").value.trim(), host: $("#bk-host").value.trim(),
       guest_cap: $("#bk-cap").value ? Number($("#bk-cap").value) : null,
+      reg_slug: $("#bk-slug").value.trim(),
     };
     if (!body.space || !body.date) { toast("A space and a date are needed.", "warn"); return; }
     try {
       const d = await api("/api/bookings", { method: "POST", body: JSON.stringify(body) });
       bookings.push(d.booking); renderBookings();
-      ["#bk-space", "#bk-date", "#bk-start", "#bk-end", "#bk-note", "#bk-event", "#bk-host", "#bk-cap"].forEach(s => $(s).value = "");
+      ["#bk-space", "#bk-date", "#bk-start", "#bk-end", "#bk-note", "#bk-event", "#bk-host", "#bk-cap", "#bk-slug"].forEach(s => $(s).value = "");
       toast(body.event_name
         ? "Reserved. Open its Guests panel to switch on registration and copy the link for the host."
         : "Reserved. It shows on the Spaces page immediately.");
@@ -1519,7 +1525,7 @@
       }
       if (r.dataset.bkcopy) {
         const b = bookings.find(x => String(x.id) === r.dataset.bkcopy); if (!b) return;
-        const link = `https://181residents.com/register/${b.reg_token}`;
+        const link = "https://181residents.com" + regPath(b);
         (navigator.clipboard ? navigator.clipboard.writeText(link) : Promise.reject())
           .then(() => toast("Registration link copied. The host sends it to the invitees."))
           .catch(() => prompt("Copy the registration link:", link));

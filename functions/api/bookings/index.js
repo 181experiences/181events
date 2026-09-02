@@ -41,12 +41,19 @@ export async function onRequestPost({ request, env }) {
   if (!space || !/^\d{4}-\d{2}-\d{2}$/.test(date)) return json({ error: "A space and a date are needed." }, 400);
   const start = String(b.start || "").trim(), end = String(b.end || "").trim();
   const cap = b.guest_cap ? Math.max(1, Math.min(1000, Number(b.guest_cap) || 0)) || null : null;
+  const slug = String(b.reg_slug || "").toLowerCase().trim()
+    .replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 60);
+  if (slug) {
+    if (slug.length < 3) return json({ error: "A custom address needs at least three characters." }, 400);
+    const clash = await env.DB.prepare("SELECT id FROM bookings WHERE reg_slug=?").bind(slug).first();
+    if (clash) return json({ error: `The address /register/${slug} is already taken by another reservation.` }, 400);
+  }
   const row = await env.DB.prepare(
     `INSERT INTO bookings (space, date, start, end_time, start24, note, created,
-                           event_name, host, reg_token, reg_open, guest_cap)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?) RETURNING *`)
+                           event_name, host, reg_token, reg_open, guest_cap, reg_slug)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?, ?) RETURNING *`)
     .bind(space, date, start, end, to24(start), String(b.note || "").trim(),
       new Date().toISOString(), String(b.event_name || "").trim() || null,
-      String(b.host || "").trim() || null, makeFeedToken(), cap).first();
+      String(b.host || "").trim() || null, makeFeedToken(), cap, slug || null).first();
   return json({ booking: { ...row, guest_parties: 0, guest_heads: 0, guest_arrived: 0 } }, 201);
 }
