@@ -64,9 +64,10 @@ function whenOf(ev) {
 // one section's chips can never be silently shadowed by the other's.
 function chips(section, type, current) {
   const chip = inner(section, "CHIP");
-  const max = type === "guest" ? 6 : 4;
+  // Three self-serve, then the doorway chip in the template: larger parties
+  // are arranged with staff, who can seat up to six from the dashboard.
   let out = "";
-  for (let n = 1; n <= max; n++) {
+  for (let n = 1; n <= 3; n++) {
     const label = type === "guest" ? String(n) : (n === 1 ? "Just me" : "+" + (n - 1));
     out += fill(chip, { N: n, LABEL: label, CHECKED: n === current ? "checked" : "" });
   }
@@ -239,10 +240,14 @@ export async function onRequestPost(context) {
       "/my", "My RSVPs");
   }
 
-  const maxCount = type === "guest" ? 6 : 4;
+  // The contact chip books nothing: it is a conversation, not a count.
+  if (String(form.get("count")) === "contact") {
+    return donePage(context, me, "Let&rsquo;s arrange it together",
+      "For a larger party, send us a note from the Message page, or a word at the front desk does it. Nothing is booked or changed yet.",
+      "/message", "Message Resident Experiences");
+  }
   let count = Math.round(Number(form.get("count")));
-  if (!Number.isFinite(count)) count = 1;
-  count = Math.max(1, Math.min(maxCount, count));
+  if (Number.isFinite(count)) count = Math.max(1, Math.min(3, count));
   const names = String(form.get("names") || "").trim().slice(0, 120);
 
   // Who holds what decides who gets what. A confirmed party never forfeits its
@@ -254,6 +259,10 @@ export async function onRequestPost(context) {
   const closed = rsvpClosed(ev);
   const mine = await myRsvp(env, me.id, key);
   const held = mine && mine.status === "Confirmed" ? mine : null;
+  // A save with no chip chosen keeps the party as it stands. This matters for
+  // staff-arranged parties above three, which no chip represents: an untouched
+  // form must never quietly shrink them.
+  if (!Number.isFinite(count)) count = mine && mine.status !== "Cancelled" ? mine.count : 1;
   let status = "Confirmed";
   if (closed && held && count > held.count) {
     return donePage(context, me, "RSVPs have closed",

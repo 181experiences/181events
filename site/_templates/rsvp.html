@@ -27,7 +27,11 @@
 <form method="post" action="/rsvp/{{KEY}}" class="pageform">
 <input type="hidden" name="action" value="rsvp">
 <div class="flabel2">{{COUNTLABEL}}</div>
-<div class="gchips"><!--CHIP--><input class="state" type="radio" name="count" id="c{{N}}" value="{{N}}" {{CHECKED}}><label class="gchip" for="c{{N}}">{{LABEL}}</label><!--/CHIP--></div>
+<!--CHIP--><input class="state" type="radio" name="count" id="c{{N}}" value="{{N}}" {{CHECKED}}><label class="gchip chipflow" for="c{{N}}">{{LABEL}}</label><!--/CHIP-->
+<input class="state" type="radio" name="count" id="ccontact" value="contact"><label class="gchip chipflow" for="ccontact">Please contact me</label>
+<div class="contactnote">Happy to. For a larger party, send us a note from the
+<a class="rlink" href="/message">Message page</a>, or a word at the front desk does it,
+and we&rsquo;ll arrange it together.</div>
 <label class="field"><span>Their names, if you&rsquo;d like us to know</span>
 <input type="text" name="names" value="{{NAMES}}" autocomplete="off" autocapitalize="words" placeholder="Optional"></label>
 <button class="btn" type="submit">Save Changes</button>
@@ -51,7 +55,11 @@ your request joins the waitlist, lands with Resident Experiences, and we reach o
 <form method="post" action="/rsvp/{{KEY}}" class="pageform">
 <input type="hidden" name="action" value="rsvp">
 <div class="flabel2">{{COUNTLABEL}}</div>
-<div class="gchips"><!--CHIP--><input class="state" type="radio" name="count" id="c{{N}}" value="{{N}}" {{CHECKED}}><label class="gchip" for="c{{N}}">{{LABEL}}</label><!--/CHIP--></div>
+<!--CHIP--><input class="state" type="radio" name="count" id="c{{N}}" value="{{N}}" {{CHECKED}}><label class="gchip chipflow" for="c{{N}}">{{LABEL}}</label><!--/CHIP-->
+<input class="state" type="radio" name="count" id="ccontact" value="contact"><label class="gchip chipflow" for="ccontact">Please contact me</label>
+<div class="contactnote">Happy to. For a larger party, send us a note from the
+<a class="rlink" href="/message">Message page</a>, or a word at the front desk does it,
+and we&rsquo;ll arrange it together.</div>
 <label class="field"><span>Their names, if you&rsquo;d like us to know</span>
 <input type="text" name="names" value="{{NAMES}}" autocomplete="off" autocapitalize="words" placeholder="Optional"></label>
 <button class="btn" type="submit">{{BTNTEXT}}</button>

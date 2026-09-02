@@ -68,6 +68,11 @@
     color:var(--ink);padding:0 18px;cursor:pointer}
   .gchip:hover{border-color:var(--red)}
   .state:checked + .gchip{background:var(--ink);color:var(--paper-2);border-color:var(--ink)}
+  .gchip.chipflow{display:inline-flex;margin:0 10px 10px 0;vertical-align:top}
+  .contactnote{display:none;background:#f4ecd9;border-radius:var(--radius);padding:18px 20px;margin:14px 0 6px;
+    font-size:17px;color:#5b4a1f;line-height:1.55;max-width:34em}
+  #ccontact:checked ~ .contactnote{display:block}
+  #ccontact:checked ~ .field,#ccontact:checked ~ button.btn{display:none}
   .guestbox,.statebox{background:var(--paper-2);border:1px solid var(--line);border-radius:var(--radius);padding:24px;margin:26px 0 0}
   .statebox{border-left:3px solid var(--red)}
   .gq,.statebox h2{font-family:var(--fd);font-size:clamp(19px,4.8vw,24px);color:var(--ink);line-height:1.25}

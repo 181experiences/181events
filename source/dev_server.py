@@ -211,9 +211,9 @@ def when_of(e):
 
 def chips_html(section, rsvp_type, current):
     chip = inner(section, "CHIP")
-    mx = 6 if rsvp_type == "guest" else 4
+    # Three self-serve; the template's contact chip is the doorway for more.
     out = ""
-    for n in range(1, mx + 1):
+    for n in range(1, 4):
         label = str(n) if rsvp_type == "guest" else ("Just me" if n == 1 else f"+{n - 1}")
         out += fill(chip, dict(N=n, LABEL=label, CHECKED="checked" if n == current else ""))
     return out
@@ -1032,9 +1032,15 @@ class H(SimpleHTTPRequestHandler):
                 return self._html(done_page(me, "Cancelled",
                     "You&rsquo;re off the list for this one, and always welcome to change your mind while there&rsquo;s room.",
                     "/my", "My RSVPs"))
-            mx = 6 if rsvp_type == "guest" else 4
-            try: count = max(1, min(mx, int(form.get("count") or 1)))
-            except ValueError: count = 1
+            if (form.get("count") or "") == "contact":
+                return self._html(done_page(me, "Let&rsquo;s arrange it together",
+                    "For a larger party, send us a note from the Message page, or a word at the front desk does it. Nothing is booked or changed yet.",
+                    "/message", "Message Resident Experiences"))
+            try: count = max(1, min(3, int(form.get("count"))))
+            except (TypeError, ValueError):
+                # No chip chosen keeps the party as it stands, so a staff-seated
+                # party above three never quietly shrinks on an untouched save.
+                count = mine["count"] if mine and mine["status"] != "Cancelled" else 1
             names = (form.get("names") or "").strip()[:120]
             cap = int(e["Capacity"]) if e.get("Capacity") else None
             # Mirrors the Cloudflare rules exactly: a confirmed party never

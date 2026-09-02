@@ -937,6 +937,11 @@ SHELL_CSS = '''
     color:var(--ink);padding:0 18px;cursor:pointer}
   .gchip:hover{border-color:var(--red)}
   .state:checked + .gchip{background:var(--ink);color:var(--paper-2);border-color:var(--ink)}
+  .gchip.chipflow{display:inline-flex;margin:0 10px 10px 0;vertical-align:top}
+  .contactnote{display:none;background:#f4ecd9;border-radius:var(--radius);padding:18px 20px;margin:14px 0 6px;
+    font-size:17px;color:#5b4a1f;line-height:1.55;max-width:34em}
+  #ccontact:checked ~ .contactnote{display:block}
+  #ccontact:checked ~ .field,#ccontact:checked ~ button.btn{display:none}
   .guestbox,.statebox{background:var(--paper-2);border:1px solid var(--line);border-radius:var(--radius);padding:24px;margin:26px 0 0}
   .statebox{border-left:3px solid var(--red)}
   .gq,.statebox h2{font-family:var(--fd);font-size:clamp(19px,4.8vw,24px);color:var(--ink);line-height:1.25}
@@ -1048,8 +1053,17 @@ In Google Calendar or Outlook, add a calendar from this address. It is yours alo
 <div class="urlline">{{FEEDURL}}</div></div>
 <form method="post" action="/signout" class="signoutform"><button type="submit">Sign out of this device</button></form>'''
 
+# Parties self-serve to three: just me, plus one, plus two. The fourth chip is
+# a doorway, not a number: choosing it swaps the button for a note (pure CSS,
+# radio-driven like everything else) pointing at the Message page and the desk,
+# and the server books nothing for it. Larger parties are arranged with staff,
+# who can seat up to six from the dashboard.
 RSVP_CHIPS = '''<div class="flabel2">{{COUNTLABEL}}</div>
-<div class="gchips"><!--CHIP--><input class="state" type="radio" name="count" id="c{{N}}" value="{{N}}" {{CHECKED}}><label class="gchip" for="c{{N}}">{{LABEL}}</label><!--/CHIP--></div>
+<!--CHIP--><input class="state" type="radio" name="count" id="c{{N}}" value="{{N}}" {{CHECKED}}><label class="gchip chipflow" for="c{{N}}">{{LABEL}}</label><!--/CHIP-->
+<input class="state" type="radio" name="count" id="ccontact" value="contact"><label class="gchip chipflow" for="ccontact">Please contact me</label>
+<div class="contactnote">Happy to. For a larger party, send us a note from the
+<a class="rlink" href="/message">Message page</a>, or a word at the front desk does it,
+and we&rsquo;ll arrange it together.</div>
 <label class="field"><span>Their names, if you&rsquo;d like us to know</span>
 <input type="text" name="names" value="{{NAMES}}" autocomplete="off" autocapitalize="words" placeholder="Optional"></label>'''
 
