@@ -252,8 +252,14 @@ def cutoff_iso(e):
     return f"{y - 1}-{mon:02d}-{int(m.group(2)):02d}" if iso > e["Date"] else iso
 
 def rsvp_closed(e):
+    if e.get("Closed"):   # the editor's switch: closed right now, by hand
+        return True
     c = cutoff_iso(e)
     return bool(c and today() > c)
+
+def closed_line(e, prefix):
+    p = cutoff_pretty(e) if cutoff_iso(e) and not e.get("Closed") else ""
+    return f"{prefix} closed {p}" if p else f"{prefix} are closed"
 
 def cutoff_pretty(e):
     c = cutoff_iso(e)
@@ -312,7 +318,7 @@ def rsvp_page(e, key, me):
                        ("FULLNOTE", full and not closed and rsvp_type != "guest")]:
         section = cut(section, name, inner(section, name) if keep else None)
     section = cut(section, "CLOSEDNOTE",
-                  fill(inner(section, "CLOSEDNOTE"), dict(CLOSEDON=esc(cutoff_pretty(e)))) if closed else None)
+                  fill(inner(section, "CLOSEDNOTE"), dict(CLOSEDLINE=esc(closed_line(e, "RSVPs for this one")))) if closed else None)
     section = cut(section, "CHIP", chips_html(section, rsvp_type, 1))
     if closed or (full and rsvp_type != "guest"): btn = "Join the Waitlist"
     elif rsvp_type == "guest": btn = "Register Guests"
@@ -1027,7 +1033,7 @@ class H(SimpleHTTPRequestHandler):
             if closed and held and count > held["count"]:
                 n = held["count"]
                 return self._html(done_page(me, "RSVPs have closed",
-                    f"Your {'seat stands' if n == 1 else str(n) + ' seats stand'} exactly as they were. RSVPs closed {cutoff_pretty(e)}, so a larger party takes a word to Resident Experiences: send us a Message or ask the front desk, and we&rsquo;ll try.",
+                    f"Your {'seat stands' if n == 1 else str(n) + ' seats stand'} exactly as they were. {closed_line(e, 'RSVPs')}, so a larger party takes a word to Resident Experiences: send us a Message or ask the front desk, and we&rsquo;ll try.",
                     "/my", "My RSVPs"))
             status = "Confirmed"
             if closed and not held:
@@ -1065,7 +1071,7 @@ class H(SimpleHTTPRequestHandler):
             if status == "Waitlist":
                 if closed:
                     return self._html(done_page(me, "Your request is in",
-                        f"RSVPs closed {cutoff_pretty(e)}, so this went to Resident Experiences as a request rather than a booking. We&rsquo;ll reach out with a yes or a no.",
+                        f"{closed_line(e, 'RSVPs')}, so this went to Resident Experiences as a request rather than a booking. We&rsquo;ll reach out with a yes or a no.",
                         "/my", "My RSVPs"))
                 return self._html(done_page(me, "You&rsquo;re on the waitlist",
                     "Every seat is spoken for at the moment. You hold a place in the order requests arrived, and Resident Experiences will reach out if one opens.",

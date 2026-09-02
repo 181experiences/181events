@@ -581,7 +581,11 @@
     <div class="field"><label class="fl" for="f-cutoff">RSVP closes</label><input class="inp" type="date" id="f-cutoff">
       <div class="hint">End of that day, Pacific. From the next morning the button reads Join the Waitlist, and requests
       come to you for a yes or a no (Confirm seats is the yes). Blank keeps RSVPs open. Workshops close the Monday of the
-      event week, so materials are ordered against a firm count.</div></div>
+      event week, so materials are ordered against a firm count.</div>
+      <label class="check" style="margin-top:12px"><input type="checkbox" id="f-closed"> Close RSVPs now</label>
+      <div class="hint">The by-hand switch, for a sudden max or a change of plans: the button turns to Join the
+      Waitlist the moment this publishes. Capacity and the close date above already do this on their own schedule;
+      untick to reopen.</div></div>
     <div class="field f-full"><label class="fl" for="f-desc">Description</label>
       <div class="fmtbar">
         <button type="button" class="mini" data-fmt="strong" title="Bold the selected text"><strong>B</strong></button>
@@ -1234,6 +1238,7 @@
     set("#f-price", e.Price); set("#f-cutoff", cutoffIso(e.Cutoff, e.Date)); set("#f-desc", e.Description); set("#f-slug", e.Slug || "");
     $("#f-marquee").checked = e.Marquee === true || e.Marquee === "True";
     $("#f-teaser").checked = e.Teaser === true || e.Teaser === "True";
+    $("#f-closed").checked = e.Closed === true || e.Closed === "True";
     $$("input[name=cat]").forEach((r, i) => r.checked = CATS[i] === e.Category);
     $$("input[name=rt]").forEach((r, i) => r.checked = RSVPS[i] === (e.RSVP || "None"));
     const counted = e.Counted === true || e.Counted === "True";
@@ -1353,7 +1358,7 @@
       Category: pick("cat", CATS), RSVP: pick("rt", RSVPS),
       Capacity: $("#f-cap").value ? Number($("#f-cap").value) : null, Price: $("#f-price").value.trim(),
       Series: $("#f-series").value.trim(), Cutoff: $("#f-cutoff").value.trim(), Description: $("#f-desc").value.trim(),
-      Marquee: $("#f-marquee").checked, Teaser: $("#f-teaser").checked,
+      Marquee: $("#f-marquee").checked, Teaser: $("#f-teaser").checked, Closed: $("#f-closed").checked,
       Counted: $("#co-0").checked, Moved: editing.row ? !!editing.row.Moved : false,
       Slug: $("#f-slug").value.trim() || slugify(title),
     };
@@ -1370,7 +1375,7 @@
   }
 
   // Which field changes ripple across a series when "apply to every upcoming occurrence" is ticked.
-  const SERIES_FIELDS = ["Title", "Start", "End", "Start24", "Location", "Host", "Category", "RSVP", "Capacity", "Price", "Series", "Cutoff", "Description", "Counted", "Image", "Status", "Teaser"];
+  const SERIES_FIELDS = ["Title", "Start", "End", "Start24", "Location", "Host", "Category", "RSVP", "Capacity", "Price", "Series", "Cutoff", "Description", "Counted", "Image", "Status", "Teaser", "Closed"];
 
   async function save(status) {
     const f = readForm();

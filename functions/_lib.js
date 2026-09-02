@@ -2,14 +2,14 @@
 // The API speaks the same field names the admin and the build use: Status, Date, Title, ...
 
 export const FIELDS = ["Status","Date","Title","Category","Start","End","Start24","Location","Host",
-  "RSVP","Capacity","Price","Series","Description","Cutoff","Marquee","Counted","Moved","Image","Slug","Teaser"];
+  "RSVP","Capacity","Price","Series","Description","Cutoff","Marquee","Counted","Moved","Image","Slug","Teaser","Closed"];
 
 // SQL column per field. "End" would collide with the SQL keyword, so it gets its own name.
 export const COLS = { Status: "status", Date: "date", Title: "title", Category: "category",
   Start: "start", End: "end_time", Start24: "start24", Location: "location", Host: "host",
   RSVP: "rsvp", Capacity: "capacity", Price: "price", Series: "series", Description: "description",
   Cutoff: "cutoff", Marquee: "marquee", Counted: "counted", Moved: "moved", Image: "image", Slug: "slug",
-  Teaser: "teaser" };
+  Teaser: "teaser", Closed: "closed" };
 
 export const CREATE_SQL = `CREATE TABLE IF NOT EXISTS events (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -17,7 +17,7 @@ export const CREATE_SQL = `CREATE TABLE IF NOT EXISTS events (
   category TEXT, start TEXT, end_time TEXT, start24 TEXT, location TEXT, host TEXT,
   rsvp TEXT, capacity INTEGER, price TEXT, series TEXT, description TEXT, cutoff TEXT,
   marquee INTEGER DEFAULT 0, counted INTEGER DEFAULT 1, moved INTEGER DEFAULT 0,
-  image TEXT, slug TEXT, teaser INTEGER DEFAULT 0, draft_json TEXT
+  image TEXT, slug TEXT, teaser INTEGER DEFAULT 0, draft_json TEXT, closed INTEGER DEFAULT 0
 )`;
 
 // Change history: one row per meaningful edit, carrying who, when, what changed
@@ -41,6 +41,7 @@ export async function ensureEventTables(env) {
   await env.DB.prepare(CREATE_SQL).run();
   try { await env.DB.prepare("ALTER TABLE events ADD COLUMN teaser INTEGER DEFAULT 0").run(); } catch (e) {}
   try { await env.DB.prepare("ALTER TABLE events ADD COLUMN draft_json TEXT").run(); } catch (e) {}
+  try { await env.DB.prepare("ALTER TABLE events ADD COLUMN closed INTEGER DEFAULT 0").run(); } catch (e) {}
   await env.DB.batch(EVENT_SIDE_TABLES.map(s => env.DB.prepare(s)));
   eventTablesEnsured = true;
 }
@@ -322,7 +323,7 @@ export function fromRow(r) {
   const out = { id: String(r.id) };
   for (const f of FIELDS) {
     let v = r[COLS[f]];
-    if (["Marquee", "Counted", "Moved", "Teaser"].includes(f)) v = !!v;
+    if (["Marquee", "Counted", "Moved", "Teaser", "Closed"].includes(f)) v = !!v;
     if (v === null) v = f === "Capacity" ? null : "";
     out[f] = v;
   }
@@ -337,7 +338,7 @@ export function toCols(fields) {
     if (!(f in fields)) continue;
     let v = fields[f];
     if (f === "Capacity") v = (v === "" || v == null) ? null : Number(v);
-    if (["Marquee", "Counted", "Moved", "Teaser"].includes(f)) v = v ? 1 : 0;
+    if (["Marquee", "Counted", "Moved", "Teaser", "Closed"].includes(f)) v = v ? 1 : 0;
     cols.push(COLS[f]); vals.push(v === undefined ? null : v);
   }
   return { cols, vals };

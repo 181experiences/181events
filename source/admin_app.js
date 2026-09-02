@@ -231,6 +231,7 @@
     set("#f-price", e.Price); set("#f-cutoff", cutoffIso(e.Cutoff, e.Date)); set("#f-desc", e.Description); set("#f-slug", e.Slug || "");
     $("#f-marquee").checked = e.Marquee === true || e.Marquee === "True";
     $("#f-teaser").checked = e.Teaser === true || e.Teaser === "True";
+    $("#f-closed").checked = e.Closed === true || e.Closed === "True";
     $$("input[name=cat]").forEach((r, i) => r.checked = CATS[i] === e.Category);
     $$("input[name=rt]").forEach((r, i) => r.checked = RSVPS[i] === (e.RSVP || "None"));
     const counted = e.Counted === true || e.Counted === "True";
@@ -350,7 +351,7 @@
       Category: pick("cat", CATS), RSVP: pick("rt", RSVPS),
       Capacity: $("#f-cap").value ? Number($("#f-cap").value) : null, Price: $("#f-price").value.trim(),
       Series: $("#f-series").value.trim(), Cutoff: $("#f-cutoff").value.trim(), Description: $("#f-desc").value.trim(),
-      Marquee: $("#f-marquee").checked, Teaser: $("#f-teaser").checked,
+      Marquee: $("#f-marquee").checked, Teaser: $("#f-teaser").checked, Closed: $("#f-closed").checked,
       Counted: $("#co-0").checked, Moved: editing.row ? !!editing.row.Moved : false,
       Slug: $("#f-slug").value.trim() || slugify(title),
     };
@@ -367,7 +368,7 @@
   }
 
   // Which field changes ripple across a series when "apply to every upcoming occurrence" is ticked.
-  const SERIES_FIELDS = ["Title", "Start", "End", "Start24", "Location", "Host", "Category", "RSVP", "Capacity", "Price", "Series", "Cutoff", "Description", "Counted", "Image", "Status", "Teaser"];
+  const SERIES_FIELDS = ["Title", "Start", "End", "Start24", "Location", "Host", "Category", "RSVP", "Capacity", "Price", "Series", "Cutoff", "Description", "Counted", "Image", "Status", "Teaser", "Closed"];
 
   async function save(status) {
     const f = readForm();

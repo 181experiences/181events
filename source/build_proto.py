@@ -132,8 +132,14 @@ def cutoff_pretty(e):
     return f'{d.strftime("%A")}, {_MON_PRETTY[d.month]} {d.day}'
 
 def rsvp_closed(e):
+    if e.get("closed"):   # the editor's switch: closed right now, by hand
+        return True
     d = cutoff_date(e)
     return bool(d and TODAY > d)
+
+def closed_line(e):
+    p = cutoff_pretty(e) if cutoff_date(e) and not e.get("closed") else ""
+    return f"RSVPs closed {p}" if p else "RSVPs are closed for this one"
 
 def tag_for(e):
     if e.get("far"):
@@ -340,7 +346,7 @@ def event_screen(e):
         # instead of books: the request lands on the waitlist, Resident
         # Experiences sees it, and Confirm seats (or a call) is the answer.
         cta += f'<a class="btn" href="{rsvp_href}">Join the Waitlist</a>'
-        note = (f"RSVPs closed {cutoff_pretty(e)}. You can still ask: a request joins the waitlist, "
+        note = (f"{closed_line(e)}. You can still ask: a request joins the waitlist, "
                 "lands with Resident Experiences, and we reach out with a yes or a no.")
     elif e["rsvp"] == "guest":
         guest_ui = ('<div class="guestbox"><div class="gq">Bringing someone from outside the building?</div>'
@@ -1086,7 +1092,7 @@ guests from outside the building, so we can pour and plate for them.</div></div>
 with your confirmation, never on this site.</p></div><!--/PAID-->
 <!--FULLNOTE--><div class="fullnote">Every seat is spoken for at the moment. Join the waitlist and
 you hold a place in line, in the order requests arrived.</div><!--/FULLNOTE-->
-<!--CLOSEDNOTE--><div class="fullnote">RSVPs for this one closed {{CLOSEDON}}. You can still ask:
+<!--CLOSEDNOTE--><div class="fullnote">{{CLOSEDLINE}}. You can still ask:
 your request joins the waitlist, lands with Resident Experiences, and we reach out with a yes or a no.</div><!--/CLOSEDNOTE-->
 <form method="post" action="/rsvp/{{KEY}}" class="pageform">
 <input type="hidden" name="action" value="rsvp">

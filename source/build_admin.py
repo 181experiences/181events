@@ -577,7 +577,11 @@ HTML = f'''<!DOCTYPE html>
     <div class="field"><label class="fl" for="f-cutoff">RSVP closes</label><input class="inp" type="date" id="f-cutoff">
       <div class="hint">End of that day, Pacific. From the next morning the button reads Join the Waitlist, and requests
       come to you for a yes or a no (Confirm seats is the yes). Blank keeps RSVPs open. Workshops close the Monday of the
-      event week, so materials are ordered against a firm count.</div></div>
+      event week, so materials are ordered against a firm count.</div>
+      <label class="check" style="margin-top:12px"><input type="checkbox" id="f-closed"> Close RSVPs now</label>
+      <div class="hint">The by-hand switch, for a sudden max or a change of plans: the button turns to Join the
+      Waitlist the moment this publishes. Capacity and the close date above already do this on their own schedule;
+      untick to reopen.</div></div>
     <div class="field f-full"><label class="fl" for="f-desc">Description</label>
       <div class="fmtbar">
         <button type="button" class="mini" data-fmt="strong" title="Bold the selected text"><strong>B</strong></button>

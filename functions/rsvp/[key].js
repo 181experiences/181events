@@ -37,8 +37,13 @@ function cutoffIso(ev) {
   return mk(y) > ev.date ? mk(y - 1) : mk(y);
 }
 function rsvpClosed(ev) {
+  if (ev.closed) return true;   // the editor's switch: closed right now, by hand
   const c = cutoffIso(ev);
   return !!(c && todayPacific() > c);
+}
+function closedLine(ev, prefix) {
+  const p = cutoffIso(ev) && !ev.closed ? cutoffPretty(ev) : "";
+  return p ? `${prefix} closed ${p}` : `${prefix} are closed`;
 }
 const MON_PRETTY = [null, "Jan", "Feb", "Mar", "Apr", "May", "June", "July", "Aug", "Sept", "Oct", "Nov", "Dec"];
 function cutoffPretty(ev) {
@@ -163,7 +168,7 @@ async function rsvpPage(context, ev, key, me) {
   section = cut(section, "PAID", type === "paid" && !closed ? inner(section, "PAID") : null);
   section = cut(section, "FULLNOTE", full && !closed && type !== "guest" ? inner(section, "FULLNOTE") : null);
   section = cut(section, "CLOSEDNOTE", closed
-    ? fill(inner(section, "CLOSEDNOTE"), { CLOSEDON: esc(cutoffPretty(ev)) })
+    ? fill(inner(section, "CLOSEDNOTE"), { CLOSEDLINE: esc(closedLine(ev, "RSVPs for this one")) })
     : null);
   section = cut(section, "CHIP", chips(section, type, 1));
   const btn = closed || (full && type !== "guest") ? "Join the Waitlist"
@@ -252,7 +257,7 @@ export async function onRequestPost(context) {
   let status = "Confirmed";
   if (closed && held && count > held.count) {
     return donePage(context, me, "RSVPs have closed",
-      `Your ${held.count === 1 ? "seat stands" : held.count + " seats stand"} exactly as they were. RSVPs closed ${cutoffPretty(ev)}, so a larger party takes a word to Resident Experiences: send us a Message or ask the front desk, and we&rsquo;ll try.`,
+      `Your ${held.count === 1 ? "seat stands" : held.count + " seats stand"} exactly as they were. ${closedLine(ev, "RSVPs")}, so a larger party takes a word to Resident Experiences: send us a Message or ask the front desk, and we&rsquo;ll try.`,
       "/my", "My RSVPs");
   }
   if (closed && !held) {
@@ -299,7 +304,7 @@ export async function onRequestPost(context) {
   if (status === "Waitlist") {
     if (closed) {
       return donePage(context, me, "Your request is in",
-        `RSVPs closed ${cutoffPretty(ev)}, so this went to Resident Experiences as a request rather than a booking. We&rsquo;ll reach out with a yes or a no.`,
+        `${closedLine(ev, "RSVPs")}, so this went to Resident Experiences as a request rather than a booking. We&rsquo;ll reach out with a yes or a no.`,
         "/my", "My RSVPs");
     }
     return donePage(context, me, "You&rsquo;re on the waitlist",
