@@ -724,7 +724,7 @@ HTML = f'''<!DOCTYPE html>
       <span class="hint" id="bk-addhint" style="margin:0">Registration starts closed; open it from the reservation&rsquo;s guest panel below.</span>
     </div>
   </div>
-  <div class="evlist" id="bklist"></div>
+  <div id="bklist"></div>
 </div></section>
 
 <!-- ================= MESSAGES ================= -->

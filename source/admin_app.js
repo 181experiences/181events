@@ -1204,9 +1204,8 @@
   let guestsByBooking = {};
   const openGuestPanels = new Set();
 
-  function guestPanel(b) {
+  function guestSection(b) {
     const g = guestsByBooking[b.id];
-    const link = `https://181residents.com/register/${b.reg_token}`;
     const heads = r => r.plus_one ? 2 : 1;
     const rows = !g ? '<div class="nodata" style="padding:12px">Loading&hellip;</div>'
       : !g.length ? '<div class="nodata" style="padding:12px">Nobody registered yet. Copy the link and the host sends it to the invitees.</div>'
@@ -1219,10 +1218,11 @@
           </span></div>`).join("");
     const total = (g || []).reduce((a, r) => a + heads(r), 0);
     const inCount = (g || []).filter(r => r.arrived).length;
-    return `<div class="card" data-gpanel="${b.id}" style="margin:4px 0 12px">
-      <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:12px">
+    return `
+      <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:14px 0 12px">
         <button class="mini" data-bkreg="${b.id}">${b.reg_open ? "Close registration" : "Open registration"}</button>
         <button class="mini ghost" data-bkcopy="${b.id}" title="The unguessable page the host sends to invitees">Copy registration link</button>
+        <a class="mini ghost" href="/register/${esc(b.reg_token)}" target="_blank" rel="noopener" title="The page invitees see, exactly as it stands">View page</a>
         <button class="mini ghost" data-bkprint="${b.id}" title="The list the desk and security run from">Print guest list</button>
         <span class="hint" style="margin:0">${b.reg_open ? "Registration is open" : "Registration is closed"}${b.guest_cap ? ` · cap ${b.guest_cap}` : ""}${g ? ` · ${g.length} ${g.length === 1 ? "party" : "parties"}, ${total} guests, ${inCount} arrived` : ""}</span>
       </div>
@@ -1231,8 +1231,7 @@
         <div class="field" style="margin:0"><label class="fl" for="g-plus-${b.id}">Plus one</label><input class="inp" id="g-plus-${b.id}" autocapitalize="words" placeholder="Optional"></div>
         <button class="mini" data-gadd="${b.id}" style="margin-bottom:2px">Add</button>
       </div>
-      ${rows}
-    </div>`;
+      ${rows}`;
   }
 
   function renderBookings() {
@@ -1242,16 +1241,29 @@
     $("#bkcount").textContent = ahead.length
       ? `${ahead.length} reservation${ahead.length === 1 ? "" : "s"} ahead. Residents see the space and hours only, marked Reserved, never who or why.`
       : "Nothing reserved ahead. Residents see open rooms and can walk in anytime.";
-    box.innerHTML = ahead.map(b => `<div class="rrow">
-      <span class="rname">${b.event_name ? `${esc(b.event_name)}<em>${esc(b.space)}${b.host ? " · hosted by " + esc(b.host) : ""}${b.note ? " · " + esc(b.note) : ""}</em>` : `${esc(b.space)}${b.note ? `<em>${esc(b.note)} · staff only</em>` : ""}`}</span>
-      <span class="ecell">${esc(fmt(b.date))}</span>
-      <span class="ecell">${esc(b.start || "")}${b.end_time ? " – " + esc(b.end_time) : ""}</span>
-      <span class="eact">
-        ${b.event_name ? `<button class="mini${openGuestPanels.has(b.id) ? "" : " ghost"}" data-bkguests="${b.id}">Guests · ${b.guest_parties || 0}</button>` : ""}
-        <button class="mini ghost" data-bkedit="${b.id}" title="Space, date, hours, note, event name, host, cap">Edit</button>
-        <button class="mini ghost" data-unbook="${b.id}">Remove</button>
-      </span>
-    </div>${b.event_name && openGuestPanels.has(b.id) ? guestPanel(b) : ""}`).join("");
+    // Every reservation folds like a unit card: the header carries what the eye
+    // scans for, the body holds the working parts, and a private event's guest
+    // machinery lives inside its own card.
+    box.innerHTML = ahead.map(b => {
+      const open = openGuestPanels.has(b.id);
+      const isEvent = !!b.event_name;
+      const hours = b.start ? `${esc(b.start)}${b.end_time ? " – " + esc(b.end_time) : ""}` : "";
+      return `<div class="ucard${open ? " open" : ""}">
+        <div class="uhead" data-bkchev="${b.id}"><span class="chev">&#8250;</span>
+          <span>${esc(b.event_name || b.space)}</span>
+          <span style="font-weight:400;color:var(--stone)">${esc(fmt(b.date))}${hours ? " · " + hours : ""}</span>
+          <span class="ucount">${isEvent ? `${b.guest_parties || 0} ${(b.guest_parties || 0) === 1 ? "party" : "parties"} · ${b.guest_arrived || 0} in` : "reservation"}</span>
+        </div>
+        <div class="ubody"><div style="padding:12px 16px 16px">
+          <div style="font-size:13px;color:var(--ink-soft)">${isEvent ? `${esc(b.space)}${b.host ? " · hosted by " + esc(b.host) : ""}` : esc(b.space)}${b.note ? ` · ${esc(b.note)} <span style="color:var(--stone)">(staff only)</span>` : ""}</div>
+          <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:12px">
+            <button class="mini ghost" data-bkedit="${b.id}" title="Space, date, hours, note, event name, host, cap. The page invitees see is drawn from these.">Edit</button>
+            <button class="mini ghost" data-unbook="${b.id}">Remove</button>
+          </div>
+          ${isEvent ? guestSection(b) : ""}
+        </div></div>
+      </div>`;
+    }).join("");
   }
 
   async function loadGuests(bookingId) {
@@ -1473,7 +1485,7 @@
   }
 
   document.addEventListener("click", ev => {
-    const r = ev.target.closest("[data-rotate],[data-ends],[data-toggle],[data-rdelete],[data-resedit],[data-saveres],[data-cancelres],[data-edittoggle],[data-editdelete],[data-addres],[data-addbulk],[data-printcards],[data-mreplied],[data-marchive],[data-wconfirm],[data-redit],[data-rcancel],[data-addrsvp],[data-savearsvp],[data-closearsvp],[data-copylink],[data-aupload],[data-acanva],[data-adelete],[data-rsvpkey],[data-addbooking],[data-unbook],[data-bkguests],[data-bkreg],[data-bkcopy],[data-bkprint],[data-gadd],[data-garrive],[data-gdel],[data-bkedit],[data-savebk],[data-cancelbk]");
+    const r = ev.target.closest("[data-rotate],[data-ends],[data-toggle],[data-rdelete],[data-resedit],[data-saveres],[data-cancelres],[data-edittoggle],[data-editdelete],[data-addres],[data-addbulk],[data-printcards],[data-mreplied],[data-marchive],[data-wconfirm],[data-redit],[data-rcancel],[data-addrsvp],[data-savearsvp],[data-closearsvp],[data-copylink],[data-aupload],[data-acanva],[data-adelete],[data-rsvpkey],[data-addbooking],[data-unbook],[data-bkchev],[data-bkreg],[data-bkcopy],[data-bkprint],[data-gadd],[data-garrive],[data-gdel],[data-bkedit],[data-savebk],[data-cancelbk]");
     if (r) {
       if (r.dataset.bkedit) {
         const b = bookings.find(x => String(x.id) === r.dataset.bkedit);
@@ -1482,10 +1494,14 @@
       }
       if (r.dataset.savebk !== undefined) { saveBkEdit(); return; }
       if (r.dataset.cancelbk !== undefined) { exitBkEdit(); return; }
-      if (r.dataset.bkguests) {
-        const id = Number(r.dataset.bkguests);
+      if (r.dataset.bkchev) {
+        const id = Number(r.dataset.bkchev);
         if (openGuestPanels.has(id)) openGuestPanels.delete(id);
-        else { openGuestPanels.add(id); if (!guestsByBooking[id]) loadGuests(id); }
+        else {
+          openGuestPanels.add(id);
+          const b = bookings.find(x => x.id === id);
+          if (b && b.event_name && !guestsByBooking[id]) loadGuests(id);
+        }
         renderBookings();
         return;
       }
