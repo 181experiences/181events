@@ -1248,6 +1248,7 @@
       <span class="ecell">${esc(b.start || "")}${b.end_time ? " – " + esc(b.end_time) : ""}</span>
       <span class="eact">
         ${b.event_name ? `<button class="mini${openGuestPanels.has(b.id) ? "" : " ghost"}" data-bkguests="${b.id}">Guests · ${b.guest_parties || 0}</button>` : ""}
+        <button class="mini ghost" data-bkedit="${b.id}" title="Space, date, hours, note, event name, host, cap">Edit</button>
         <button class="mini ghost" data-unbook="${b.id}">Remove</button>
       </span>
     </div>${b.event_name && openGuestPanels.has(b.id) ? guestPanel(b) : ""}`).join("");
@@ -1300,6 +1301,50 @@
       return;
     }
     renderBookings();
+  }
+
+  // The reservation card doubles as the editor, same as the residents card:
+  // Edit fills it, the buttons swap, and the registration link never changes.
+  let editingBkId = null;
+  function enterBkEdit(b) {
+    editingBkId = b.id;
+    $("#bk-space").value = b.space || ""; $("#bk-date").value = b.date || "";
+    $("#bk-start").value = b.start || ""; $("#bk-end").value = b.end_time || "";
+    $("#bk-note").value = b.note || ""; $("#bk-event").value = b.event_name || "";
+    $("#bk-host").value = b.host || ""; $("#bk-cap").value = b.guest_cap || "";
+    $("#bk-formhead").style.display = "";
+    $("#bk-formhead").textContent = `Editing ${b.event_name || b.space} · ${fmt(b.date)}`;
+    document.querySelector("[data-addbooking]").style.display = "none";
+    $("#bk-addhint").style.display = "none";
+    document.querySelector("[data-savebk]").style.display = "";
+    document.querySelector("[data-cancelbk]").style.display = "";
+    $("#bk-formhead").closest(".card").scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+  function exitBkEdit() {
+    editingBkId = null;
+    ["#bk-space", "#bk-date", "#bk-start", "#bk-end", "#bk-note", "#bk-event", "#bk-host", "#bk-cap"]
+      .forEach(s => { $(s).value = ""; });
+    $("#bk-formhead").style.display = "none";
+    document.querySelector("[data-addbooking]").style.display = "";
+    $("#bk-addhint").style.display = "";
+    document.querySelector("[data-savebk]").style.display = "none";
+    document.querySelector("[data-cancelbk]").style.display = "none";
+  }
+  async function saveBkEdit() {
+    const b = bookings.find(x => x.id === editingBkId); if (!b) { exitBkEdit(); return; }
+    const space = $("#bk-space").value.trim(), date = $("#bk-date").value;
+    if (!space || !date) { toast("A space and a date are needed.", "warn"); return; }
+    try {
+      const d = await api("/api/bookings/" + b.id, { method: "PATCH", body: JSON.stringify({
+        space, date, start: $("#bk-start").value.trim(), end: $("#bk-end").value.trim(),
+        note: $("#bk-note").value.trim(), event_name: $("#bk-event").value.trim(),
+        host: $("#bk-host").value.trim(), guest_cap: $("#bk-cap").value ? Number($("#bk-cap").value) : null,
+      }) });
+      Object.assign(b, d.booking);
+      renderBookings();
+      exitBkEdit();
+      toast("Saved. The Spaces page and the registration page both show it now.");
+    } catch (e) { toast(e.message, "warn"); }
   }
 
   async function addBooking() {
@@ -1428,8 +1473,15 @@
   }
 
   document.addEventListener("click", ev => {
-    const r = ev.target.closest("[data-rotate],[data-ends],[data-toggle],[data-rdelete],[data-resedit],[data-saveres],[data-cancelres],[data-edittoggle],[data-editdelete],[data-addres],[data-addbulk],[data-printcards],[data-mreplied],[data-marchive],[data-wconfirm],[data-redit],[data-rcancel],[data-addrsvp],[data-savearsvp],[data-closearsvp],[data-copylink],[data-aupload],[data-acanva],[data-adelete],[data-rsvpkey],[data-addbooking],[data-unbook],[data-bkguests],[data-bkreg],[data-bkcopy],[data-bkprint],[data-gadd],[data-garrive],[data-gdel]");
+    const r = ev.target.closest("[data-rotate],[data-ends],[data-toggle],[data-rdelete],[data-resedit],[data-saveres],[data-cancelres],[data-edittoggle],[data-editdelete],[data-addres],[data-addbulk],[data-printcards],[data-mreplied],[data-marchive],[data-wconfirm],[data-redit],[data-rcancel],[data-addrsvp],[data-savearsvp],[data-closearsvp],[data-copylink],[data-aupload],[data-acanva],[data-adelete],[data-rsvpkey],[data-addbooking],[data-unbook],[data-bkguests],[data-bkreg],[data-bkcopy],[data-bkprint],[data-gadd],[data-garrive],[data-gdel],[data-bkedit],[data-savebk],[data-cancelbk]");
     if (r) {
+      if (r.dataset.bkedit) {
+        const b = bookings.find(x => String(x.id) === r.dataset.bkedit);
+        if (b) enterBkEdit(b);
+        return;
+      }
+      if (r.dataset.savebk !== undefined) { saveBkEdit(); return; }
+      if (r.dataset.cancelbk !== undefined) { exitBkEdit(); return; }
       if (r.dataset.bkguests) {
         const id = Number(r.dataset.bkguests);
         if (openGuestPanels.has(id)) openGuestPanels.delete(id);

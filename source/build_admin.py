@@ -706,6 +706,7 @@ HTML = f'''<!DOCTYPE html>
     and guests buzz in from the street by giving the event name.
   </div>
   <div class="card" style="margin-bottom:18px">
+    <div id="bk-formhead" style="display:none;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--red);font-weight:600;margin-bottom:12px"></div>
     <div style="display:grid;gap:12px 16px;grid-template-columns:repeat(auto-fit,minmax(150px,1fr))">
       <div class="field"><label class="fl" for="bk-space">Space</label><input class="inp" id="bk-space" list="spaces" autocapitalize="words" placeholder="Conference Room"><datalist id="spaces"><option value="Conference Room"><option value="Dining Room"><option value="Residents’ Club"><option value="Level 7 Terrace"></datalist></div>
       <div class="field"><label class="fl" for="bk-date">Date</label><input class="inp" id="bk-date" type="date"></div>
@@ -718,7 +719,9 @@ HTML = f'''<!DOCTYPE html>
     </div>
     <div style="margin-top:14px;display:flex;gap:12px;align-items:center;flex-wrap:wrap">
       <button class="btn" data-addbooking>Reserve the Space</button>
-      <span class="hint" style="margin:0">Registration starts closed; open it from the reservation&rsquo;s guest panel below.</span>
+      <button class="btn" data-savebk style="display:none">Save Changes</button>
+      <button class="mini ghost" data-cancelbk style="display:none">Close</button>
+      <span class="hint" id="bk-addhint" style="margin:0">Registration starts closed; open it from the reservation&rsquo;s guest panel below.</span>
     </div>
   </div>
   <div class="evlist" id="bklist"></div>

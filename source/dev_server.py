@@ -1214,6 +1214,19 @@ class H(SimpleHTTPRequestHandler):
             bookings = load_store("bookings", [])
             for b in bookings:
                 if str(b["id"]) == bid:
+                    if "space" in body:
+                        v = (str(body["space"] or "")).strip()
+                        if not v: return self._json({"error": "A space is needed."}, 400)
+                        b["space"] = v
+                    if "date" in body:
+                        v = (str(body["date"] or "")).strip()
+                        if not re.match(r"^\d{4}-\d{2}-\d{2}$", v):
+                            return self._json({"error": "Dates read as YYYY-MM-DD."}, 400)
+                        b["date"] = v
+                    if "start" in body:
+                        v = (str(body["start"] or "")).strip()
+                        b["start"] = v; b["start24"] = to24(v)
+                    if "end" in body: b["end_time"] = (str(body["end"] or "")).strip()
                     if "reg_open" in body: b["reg_open"] = 1 if body["reg_open"] else 0
                     for f in ("event_name", "host", "note"):
                         if f in body: b[f] = (str(body[f] or "")).strip() or None
