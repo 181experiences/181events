@@ -449,6 +449,7 @@ HTML = f'''<!DOCTYPE html>
     </div>
     <div class="sd">Confirmed parties and heads for upcoming dates, with waitlists. Open an event to see who, by unit; a unit appearing twice for one event is worth a glance, since a household can double-count itself. Edit or cancel any RSVP from the list, and a note to the resident opens ready to send from your own mailbox.</div>
     <div class="card" id="ar-card" style="display:none;margin-bottom:10px">
+      <div id="ar-head" style="display:none;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--red);font-weight:600;margin-bottom:12px"></div>
       <div style="display:grid;gap:12px 16px;grid-template-columns:repeat(auto-fit,minmax(190px,1fr))">
         <div class="field"><label class="fl" for="ar-person">Person</label><select class="inp" id="ar-person"></select></div>
         <div class="field"><label class="fl" for="ar-event">Event</label><select class="inp" id="ar-event"></select></div>

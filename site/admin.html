@@ -453,6 +453,7 @@
     </div>
     <div class="sd">Confirmed parties and heads for upcoming dates, with waitlists. Open an event to see who, by unit; a unit appearing twice for one event is worth a glance, since a household can double-count itself. Edit or cancel any RSVP from the list, and a note to the resident opens ready to send from your own mailbox.</div>
     <div class="card" id="ar-card" style="display:none;margin-bottom:10px">
+      <div id="ar-head" style="display:none;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--red);font-weight:600;margin-bottom:12px"></div>
       <div style="display:grid;gap:12px 16px;grid-template-columns:repeat(auto-fit,minmax(190px,1fr))">
         <div class="field"><label class="fl" for="ar-person">Person</label><select class="inp" id="ar-person"></select></div>
         <div class="field"><label class="fl" for="ar-event">Event</label><select class="inp" id="ar-event"></select></div>
@@ -1711,7 +1712,7 @@
   // A change made on someone's behalf deserves a word to them. No mail service
   // exists in this stack by design, so the word travels the same way the code
   // cards do: a pre-written email opens from the operator's own mailbox.
-  function notifyRsvp(r, kind) {
+  function notifyRsvp(r, kind, extra) {
     if (!r.email) {
       toast(`No email on file for ${r.name}${r.unit ? " · " + r.unit : ""}. A call or a word at the desk closes the loop.`);
       return;
@@ -1723,6 +1724,7 @@
     let line;
     if (kind === "cancel") line = `As requested, we have taken you off the list for ${r.event_title} on ${when}. If plans change again, you are always welcome back while there is room.`;
     else if (kind === "confirm") line = `Good news: room opened up for ${r.event_title} on ${when}, and your spot is confirmed, ${what}.`;
+    else if (kind === "moved") line = `As requested, your RSVP has moved: it now stands for ${r.event_title} on ${when}, ${what}${r.status === "Waitlist" ? ", currently on the waitlist" : ""}. It was for ${extra}.`;
     else line = `As requested, your RSVP for ${r.event_title} on ${when} is updated: ${what}${r.status === "Waitlist" ? ", currently on the waitlist" : ""}.`;
     const href = "mailto:" + encodeURIComponent(r.email)
       + "?subject=" + encodeURIComponent(`Your RSVP for ${r.event_title}, ${when}`)
@@ -1742,9 +1744,24 @@
       .catch(e => toast(e.message, "warn"));
   }
 
+  // The add card doubles as the RSVP editor, the same pattern as residents and
+  // reservations: Edit on a row fills it with the person held fixed, and the
+  // event select means a slip of the hand at booking time is two clicks to fix.
+  let editingRsvp = null;
+  function exitRsvpEdit() {
+    editingRsvp = null;
+    $("#ar-person").disabled = false;
+    $("#ar-head").style.display = "none";
+    const sb = document.querySelector("[data-savearsvp]");
+    if (sb) sb.textContent = "Save RSVP";
+    $("#ar-names").value = "";
+    $("#ar-card").style.display = "none";
+  }
+
   function openAddRsvp() {
     const card = $("#ar-card");
-    if (card.style.display !== "none") { card.style.display = "none"; return; }
+    if (editingRsvp) exitRsvpEdit();
+    else if (card.style.display !== "none") { card.style.display = "none"; return; }
     const people = residents.filter(p => p.status === "Active")
       .sort((a, b) => (a.unit + a.name).localeCompare(b.unit + b.name, undefined, { numeric: true }));
     $("#ar-person").innerHTML = people.map(p => `<option value="${p.id}">${esc(p.label)}</option>`).join("");
@@ -1754,6 +1771,59 @@
     $("#ar-event").innerHTML = evs.map(e => `<option value="${esc(stem(e))}">${esc(fmt(e.Date))} · ${esc(e.Title)}${e.RSVP === "Guest count" ? " (outside guests)" : ""}</option>`).join("");
     if (!people.length || !evs.length) { toast("Needs at least one active person and one live upcoming event.", "warn"); return; }
     card.style.display = "";
+  }
+
+  function openRsvpEdit(row) {
+    exitRsvpEdit();
+    openAddRsvp();
+    if ($("#ar-card").style.display === "none") return;
+    editingRsvp = row;
+    $("#ar-person").value = String(row.resident_id);
+    $("#ar-person").disabled = true;
+    if (![...$("#ar-event").options].some(o => o.value === row.event_key)) {
+      $("#ar-event").insertAdjacentHTML("afterbegin",
+        `<option value="${esc(row.event_key)}">${esc(fmt(row.event_date))} · ${esc(row.event_title)} (current)</option>`);
+    }
+    $("#ar-event").value = row.event_key;
+    $("#ar-count").value = String(Math.min(6, Math.max(1, row.count)));
+    $("#ar-names").value = row.names || "";
+    $("#ar-head").style.display = "";
+    $("#ar-head").textContent = `Editing ${row.name}'s RSVP · now ${row.event_title}, ${fmt(row.event_date)}`;
+    const sb = document.querySelector("[data-savearsvp]");
+    if (sb) sb.textContent = "Save Changes";
+    $("#ar-card").scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+
+  async function saveRsvpEdit() {
+    const row = editingRsvp; if (!row) return;
+    const newKey = $("#ar-event").value;
+    const count = Number($("#ar-count").value);
+    const names = $("#ar-names").value.trim();
+    if (newKey === row.event_key) {
+      patchRsvp(row.id, { count, names }, updated => {
+        exitRsvpEdit();
+        toast("Updated. A note to the resident is opening; send it so the change is in writing.");
+        if (updated) notifyRsvp(updated, "update");
+      });
+      return;
+    }
+    // A move books the new event first, so its own capacity and waitlist rules
+    // give the honest answer; only then is the old seat released.
+    try {
+      const d = await api("/api/rsvps", { method: "POST",
+        body: JSON.stringify({ resident_id: row.resident_id, event_key: newKey, count, names }) });
+      await api("/api/rsvps/" + row.id, { method: "PATCH", body: JSON.stringify({ status: "Cancelled" }) });
+      rsvps = rsvps.filter(x => String(x.id) !== String(row.id) && String(x.id) !== String(d.rsvp.id));
+      rsvps.push(d.rsvp);
+      rsvpCache = null; renderDash(); renderEvents();
+      const oldWhat = `${row.event_title} on ${fmt(row.event_date)}`;
+      exitRsvpEdit();
+      toast(d.rsvp.status === "Waitlist"
+        ? `Moved. ${d.rsvp.name} is on the new event's waitlist: it is full or others are ahead in line.`
+        : `Moved. ${d.rsvp.name} is confirmed on the new event.`);
+      if (d.rsvp.email && confirm(`Open a note to ${d.rsvp.name} about the move? It sends from your own mailbox.`))
+        notifyRsvp(d.rsvp, "moved", oldWhat);
+    } catch (e) { toast(e.message, "warn"); }
   }
 
   function saveAddRsvp() {
@@ -1809,8 +1879,8 @@
           <span class="sval" style="font-size:12px;color:var(--stone)">${esc((r.created || "").slice(0, 10))}</span>
           <span class="eact">
           ${r.status === "Waitlist" ? `<button class="mini" data-wconfirm="${r.id}" title="Give this party the freed seats, then let them know">Confirm seats</button>` : ""}
-          <button class="mini ghost" data-redit="${r.id}" title="Change the party size for someone who asked">Edit</button>
-          <button class="mini ghost" data-rcancel="${r.id}" title="Take them off the list; a note to them opens after">Cancel</button>
+          <button class="mini ghost" data-redit="${r.id}" title="Change the party, the names, or move it to another event">Edit</button>
+          <button class="mini ghost" data-rcancel="${r.id}" title="Take them off the list; you choose whether a note goes">Cancel</button>
           </span></div>`).join("")}
         </div>`;
     }).join("");
@@ -2654,25 +2724,24 @@
         });
       } else if (r.dataset.redit) {
         const row = rsvps.find(x => String(x.id) === r.dataset.redit);
-        if (!row) return;
-        const v = prompt(`New ${row.rsvp_type === "guest" ? "outside guest count" : "party size"} for ${row.name} at ${row.event_title} (1-6):`, String(row.count));
-        if (v === null) return;
-        const n = Math.round(Number(v));
-        if (!Number.isFinite(n) || n < 1 || n > 6) { toast("Party size runs 1 to 6.", "warn"); return; }
-        patchRsvp(r.dataset.redit, { count: n }, updated => {
-          toast("Updated. A note to the resident is opening; send it so the change is in writing.");
-          if (updated) notifyRsvp(updated, "update");
-        });
+        if (row) openRsvpEdit(row);
       } else if (r.dataset.rcancel) {
         const row = rsvps.find(x => String(x.id) === r.dataset.rcancel);
         if (!row) return;
-        if (!confirm(`Cancel ${row.name}'s RSVP for ${row.event_title}? A note to them opens after, ready to send.`)) return;
+        if (!confirm(`Cancel ${row.name}'s RSVP for ${row.event_title}?`)) return;
         patchRsvp(r.dataset.rcancel, { status: "Cancelled" }, () => {
           rsvps = rsvps.filter(x => String(x.id) !== r.dataset.rcancel);
           rsvpCache = null;
           renderDash(); renderEvents();
           toast("Cancelled. Their seats are free for the waitlist; use Confirm seats to hand them on.");
-          notifyRsvp(row, "cancel");
+          // The note is offered, never assumed: sometimes the resident is
+          // standing right there, and sometimes they asked for no fuss.
+          if (row.email) {
+            if (confirm(`Open a note to ${row.name} about the cancellation? It sends from your own mailbox.`))
+              notifyRsvp(row, "cancel");
+          } else {
+            toast(`No email on file for ${row.name}; a call or a word at the desk closes the loop.`);
+          }
         });
       } else if (r.dataset.aupload) {
         const [st, slug] = r.dataset.aupload.split("|");
@@ -2699,8 +2768,8 @@
           .then(() => toast("Copied: " + url))
           .catch(() => prompt("Copy the event link:", url));
       } else if (r.dataset.addrsvp !== undefined) openAddRsvp();
-      else if (r.dataset.savearsvp !== undefined) saveAddRsvp();
-      else if (r.dataset.closearsvp !== undefined) $("#ar-card").style.display = "none";
+      else if (r.dataset.savearsvp !== undefined) { if (editingRsvp) saveRsvpEdit(); else saveAddRsvp(); }
+      else if (r.dataset.closearsvp !== undefined) exitRsvpEdit();
       else if (r.dataset.rsvpkey) {
         const d = document.querySelector(`[data-rsvpdetail="${CSS.escape(r.dataset.rsvpkey)}"]`);
         if (d) d.style.display = d.style.display === "none" ? "" : "none";
