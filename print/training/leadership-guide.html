@@ -71,9 +71,17 @@ else.</div>
 
 <h2>2 · How the calendar reaches residents</h2>
 <p>The admin edits a database; the resident site is built from it. Press <strong>Publish
-calendar</strong> after a working session and the site rebuilds from what is saved. A nightly
-rebuild at 3 AM keeps dates rolling forward on their own, so yesterday&rsquo;s events grey out and
-the Next Event tile stays honest without anyone touching anything.</p>
+calendar</strong> after a working session and the site rebuilds from what is saved. Scheduled
+rebuilds through the day keep dates rolling forward on their own, so yesterday&rsquo;s events grey
+out and the Next Event tile stays honest without anyone touching anything.</p>
+<p><strong>The calendar window</strong> decides how far ahead residents see, with two dials atop
+the Events screen: full pages with RSVP out to a number of weeks, then quiet shaded dates marked
+&ldquo;Details to come&rdquo; out to a number of months, then nothing at all. The windows slide
+forward with every rebuild, so an event wakes up on its own as its date approaches, and plans
+further out stay yours to change.</p>
+<p>For a single event whose details are still settling, tick <strong>Coming soon</strong> instead:
+it goes out as a published teaser, date and title showing, with RSVP and calendar buttons waiting
+until the box is unticked.</p>
 
 <h2>3 · Creating an event</h2>
 <p>On the <strong>Events</strong> tab, <strong>+ New Event</strong> opens the editor. Most fields
@@ -85,9 +93,11 @@ explain themselves; these carry the doctrine:</p>
   Resident Experiences, so nothing credits us with someone else&rsquo;s attendance.</li>
   <li><strong>RSVP type</strong>: Seat holds seats, Guest count collects outside-guest numbers
   only, and Paid seat shows the price with seats held; payment itself stays off the site.</li>
-  <li><strong>Capacity</strong> left blank means no limit. <strong>RSVP closes</strong> is written
-  in words, for example the Monday of the event week for workshops, so materials can be ordered
-  against a firm count.</li>
+  <li><strong>Capacity</strong> left blank means no limit. <strong>RSVP closes</strong> is a real
+  date, for example the Monday of the event week for workshops, so materials can be ordered against
+  a firm count; after it, new requests come to Resident Experiences as requests rather than seats.
+  <strong>Close RSVPs now</strong>, beside it, closes them this instant, and unticking reopens
+  them.</li>
   <li>The <strong>marquee</strong> checkbox features one event on the home screen.</li>
 </ul>
 
@@ -99,7 +109,7 @@ shaped: a single week can be moved, re-timed, or skipped without touching the re
 change one date only. When a date moves, its sign-ups, counts, and feeds follow along; nothing is
 orphaned.</p>
 
-<h2>5 · Statuses, and the Archive</h2>
+<h2>5 · Statuses, the editor&rsquo;s verbs, and the Archive</h2>
 <ul>
   <li><strong>Draft</strong> is never published.</li>
   <li><strong>Live</strong> is on the resident calendar.</li>
@@ -107,6 +117,15 @@ orphaned.</p>
   back up unchanged.</li>
   <li><strong>Archived</strong> is over, hidden, and kept for reporting.</li>
 </ul>
+<p>The editor moves between these with two buttons. <strong>Publish</strong> puts an event out and
+reads <strong>Unpublish</strong> once it is; <strong>Save draft</strong> saves without changing
+where the event stands. On a Live event, Save draft keeps your edits as a <strong>working
+copy</strong> residents never see: the editor says a draft is pending, <strong>Publish
+changes</strong> sends it out, and <strong>Discard draft</strong> lets it go. Nothing you type into
+a live event reaches residents until you say so.</p>
+<p>Every save also lands in the event&rsquo;s <strong>change history</strong> at the foot of the
+editor: who, when, and what changed. <strong>Load this version</strong> brings any earlier version
+back into the form for review; publishing or saving it is what makes it real again.</p>
 <p>The Archive files itself: when an event&rsquo;s last date passes, or it is cancelled, it drifts
 off Events and Assets into the <strong>Archive</strong>, kit and all. Downloads and Canva links
 stay live there, ready to serve as templates for the next season. Reach it from the
@@ -119,11 +138,24 @@ feed the same line. Freed seats are never handed out automatically while anyone 
 Dashboard, <strong>Confirm seats</strong> appears on a waitlist row once seats free up; pressing it
 gives them to that party and opens a note to them, ready to send. A confirmed party never loses
 seats by editing their RSVP, and a request to grow only goes through if it fits.</p>
-<p>RSVPs are parties: a resident says how many are coming, up to six, and may list names. The
+<p>RSVPs are parties. On the site a resident books for themselves and up to two others, and may
+list names; the fourth chip, <em>Please contact me</em>, sends a larger party to the Message page
+and the desk, and staff seat up to six from the Dashboard, which is how that promise is kept. The
 per-event rollup shows parties by unit; a unit appearing twice for one event is worth a glance,
 since a household can double-count itself.</p>
 
-<h2>7 · Telling residents about changes</h2>
+<h2>7 · Handling RSVPs from the Dashboard</h2>
+<p><strong>Add an RSVP for someone</strong> covers the resident who phones or asks in passing, and
+capacity answers the same as on the site. On any row, <strong>Edit</strong> opens the full card:
+change the party or the names, or move the RSVP to another event; a move books the new event under
+its own rules, then releases the old seats, and the note offered afterward names both.
+<strong>Cancel</strong> asks first, then asks separately whether a note should go. After any
+change, the note opens prefilled from your own mailbox; nothing sends itself.</p>
+<p>Passed events keep their lists under <strong>Past events</strong> at the foot of the RSVP list:
+who came, by unit, with each party&rsquo;s email in view. <strong>Email guests</strong> there opens
+one BCC draft to everyone who held seats, made for the thank-you note and the survey.</p>
+
+<h2>8 · Telling residents about changes</h2>
 <p>Change a Live event&rsquo;s date, time, or location while people are signed up, and one BCC
 email opens in Outlook addressed to everyone affected, with old and new spelled out and a line
 about updating calendars. Read it, then send it; it goes from your own mailbox, on purpose, so
@@ -131,12 +163,15 @@ nothing is sent in your name unseen. If someone signed up has no email on file, 
 and a call or a word in the lobby closes the loop.</p>
 <p><strong>Cancel &amp; notify guests</strong>, in the editor, is the graceful exit: it pulls the
 event from the site, holds the RSVPs, and opens the cancellation draft.</p>
-<p>Two companions to know. <strong>Link</strong>, on any event row or series date, copies that
-date&rsquo;s page address, made for pasting into emails and reminders. And residents who subscribed
-to the calendar feed update automatically; those who used <strong>Add to My Calendar</strong>
-re-tap it once after a change, which the drafts already explain.</p>
+<p>Three companions to know. <strong>Link</strong>, on any event row or series date, copies that
+date&rsquo;s page address, made for pasting into emails and reminders. For something standing,
+every event also answers at a short address written by hand from its slug:
+<code>181residents.com/e/book-club</code> always lands on the next upcoming date of that series, so
+a printed card never goes stale. And residents who subscribed to the calendar feed update
+automatically; those who used <strong>Add to My Calendar</strong> re-tap it once after a change,
+which the drafts already explain.</p>
 
-<h2>8 · Asset kits: masters and overrides</h2>
+<h2>9 · Asset kits: masters and overrides</h2>
 <p>Every event carries a kit: hero image, Nixplay still, elevator sign, and so on, each row saying
 what the piece is and where it goes. Per piece there are two homes: the <strong>uploaded
 file</strong> is the final version, here for anyone to download on any device, and the
@@ -148,7 +183,19 @@ series stays on the master. <strong>Back to series kit</strong> hands it back. E
 from the event&rsquo;s stem, so it stays identifiable in Canva, on Nixplay, or at the print shop.
 Specs live under Instructions, Screens &amp; Print.</p>
 
-<h2>9 · The Dashboard, and the monthly story</h2>
+<h2>10 · Private events, and the guest list</h2>
+<p>A reservation on <strong>Spaces</strong> can carry a private event: a resident hosts, and their
+invited outside guests register themselves on one page, no resident code involved. Give the
+reservation an <strong>event name</strong> (guests announce it at the door), a host, and a cap if
+one is wanted, flip <strong>Open registration</strong>, and <strong>Copy registration link</strong>
+hands the host their invitation. An optional written address, such as
+<code>181residents.com/register/tang50</code>, suits printed cards; written means guessable, so put
+a number in it. <strong>Print guest list</strong> makes the sheet the desk and security run from,
+and the desk marks arrivals on the night. Nothing about a private event appears on the resident
+calendar. The full walkthrough lives under Settings, <em>Private events &amp; guest
+lists</em>.</p>
+
+<h2>11 · The Dashboard, and the monthly story</h2>
 <p>The Dashboard shows 7, 30, or 90 days: visits by day, where traffic came from (every QR standee
 and the weekly email carry their own link, so each scan is attributable), what residents open the
 site on, the live calendar by category, and the RSVP rollups. <strong>Download CSV</strong> exports
@@ -158,18 +205,22 @@ population, counts stand beside their percentages, and month-to-month swings rea
 three months agree. Events hosted by others are listed but not counted, so the engagement figures
 only ever claim what Resident Experiences actually did.</p>
 
-<h2>10 · Messages</h2>
+<h2>12 · Messages</h2>
 <p>The Messages tab shows who wrote, when, and whether it has been answered, so response times are
 visible. The text itself is private to Leo: residents write to a person, not a department, and the
 inbox keeps that promise.</p>
 
-<h2>11 · Residents and codes, in brief</h2>
+<h2>13 · Residents and codes, in brief</h2>
 <p>Sign-in codes are the desk&rsquo;s daily work, and the desk guide covers the rescue routine. The
-staff view has the same Residents screen when needed: one code per person, <strong>Rotate</strong>
-for a fresh one, end dates for temporary stays, Disable for move-outs, and <strong>Print code
-cards</strong> for a sheet of cards at move-in or a re-issue.</p>
+staff view has the same Residents screen when needed: households fold into unit cards, the find box
+opens the right one by name, unit, or email, and every row carries <strong>Email code</strong>,
+<strong>Rotate</strong>, and <strong>Edit</strong>. Everything else about a person, their email,
+end dates for temporary stays, owner or tenant standing (a yellow <strong>Tenant</strong> pill
+marks renters), Disable for move-outs, lives behind Edit. Bulk add takes pasted lines of
+&ldquo;unit, name, email, owner or tenant&rdquo;, and <strong>Print code cards</strong> makes a
+sheet of cards at move-in or a re-issue.</p>
 
-<footer>181 Fremont Residences · Resident Experiences · August 2026</footer>
+<footer>181 Fremont Residences · Resident Experiences · September 2026</footer>
 </div>
 </body>
 </html>

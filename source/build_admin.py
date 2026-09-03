@@ -826,7 +826,7 @@ HTML = f'''<!DOCTYPE html>
   those two buttons is the difference between a quiet edit and someone arriving on Level 39 to an empty room.</div>
 
   <div class="callout"><strong>Archive, never delete.</strong> An archived event disappears from the resident calendar but keeps its
-  views, RSVPs, and attendance. Delete it and the monthly report loses that history permanently — and a comparison to last
+  views, RSVPs, and attendance. Delete it and the monthly report loses that history permanently, and a comparison to last
   year&rsquo;s version of the same event is the most useful number you will ever hand the Board.</div>
 
   <h2>The four categories</h2>
@@ -962,7 +962,7 @@ HTML = f'''<!DOCTYPE html>
     <li>Export all six, named with the stem plus the asset type.</li>
     <li>Upload the kit here under Assets.</li>
   </ol>
-  <p>An event image is optional. If there isn&rsquo;t a good photo, the event page falls back to a typographic card automatically — that is by design, so a rushed event never gets a bad stock photo.</p>
+  <p>An event image is optional. If there isn&rsquo;t a good photo, the event page falls back to a typographic card automatically. That is by design, so a rushed event never gets a bad stock photo.</p>
 </div></section>
 
 <section class="screen" id="scr-inst-screens"><div class="wrap prose">
