@@ -1035,9 +1035,21 @@
     if (!bulk.trim()) { toast("Paste at least one line first: unit, name, email.", "warn"); return; }
     try {
       const d = await api("/api/residents", { method: "POST", body: JSON.stringify({ bulk }) });
-      residents.push(...d.residents); renderResidents();
+      residents.push(...d.residents);
+      // Skipped duplicates may still have gained an email or standing; swap
+      // the freshened rows in so the list tells the truth without a reload.
+      for (const u of d.updated || []) {
+        const i = residents.findIndex(r => r.id === u.id);
+        if (i >= 0) residents[i] = u;
+      }
+      renderResidents();
       $("#r-bulk").value = "";
-      toast(`Added ${d.residents.length} ${d.residents.length === 1 ? "person" : "people"}. Codes are in the list.`);
+      const bits = [];
+      bits.push(d.residents.length ? `Added ${d.residents.length} new ${d.residents.length === 1 ? "person" : "people"}; codes are in the list.` : "Nobody new to add.");
+      if (d.skipped) bits.push(`Skipped ${d.skipped} already listed; their codes are untouched.`);
+      if ((d.updated || []).length) bits.push(`Filled blanks on ${d.updated.length} existing ${d.updated.length === 1 ? "row" : "rows"} from the paste.`);
+      if (d.disabled) bits.push(`${d.disabled} of the skipped ${d.disabled === 1 ? "is" : "are"} disabled; Edit restores anyone who is back.`);
+      toast(bits.join(" "));
     } catch (e) { toast(e.message, "warn"); }
   }
 

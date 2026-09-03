@@ -695,6 +695,7 @@
       <label class="fl" for="r-bulk" style="display:block;font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--stone);margin-bottom:5px;font-weight:600">Add several at once</label>
       <textarea class="inp" id="r-bulk" rows="3" placeholder="One person per line: unit, name, email, owner or tenant&#10;12A, Margaret, margaret@example.com, owner&#10;7C, Elena, , tenant"></textarea>
       <div style="margin-top:10px"><button class="mini" data-addbulk>Add Everyone Listed</button></div>
+      <div class="hint" style="margin-top:8px">Safe to paste the whole directory: anyone already listed under the same unit and name is skipped, and their code is not touched. Only new names get rows and codes; a blank email or owner-or-tenant standing is filled in from the paste. Someone who moved out stays as you left them; someone who moved units appears as a new row, and you Disable the old one.</div>
     </div>
   </div>
   <div style="margin:0 0 14px;max-width:360px">
@@ -2106,9 +2107,21 @@
     if (!bulk.trim()) { toast("Paste at least one line first: unit, name, email.", "warn"); return; }
     try {
       const d = await api("/api/residents", { method: "POST", body: JSON.stringify({ bulk }) });
-      residents.push(...d.residents); renderResidents();
+      residents.push(...d.residents);
+      // Skipped duplicates may still have gained an email or standing; swap
+      // the freshened rows in so the list tells the truth without a reload.
+      for (const u of d.updated || []) {
+        const i = residents.findIndex(r => r.id === u.id);
+        if (i >= 0) residents[i] = u;
+      }
+      renderResidents();
       $("#r-bulk").value = "";
-      toast(`Added ${d.residents.length} ${d.residents.length === 1 ? "person" : "people"}. Codes are in the list.`);
+      const bits = [];
+      bits.push(d.residents.length ? `Added ${d.residents.length} new ${d.residents.length === 1 ? "person" : "people"}; codes are in the list.` : "Nobody new to add.");
+      if (d.skipped) bits.push(`Skipped ${d.skipped} already listed; their codes are untouched.`);
+      if ((d.updated || []).length) bits.push(`Filled blanks on ${d.updated.length} existing ${d.updated.length === 1 ? "row" : "rows"} from the paste.`);
+      if (d.disabled) bits.push(`${d.disabled} of the skipped ${d.disabled === 1 ? "is" : "are"} disabled; Edit restores anyone who is back.`);
+      toast(bits.join(" "));
     } catch (e) { toast(e.message, "warn"); }
   }
 

@@ -55,8 +55,43 @@ export async function onRequestPost({ request, env }) {
     });
   }
 
-  const made = [];
+  // A bulk paste is a sync, not a batch of strangers: Leo re-pastes the whole
+  // building directory, and anyone already listed must keep the code they have.
+  // The key is unit + name; a match is skipped (blank email or standing on the
+  // existing row is quietly filled from the paste, nothing else touched).
+  const keyOf = (unit, name) => `${String(unit || "").toUpperCase()}|${String(name || "").trim().replace(/\s+/g, " ").toLowerCase()}`;
+  const isBulk = typeof body.bulk === "string";
+  const existing = new Map();
+  if (isBulk) {
+    const { results } = await env.DB.prepare(
+      "SELECT * FROM residents WHERE kind='resident'").all();
+    for (const r of results) existing.set(keyOf(r.unit, r.name), r);
+  }
+
+  const made = [], updated = [];
+  let skipped = 0, disabled = 0;
+  const seenInPaste = new Set();
   for (const p of people) {
+    if (isBulk) {
+      const k = keyOf(p.unit, p.name);
+      if (seenInPaste.has(k)) continue;
+      seenInPaste.add(k);
+      const have = existing.get(k);
+      if (have) {
+        skipped++;
+        if (have.status !== "Active") disabled++;
+        const sets = [], vals = [];
+        if (p.email && !have.email) { sets.push("email=?"); vals.push(p.email); }
+        if (p.tenure && !have.tenure) { sets.push("tenure=?"); vals.push(p.tenure); }
+        if (sets.length) {
+          const row = await env.DB.prepare(
+            `UPDATE residents SET ${sets.join(",")} WHERE id=? RETURNING *`)
+            .bind(...vals, have.id).first();
+          updated.push(residentView(row));
+        }
+        continue;
+      }
+    }
     const row = await env.DB.prepare(
       `INSERT INTO residents (kind, unit, name, email, code, ends, created, tenure)
        VALUES (?, ?, ?, ?, ?, ?, ?, ?) RETURNING *`)
@@ -64,5 +99,5 @@ export async function onRequestPost({ request, env }) {
         p.ends || null, now, p.tenure || null).first();
     made.push(residentView(row));
   }
-  return json({ residents: made }, 201);
+  return json({ residents: made, updated, skipped, disabled }, 201);
 }

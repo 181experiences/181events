@@ -848,16 +848,40 @@ class H(SimpleHTTPRequestHandler):
             body = self._body_json()
             made = []
             nid = max([r["id"] for r in residents] or [0])
+            updated, skipped, disabled = [], 0, 0
             if isinstance(body.get("bulk"), str):
+                # A bulk paste is a sync, mirroring functions/api/residents/index.js:
+                # unit + name already listed -> skipped, code untouched; a blank
+                # email or standing on the existing row is filled from the paste.
+                def key_of(unit, name):
+                    return f"{(unit or '').upper()}|{' '.join((name or '').split()).lower()}"
+                have = {key_of(r.get("unit"), r.get("name")): r
+                        for r in residents if r.get("kind") != "role"}
+                seen, any_line = set(), False
                 for line in body["bulk"].splitlines():
                     parts = [s.strip() for s in line.split(",")]
                     if len(parts) >= 2 and parts[0] and parts[1]:
+                        any_line = True
+                        k = key_of(parts[0], parts[1])
+                        if k in seen: continue
+                        seen.add(k)
+                        ex = have.get(k)
+                        if ex:
+                            skipped += 1
+                            if ex.get("status") != "Active": disabled += 1
+                            touched = False
+                            email = parts[2] if len(parts) > 2 else ""
+                            tenure = tenure_of(parts[3] if len(parts) > 3 else "")
+                            if email and not ex.get("email"): ex["email"] = email; touched = True
+                            if tenure and not ex.get("tenure"): ex["tenure"] = tenure; touched = True
+                            if touched: updated.append(ex)
+                            continue
                         nid += 1
                         made.append(dict(id=nid, kind="resident", unit=parts[0].upper(), name=parts[1],
                                          email=parts[2] if len(parts) > 2 else "", code=make_code(),
                                          tenure=tenure_of(parts[3] if len(parts) > 3 else "") or None,
                                          epoch=1, status="Active", ends=None, created=now_iso()))
-                if not made:
+                if not any_line:
                     return self._json({"error": "No lines matched. Each line: unit, name, email, owner or tenant (the last two optional)."}, 400)
             else:
                 kind = "role" if body.get("kind") == "role" else "resident"
@@ -872,7 +896,9 @@ class H(SimpleHTTPRequestHandler):
                                  epoch=1, status="Active", ends=(body.get("ends") or "").strip() or None,
                                  created=now_iso()))
             residents += made; save_store("residents", residents)
-            return self._json({"residents": [shape_resident(r) for r in made]}, 201)
+            return self._json({"residents": [shape_resident(r) for r in made],
+                               "updated": [shape_resident(r) for r in updated],
+                               "skipped": skipped, "disabled": disabled}, 201)
         if p.path == "/api/rsvps":
             body = self._body_json()
             residents = load_store("residents", [])

@@ -689,6 +689,7 @@ HTML = f'''<!DOCTYPE html>
       <label class="fl" for="r-bulk" style="display:block;font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--stone);margin-bottom:5px;font-weight:600">Add several at once</label>
       <textarea class="inp" id="r-bulk" rows="3" placeholder="One person per line: unit, name, email, owner or tenant&#10;12A, Margaret, margaret@example.com, owner&#10;7C, Elena, , tenant"></textarea>
       <div style="margin-top:10px"><button class="mini" data-addbulk>Add Everyone Listed</button></div>
+      <div class="hint" style="margin-top:8px">Safe to paste the whole directory: anyone already listed under the same unit and name is skipped, and their code is not touched. Only new names get rows and codes; a blank email or owner-or-tenant standing is filled in from the paste. Someone who moved out stays as you left them; someone who moved units appears as a new row, and you Disable the old one.</div>
     </div>
   </div>
   <div style="margin:0 0 14px;max-width:360px">
