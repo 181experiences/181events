@@ -2,12 +2,12 @@ BEGIN:VCALENDAR
 VERSION:2.0
 PRODID:-//181 Fremont//Resident Experiences//EN
 BEGIN:VEVENT
-UID:181fremont-cafe-181-20260901@181residents.com
+UID:181fremont-cafe-181-20261029@181residents.com
 DTSTAMP:20260903T152945Z
 SEQUENCE:245
 LAST-MODIFIED:20260903T152945Z
-DTSTART:20260901T073000
-DTEND:20260901T090000
+DTSTART:20261029T073000
+DTEND:20261029T090000
 SUMMARY:Café 181
 LOCATION:181 Fremont - Level 39, Residents’ Club
 DESCRIPTION:Leigh Anne hosts a coffee house on Level 39 on Tuesday and Thursday mornings, from 7:30 to 9:00. Come down for a proper cup before the day gets going.

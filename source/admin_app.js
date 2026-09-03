@@ -612,12 +612,12 @@
   // The summary is derived state, computed once and cached until rsvps change,
   // since the events list asks for it per row.
   let rsvpCache = null;
-  function rsvpSummary() {
+  function rsvpSummaries() {
     if (rsvpCache) return rsvpCache;
     const t = today();
     const by = new Map();
     for (const r of rsvps) {
-      if (r.event_date < t || r.status === "Cancelled") continue;
+      if (r.status === "Cancelled") continue;
       if (!by.has(r.event_key)) by.set(r.event_key, {
         key: r.event_key, date: r.event_date, title: r.event_title, type: r.rsvp_type,
         parties: 0, heads: 0, waitParties: 0, waitHeads: 0, rows: [],
@@ -627,9 +627,14 @@
       if (r.status === "Waitlist") { s.waitParties++; s.waitHeads += r.count; }
       else { s.parties++; s.heads += r.count; }
     }
-    rsvpCache = [...by.values()].sort((a, b) => a.date.localeCompare(b.date));
+    const all = [...by.values()];
+    rsvpCache = {
+      upcoming: all.filter(s => s.date >= t).sort((a, b) => a.date.localeCompare(b.date)),
+      past: all.filter(s => s.date < t).sort((a, b) => b.date.localeCompare(a.date)),
+    };
     return rsvpCache;
   }
+  function rsvpSummary() { return rsvpSummaries().upcoming; }
 
   // When a Live event with sign-ups moves or is cancelled, everyone affected
   // deserves one email naming the change. The addresses come from the RSVPs;
@@ -846,15 +851,17 @@
     return { heads, wait };
   }
 
+  let pastRsvpsOpen = false;
   function renderRsvps() {
     const box = $("#rsvplist"); if (!box) return;
-    const sums = rsvpSummary();
-    if (!sums.length) {
+    const { upcoming: sums, past } = rsvpSummaries();
+    if (!sums.length && !past.length) {
       box.innerHTML = '<div class="nodata">Nothing yet. Figures begin with the first RSVP made on the site.</div>';
       return;
     }
     const ev = key => events.find(e => stem(e) === key);
-    box.innerHTML = sums.map(s => {
+    let html = sums.length ? "" : '<div class="nodata">Nothing ahead. Figures begin with the next RSVP made on the site.</div>';
+    html += sums.map(s => {
       const e = ev(s.key);
       const cap = e && e.Capacity ? ` of ${e.Capacity}` : "";
       const what = s.type === "guest" ? `${s.heads} outside guests` : `${s.heads}${cap} ${s.type === "paid" ? "seats" : "going"}`;
@@ -875,6 +882,43 @@
           </span></div>`).join("")}
         </div>`;
     }).join("");
+    // Passed events keep their lists, folded at the foot: who held seats is the
+    // survey and thank-you audience, and Email guests opens the BCC draft.
+    if (past.length) {
+      html += `<div class="srow" style="cursor:pointer" data-pastchev>
+        <span class="sgrow" style="color:var(--stone)">Past events &middot; ${past.length}</span>
+        <span class="sval" style="color:var(--stone)">${pastRsvpsOpen ? "Hide" : "Show"}</span></div>
+      <div id="pastrsvps" style="${pastRsvpsOpen ? "" : "display:none"}">
+        ${past.map(s => {
+          const went = s.type === "guest" ? `${s.heads} outside guests` : `${s.heads} confirmed`;
+          const wait = s.waitParties ? ` &middot; ${s.waitParties} stayed waitlisted` : "";
+          const mails = new Set(s.rows.filter(r => r.status !== "Waitlist" && r.email).map(r => r.email.toLowerCase()));
+          const dark = s.rows.filter(r => r.status !== "Waitlist" && !r.email).length;
+          return `<div class="srow" style="cursor:pointer" data-rsvpkey="${esc(s.key)}"><span class="slab">${esc(fmt(s.date))}</span>
+            <span class="sgrow" style="font-size:15px;color:var(--ink)">${esc(s.title)}</span>
+            <span class="sval">${went}${wait}</span></div>
+            <div class="card" data-rsvpdetail="${esc(s.key)}" style="display:none;margin:4px 0 10px">
+            <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:10px">
+              ${mails.size ? `<button class="mini" data-pastmail="${esc(s.key)}" title="A BCC draft to everyone who held seats, for the thank-you or the survey">Email guests &middot; ${mails.size}</button>` : ""}
+              ${dark ? `<span class="hint" style="margin:0">${dark} ${dark === 1 ? "party has" : "parties have"} no email on file.</span>` : ""}
+            </div>
+            ${s.rows.map(r => `<div class="srow"><span class="slab">${esc(r.unit || "Role")} &middot; ${esc(r.name)}</span>
+              <span class="sgrow" style="font-size:14px;color:var(--ink-soft)">${r.status === "Waitlist" ? "Waitlisted" : (s.type === "guest" ? `${r.count} guest${r.count === 1 ? "" : "s"}` : `party of ${r.count}`)}${r.names ? ` &middot; ${esc(r.names)}` : ""}</span>
+              <span class="sval" style="font-size:12px;color:var(--stone)">${esc(r.email || "no email")}</span></div>`).join("")}
+            </div>`;
+        }).join("")}
+      </div>`;
+    }
+    box.innerHTML = html;
+  }
+  function emailPastGuests(key) {
+    const s = rsvpSummaries().past.find(x => x.key === key);
+    if (!s) return;
+    const emails = [...new Set(s.rows.filter(r => r.status !== "Waitlist" && r.email).map(r => r.email.toLowerCase()))];
+    if (!emails.length) { toast("Nobody who held seats has an email on file.", "warn"); return; }
+    openBccDraft(`${s.title} at 181 Fremont`,
+      `Hello,\n\nThank you for joining us for ${s.title}. We would love to hear how it was for you.\n\n\nWarmly,\nResident Experiences\n181 Fremont`,
+      emails);
   }
 
   // ---------------------------------------------------------------- residents
@@ -1561,7 +1605,7 @@
   }
 
   document.addEventListener("click", ev => {
-    const r = ev.target.closest("[data-rotate],[data-ends],[data-toggle],[data-rdelete],[data-resedit],[data-saveres],[data-cancelres],[data-edittoggle],[data-editdelete],[data-addres],[data-addbulk],[data-printcards],[data-mreplied],[data-marchive],[data-wconfirm],[data-redit],[data-rcancel],[data-addrsvp],[data-savearsvp],[data-closearsvp],[data-copylink],[data-aupload],[data-acanva],[data-adelete],[data-rsvpkey],[data-addbooking],[data-unbook],[data-bkchev],[data-bkreg],[data-bkcopy],[data-bkprint],[data-gadd],[data-garrive],[data-gdel],[data-bkedit],[data-savebk],[data-cancelbk]");
+    const r = ev.target.closest("[data-rotate],[data-ends],[data-toggle],[data-rdelete],[data-resedit],[data-saveres],[data-cancelres],[data-edittoggle],[data-editdelete],[data-addres],[data-addbulk],[data-printcards],[data-mreplied],[data-marchive],[data-wconfirm],[data-redit],[data-rcancel],[data-pastchev],[data-pastmail],[data-addrsvp],[data-savearsvp],[data-closearsvp],[data-copylink],[data-aupload],[data-acanva],[data-adelete],[data-rsvpkey],[data-addbooking],[data-unbook],[data-bkchev],[data-bkreg],[data-bkcopy],[data-bkprint],[data-gadd],[data-garrive],[data-gdel],[data-bkedit],[data-savebk],[data-cancelbk]");
     if (r) {
       if (r.dataset.bkedit) {
         const b = bookings.find(x => String(x.id) === r.dataset.bkedit);
@@ -1761,6 +1805,8 @@
       } else if (r.dataset.addrsvp !== undefined) openAddRsvp();
       else if (r.dataset.savearsvp !== undefined) { if (editingRsvp) saveRsvpEdit(); else saveAddRsvp(); }
       else if (r.dataset.closearsvp !== undefined) exitRsvpEdit();
+      else if (r.dataset.pastchev !== undefined) { pastRsvpsOpen = !pastRsvpsOpen; renderRsvps(); }
+      else if (r.dataset.pastmail) emailPastGuests(r.dataset.pastmail);
       else if (r.dataset.rsvpkey) {
         const d = document.querySelector(`[data-rsvpdetail="${CSS.escape(r.dataset.rsvpkey)}"]`);
         if (d) d.style.display = d.style.display === "none" ? "" : "none";

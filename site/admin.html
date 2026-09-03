@@ -70,6 +70,7 @@
   #s-inst-brand:checked ~ .body #scr-inst-brand{display:block}
   #s-inst-email:checked ~ .body #scr-inst-email{display:block}
   #s-inst-screens:checked ~ .body #scr-inst-screens{display:block}
+  #s-inst-private:checked ~ .body #scr-inst-private{display:block}
   #s-dash:checked ~ .chrome .navbar label[for="s-dash"]{color:var(--ink);border-bottom-color:var(--red)}
   #s-events:checked ~ .chrome .navbar label[for="s-events"]{color:var(--ink);border-bottom-color:var(--red)}
   #s-editor:checked ~ .chrome .navbar label[for="s-events"]{color:var(--ink);border-bottom-color:var(--red)}
@@ -82,6 +83,7 @@
   #s-inst-brand:checked ~ .chrome .navbar label[for="s-inst"]{color:var(--ink);border-bottom-color:var(--red)}
   #s-inst-email:checked ~ .chrome .navbar label[for="s-inst"]{color:var(--ink);border-bottom-color:var(--red)}
   #s-inst-screens:checked ~ .chrome .navbar label[for="s-inst"]{color:var(--ink);border-bottom-color:var(--red)}
+  #s-inst-private:checked ~ .chrome .navbar label[for="s-inst"]{color:var(--ink);border-bottom-color:var(--red)}
   #f-all:checked ~ .wrap .tabs label[for="f-all"]{background:var(--ink);color:var(--paper-2);border-color:var(--ink)}
   #f-live:checked ~ .wrap .tabs label[for="f-live"]{background:var(--ink);color:var(--paper-2);border-color:var(--ink)}
   #f-draft:checked ~ .wrap .tabs label[for="f-draft"]{background:var(--ink);color:var(--paper-2);border-color:var(--ink)}
@@ -389,7 +391,7 @@
 <div class="mocknote" id="sysbar">Connecting&hellip;</div>
 
 <input class="state" type="radio" name="scr" id="s-dash" checked>
-<input class="state" type="radio" name="scr" id="s-events"><input class="state" type="radio" name="scr" id="s-editor"><input class="state" type="radio" name="scr" id="s-assets"><input class="state" type="radio" name="scr" id="s-arch"><input class="state" type="radio" name="scr" id="s-res"><input class="state" type="radio" name="scr" id="s-spaces"><input class="state" type="radio" name="scr" id="s-msgs"><input class="state" type="radio" name="scr" id="s-inst"><input class="state" type="radio" name="scr" id="s-inst-events"><input class="state" type="radio" name="scr" id="s-inst-brand"><input class="state" type="radio" name="scr" id="s-inst-email"><input class="state" type="radio" name="scr" id="s-inst-screens">
+<input class="state" type="radio" name="scr" id="s-events"><input class="state" type="radio" name="scr" id="s-editor"><input class="state" type="radio" name="scr" id="s-assets"><input class="state" type="radio" name="scr" id="s-arch"><input class="state" type="radio" name="scr" id="s-res"><input class="state" type="radio" name="scr" id="s-spaces"><input class="state" type="radio" name="scr" id="s-msgs"><input class="state" type="radio" name="scr" id="s-inst"><input class="state" type="radio" name="scr" id="s-inst-events"><input class="state" type="radio" name="scr" id="s-inst-brand"><input class="state" type="radio" name="scr" id="s-inst-email"><input class="state" type="radio" name="scr" id="s-inst-screens"><input class="state" type="radio" name="scr" id="s-inst-private">
 
 <div class="chrome">
 <div class="topbar"><div class="inner">
@@ -451,7 +453,7 @@
       <h2>RSVPs</h2>
       <button class="mini" data-addrsvp title="For the resident who phones the desk or asks in passing">Add an RSVP for someone</button>
     </div>
-    <div class="sd">Confirmed parties and heads for upcoming dates, with waitlists. Open an event to see who, by unit; a unit appearing twice for one event is worth a glance, since a household can double-count itself. Edit or cancel any RSVP from the list, and a note to the resident opens ready to send from your own mailbox.</div>
+    <div class="sd">Confirmed parties and heads for upcoming dates, with waitlists. Open an event to see who, by unit; a unit appearing twice for one event is worth a glance, since a household can double-count itself. Edit or cancel any RSVP from the list, and a note to the resident opens ready to send from your own mailbox. Passed events keep their lists under Past events at the foot, with an Email guests draft for the thank-you or the survey.</div>
     <div class="card" id="ar-card" style="display:none;margin-bottom:10px">
       <div id="ar-head" style="display:none;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--red);font-weight:600;margin-bottom:12px"></div>
       <div style="display:grid;gap:12px 16px;grid-template-columns:repeat(auto-fit,minmax(190px,1fr))">
@@ -756,7 +758,9 @@
   <h2 style="margin:6px 0 12px">Instructions</h2>
   <div class="docs">
     <label class="doc" for="s-inst-events"><span class="dt">Creating &amp; archiving events</span>
-      <span class="dd">The full loop: draft, asset kit, publish, promote, archive.</span><span class="dm">Updated Aug 2026</span></label>
+      <span class="dd">The full loop: draft, asset kit, publish, promote, archive.</span><span class="dm">Updated Sept 2026</span></label>
+    <label class="doc" for="s-inst-private"><span class="dt">Private events &amp; guest lists</span>
+      <span class="dd">Registration pages for invited outside guests, and the list the desk runs from.</span><span class="dm">Updated Sept 2026</span></label>
     <label class="doc" for="s-inst-brand"><span class="dt">Brand &amp; Canva templates</span>
       <span class="dd">Colors, type, and the exact template requirements for every asset.</span><span class="dm">Updated Aug 2026</span></label>
     <label class="doc" for="s-inst-screens"><span class="dt">Screens &amp; print</span>
@@ -849,6 +853,28 @@
 
   <h2>Capacity and waitlists</h2>
   <p>Capacity is enforced automatically. Once RSVPs reach the number, the button changes to <em>Join the Waitlist</em> and keeps collecting names in order. Freed seats are never given away by the site: while anyone is waiting, new RSVPs join the back of the line, and you hand a freed seat to the front of it with <em>Confirm seats</em> on the Dashboard&rsquo;s RSVP list, then let the resident know. A party that already holds seats never loses them by editing; growing a party only goes through if there is room.</p>
+  <div class="callout"><strong>An event stops taking RSVPs three ways.</strong> Capacity fills, and the button becomes
+  <em>Join the Waitlist</em> on its own. The <strong>RSVP closes</strong> date passes; from the next morning, new requests
+  go to Resident Experiences as requests rather than seats. Or you tick <strong>Close RSVPs now</strong> in the editor,
+  which closes them that instant; untick it and they reopen. In every case, parties already holding seats keep them.</div>
+  <p>Residents book for themselves and up to two others on the site. The fourth chip, <em>Please contact me</em>, sends a
+  larger party to the Message page and the desk; staff seat up to six from the Dashboard, which is how that promise is kept.</p>
+
+  <h2>Handling RSVPs from the Dashboard</h2>
+  <p><em>Add an RSVP for someone</em> covers the resident who phones or asks in passing. On any row, <em>Edit</em> opens the
+  full card: change the party or the names, or move the RSVP to another event; a move books the new event under its own
+  capacity rules, then releases the old seats, and the note offered afterward names both. <em>Cancel</em> asks first, then
+  asks separately whether a note should go. After any change, the note opens prefilled from your own mailbox; nothing sends
+  itself.</p>
+  <p>Passed events keep their lists under <strong>Past events</strong> at the foot of the RSVP list, with who came, by unit,
+  and each party&rsquo;s email. <em>Email guests</em> there opens one BCC draft to everyone who held seats, made for the
+  thank-you note and the survey.</p>
+
+  <h2>Sharing an event</h2>
+  <p><em>Link</em> on any event row or series date copies that date&rsquo;s page address, made for emails and reminders.
+  For something standing, every event also answers at a short address written by hand from its slug:
+  <code>181residents.com/e/book-club</code> always lands on the next upcoming date of that series, so a printed card or a
+  bio line never goes stale.</p>
 
   <h2>Timing</h2>
   <table>
@@ -861,6 +887,38 @@
     <tr><td>Day after</td><td>Thank-you email; record attendance</td></tr>
     <tr><td>Within a week</td><td>Archive</td></tr>
   </table>
+</div></section>
+
+<section class="screen" id="scr-inst-private"><div class="wrap prose">
+  <label class="back" for="s-inst">&larr; Settings</label>
+  <h1 style="font-size:34px">Private events &amp; guest lists</h1>
+  <p>A reservation on the <strong>Spaces</strong> screen can carry a private event: a resident hosts, and their invited
+  guests, people from outside the building, register themselves on one page. Nothing about it appears on the resident
+  calendar; the calendar is for the building, and a private party is the host&rsquo;s.</p>
+
+  <h2>Setting one up</h2>
+  <ol>
+    <li>Book the room on <strong>Spaces</strong> as usual, and fill in the private-event fields on the card: the
+    <strong>event name</strong> (this is what guests give at the door, so make it what the host would say), the
+    <strong>host</strong>, and a <strong>guest cap</strong> if the room or the host wants one.</li>
+    <li>Flip <strong>Open registration</strong> on the reservation&rsquo;s row. <strong>Copy registration link</strong>
+    puts the page&rsquo;s address on the clipboard; the host sends it to their invitees, and the link itself is the
+    invitation. <strong>View page</strong> shows exactly what a guest sees.</li>
+    <li>Guests open the link, give their name, and say whether they bring a plus-one. No resident code is involved;
+    these are outside guests.</li>
+  </ol>
+  <div class="callout"><strong>The written address, when a link is too clumsy.</strong> The card offers an optional
+  custom address, so <code>181residents.com/register/tang50</code> can go on a printed card or be read over the phone.
+  A written address is a guessable one; put a number in it, and save it for the parties that need it.</div>
+
+  <h2>The guest list, on the night</h2>
+  <p><strong>Guests &middot; N</strong> on the reservation&rsquo;s row opens the list. <em>Print guest list</em> makes
+  the sheet the desk and security run from: guests announce the event name at the door, plus-ones ride as their own
+  numbered lines, and every name has a checkbox. In the admin itself, the <em>Arrived</em> button stamps each guest in
+  to the minute, and <em>Add</em> covers the walk-up the host confirms. <strong>Close registration</strong> stops new
+  names whenever the host wants the list settled.</p>
+  <p>Editing the reservation, its room, date, or hours, never changes the registration link. Removing the reservation
+  removes its guest list with it.</p>
 </div></section>
 
 <section class="screen" id="scr-inst-brand"><div class="wrap prose">
@@ -1621,12 +1679,12 @@
   // The summary is derived state, computed once and cached until rsvps change,
   // since the events list asks for it per row.
   let rsvpCache = null;
-  function rsvpSummary() {
+  function rsvpSummaries() {
     if (rsvpCache) return rsvpCache;
     const t = today();
     const by = new Map();
     for (const r of rsvps) {
-      if (r.event_date < t || r.status === "Cancelled") continue;
+      if (r.status === "Cancelled") continue;
       if (!by.has(r.event_key)) by.set(r.event_key, {
         key: r.event_key, date: r.event_date, title: r.event_title, type: r.rsvp_type,
         parties: 0, heads: 0, waitParties: 0, waitHeads: 0, rows: [],
@@ -1636,9 +1694,14 @@
       if (r.status === "Waitlist") { s.waitParties++; s.waitHeads += r.count; }
       else { s.parties++; s.heads += r.count; }
     }
-    rsvpCache = [...by.values()].sort((a, b) => a.date.localeCompare(b.date));
+    const all = [...by.values()];
+    rsvpCache = {
+      upcoming: all.filter(s => s.date >= t).sort((a, b) => a.date.localeCompare(b.date)),
+      past: all.filter(s => s.date < t).sort((a, b) => b.date.localeCompare(a.date)),
+    };
     return rsvpCache;
   }
+  function rsvpSummary() { return rsvpSummaries().upcoming; }
 
   // When a Live event with sign-ups moves or is cancelled, everyone affected
   // deserves one email naming the change. The addresses come from the RSVPs;
@@ -1855,15 +1918,17 @@
     return { heads, wait };
   }
 
+  let pastRsvpsOpen = false;
   function renderRsvps() {
     const box = $("#rsvplist"); if (!box) return;
-    const sums = rsvpSummary();
-    if (!sums.length) {
+    const { upcoming: sums, past } = rsvpSummaries();
+    if (!sums.length && !past.length) {
       box.innerHTML = '<div class="nodata">Nothing yet. Figures begin with the first RSVP made on the site.</div>';
       return;
     }
     const ev = key => events.find(e => stem(e) === key);
-    box.innerHTML = sums.map(s => {
+    let html = sums.length ? "" : '<div class="nodata">Nothing ahead. Figures begin with the next RSVP made on the site.</div>';
+    html += sums.map(s => {
       const e = ev(s.key);
       const cap = e && e.Capacity ? ` of ${e.Capacity}` : "";
       const what = s.type === "guest" ? `${s.heads} outside guests` : `${s.heads}${cap} ${s.type === "paid" ? "seats" : "going"}`;
@@ -1884,6 +1949,43 @@
           </span></div>`).join("")}
         </div>`;
     }).join("");
+    // Passed events keep their lists, folded at the foot: who held seats is the
+    // survey and thank-you audience, and Email guests opens the BCC draft.
+    if (past.length) {
+      html += `<div class="srow" style="cursor:pointer" data-pastchev>
+        <span class="sgrow" style="color:var(--stone)">Past events &middot; ${past.length}</span>
+        <span class="sval" style="color:var(--stone)">${pastRsvpsOpen ? "Hide" : "Show"}</span></div>
+      <div id="pastrsvps" style="${pastRsvpsOpen ? "" : "display:none"}">
+        ${past.map(s => {
+          const went = s.type === "guest" ? `${s.heads} outside guests` : `${s.heads} confirmed`;
+          const wait = s.waitParties ? ` &middot; ${s.waitParties} stayed waitlisted` : "";
+          const mails = new Set(s.rows.filter(r => r.status !== "Waitlist" && r.email).map(r => r.email.toLowerCase()));
+          const dark = s.rows.filter(r => r.status !== "Waitlist" && !r.email).length;
+          return `<div class="srow" style="cursor:pointer" data-rsvpkey="${esc(s.key)}"><span class="slab">${esc(fmt(s.date))}</span>
+            <span class="sgrow" style="font-size:15px;color:var(--ink)">${esc(s.title)}</span>
+            <span class="sval">${went}${wait}</span></div>
+            <div class="card" data-rsvpdetail="${esc(s.key)}" style="display:none;margin:4px 0 10px">
+            <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:10px">
+              ${mails.size ? `<button class="mini" data-pastmail="${esc(s.key)}" title="A BCC draft to everyone who held seats, for the thank-you or the survey">Email guests &middot; ${mails.size}</button>` : ""}
+              ${dark ? `<span class="hint" style="margin:0">${dark} ${dark === 1 ? "party has" : "parties have"} no email on file.</span>` : ""}
+            </div>
+            ${s.rows.map(r => `<div class="srow"><span class="slab">${esc(r.unit || "Role")} &middot; ${esc(r.name)}</span>
+              <span class="sgrow" style="font-size:14px;color:var(--ink-soft)">${r.status === "Waitlist" ? "Waitlisted" : (s.type === "guest" ? `${r.count} guest${r.count === 1 ? "" : "s"}` : `party of ${r.count}`)}${r.names ? ` &middot; ${esc(r.names)}` : ""}</span>
+              <span class="sval" style="font-size:12px;color:var(--stone)">${esc(r.email || "no email")}</span></div>`).join("")}
+            </div>`;
+        }).join("")}
+      </div>`;
+    }
+    box.innerHTML = html;
+  }
+  function emailPastGuests(key) {
+    const s = rsvpSummaries().past.find(x => x.key === key);
+    if (!s) return;
+    const emails = [...new Set(s.rows.filter(r => r.status !== "Waitlist" && r.email).map(r => r.email.toLowerCase()))];
+    if (!emails.length) { toast("Nobody who held seats has an email on file.", "warn"); return; }
+    openBccDraft(`${s.title} at 181 Fremont`,
+      `Hello,\n\nThank you for joining us for ${s.title}. We would love to hear how it was for you.\n\n\nWarmly,\nResident Experiences\n181 Fremont`,
+      emails);
   }
 
   // ---------------------------------------------------------------- residents
@@ -2570,7 +2672,7 @@
   }
 
   document.addEventListener("click", ev => {
-    const r = ev.target.closest("[data-rotate],[data-ends],[data-toggle],[data-rdelete],[data-resedit],[data-saveres],[data-cancelres],[data-edittoggle],[data-editdelete],[data-addres],[data-addbulk],[data-printcards],[data-mreplied],[data-marchive],[data-wconfirm],[data-redit],[data-rcancel],[data-addrsvp],[data-savearsvp],[data-closearsvp],[data-copylink],[data-aupload],[data-acanva],[data-adelete],[data-rsvpkey],[data-addbooking],[data-unbook],[data-bkchev],[data-bkreg],[data-bkcopy],[data-bkprint],[data-gadd],[data-garrive],[data-gdel],[data-bkedit],[data-savebk],[data-cancelbk]");
+    const r = ev.target.closest("[data-rotate],[data-ends],[data-toggle],[data-rdelete],[data-resedit],[data-saveres],[data-cancelres],[data-edittoggle],[data-editdelete],[data-addres],[data-addbulk],[data-printcards],[data-mreplied],[data-marchive],[data-wconfirm],[data-redit],[data-rcancel],[data-pastchev],[data-pastmail],[data-addrsvp],[data-savearsvp],[data-closearsvp],[data-copylink],[data-aupload],[data-acanva],[data-adelete],[data-rsvpkey],[data-addbooking],[data-unbook],[data-bkchev],[data-bkreg],[data-bkcopy],[data-bkprint],[data-gadd],[data-garrive],[data-gdel],[data-bkedit],[data-savebk],[data-cancelbk]");
     if (r) {
       if (r.dataset.bkedit) {
         const b = bookings.find(x => String(x.id) === r.dataset.bkedit);
@@ -2770,6 +2872,8 @@
       } else if (r.dataset.addrsvp !== undefined) openAddRsvp();
       else if (r.dataset.savearsvp !== undefined) { if (editingRsvp) saveRsvpEdit(); else saveAddRsvp(); }
       else if (r.dataset.closearsvp !== undefined) exitRsvpEdit();
+      else if (r.dataset.pastchev !== undefined) { pastRsvpsOpen = !pastRsvpsOpen; renderRsvps(); }
+      else if (r.dataset.pastmail) emailPastGuests(r.dataset.pastmail);
       else if (r.dataset.rsvpkey) {
         const d = document.querySelector(`[data-rsvpdetail="${CSS.escape(r.dataset.rsvpkey)}"]`);
         if (d) d.style.display = d.style.display === "none" ? "" : "none";

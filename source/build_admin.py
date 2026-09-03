@@ -12,11 +12,11 @@ STATUSES = ["Draft", "Live", "Unpublished", "Archived"]
 RSVP_TYPES = ["None", "Guest count only", "Seat", "Paid seat"]
 
 SCREENS = ["dash", "events", "editor", "assets", "arch", "res", "spaces", "msgs", "inst",
-           "inst-events", "inst-brand", "inst-email", "inst-screens"]
+           "inst-events", "inst-brand", "inst-email", "inst-screens", "inst-private"]
 NAV_OF = {"dash": "dash", "events": "events", "editor": "events", "assets": "assets",
           "res": "res", "spaces": "spaces", "msgs": "msgs", "inst": "inst",
           "inst-events": "inst", "inst-brand": "inst", "inst-email": "inst",
-          "inst-screens": "inst"}
+          "inst-screens": "inst", "inst-private": "inst"}
 NAV = [("dash", "Dashboard"), ("events", "Events"), ("assets", "Assets"),
        ("res", "Residents"), ("spaces", "Spaces"), ("msgs", "Messages"), ("inst", "Settings")]
 
@@ -447,7 +447,7 @@ HTML = f'''<!DOCTYPE html>
       <h2>RSVPs</h2>
       <button class="mini" data-addrsvp title="For the resident who phones the desk or asks in passing">Add an RSVP for someone</button>
     </div>
-    <div class="sd">Confirmed parties and heads for upcoming dates, with waitlists. Open an event to see who, by unit; a unit appearing twice for one event is worth a glance, since a household can double-count itself. Edit or cancel any RSVP from the list, and a note to the resident opens ready to send from your own mailbox.</div>
+    <div class="sd">Confirmed parties and heads for upcoming dates, with waitlists. Open an event to see who, by unit; a unit appearing twice for one event is worth a glance, since a household can double-count itself. Edit or cancel any RSVP from the list, and a note to the resident opens ready to send from your own mailbox. Passed events keep their lists under Past events at the foot, with an Email guests draft for the thank-you or the survey.</div>
     <div class="card" id="ar-card" style="display:none;margin-bottom:10px">
       <div id="ar-head" style="display:none;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--red);font-weight:600;margin-bottom:12px"></div>
       <div style="display:grid;gap:12px 16px;grid-template-columns:repeat(auto-fit,minmax(190px,1fr))">
@@ -752,7 +752,9 @@ HTML = f'''<!DOCTYPE html>
   <h2 style="margin:6px 0 12px">Instructions</h2>
   <div class="docs">
     <label class="doc" for="s-inst-events"><span class="dt">Creating &amp; archiving events</span>
-      <span class="dd">The full loop: draft, asset kit, publish, promote, archive.</span><span class="dm">Updated Aug 2026</span></label>
+      <span class="dd">The full loop: draft, asset kit, publish, promote, archive.</span><span class="dm">Updated Sept 2026</span></label>
+    <label class="doc" for="s-inst-private"><span class="dt">Private events &amp; guest lists</span>
+      <span class="dd">Registration pages for invited outside guests, and the list the desk runs from.</span><span class="dm">Updated Sept 2026</span></label>
     <label class="doc" for="s-inst-brand"><span class="dt">Brand &amp; Canva templates</span>
       <span class="dd">Colors, type, and the exact template requirements for every asset.</span><span class="dm">Updated Aug 2026</span></label>
     <label class="doc" for="s-inst-screens"><span class="dt">Screens &amp; print</span>
@@ -845,6 +847,28 @@ HTML = f'''<!DOCTYPE html>
 
   <h2>Capacity and waitlists</h2>
   <p>Capacity is enforced automatically. Once RSVPs reach the number, the button changes to <em>Join the Waitlist</em> and keeps collecting names in order. Freed seats are never given away by the site: while anyone is waiting, new RSVPs join the back of the line, and you hand a freed seat to the front of it with <em>Confirm seats</em> on the Dashboard&rsquo;s RSVP list, then let the resident know. A party that already holds seats never loses them by editing; growing a party only goes through if there is room.</p>
+  <div class="callout"><strong>An event stops taking RSVPs three ways.</strong> Capacity fills, and the button becomes
+  <em>Join the Waitlist</em> on its own. The <strong>RSVP closes</strong> date passes; from the next morning, new requests
+  go to Resident Experiences as requests rather than seats. Or you tick <strong>Close RSVPs now</strong> in the editor,
+  which closes them that instant; untick it and they reopen. In every case, parties already holding seats keep them.</div>
+  <p>Residents book for themselves and up to two others on the site. The fourth chip, <em>Please contact me</em>, sends a
+  larger party to the Message page and the desk; staff seat up to six from the Dashboard, which is how that promise is kept.</p>
+
+  <h2>Handling RSVPs from the Dashboard</h2>
+  <p><em>Add an RSVP for someone</em> covers the resident who phones or asks in passing. On any row, <em>Edit</em> opens the
+  full card: change the party or the names, or move the RSVP to another event; a move books the new event under its own
+  capacity rules, then releases the old seats, and the note offered afterward names both. <em>Cancel</em> asks first, then
+  asks separately whether a note should go. After any change, the note opens prefilled from your own mailbox; nothing sends
+  itself.</p>
+  <p>Passed events keep their lists under <strong>Past events</strong> at the foot of the RSVP list, with who came, by unit,
+  and each party&rsquo;s email. <em>Email guests</em> there opens one BCC draft to everyone who held seats, made for the
+  thank-you note and the survey.</p>
+
+  <h2>Sharing an event</h2>
+  <p><em>Link</em> on any event row or series date copies that date&rsquo;s page address, made for emails and reminders.
+  For something standing, every event also answers at a short address written by hand from its slug:
+  <code>181residents.com/e/book-club</code> always lands on the next upcoming date of that series, so a printed card or a
+  bio line never goes stale.</p>
 
   <h2>Timing</h2>
   <table>
@@ -857,6 +881,38 @@ HTML = f'''<!DOCTYPE html>
     <tr><td>Day after</td><td>Thank-you email; record attendance</td></tr>
     <tr><td>Within a week</td><td>Archive</td></tr>
   </table>
+</div></section>
+
+<section class="screen" id="scr-inst-private"><div class="wrap prose">
+  <label class="back" for="s-inst">&larr; Settings</label>
+  <h1 style="font-size:34px">Private events &amp; guest lists</h1>
+  <p>A reservation on the <strong>Spaces</strong> screen can carry a private event: a resident hosts, and their invited
+  guests, people from outside the building, register themselves on one page. Nothing about it appears on the resident
+  calendar; the calendar is for the building, and a private party is the host&rsquo;s.</p>
+
+  <h2>Setting one up</h2>
+  <ol>
+    <li>Book the room on <strong>Spaces</strong> as usual, and fill in the private-event fields on the card: the
+    <strong>event name</strong> (this is what guests give at the door, so make it what the host would say), the
+    <strong>host</strong>, and a <strong>guest cap</strong> if the room or the host wants one.</li>
+    <li>Flip <strong>Open registration</strong> on the reservation&rsquo;s row. <strong>Copy registration link</strong>
+    puts the page&rsquo;s address on the clipboard; the host sends it to their invitees, and the link itself is the
+    invitation. <strong>View page</strong> shows exactly what a guest sees.</li>
+    <li>Guests open the link, give their name, and say whether they bring a plus-one. No resident code is involved;
+    these are outside guests.</li>
+  </ol>
+  <div class="callout"><strong>The written address, when a link is too clumsy.</strong> The card offers an optional
+  custom address, so <code>181residents.com/register/tang50</code> can go on a printed card or be read over the phone.
+  A written address is a guessable one; put a number in it, and save it for the parties that need it.</div>
+
+  <h2>The guest list, on the night</h2>
+  <p><strong>Guests &middot; N</strong> on the reservation&rsquo;s row opens the list. <em>Print guest list</em> makes
+  the sheet the desk and security run from: guests announce the event name at the door, plus-ones ride as their own
+  numbered lines, and every name has a checkbox. In the admin itself, the <em>Arrived</em> button stamps each guest in
+  to the minute, and <em>Add</em> covers the walk-up the host confirms. <strong>Close registration</strong> stops new
+  names whenever the host wants the list settled.</p>
+  <p>Editing the reservation, its room, date, or hours, never changes the registration link. Removing the reservation
+  removes its guest list with it.</p>
 </div></section>
 
 <section class="screen" id="scr-inst-brand"><div class="wrap prose">

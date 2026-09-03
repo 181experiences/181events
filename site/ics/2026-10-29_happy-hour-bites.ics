@@ -2,12 +2,12 @@ BEGIN:VCALENDAR
 VERSION:2.0
 PRODID:-//181 Fremont//Resident Experiences//EN
 BEGIN:VEVENT
-UID:181fremont-happy-hour-bites-20260917@181residents.com
+UID:181fremont-happy-hour-bites-20261029@181residents.com
 DTSTAMP:20260903T152945Z
 SEQUENCE:245
 LAST-MODIFIED:20260903T152945Z
-DTSTART:20260917T173000
-DTEND:20260917T193000
+DTSTART:20261029T173000
+DTEND:20261029T193000
 SUMMARY:Happy Hour & Bites
 LOCATION:181 Fremont - Level 39, Residents’ Club
 DESCRIPTION:Thursdays on Level 39, from 5:30 to 7:30. The same easy evening, with something from the kitchen alongside the wine and beer.
