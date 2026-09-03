@@ -248,6 +248,11 @@ export async function ensureResidentTables(env) {
                      "reg_open INTEGER DEFAULT 0", "guest_cap INTEGER", "reg_slug TEXT"]) {
     try { await env.DB.prepare(`ALTER TABLE bookings ADD COLUMN ${col}`).run(); } catch (e) {}
   }
+  // Attendance: how many of the party actually came, marked at the door.
+  // Kept apart from count so the sign-up story survives the evening.
+  for (const col of ["arrived INTEGER", "arrived_at TEXT"]) {
+    try { await env.DB.prepare(`ALTER TABLE rsvps ADD COLUMN ${col}`).run(); } catch (e) {}
+  }
   tablesEnsured = true;
 }
 

@@ -2,7 +2,7 @@ import { json, noDb, adminRole, forbidden, ensureResidentTables, labelOf } from 
 import { liveEvent, seatsTaken, othersWaiting } from "../_resident.js";
 
 const ROW_SQL = `SELECT r.id, r.resident_id, r.event_key, r.event_date, r.event_title, r.rsvp_type, r.count,
-        r.names, r.status, r.created, r.updated, res.name, res.unit, res.email
+        r.names, r.status, r.created, r.updated, r.arrived, r.arrived_at, res.name, res.unit, res.email
  FROM rsvps r JOIN residents res ON res.id = r.resident_id`;
 
 // GET /api/rsvps -> every non-cancelled RSVP with its person, unit, and email

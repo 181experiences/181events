@@ -1229,10 +1229,21 @@ class H(SimpleHTTPRequestHandler):
                         r["count"] = n
                     if "names" in body:
                         r["names"] = str(body["names"] or "").strip()[:120]
+                    if "arrived" in body:
+                        # Attendance mark, mirroring functions/api/rsvps/[id].js:
+                        # None clears, 0-6 records how many of the party came.
+                        if body["arrived"] is None:
+                            r["arrived"] = None; r["arrived_at"] = None
+                        else:
+                            try: n = int(body["arrived"])
+                            except (TypeError, ValueError): n = -1
+                            if n < 0 or n > 6: return self._json({"error": "Arrived runs 0 to 6."}, 400)
+                            r["arrived"] = n; r["arrived_at"] = now_iso()
                     r["updated"] = now_iso()
                     save_store("rsvps", rsvps)
                     return self._json({"id": r["id"], "status": r["status"], "count": r["count"],
-                                       "names": r.get("names") or ""})
+                                       "names": r.get("names") or "",
+                                       "arrived": r.get("arrived"), "arrived_at": r.get("arrived_at") or ""})
             return self._json({"error": "No such RSVP"}, 404)
         if p.path.startswith("/api/bookings/"):
             bid = p.path.rsplit("/", 1)[1]; body = self._body_json()

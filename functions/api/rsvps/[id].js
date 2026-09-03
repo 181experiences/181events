@@ -24,11 +24,22 @@ export async function onRequestPatch({ request, params, env }) {
     sets.push("count=?"); vals.push(count);
   }
   if ("names" in body) { sets.push("names=?"); vals.push(String(body.names || "").trim().slice(0, 120)); }
+  if ("arrived" in body) {
+    // Attendance mark: null clears, 0-6 records how many of the party came.
+    if (body.arrived === null) { sets.push("arrived=NULL", "arrived_at=NULL"); }
+    else {
+      const n = Math.round(Number(body.arrived));
+      if (!Number.isFinite(n) || n < 0 || n > 6) return json({ error: "Arrived runs 0 to 6." }, 400);
+      sets.push("arrived=?"); vals.push(n);
+      sets.push("arrived_at=?"); vals.push(new Date().toISOString());
+    }
+  }
   if (!sets.length) return json({ error: "Nothing to change" }, 400);
   sets.push("updated=?"); vals.push(new Date().toISOString());
 
   const row = await env.DB.prepare(
     `UPDATE rsvps SET ${sets.join(",")} WHERE id=? RETURNING *`).bind(...vals, id).first();
   if (!row) return json({ error: "No such RSVP" }, 404);
-  return json({ id: row.id, status: row.status, count: row.count, names: row.names || "" });
+  return json({ id: row.id, status: row.status, count: row.count, names: row.names || "",
+                arrived: row.arrived ?? null, arrived_at: row.arrived_at || "" });
 }

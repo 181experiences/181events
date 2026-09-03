@@ -620,12 +620,15 @@
       if (r.status === "Cancelled") continue;
       if (!by.has(r.event_key)) by.set(r.event_key, {
         key: r.event_key, date: r.event_date, title: r.event_title, type: r.rsvp_type,
-        parties: 0, heads: 0, waitParties: 0, waitHeads: 0, rows: [],
+        parties: 0, heads: 0, waitParties: 0, waitHeads: 0, arrivedHeads: 0, arrivedMarks: 0, rows: [],
       });
       const s = by.get(r.event_key);
       s.rows.push(r);
       if (r.status === "Waitlist") { s.waitParties++; s.waitHeads += r.count; }
-      else { s.parties++; s.heads += r.count; }
+      else {
+        s.parties++; s.heads += r.count;
+        if (r.arrived != null) { s.arrivedHeads += r.arrived; s.arrivedMarks++; }
+      }
     }
     const all = [...by.values()];
     rsvpCache = {
@@ -852,6 +855,17 @@
   }
 
   let pastRsvpsOpen = false;
+  // Party lists stay open across re-renders: at the door on an event night,
+  // every Arrived tap redraws the section, and a card that folded itself shut
+  // after each guest would be unusable.
+  const openRsvpDetails = new Set();
+  // The attendance control: one tap marks the whole party in, a second tap
+  // asks for the true number (0 clears). Waitlisted parties hold no seats,
+  // so they carry no button.
+  const arriveBtn = r => r.status === "Waitlist" ? "" :
+    `<button class="mini${r.arrived == null ? " ghost" : ""}" data-rarrive="${r.id}"
+      title="${r.arrived == null ? "One tap marks the whole party in; tap again to adjust" : "Tap to adjust the number; 0 clears the mark"}">${
+      r.arrived == null ? "Arrived" : `Arrived &#10003; ${r.arrived}`}</button>`;
   function renderRsvps() {
     const box = $("#rsvplist"); if (!box) return;
     const { upcoming: sums, past } = rsvpSummaries();
@@ -871,11 +885,12 @@
       return `<div class="srow" style="cursor:pointer" data-rsvpkey="${esc(s.key)}"><span class="slab">${esc(fmt(s.date))}</span>
         <span class="sgrow" style="font-size:15px;color:var(--ink)">${esc(s.title)}${dupUnit ? ' <span class="flagmany" title="One unit holds more than one RSVP for this event">unit twice</span>' : ""}</span>
         <span class="sval">${what}${wait}</span></div>
-        <div class="card" data-rsvpdetail="${esc(s.key)}" style="display:none;margin:4px 0 10px">
+        <div class="card" data-rsvpdetail="${esc(s.key)}" style="${openRsvpDetails.has(s.key) ? "" : "display:none;"}margin:4px 0 10px">
         ${s.rows.map(r => `<div class="srow"><span class="slab">${esc(r.unit || "Role")} &middot; ${esc(r.name)}</span>
           <span class="sgrow" style="font-size:14px;color:var(--ink-soft)">${r.status === "Waitlist" ? "Waitlist" : (s.type === "guest" ? `${r.count} guest${r.count === 1 ? "" : "s"}` : `party of ${r.count}`)}${r.names ? ` &middot; ${esc(r.names)}` : ""}</span>
           <span class="sval" style="font-size:12px;color:var(--stone)">${esc((r.created || "").slice(0, 10))}</span>
           <span class="eact">
+          ${arriveBtn(r)}
           ${r.status === "Waitlist" ? `<button class="mini" data-wconfirm="${r.id}" title="Give this party the freed seats, then let them know">Confirm seats</button>` : ""}
           <button class="mini ghost" data-redit="${r.id}" title="Change the party, the names, or move it to another event">Edit</button>
           <button class="mini ghost" data-rcancel="${r.id}" title="Take them off the list; you choose whether a note goes">Cancel</button>
@@ -890,21 +905,23 @@
         <span class="sval" style="color:var(--stone)">${pastRsvpsOpen ? "Hide" : "Show"}</span></div>
       <div id="pastrsvps" style="${pastRsvpsOpen ? "" : "display:none"}">
         ${past.map(s => {
-          const went = s.type === "guest" ? `${s.heads} outside guests` : `${s.heads} confirmed`;
+          const went = s.arrivedMarks ? `${s.arrivedHeads} of ${s.heads} arrived`
+            : s.type === "guest" ? `${s.heads} outside guests` : `${s.heads} confirmed`;
           const wait = s.waitParties ? ` &middot; ${s.waitParties} stayed waitlisted` : "";
           const mails = new Set(s.rows.filter(r => r.status !== "Waitlist" && r.email).map(r => r.email.toLowerCase()));
           const dark = s.rows.filter(r => r.status !== "Waitlist" && !r.email).length;
           return `<div class="srow" style="cursor:pointer" data-rsvpkey="${esc(s.key)}"><span class="slab">${esc(fmt(s.date))}</span>
             <span class="sgrow" style="font-size:15px;color:var(--ink)">${esc(s.title)}</span>
             <span class="sval">${went}${wait}</span></div>
-            <div class="card" data-rsvpdetail="${esc(s.key)}" style="display:none;margin:4px 0 10px">
+            <div class="card" data-rsvpdetail="${esc(s.key)}" style="${openRsvpDetails.has(s.key) ? "" : "display:none;"}margin:4px 0 10px">
             <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:10px">
               ${mails.size ? `<button class="mini" data-pastmail="${esc(s.key)}" title="A BCC draft to everyone who held seats, for the thank-you or the survey">Email guests &middot; ${mails.size}</button>` : ""}
               ${dark ? `<span class="hint" style="margin:0">${dark} ${dark === 1 ? "party has" : "parties have"} no email on file.</span>` : ""}
             </div>
             ${s.rows.map(r => `<div class="srow"><span class="slab">${esc(r.unit || "Role")} &middot; ${esc(r.name)}</span>
               <span class="sgrow" style="font-size:14px;color:var(--ink-soft)">${r.status === "Waitlist" ? "Waitlisted" : (s.type === "guest" ? `${r.count} guest${r.count === 1 ? "" : "s"}` : `party of ${r.count}`)}${r.names ? ` &middot; ${esc(r.names)}` : ""}</span>
-              <span class="sval" style="font-size:12px;color:var(--stone)">${esc(r.email || "no email")}</span></div>`).join("")}
+              <span class="sval" style="font-size:12px;color:var(--stone)">${esc(r.email || "no email")}</span>
+              <span class="eact">${arriveBtn(r)}</span></div>`).join("")}
             </div>`;
         }).join("")}
       </div>`;
@@ -1533,6 +1550,16 @@
       rows.push([s2.date, s2.title, s2.type, s2.parties, s2.heads, e && e.Capacity ? e.Capacity : "", s2.waitHeads]);
     }
     if (!sums.length) rows.push(["No RSVPs yet"]);
+    // Attendance, once the door starts marking arrivals: RSVPed beside came
+    // is the honest pair of numbers for the board.
+    const past = rsvpSummaries().past;
+    if (past.length) {
+      rows.push([]);
+      rows.push(["Attendance, past events"]);
+      rows.push(["Date", "Event", "Confirmed heads", "Arrived heads", "Parties marked"]);
+      for (const s2 of past) rows.push([s2.date, s2.title, s2.heads,
+        s2.arrivedMarks ? s2.arrivedHeads : "not marked", s2.arrivedMarks || ""]);
+    }
     rows.push([]);
     rows.push(["Messages"]);
     rows.push(["Awaiting reply", msgs.filter(m => m.state === "New").length]);
@@ -1605,7 +1632,7 @@
   }
 
   document.addEventListener("click", ev => {
-    const r = ev.target.closest("[data-rotate],[data-ends],[data-toggle],[data-rdelete],[data-resedit],[data-saveres],[data-cancelres],[data-edittoggle],[data-editdelete],[data-addres],[data-addbulk],[data-printcards],[data-mreplied],[data-marchive],[data-wconfirm],[data-redit],[data-rcancel],[data-pastchev],[data-pastmail],[data-addrsvp],[data-savearsvp],[data-closearsvp],[data-copylink],[data-aupload],[data-acanva],[data-adelete],[data-rsvpkey],[data-addbooking],[data-unbook],[data-bkchev],[data-bkreg],[data-bkcopy],[data-bkprint],[data-gadd],[data-garrive],[data-gdel],[data-bkedit],[data-savebk],[data-cancelbk]");
+    const r = ev.target.closest("[data-rotate],[data-ends],[data-toggle],[data-rdelete],[data-resedit],[data-saveres],[data-cancelres],[data-edittoggle],[data-editdelete],[data-addres],[data-addbulk],[data-printcards],[data-mreplied],[data-marchive],[data-wconfirm],[data-redit],[data-rcancel],[data-rarrive],[data-pastchev],[data-pastmail],[data-addrsvp],[data-savearsvp],[data-closearsvp],[data-copylink],[data-aupload],[data-acanva],[data-adelete],[data-rsvpkey],[data-addbooking],[data-unbook],[data-bkchev],[data-bkreg],[data-bkcopy],[data-bkprint],[data-gadd],[data-garrive],[data-gdel],[data-bkedit],[data-savebk],[data-cancelbk]");
     if (r) {
       if (r.dataset.bkedit) {
         const b = bookings.find(x => String(x.id) === r.dataset.bkedit);
@@ -1807,9 +1834,28 @@
       else if (r.dataset.closearsvp !== undefined) exitRsvpEdit();
       else if (r.dataset.pastchev !== undefined) { pastRsvpsOpen = !pastRsvpsOpen; renderRsvps(); }
       else if (r.dataset.pastmail) emailPastGuests(r.dataset.pastmail);
+      else if (r.dataset.rarrive) {
+        const row = rsvps.find(x => String(x.id) === r.dataset.rarrive);
+        if (row) {
+          let val;
+          if (row.arrived == null) val = row.count;
+          else {
+            const ans = prompt(`How many of the ${row.count} arrived? 0 clears the mark.`, String(row.arrived));
+            if (ans === null) return;
+            const n = Math.round(Number(ans));
+            if (!Number.isFinite(n) || n < 0 || n > 6) { toast("A number from 0 to 6.", "warn"); return; }
+            val = n === 0 ? null : n;
+          }
+          api("/api/rsvps/" + row.id, { method: "PATCH", body: JSON.stringify({ arrived: val }) })
+            .then(res => { row.arrived = res.arrived; row.arrived_at = res.arrived_at; rsvpCache = null; renderRsvps(); })
+            .catch(e => toast(e.message, "warn"));
+        }
+      }
       else if (r.dataset.rsvpkey) {
-        const d = document.querySelector(`[data-rsvpdetail="${CSS.escape(r.dataset.rsvpkey)}"]`);
-        if (d) d.style.display = d.style.display === "none" ? "" : "none";
+        const k = r.dataset.rsvpkey;
+        if (openRsvpDetails.has(k)) openRsvpDetails.delete(k); else openRsvpDetails.add(k);
+        const d = document.querySelector(`[data-rsvpdetail="${CSS.escape(k)}"]`);
+        if (d) d.style.display = openRsvpDetails.has(k) ? "" : "none";
       } else if (r.dataset.addbooking !== undefined) addBooking();
       else if (r.dataset.unbook) {
         const b2 = bookings.find(x => String(x.id) === r.dataset.unbook);

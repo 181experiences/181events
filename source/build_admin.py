@@ -447,7 +447,7 @@ HTML = f'''<!DOCTYPE html>
       <h2>RSVPs</h2>
       <button class="mini" data-addrsvp title="For the resident who phones the desk or asks in passing">Add an RSVP for someone</button>
     </div>
-    <div class="sd">Confirmed parties and heads for upcoming dates, with waitlists. Open an event to see who, by unit; a unit appearing twice for one event is worth a glance, since a household can double-count itself. Edit or cancel any RSVP from the list, and a note to the resident opens ready to send from your own mailbox. Passed events keep their lists under Past events at the foot, with an Email guests draft for the thank-you or the survey.</div>
+    <div class="sd">Confirmed parties and heads for upcoming dates, with waitlists. Open an event to see who, by unit; a unit appearing twice for one event is worth a glance, since a household can double-count itself. Edit or cancel any RSVP from the list, and a note to the resident opens ready to send from your own mailbox. On the day, Arrived beside each party marks who came: one tap for the whole party, a second tap to adjust the number. Passed events keep their lists under Past events at the foot, with the arrival tally and an Email guests draft for the thank-you or the survey.</div>
     <div class="card" id="ar-card" style="display:none;margin-bottom:10px">
       <div id="ar-head" style="display:none;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--red);font-weight:600;margin-bottom:12px"></div>
       <div style="display:grid;gap:12px 16px;grid-template-columns:repeat(auto-fit,minmax(190px,1fr))">
@@ -799,7 +799,7 @@ HTML = f'''<!DOCTYPE html>
     <li><strong>Build the asset kit.</strong> Six pieces, same six every time. See <em>Brand &amp; Canva templates</em> for sizes.</li>
     <li><strong>Publish.</strong> The <em>Publish</em> button puts it on the calendar; the same button reads <em>Unpublish</em> once it is out. An event whose details are still settling can go out early with the <em>Coming soon</em> box ticked: the date and title show, RSVP and calendars wait.</li>
     <li><strong>Promote, in this order:</strong> Mailchimp campaign, then the Nixplay playlist, then the printed signs. All three point at the same event page.</li>
-    <li><strong>After it happens:</strong> record actual attendance. The Archive files passed events on its own; <em>Archive</em> by hand only from Unpublished.</li>
+    <li><strong>After it happens:</strong> attendance is whatever the door marked with <em>Arrived</em>; tidy stragglers under Past events on the Dashboard. The Archive files passed events on its own; <em>Archive</em> by hand only from Unpublished.</li>
   </ol>
 
   <div class="callout"><strong>Editing something already published.</strong> On a Live event, <em>Save draft</em> keeps your
@@ -860,9 +860,13 @@ HTML = f'''<!DOCTYPE html>
   capacity rules, then releases the old seats, and the note offered afterward names both. <em>Cancel</em> asks first, then
   asks separately whether a note should go. After any change, the note opens prefilled from your own mailbox; nothing sends
   itself.</p>
+  <p>On the day of an event, <strong>Arrived</strong> beside each party marks attendance at the door: one tap marks the
+  whole party in, a second tap asks for the true number when fewer came, and 0 clears the mark. The RSVP itself is never
+  touched, so the pair of numbers survives the evening; the export carries an Attendance table of RSVPed beside came,
+  which is the honest pair for the Board.</p>
   <p>Passed events keep their lists under <strong>Past events</strong> at the foot of the RSVP list, with who came, by unit,
-  and each party&rsquo;s email. <em>Email guests</em> there opens one BCC draft to everyone who held seats, made for the
-  thank-you note and the survey.</p>
+  the arrival tally, and each party&rsquo;s email. <em>Email guests</em> there opens one BCC draft to everyone who held
+  seats, made for the thank-you note and the survey.</p>
 
   <h2>Sharing an event</h2>
   <p><em>Link</em> on any event row or series date copies that date&rsquo;s page address, made for emails and reminders.

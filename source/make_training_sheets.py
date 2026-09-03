@@ -215,13 +215,14 @@ DESK_COL1 = [
 
 DESK_COL2 = [
     ("h", "4 · RSVPs by phone, or in passing"),
-    ("b", "**Dashboard**, RSVPs section, **Add an RSVP for someone**: person, event, party size, names if offered, then **Save RSVP**. Saving over an existing RSVP updates theirs."),
+    ("b", "**Dashboard**, RSVPs section, **Add an RSVP for someone**: person, event, party size, then **Save RSVP**. Saving over an existing RSVP updates theirs."),
     ("b", "Full event, or others waiting? The RSVP joins the waitlist, the same queue as the site. Say so kindly; nobody skips the line at the desk."),
     ("b", "On the site residents book **up to 3**; a bigger party is told to contact us. That is you: the desk seats **up to 6**."),
     ("h", "5 · Changes and cancellations"),
     ("b", "**Edit** on any RSVP row opens the full card: party size, names, or a **move to another event**. **Cancel** asks first, then asks whether a note should go."),
     ("b", "**Confirm seats** appears on a waitlist row once seats free up. Freed seats are never handed out on their own; pressing it gives them to that party."),
     ("b", "After any change, an email to the resident opens prefilled, ready to send. No email on file? The screen says so; a call closes the loop."),
+    ("b", "On event day it is the door list: press **Arrived** as each party comes in; tap again to adjust the number."),
     ("h", "6 · Private-party nights"),
     ("b", "Guests arrive announcing the **event name**. The list: **Spaces** tab, the reservation’s **Guests** panel, or the printed sheet."),
     ("b", "Press **Arrived** beside each name; plus-ones have their own lines. A name not listed: check with the host, then **Add**."),
@@ -260,7 +261,8 @@ LEAD_COL2 = [
     ("b", "Calendar subscribers update on their own; anyone who used **Add to My Calendar** re-taps it after a change. The drafts say so."),
     ("h", "7 · RSVPs from the Dashboard"),
     ("b", "**Edit** on a row changes the party or **moves the RSVP to another event**, under the new event’s own rules. **Cancel** asks first, then asks whether a note goes."),
-    ("b", "**Past events**, at the foot of the RSVP list, keep who came with emails in view; **Email guests** opens one BCC draft for the thank-you or the survey."),
+    ("b", "On the day, **Arrived** beside each party marks the door: one tap for the whole party, tap again to adjust. RSVPed and came stay two numbers, side by side in the CSV."),
+    ("b", "**Past events**, at the foot of the RSVP list, keep who came with the arrival tally and emails in view; **Email guests** opens one BCC draft for the thank-you or the survey."),
     ("h", "8 · Private events"),
     ("b", "A **Spaces** reservation can carry a private event: outside guests register on one page, the host sends the link, the desk runs the printed list. Full walkthrough under Settings."),
     ("h", "9 · Asset kits"),
@@ -345,7 +347,7 @@ dense_sheet("desk-cheat-sheet",
             "181residents.com/admin  ·  sign in as concierge@181sf.com  ·  keep beside the desk phone",
             DESK_COL1, DESK_COL2,
             "181 Fremont Residences  ·  Resident Experiences  ·  September 2026",
-            body_size=42, leading=58, head_size=62, top=680)
+            body_size=42, leading=55, head_size=62, top=680)
 
 dense_sheet("leadership-cheat-sheet",
             "LEADERSHIP · RESIDENT EVENTS ADMIN",
