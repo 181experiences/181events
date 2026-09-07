@@ -595,6 +595,11 @@ HTML = f'''<!DOCTYPE html>
     <div class="field f-full"><label class="check"><input type="checkbox" id="f-teaser"> Coming soon: publish the date and title, hold the details</label>
       <div class="hint">For an event still taking shape. It appears on the calendar with a Coming soon note; RSVP and
       Add to My Calendar stay closed until this is unticked, so plans can still change without anyone rebooking.</div></div>
+    <div class="field f-full"><label class="check"><input type="checkbox" id="f-announce"> Announce ahead of the calendar window</label>
+      <div class="hint">Steps this one event out of the window: full page, RSVP, and Add to My Calendar wherever its
+      date falls, while every other event keeps to the dials. For the holiday party and anything else worth announcing
+      early. If its month sits past the calendar&rsquo;s edge, the calendar reaches out to it. Pairs with Coming soon
+      when the date should be known before the details are. Untick to hand it back to the window.</div></div>
     <div class="field f-full" id="ed-scope" style="display:none"><label class="check"><input type="checkbox" id="f-scope" checked> Apply these changes to every upcoming date of this series (<span id="f-scope-n">0</span>)</label>
       <div class="hint">Untick to change only the date chosen above, for example to move or re-time a single week.</div></div>
     <div class="field f-full"><label class="fl" for="f-slug">File name stem, generated from the date and title</label>
@@ -811,7 +816,10 @@ HTML = f'''<!DOCTYPE html>
 
   <div class="callout"><strong>The calendar window.</strong> Two dials atop the Events screen decide how far ahead residents
   see: full pages with RSVP out to a number of weeks, then quiet shaded dates out to a number of months, then nothing. The
-  windows slide forward on their own with every rebuild, so an event simply wakes up as its date approaches.</div>
+  windows slide forward on their own with every rebuild, so an event simply wakes up as its date approaches. One event can
+  step out on purpose: <em>Announce ahead of the calendar window</em>, in the editor, gives that event its full page, RSVP,
+  and calendar buttons now, wherever its date falls, while everything else keeps to the dials. Made for the holiday party
+  and anything else the building should hear about early; untick it and the event goes back to waiting its turn.</div>
 
   <h2>Pulling an event back down</h2>
   <table>

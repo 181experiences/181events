@@ -18,7 +18,7 @@ export async function onRequestGet({ env }) {
     const win = await getWindow(env);
     const r = await env.DB.prepare(
       `SELECT * FROM events WHERE status='Live' AND (category IS NULL OR category != 'Board Meeting')
-       AND date >= ? AND date <= ? AND (teaser IS NULL OR teaser = 0) ORDER BY date, start24`)
+       AND date >= ? AND (date <= ? OR announce = 1) AND (teaser IS NULL OR teaser = 0) ORDER BY date, start24`)
       .bind(todayPacific(), detailEnd(win)).all();
     rows = r.results;
   }

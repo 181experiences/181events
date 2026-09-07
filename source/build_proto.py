@@ -46,13 +46,20 @@ _hy, _hm = TODAY.year, TODAY.month + WINDOW["horizon_months"]
 while _hm > 12:
     _hm -= 12; _hy += 1
 
+# An announced event steps out of the window on purpose: full page, RSVP, ics,
+# wherever its date falls. If it sits past the horizon, the calendar reaches out
+# to its month, and the months along the way show their usual quiet band.
+_ann = [(e["on"].year, e["on"].month) for e in EVENTS if e.get("announce")]
+if _ann:
+    _hy, _hm = max((_hy, _hm), max(_ann))
+
 # In-place, so events_data's own helpers see the same trimmed lists.
 _kept = [m for m in MONTHS if (m["yr"], m["num"]) <= (_hy, _hm)]
 MONTHS[:] = _kept if _kept else MONTHS[:1]
 _mkeys = {m["key"] for m in MONTHS}
 EVENTS[:] = [e for e in EVENTS if (e["on"].year, e["on"].month) <= (_hy, _hm) and e["m"] in _mkeys]
 for _e in EVENTS:
-    _e["far"] = _e["on"] > DETAIL_END
+    _e["far"] = _e["on"] > DETAIL_END and not _e.get("announce")
 
 def plain(s):
     for a, b in [("&rsquo;", "'"), ("&amp;", "&"), ("&middot;", "-"), ("&mdash;", "-"),

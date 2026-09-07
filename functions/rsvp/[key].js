@@ -202,9 +202,10 @@ export async function onRequestGet(context) {
       "/", "Back to the calendar");
   }
   // The calendar window, honored here too, so a shared or guessed address can
-  // never open details, RSVPs, or calendar files ahead of their time.
+  // never open details, RSVPs, or calendar files ahead of their time. An event
+  // announced ahead of the window has stepped out of it on purpose.
   await ensureEventTables(env);
-  if (ev.teaser || ev.date > detailEnd(await getWindow(env))) {
+  if (ev.teaser || (ev.date > detailEnd(await getWindow(env)) && !ev.announce)) {
     return donePage(context, me, esc(ev.title),
       `${whenOf(ev)}<br><br>This one is still coming together. The full details arrive right here, and RSVP opens with them.`,
       "/", "Back to the calendar");
@@ -224,7 +225,7 @@ export async function onRequestPost(context) {
   if (!me) return seeOther(`/rsvp/${key}`);
   if (ev.date < todayPacific()) return seeOther(`/rsvp/${key}`);
   await ensureEventTables(env);
-  if (ev.teaser || ev.date > detailEnd(await getWindow(env))) return seeOther(`/rsvp/${key}`);
+  if (ev.teaser || (ev.date > detailEnd(await getWindow(env)) && !ev.announce)) return seeOther(`/rsvp/${key}`);
 
   const type = TYPE[ev.rsvp];
   const form = await request.formData();

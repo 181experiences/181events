@@ -773,7 +773,9 @@ class H(SimpleHTTPRequestHandler):
         if p.path == "/calendar/feed":
             rows = sorted([e for e in load_events()
                            if e.get("Status") == "Live" and e.get("Category") != "Board Meeting"
-                           and today() <= e.get("Date", "") <= detail_end() and not e.get("Teaser")],
+                           and today() <= e.get("Date", "")
+                           and (e.get("Date", "") <= detail_end() or e.get("Announce"))
+                           and not e.get("Teaser")],
                           key=lambda e: (e["Date"], e.get("Start24") or ""))
             out = ["BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//181 Fremont//Resident Events//EN",
                    "X-WR-CALNAME:181 Fremont Resident Events"]
@@ -815,7 +817,7 @@ class H(SimpleHTTPRequestHandler):
                 return self._html(done_page(me, "That date has passed",
                     "This event has already happened. The calendar has what&rsquo;s coming next.",
                     "/", "Back to the calendar"))
-            if e.get("Teaser") or e["Date"] > detail_end():
+            if e.get("Teaser") or (e["Date"] > detail_end() and not e.get("Announce")):
                 return self._html(done_page(me, e["Title"],
                     "This one is still coming together. The full details arrive right here, and RSVP opens with them.",
                     "/", "Back to the calendar"))
@@ -1048,7 +1050,7 @@ class H(SimpleHTTPRequestHandler):
             if not e or e["RSVP"] not in TYPE_OF: return self._redirect("/")
             if not me: return self._redirect(f"/rsvp/{key}")
             if e["Date"] < today(): return self._redirect(f"/rsvp/{key}")
-            if e.get("Teaser") or e["Date"] > detail_end(): return self._redirect(f"/rsvp/{key}")
+            if e.get("Teaser") or (e["Date"] > detail_end() and not e.get("Announce")): return self._redirect(f"/rsvp/{key}")
             rsvp_type = TYPE_OF[e["RSVP"]]
             form = self._body_form()
             rsvps = load_store("rsvps", [])

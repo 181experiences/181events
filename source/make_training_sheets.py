@@ -244,6 +244,7 @@ LEAD_COL1 = [
     ("h", "3 · How far ahead residents see"),
     ("b", "Two dials atop Events: full pages with RSVP so many **weeks** out, then quiet “Details to come” dates so many **months** out, then nothing. The windows slide forward on their own."),
     ("b", "**Coming soon** on one event publishes a teaser: date and title showing, RSVP and calendar buttons waiting."),
+    ("b", "**Announce ahead of the window**, in the editor, steps one event out on purpose: full page and RSVP now, while everything else keeps to the dials."),
     ("h", "4 · Series"),
     ("b", "One row per date, so a single week can be moved or skipped without touching the rest. **Which date of this series** picks the week; the **apply to every upcoming date** box decides the reach."),
     ("b", "Move a date and its sign-ups follow; nothing is orphaned."),
