@@ -60,6 +60,7 @@
   #s-dash:checked ~ .body #scr-dash{display:block}
   #s-events:checked ~ .body #scr-events{display:block}
   #s-editor:checked ~ .body #scr-editor{display:block}
+  #s-cal:checked ~ .body #scr-cal{display:block}
   #s-assets:checked ~ .body #scr-assets{display:block}
   #s-arch:checked ~ .body #scr-arch{display:block}
   #s-res:checked ~ .body #scr-res{display:block}
@@ -74,6 +75,7 @@
   #s-dash:checked ~ .chrome .navbar label[for="s-dash"]{color:var(--ink);border-bottom-color:var(--red)}
   #s-events:checked ~ .chrome .navbar label[for="s-events"]{color:var(--ink);border-bottom-color:var(--red)}
   #s-editor:checked ~ .chrome .navbar label[for="s-events"]{color:var(--ink);border-bottom-color:var(--red)}
+  #s-cal:checked ~ .chrome .navbar label[for="s-cal"]{color:var(--ink);border-bottom-color:var(--red)}
   #s-assets:checked ~ .chrome .navbar label[for="s-assets"]{color:var(--ink);border-bottom-color:var(--red)}
   #s-res:checked ~ .chrome .navbar label[for="s-res"]{color:var(--ink);border-bottom-color:var(--red)}
   #s-spaces:checked ~ .chrome .navbar label[for="s-spaces"]{color:var(--ink);border-bottom-color:var(--red)}
@@ -204,6 +206,45 @@
     border:1px solid var(--line);border-radius:var(--radius);min-height:36px}
   textarea.inp{min-height:110px;resize:vertical;line-height:1.5;font-size:13.5px}
   .hint{font-size:11.5px;color:var(--stone);margin-top:4px;line-height:1.45}
+  /* ---------- info popovers: the form's help, one tap away ---------- */
+  .flrow{display:flex;align-items:center;gap:6px;margin-bottom:5px}
+  .flrow .fl{margin-bottom:0}
+  .iwrap{position:relative;display:inline-flex}
+  .ib{width:18px;height:18px;border-radius:50%;border:1px solid var(--line);background:var(--paper-2);
+    color:var(--stone);font:italic 600 11px/1 Georgia,serif;cursor:pointer;padding:0;
+    display:inline-flex;align-items:center;justify-content:center;flex:none}
+  .ib:hover{border-color:var(--red);color:var(--red)}
+  .iwrap.open .ib{background:var(--ink);border-color:var(--ink);color:var(--paper-2)}
+  .ipop{display:none;position:absolute;left:0;top:24px;z-index:60;width:320px;max-width:76vw;
+    background:var(--paper-2);border:1px solid var(--line);border-radius:6px;
+    box-shadow:0 12px 32px rgba(22,22,26,.16);padding:12px 14px;font-size:13px;line-height:1.55;
+    color:var(--ink-body);text-transform:none;letter-spacing:0;font-weight:400;text-align:left;white-space:normal}
+  .iwrap.open .ipop{display:block}
+  .drow{display:grid;gap:12px 16px;grid-template-columns:repeat(4,1fr)}
+  @media(max-width:1000px){.drow{grid-template-columns:1fr 1fr}}
+  .pickpair{display:inline-flex;align-items:center;gap:3px}
+  /* ---------- the admin's own calendar grid ---------- */
+  .acal{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin-top:14px}
+  .acal .adow{font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--stone);
+    font-weight:600;padding:0 2px 4px}
+  .acell{min-height:96px;background:var(--paper-2);border:1px solid var(--line);border-radius:6px;
+    padding:6px;font-size:12px}
+  .acell.out{background:transparent;border-color:transparent}
+  .acell.tod{border-color:var(--red)}
+  .acell .adn{color:var(--stone);font-weight:600;margin-bottom:4px}
+  .acev{display:block;width:100%;text-align:left;border:1px solid var(--line);background:var(--paper);
+    border-left:3px solid var(--red);border-radius:4px;padding:4px 6px;margin:0 0 4px;cursor:pointer;
+    font:inherit;font-size:11.5px;line-height:1.35;color:var(--ink)}
+  .acev:hover{border-color:var(--red)}
+  .acev .at{color:var(--stone)}
+  .acev.st-draft{border-style:dashed;border-left-color:var(--stone);color:var(--ink-soft)}
+  .acev.st-unpublished{border-left-color:var(--stone);opacity:.65}
+  .acev.st-archived{border-left-color:transparent;opacity:.45}
+  .acev.past{opacity:.5}
+  .aleg{display:flex;gap:16px;flex-wrap:wrap;font-size:12px;color:var(--ink-soft);margin-top:12px}
+  .aleg span{display:inline-flex;align-items:center;gap:6px}
+  .aleg i{width:12px;height:12px;border-radius:3px;border:1px solid var(--line);display:inline-block;font-style:normal}
+  @media(max-width:820px){.acell{min-height:64px}.acal{gap:3px}}
   .picks{display:flex;flex-wrap:wrap;gap:6px}
   .pick{border:1px solid var(--line);border-radius:100px;padding:5px 12px;font-size:12px;font-weight:500;
     color:var(--ink-body);background:var(--paper-2);min-height:30px;display:inline-flex;align-items:center}
@@ -266,6 +307,7 @@
      Messages, and manages RSVPs; the calendar itself stays out of reach. The
      server enforces this on every endpoint; hiding tabs keeps the view honest. */
   body.role-desk .navbar label[for="s-events"],
+  body.role-desk .navbar label[for="s-cal"],
   body.role-desk .navbar label[for="s-assets"],
   body.role-desk .navbar label[for="s-inst"]{display:none}
 
@@ -391,7 +433,7 @@
 <div class="mocknote" id="sysbar">Connecting&hellip;</div>
 
 <input class="state" type="radio" name="scr" id="s-dash" checked>
-<input class="state" type="radio" name="scr" id="s-events"><input class="state" type="radio" name="scr" id="s-editor"><input class="state" type="radio" name="scr" id="s-assets"><input class="state" type="radio" name="scr" id="s-arch"><input class="state" type="radio" name="scr" id="s-res"><input class="state" type="radio" name="scr" id="s-spaces"><input class="state" type="radio" name="scr" id="s-msgs"><input class="state" type="radio" name="scr" id="s-inst"><input class="state" type="radio" name="scr" id="s-inst-events"><input class="state" type="radio" name="scr" id="s-inst-brand"><input class="state" type="radio" name="scr" id="s-inst-email"><input class="state" type="radio" name="scr" id="s-inst-screens"><input class="state" type="radio" name="scr" id="s-inst-private">
+<input class="state" type="radio" name="scr" id="s-events"><input class="state" type="radio" name="scr" id="s-editor"><input class="state" type="radio" name="scr" id="s-cal"><input class="state" type="radio" name="scr" id="s-assets"><input class="state" type="radio" name="scr" id="s-arch"><input class="state" type="radio" name="scr" id="s-res"><input class="state" type="radio" name="scr" id="s-spaces"><input class="state" type="radio" name="scr" id="s-msgs"><input class="state" type="radio" name="scr" id="s-inst"><input class="state" type="radio" name="scr" id="s-inst-events"><input class="state" type="radio" name="scr" id="s-inst-brand"><input class="state" type="radio" name="scr" id="s-inst-email"><input class="state" type="radio" name="scr" id="s-inst-screens"><input class="state" type="radio" name="scr" id="s-inst-private">
 
 <div class="chrome">
 <div class="topbar"><div class="inner">
@@ -402,7 +444,7 @@
   </div>
 </div></div>
 <nav class="navbar"><div class="inner">
-  <label for="s-dash">Dashboard</label><label for="s-events">Events</label><label for="s-assets">Assets</label><label for="s-res">Residents</label><label for="s-spaces">Spaces</label><label for="s-msgs">Messages</label><label for="s-inst">Settings</label>
+  <label for="s-dash">Dashboard</label><label for="s-events">Events</label><label for="s-cal">Calendar</label><label for="s-assets">Assets</label><label for="s-res">Residents</label><label for="s-spaces">Spaces</label><label for="s-msgs">Messages</label><label for="s-inst">Settings</label>
 </div></nav>
 </div>
 
@@ -521,28 +563,30 @@
   <input class="state" type="radio" name="cat" id="cat-0"><input class="state" type="radio" name="cat" id="cat-1"><input class="state" type="radio" name="cat" id="cat-2"><input class="state" type="radio" name="cat" id="cat-3"><input class="state" type="radio" name="cat" id="cat-4" checked><input class="state" type="radio" name="cat" id="cat-5"><input class="state" type="radio" name="cat" id="cat-6">
   <input class="state" type="radio" name="co" id="co-0" checked><input class="state" type="radio" name="co" id="co-1">
   <input class="state" type="radio" name="rt" id="rt-0"><input class="state" type="radio" name="rt" id="rt-1"><input class="state" type="radio" name="rt" id="rt-2" checked><input class="state" type="radio" name="rt" id="rt-3">
+  <input class="state" type="radio" name="pm" id="pm-0"><input class="state" type="radio" name="pm" id="pm-1"><input class="state" type="radio" name="pm" id="pm-2" checked><input class="state" type="radio" name="pm" id="pm-3"><input class="state" type="radio" name="pm" id="pm-4">
   <div class="phead"><h1 id="ed-title">Edit event</h1><span class="pill draft" id="ed-pill">Draft</span></div>
   <div class="psub" id="ed-sub"></div>
   <div class="callout" id="ed-draftnote" style="display:none;margin:14px 0 4px"></div>
 
   <div class="form">
-    <div class="field f-full" id="ed-occ" style="display:none"><label class="fl" for="f-occ">Which date of this series</label>
-      <select class="inp" id="f-occ"></select>
-      <div class="hint">A series is one row per date, so a single week can be moved or skipped without touching the rest.</div></div>
+    <div class="field f-full" id="ed-occ" style="display:none"><div class="flrow"><label class="fl" for="f-occ">Editing which date</label><span class="iwrap"><button type="button" class="ib" aria-label="What this does">i</button><span class="ipop">A series is one row per date, so a single week can be moved or skipped without touching the rest. Choose The whole series to change every upcoming date in one save, or one date to touch it alone.</span></span></div>
+      <select class="inp" id="f-occ"></select></div>
+    <div class="field f-full" id="ed-scope" style="display:none"><label class="check"><input type="checkbox" id="f-scope" checked> Apply these changes to every upcoming date of this series (<span id="f-scope-n">0</span>)</label></div>
     <div class="field f-full"><label class="fl" for="f-title">Event title</label><input class="inp" id="f-title" autocapitalize="words"></div>
-    <div class="field f-full"><label class="fl">Category</label><div class="picks"><label class="pick" for="cat-0">Morning Offering</label><label class="pick" for="cat-1">Happy Hour</label><label class="pick" for="cat-2">Community Dinner</label><label class="pick" for="cat-3">Culinary Experience</label><label class="pick" for="cat-4">Enrichment Experience</label><label class="pick" for="cat-5">Signature Event</label><label class="pick" for="cat-6">Board Meeting</label></div><div class="hint">Categories match the budget line items, so the monthly report rolls up against what Scott already sees.</div></div>
-    <div class="field"><label class="fl" for="f-date">Date</label><input class="inp" type="date" id="f-date"></div>
-    <div class="field"><label class="fl" for="f-start">Start time</label><input class="inp" id="f-start" placeholder="5:30 PM" inputmode="text"></div>
-    <div class="field"><label class="fl" for="f-end">End time</label><input class="inp" id="f-end" placeholder="7:30 PM"></div>
+    <div class="field f-full"><div class="flrow"><label class="fl">Category</label><span class="iwrap"><button type="button" class="ib" aria-label="What this does">i</button><span class="ipop">Categories match the budget line items, so the monthly report rolls up against what Scott already sees. When an event could sit in two, the budget that pays for it decides.</span></span></div><div class="picks"><label class="pick" for="cat-0">Morning Offering</label><label class="pick" for="cat-1">Happy Hour</label><label class="pick" for="cat-2">Community Dinner</label><label class="pick" for="cat-3">Culinary Experience</label><label class="pick" for="cat-4">Enrichment Experience</label><label class="pick" for="cat-5">Signature Event</label><label class="pick" for="cat-6">Board Meeting</label></div></div>
+    <div class="field f-full drow">
+      <div><label class="fl" for="f-date">Event start date</label><input class="inp" type="date" id="f-date"></div>
+      <div id="ed-date2"><div class="flrow"><label class="fl" for="f-date2">Event end date</label><span class="iwrap"><button type="button" class="ib" aria-label="What this does">i</button><span class="ipop">Leave blank for a single-day event. A later day makes one entry per day, so a three-day Fleet Week becomes three; each day can then be moved or skipped on its own, and residents RSVP per day.</span></span></div><input class="inp" type="date" id="f-date2"></div>
+      <div><label class="fl" for="f-start">Start time</label><input class="inp" id="f-start" placeholder="5:30 PM" inputmode="text"></div>
+      <div><label class="fl" for="f-end">End time</label><input class="inp" id="f-end" placeholder="7:30 PM"></div>
+    </div>
+    <div class="hint f-full" id="ed-date2note" style="margin:-6px 0 0"></div>
     <div class="field"><label class="fl" for="f-loc">Location</label><input class="inp" id="f-loc" list="locs"><datalist id="locs"><option value="Level 39, Residents’ Club"><option value="Level 7 Terrace"><option value="Lobby"><option value="Fitness Center"></datalist></div>
-    <div class="field"><label class="fl" for="f-host">Hosted by</label><input class="inp" id="f-host" list="hosts" autocapitalize="words"><datalist id="hosts"><option value="Resident Experiences"><option value="Leigh Anne"><option value="Front desk"></datalist>
-      <div class="hint">Shown on the event page so residents know who to ask.</div></div>
-    <div class="field"><label class="fl">Count in engagement reporting</label><div class="picks"><label class="pick" for="co-0">Count it</label><label class="pick" for="co-1">List only, don’t count</label></div>
-      <div class="hint">Choose List only whenever the host is not Resident Experiences, so nothing credits you with someone else&rsquo;s attendance.</div></div>
-    <div class="field f-full" id="rp-builder"><label class="fl">Repeats</label>
+    <div class="field"><div class="flrow"><label class="fl" for="f-host">Hosted by</label><span class="iwrap"><button type="button" class="ib" aria-label="What this does">i</button><span class="ipop">Shown on the event page so residents know who to ask. The list is kept under Settings.</span></span></div><input class="inp" id="f-host" list="hosts" autocapitalize="words"><datalist id="hosts"><option value="Resident Experiences"><option value="Leigh Anne"><option value="Front desk"></datalist></div>
+    <div class="field"><div class="flrow"><label class="fl">Count in engagement reporting</label><span class="iwrap"><button type="button" class="ib" aria-label="What this does">i</button><span class="ipop">Choose List only whenever the host is not Resident Experiences, so nothing credits you with someone else&rsquo;s attendance. The calendar carries everything happening in the building either way.</span></span></div><div class="picks"><label class="pick" for="co-0">Count it</label><label class="pick" for="co-1">List only, don’t count</label></div></div>
+    <div class="field f-full" id="rp-builder"><div class="flrow"><label class="fl">Repeats</label><span class="iwrap"><button type="button" class="ib" aria-label="What this does">i</button><span class="ipop">For the standing rhythm: every Tuesday, the last Friday of the month. Each date becomes its own entry. A run of consecutive days is not a repeat; give it an end date above instead.</span></span></div>
       <div class="picks" id="rp-picks">
         <label class="pick on" data-rp="none">Does not repeat</label>
-        <label class="pick" data-rp="daily">Daily</label>
         <label class="pick" data-rp="weekly">Weekly</label>
         <label class="pick" data-rp="monthly">Monthly</label>
       </div>
@@ -569,26 +613,34 @@
           <label class="pick" data-en="count">After a number of times</label>
           <label class="pick" data-en="date">On a date</label>
         </div>
-        <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:10px">
+        <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:10px;align-items:center">
           <input class="inp" type="number" id="rp-times" min="2" max="60" value="6" style="width:120px;display:none">
           <input class="inp" type="date" id="rp-until" style="width:auto;display:none">
+          <span class="iwrap"><button type="button" class="ib" aria-label="What this does">i</button><span class="ipop">The resident calendar runs to a fixed end and is extended season by season, so a series runs to the calendar&rsquo;s end rather than forever.</span></span>
         </div>
-        <div class="hint">The resident calendar runs to a fixed end and is extended season by season, so a series runs to the calendar&rsquo;s end rather than forever. Each date becomes its own entry, so a single week can still be moved or skipped later.</div>
       </div>
       <div class="hint" id="rp-preview" style="margin-top:10px"></div>
     </div>
-    <div class="field"><label class="fl" for="f-series">Repeats, as shown to residents</label><input class="inp" id="f-series" placeholder="Writes itself from the rule; edit if you like"></div>
-    <div class="field"><label class="fl">RSVP type</label><div class="picks"><label class="pick" for="rt-0">None</label><label class="pick" for="rt-1">Guest count only</label><label class="pick" for="rt-2">Seat</label><label class="pick" for="rt-3">Paid seat</label></div><div class="hint">Guest count collects non-resident numbers only. Paid seat shows the price.</div></div>
-    <div class="field"><label class="fl" for="f-cap">Capacity</label><input class="inp" type="number" id="f-cap" inputmode="numeric" placeholder="Leave blank for no limit"></div>
+    <div class="field f-full"><div class="flrow"><label class="fl" for="f-series">Repeats, as shown to residents</label><span class="iwrap"><button type="button" class="ib" aria-label="What this does">i</button><span class="ipop">The line on the event page under the date, like Every Tuesday or October 9 to 11. It writes itself from the rule or the date range; edit it if you would say it differently.</span></span></div><input class="inp" id="f-series" placeholder="Writes itself; edit if you like"></div>
+    <div class="field f-full"><label class="fl">RSVP type</label>
+      <div class="picks">
+        <span class="pickpair"><label class="pick" for="rt-0">None</label><span class="iwrap"><button type="button" class="ib" aria-label="What this does">i</button><span class="ipop">A drop-in. The page shows the full details with no button: nobody signs up, nothing is counted ahead, and residents simply come. Right for happy hours and open houses.</span></span></span>
+        <span class="pickpair"><label class="pick" for="rt-1">Guest count only</label><span class="iwrap"><button type="button" class="ib" aria-label="What this does">i</button><span class="ipop">For events residents attend freely but may bring outside guests to. Collects only the number of guests coming, so the building knows who to expect at the door; residents themselves are not counted or seated.</span></span></span>
+        <span class="pickpair"><label class="pick" for="rt-2">Seat</label><span class="iwrap"><button type="button" class="ib" aria-label="What this does">i</button><span class="ipop">Holds real seats for residents and their parties, up to the party size set below. Capacity fills into one waitlist shared with the desk, and freed seats go to the front of that line with Confirm seats on the Dashboard.</span></span></span>
+        <span class="pickpair"><label class="pick" for="rt-3">Paid seat</label><span class="iwrap"><button type="button" class="ib" aria-label="What this does">i</button><span class="ipop">Seats held exactly as Seat, with the price shown beside the RSVP button and on the page. Payment itself stays off the site; staff arrange it, and the page says seats are held.</span></span></span>
+      </div></div>
+    <div class="field f-full"><div class="flrow"><label class="fl">Largest party a resident may book</label><span class="iwrap"><button type="button" class="ib" aria-label="What this does">i</button><span class="ipop">Residents choose from Just myself up to this size when they RSVP; chips past it never appear. Please contact me always shows for bigger asks, which staff arrange from the Dashboard, up to six. Out of the box: Myself +2.</span></span></div>
+      <div class="picks">
+        <label class="pick" for="pm-0">Just myself</label>
+        <label class="pick" for="pm-1">Myself +1</label>
+        <label class="pick" for="pm-2">Myself +2</label>
+        <label class="pick" for="pm-3">Myself +3</label>
+        <label class="pick" for="pm-4">Myself +4</label>
+      </div></div>
+    <div class="field"><div class="flrow"><label class="fl" for="f-cap">Capacity</label><span class="iwrap"><button type="button" class="ib" aria-label="What this does">i</button><span class="ipop">Total heads the room takes; blank means no limit. When it fills, the button becomes Join the Waitlist on its own, one queue shared with the site, the desk, and the Dashboard.</span></span></div><input class="inp" type="number" id="f-cap" inputmode="numeric" placeholder="Blank for no limit"></div>
     <div class="field"><label class="fl" for="f-price">Price per person</label><input class="inp" id="f-price" placeholder="$75"></div>
-    <div class="field"><label class="fl" for="f-cutoff">RSVP closes</label><input class="inp" type="date" id="f-cutoff">
-      <div class="hint">End of that day, Pacific. From the next morning the button reads Join the Waitlist, and requests
-      come to you for a yes or a no (Confirm seats is the yes). Blank keeps RSVPs open. Workshops close the Monday of the
-      event week, so materials are ordered against a firm count.</div>
-      <label class="check" style="margin-top:12px"><input type="checkbox" id="f-closed"> Close RSVPs now</label>
-      <div class="hint">The by-hand switch, for a sudden max or a change of plans: the button turns to Join the
-      Waitlist the moment this publishes. Capacity and the close date above already do this on their own schedule;
-      untick to reopen.</div></div>
+    <div class="field"><div class="flrow"><label class="fl" for="f-cutoff">RSVP closes</label><span class="iwrap"><button type="button" class="ib" aria-label="What this does">i</button><span class="ipop">End of that day, Pacific. From the next morning the button reads Join the Waitlist and requests come to you for a yes or a no; Confirm seats is the yes. Blank keeps RSVPs open. Workshops close the Monday of the event week, so materials are ordered against a firm count.</span></span></div><input class="inp" type="date" id="f-cutoff">
+      <div class="flrow" style="margin:10px 0 0"><label class="check"><input type="checkbox" id="f-closed"> Close RSVPs now</label><span class="iwrap"><button type="button" class="ib" aria-label="What this does">i</button><span class="ipop">The by-hand switch, for a sudden max or a change of plans: the button turns to Join the Waitlist the moment this publishes. Capacity and the close date already do this on their own schedule; untick to reopen.</span></span></div></div>
     <div class="field f-full"><label class="fl" for="f-desc">Description</label>
       <div class="fmtbar">
         <button type="button" class="mini" data-fmt="strong" title="Bold the selected text"><strong>B</strong></button>
@@ -606,8 +658,6 @@
       date falls, while every other event keeps to the dials. For the holiday party and anything else worth announcing
       early. If its month sits past the calendar&rsquo;s edge, the calendar reaches out to it. Pairs with Coming soon
       when the date should be known before the details are. Untick to hand it back to the window.</div></div>
-    <div class="field f-full" id="ed-scope" style="display:none"><label class="check"><input type="checkbox" id="f-scope" checked> Apply these changes to every upcoming date of this series (<span id="f-scope-n">0</span>)</label>
-      <div class="hint">Untick to change only the date chosen above, for example to move or re-time a single week.</div></div>
     <div class="field f-full"><label class="fl" for="f-slug">File name stem, generated from the date and title</label>
       <div class="inp" style="display:flex;gap:10px;align-items:center;flex-wrap:wrap"><code id="f-stem"></code><input id="f-slug" placeholder="custom slug, optional" style="border:none;background:transparent;font:inherit;flex:1;min-width:160px"></div>
       <div class="hint">Every file in this kit is named from this stem, so it stays identifiable in Canva, on Nixplay, or at the print shop.</div></div>
@@ -633,6 +683,25 @@
     <div class="sd">Who changed what, and when, newest first. Load an earlier version to review it in the editor;
     nothing on the resident site changes until you publish or save what is loaded.</div>
     <div class="card" id="ed-history"></div>
+  </div>
+</div></section>
+
+<!-- ================= CALENDAR (STAFF VIEW) ================= -->
+<section class="screen" id="scr-cal"><div class="wrap">
+  <div class="phead"><h1>Calendar</h1>
+    <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+      <button class="mini ghost" data-acal="-1" title="Previous month">&larr;</button>
+      <span id="acal-label" style="font-family:Georgia,serif;font-size:19px;color:var(--ink);min-width:170px;text-align:center"></span>
+      <button class="mini ghost" data-acal="1" title="Next month">&rarr;</button>
+      <button class="mini" data-acal="0">Today</button>
+    </div></div>
+  <div class="psub">Everything, in every state: what residents see and what they don&rsquo;t yet. Open any event straight from its day.</div>
+  <div class="acal" id="acal"></div>
+  <div class="aleg">
+    <span><i style="border-left:3px solid var(--red)"></i> Live</span>
+    <span><i style="border-style:dashed"></i> Draft</span>
+    <span><i style="opacity:.55"></i> Unpublished</span>
+    <span><i style="opacity:.35"></i> Archived</span>
   </div>
 </div></section>
 
@@ -806,13 +875,21 @@
 
   <h2>The loop</h2>
   <ol>
-    <li><strong>Create the draft.</strong> Events &rarr; New Event. Fill in title, category, date, time, location, and capacity, then <em>Save draft</em>: nothing is visible to residents yet.</li>
+    <li><strong>Create the draft.</strong> Events &rarr; New Event. Fill in title, category, dates, times, location, and capacity, then <em>Save draft</em>: nothing is visible to residents yet. A multi-day event takes a start and an end date and becomes one entry per day, so a three-day Fleet Week is three entries residents RSVP to per day; the Repeats picker is for standing rhythms, weekly and monthly. A draft that turns out wrong deletes cleanly from its row on Events; anything ever published keeps its history through Unpublish and the Archive instead.</li>
     <li><strong>Write both descriptions.</strong> The short one is a single line and appears in the list view. The full one appears on the event page. Write the full one as if the reader knows nothing about the event.</li>
     <li><strong>Build the asset kit.</strong> Six pieces, same six every time. See <em>Brand &amp; Canva templates</em> for sizes.</li>
     <li><strong>Publish.</strong> The <em>Publish</em> button puts it on the calendar; the same button reads <em>Unpublish</em> once it is out. An event whose details are still settling can go out early with the <em>Coming soon</em> box ticked: the date and title show, RSVP and calendars wait.</li>
     <li><strong>Promote, in this order:</strong> Mailchimp campaign, then the Nixplay playlist, then the printed signs. All three point at the same event page.</li>
     <li><strong>After it happens:</strong> attendance is whatever the door marked with <em>Arrived</em>; tidy stragglers under Past events on the Dashboard. The Archive files passed events on its own; <em>Archive</em> by hand only from Unpublished.</li>
   </ol>
+
+  <div class="callout"><strong>The Calendar tab</strong> is the staff view of the month: every event in every state,
+  including drafts and unpublished dates residents cannot see, each one opening straight into the editor. When a month
+  feels off, look there first; it shows what is actually posted, and what only exists in here.</div>
+
+  <div class="callout"><strong>Editing a series.</strong> Edit on a series row opens <em>the whole series</em>: one save
+  reaches every upcoming date, and the editor says so at the top. Pick a single date from the same dropdown to move or
+  re-time one week alone; its sign-ups follow wherever it goes.</div>
 
   <div class="callout"><strong>Editing something already published.</strong> On a Live event, <em>Save draft</em> keeps your
   edits as a working copy that residents never see; the editor says so, and <em>Publish changes</em> sends them out when
@@ -866,8 +943,9 @@
   <em>Join the Waitlist</em> on its own. The <strong>RSVP closes</strong> date passes; from the next morning, new requests
   go to Resident Experiences as requests rather than seats. Or you tick <strong>Close RSVPs now</strong> in the editor,
   which closes them that instant; untick it and they reopen. In every case, parties already holding seats keep them.</div>
-  <p>Residents book for themselves and up to two others on the site. The fourth chip, <em>Please contact me</em>, sends a
-  larger party to the Message page and the desk; staff seat up to six from the Dashboard, which is how that promise is kept.</p>
+  <p>Residents book from <em>Just myself</em> up to the party size each event sets, chosen in the editor under
+  <strong>Largest party a resident may book</strong> (out of the box, Myself +2; up to Myself +4). The <em>Please contact
+  me</em> chip always shows for bigger asks, which staff seat from the Dashboard, up to six.</p>
 
   <h2>Handling RSVPs from the Dashboard</h2>
   <p><em>Add an RSVP for someone</em> covers the resident who phones or asks in passing. On any row, <em>Edit</em> opens the
@@ -1137,9 +1215,7 @@
     const out = [];
     const capIso = rp.end === "date" && rp.until ? rp.until : calendarEnd();
     const capN = rp.end === "count" ? Math.max(2, Math.min(60, rp.times || 6)) : 366;
-    if (rp.mode === "daily") {
-      for (let d = anchor; d <= capIso && out.length < capN; d = addDays(d, 1)) out.push(d);
-    } else if (rp.mode === "weekly") {
+    if (rp.mode === "weekly") {
       const want = rp.days.size ? rp.days : new Set([new Date(anchor + "T12:00:00").getDay()]);
       for (let d = anchor; d <= capIso && out.length < capN; d = addDays(d, 1)) {
         if (want.has(new Date(d + "T12:00:00").getDay())) out.push(d);
@@ -1166,7 +1242,6 @@
   }
 
   function ruleLabel() {
-    if (rp.mode === "daily") return "Every day";
     if (rp.mode === "weekly") {
       const names = [...rp.days].sort().map(i => DOWFULL[i]);
       if (!names.length) return "Every week";
@@ -1177,7 +1252,36 @@
     return "";
   }
 
+  // A multi-day event is a date range, not a repeat rule: Fleet Week runs
+  // October 9 to 11 and becomes exactly three entries, one per day.
+  function rangeDates(start, end) {
+    const out = [];
+    for (let d = start; d <= end && out.length <= 31; d = addDays(d, 1)) out.push(d);
+    return out;
+  }
+  function rangeLabel(start, end) {
+    const a = new Date(start + "T12:00:00"), b = new Date(end + "T12:00:00");
+    const M = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+    return a.getMonth() === b.getMonth()
+      ? `${M[a.getMonth()]} ${a.getDate()} to ${b.getDate()}`
+      : `${M[a.getMonth()]} ${a.getDate()} to ${M[b.getMonth()]} ${b.getDate()}`;
+  }
+
   function rpRefresh() {
+    // An end date means a run of consecutive days; the repeat builder steps
+    // aside and the range writes the series line itself.
+    const anchor = $("#f-date").value;
+    const d2 = editing && editing.row ? "" : $("#f-date2").value;
+    const ranged = !!(d2 && anchor && d2 > anchor);
+    $("#rp-builder").style.display = (editing && editing.row) || ranged ? "none" : "";
+    if (ranged) {
+      rp.mode = "none";
+      const n = rangeDates(anchor, d2).length;
+      $("#f-series").value = rangeLabel(anchor, d2);
+      $("#ed-date2note").textContent = `${n} days, ${fmt(anchor)} through ${fmt(d2)}. Each day becomes its own entry, and residents RSVP per day.`;
+    } else {
+      $("#ed-date2note").textContent = d2 && anchor && d2 < anchor ? "The end date sits before the start date." : "";
+    }
     $$("#rp-picks .pick").forEach(b => b.classList.toggle("on", b.dataset.rp === rp.mode));
     $$("#rp-days .pick").forEach(b => b.classList.toggle("on", rp.days.has(Number(b.dataset.wd))));
     $$("#rp-endpicks .pick").forEach(b => b.classList.toggle("on", b.dataset.en === rp.end));
@@ -1187,8 +1291,7 @@
     $("#rp-times").style.display = rp.end === "count" ? "" : "none";
     $("#rp-until").style.display = rp.end === "date" ? "" : "none";
     if (rp.mode !== "none") $("#f-series").value = ruleLabel();
-    else if (!editing || !editing.row) $("#f-series").value = "";
-    const anchor = $("#f-date").value;
+    else if (!ranged && (!editing || !editing.row)) $("#f-series").value = "";
     const n = rp.mode === "none" || !anchor ? 0 : ruleDates(anchor).length;
     $("#rp-preview").textContent = rp.mode === "none" ? "" :
       (n ? `${n} dates, ${fmt(ruleDates(anchor)[0])} through ${fmt(ruleDates(anchor)[n - 1])}. Each becomes its own entry.` :
@@ -1270,7 +1373,7 @@
         <div class="ecell"><span class="pill ${cls(g.status)}">${esc(g.mixed ? "Mixed" : g.status)}</span></div>
         <div class="ecell"><span class="lbl">RSVPs</span>${rsvp}</div>
         <div class="ecell"><span class="lbl">Asset kit</span>${kits} of 6</div>
-        <div class="ecell eact">${g.series ? `<button class="mini ghost" data-dates="${esc(g.key)}">${(g.upcoming.length || g.rows.length)} dates</button>` : ""}<button class="mini ghost" data-copylink="${esc(stem(h))}" title="Copies this date's page address, for emails and reminders">Link</button><button class="mini" data-edit="${esc(g.key)}">Edit</button>${g.status === "Unpublished" ? `<button class="mini ghost" data-archive="${esc(g.key)}" title="Filed away, kept for reporting">Archive</button>` : ""}</div>
+        <div class="ecell eact">${g.series ? `<button class="mini ghost" data-dates="${esc(g.key)}">${(g.upcoming.length || g.rows.length)} dates</button>` : ""}<button class="mini ghost" data-copylink="${esc(stem(h))}" title="Copies this date's page address, for emails and reminders">Link</button><button class="mini" data-edit="${esc(g.key)}">Edit</button>${g.status === "Unpublished" ? `<button class="mini ghost" data-archive="${esc(g.key)}" title="Filed away, kept for reporting">Archive</button>` : ""}${g.rows.every(r => (r.Status || "Draft") === "Draft") ? `<button class="mini ghost" data-evdelete="${esc(g.key)}" title="Drafts only: residents never saw it, so nothing is lost">Delete draft</button>` : ""}</div>
       </div>
       <div class="edates" data-dates-for="${esc(g.key)}" style="display:none">${(g.upcoming.length ? g.upcoming : g.rows).map(r => `
         <div class="edrow"><span class="edwhen">${esc(fmt(r.Date))} &middot; ${esc(r.Start)}</span>
@@ -1315,6 +1418,8 @@
     $("#f-announce").checked = e.Announce === true || e.Announce === "True";
     $$("input[name=cat]").forEach((r, i) => r.checked = CATS[i] === e.Category);
     $$("input[name=rt]").forEach((r, i) => r.checked = RSVPS[i] === (e.RSVP || "None"));
+    const pmax = Math.max(1, Math.min(5, Number(e.Party) || 3));
+    $$("input[name=pm]").forEach((r, i) => r.checked = i + 1 === pmax);
     const counted = e.Counted === true || e.Counted === "True";
     $("#co-0").checked = counted; $("#co-1").checked = !counted;
     $("#f-stem").textContent = stem({ Date: e.Date, Slug: e.Slug, Title: e.Title });
@@ -1364,9 +1469,12 @@
     // itself, what residents see, stays untouched underneath.
     const e = row ? (row.Draft ? { ...row, ...row.Draft } : row)
       : { Status: "Draft", Category: "Enrichment Experience", Location: "Level 39, Residents’ Club", Host: "Resident Experiences", RSVP: "Seat", Counted: true, Date: today() };
+    const wholeSeries = !!(g && g.series && !rowId);
     $("#ed-title").textContent = row ? "Edit event" : "New event";
-    $("#ed-sub").textContent = row ? `${e.Title} · ${fmtLong(e.Date)}` : "Fill in the essentials, save a draft, and come back to it.";
-    // occurrence picker for a series
+    $("#ed-sub").textContent = !row ? "Fill in the essentials, save a draft, and come back to it."
+      : wholeSeries ? `${e.Title} · the whole series, ${g.upcoming.length} upcoming dates`
+      : `${e.Title} · ${fmtLong(e.Date)}${g && g.series ? " · one date of the series" : ""}`;
+    // occurrence picker for a series: the whole series leads, then each date.
     const occ = $("#ed-occ");
     if (g && g.series) {
       occ.style.display = "";
@@ -1375,13 +1483,18 @@
       // the form matches what is on screen.
       const occRows = g.upcoming.length ? [...g.upcoming] : [...g.rows];
       if (row && !occRows.includes(row)) occRows.unshift(row);
-      $("#f-occ").innerHTML = occRows.map(r => `<option value="${esc(r.id)}"${r.id === e.id ? " selected" : ""}>${esc(fmt(r.Date))} · ${esc(r.Status || "Draft")}${r.Moved ? " · moved" : ""}${r.Date < today() ? " · passed" : ""}</option>`).join("");
+      $("#f-occ").innerHTML =
+        `<option value="__all"${wholeSeries ? " selected" : ""}>The whole series · every upcoming date</option>`
+        + occRows.map(r => `<option value="${esc(r.id)}"${!wholeSeries && r.id === e.id ? " selected" : ""}>${esc(fmt(r.Date))} · ${esc(r.Status || "Draft")}${r.Moved ? " · moved" : ""}${r.Date < today() ? " · passed" : ""}</option>`).join("");
       $("#ed-scope").style.display = "";
-      $("#f-scope").checked = true;
+      $("#f-scope").checked = wholeSeries;
       $("#f-scope-n").textContent = String(g.upcoming.length);
     } else { occ.style.display = "none"; $("#ed-scope").style.display = "none"; $("#f-scope").checked = false; }
-    // The repeat builder creates rows, so it only shows for a brand-new event.
-    // An existing series is edited through the occurrence picker above.
+    // The repeat builder and the end-date box create rows, so they only show
+    // for a brand-new event. An existing series is edited through the picker.
+    $("#ed-date2").style.display = row ? "none" : "";
+    $("#f-date2").value = "";
+    $("#ed-date2note").textContent = "";
     $("#rp-builder").style.display = row ? "none" : "";
     if (!row) { rp = { mode: "none", days: new Set(), ord: "Last", wd: 0, end: "cal", times: 6, until: "" }; rpRefresh(); }
     applyFields(e);
@@ -1435,6 +1548,7 @@
       Marquee: $("#f-marquee").checked, Teaser: $("#f-teaser").checked, Closed: $("#f-closed").checked,
       Announce: $("#f-announce").checked,
       Counted: $("#co-0").checked, Moved: editing.row ? !!editing.row.Moved : false,
+      Party: (() => { const i = $$("input[name=pm]").findIndex(r => r.checked); return i < 0 ? 3 : i + 1; })(),
       Slug: $("#f-slug").value.trim() || slugify(title),
     };
     return f;
@@ -1443,6 +1557,9 @@
   function validate(f) {
     if (!f.Title) return "Give the event a title.";
     if (!f.Date) return "Pick a date.";
+    const d2 = (!editing || !editing.row) ? $("#f-date2").value : "";
+    if (d2 && d2 < f.Date) return "The end date sits before the start date.";
+    if (d2 && rangeDates(f.Date, d2).length > 31) return "That range runs past a month. For a standing rhythm, use Repeats instead.";
     if (!f.Start) return "Add a start time, like 5:30 PM.";
     if (f.Status === "Live" && !f.Description && !f.Teaser)
       return "A published event needs a description, since residents will read it. Tick Coming soon to publish it without one.";
@@ -1450,7 +1567,7 @@
   }
 
   // Which field changes ripple across a series when "apply to every upcoming occurrence" is ticked.
-  const SERIES_FIELDS = ["Title", "Start", "End", "Start24", "Location", "Host", "Category", "RSVP", "Capacity", "Price", "Series", "Cutoff", "Description", "Counted", "Image", "Status", "Teaser", "Closed", "Announce"];
+  const SERIES_FIELDS = ["Title", "Start", "End", "Start24", "Location", "Host", "Category", "RSVP", "Capacity", "Price", "Series", "Cutoff", "Description", "Counted", "Image", "Status", "Teaser", "Closed", "Announce", "Party"];
 
   async function save(status) {
     const f = readForm();
@@ -1482,9 +1599,22 @@
             changed.push({ o, n: r });
         });
         if (changed.length) { notifyEventChange(changed); told = true; }
+      } else if ($("#f-date2").value && $("#f-date2").value > f.Date) {
+        // A multi-day event: one entry per day across the range, sharing a
+        // series line so the calendar reads it as one thing.
+        const dates = rangeDates(f.Date, $("#f-date2").value);
+        if (!f.Series) f.Series = rangeLabel(f.Date, $("#f-date2").value);
+        let made = 0;
+        for (const d of dates) {
+          const created = await api("/api/events", { method: "POST", body: JSON.stringify({ ...f, Date: d }) });
+          events.push(created); made++;
+        }
+        editing.row = events[events.length - 1];
+        toast(`Created ${made} days of ${f.Title}, ${fmt(dates[0])} through ${fmt(dates[dates.length - 1])}.`); told = true;
       } else if (rp.mode !== "none") {
         const dates = ruleDates(f.Date);
         if (!dates.length) { toast("The repeat rule produces no dates. Check the start date.", "warn"); return; }
+        if (dates.length > 12 && !confirm(`This makes ${dates.length} entries, ${fmt(dates[0])} through ${fmt(dates[dates.length - 1])}, one per date. Create them all?`)) return;
         let made = 0;
         for (const d of dates) {
           const created = await api("/api/events", { method: "POST", body: JSON.stringify({ ...f, Date: d }) });
@@ -2609,7 +2739,76 @@
     } catch (e) { toast(e.message, "warn"); }
   }
 
-  function renderAll() { renderEvents(); renderDash(); renderAssets(); }
+  // ---------------------------------------------------------------- delete drafts
+  // Only drafts delete: residents never saw one, so nothing real is lost.
+  // Anything ever published keeps its history through Unpublish then Archive.
+  async function deleteDraftGroup(key) {
+    const g = groups().find(x => x.key === key); if (!g) return;
+    const n = g.rows.length;
+    if (!confirm(n === 1
+      ? `Delete the draft of "${g.head.Title}"? Residents never saw it.`
+      : `Delete all ${n} dates of the draft "${g.head.Title}"? Residents never saw any of them.`)) return;
+    const goneIds = new Set();
+    let firstErr = "";
+    for (const r of g.rows) {
+      try { await api("/api/events/" + encodeURIComponent(r.id), { method: "DELETE" }); goneIds.add(r.id); }
+      catch (e) { if (!firstErr) firstErr = e.message; }
+    }
+    events = events.filter(e => !goneIds.has(e.id));
+    renderAll();
+    if (goneIds.size < n) toast(`Deleted ${goneIds.size} of ${n}. ${firstErr}`, "warn");
+    else toast(n === 1 ? "Draft deleted." : `Deleted all ${n} dates of the draft.`);
+  }
+
+  // ---------------------------------------------------------------- staff calendar
+  // The month grid for staff eyes: every event in every state, including what
+  // residents cannot see yet, each day opening straight into the editor.
+  let acalYM = null;
+  function moveAdminCal(step) {
+    const t = today().slice(0, 7);
+    if (!acalYM || step === 0) acalYM = t;
+    if (step) {
+      let [y, m] = acalYM.split("-").map(Number);
+      m += step; if (m > 12) { m = 1; y++; } if (m < 1) { m = 12; y--; }
+      acalYM = `${y}-${String(m).padStart(2, "0")}`;
+    }
+    renderAdminCal();
+  }
+  function renderAdminCal() {
+    const box = $("#acal"); if (!box) return;
+    if (!acalYM) acalYM = today().slice(0, 7);
+    const [y, m] = acalYM.split("-").map(Number);
+    $("#acal-label").textContent = ["January","February","March","April","May","June","July",
+      "August","September","October","November","December"][m - 1] + " " + y;
+    const first = new Date(y, m - 1, 1, 12);
+    const days = new Date(y, m, 0).getDate();
+    const t = today();
+    const by = new Map();
+    for (const e of events) {
+      if ((e.Date || "").slice(0, 7) !== acalYM) continue;
+      if (!by.has(e.Date)) by.set(e.Date, []);
+      by.get(e.Date).push(e);
+    }
+    let html = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map(d => `<div class="adow">${d}</div>`).join("");
+    for (let i = 0; i < first.getDay(); i++) html += '<div class="acell out"></div>';
+    for (let d = 1; d <= days; d++) {
+      const iso = `${acalYM}-${String(d).padStart(2, "0")}`;
+      const evs = (by.get(iso) || []).sort((a, b) => (a.Start24 || "").localeCompare(b.Start24 || ""));
+      html += `<div class="acell${iso === t ? " tod" : ""}"><div class="adn">${d}</div>`
+        + evs.map(e => `<button class="acev st-${cls(e.Status)}${iso < t ? " past" : ""}" data-acev="${esc(String(e.id))}" title="${esc(e.Status || "Draft")}${e.Draft ? ", edits pending" : ""}"><span class="at">${esc(e.Start || "")}</span> ${esc(e.Title)}</button>`).join("")
+        + `</div>`;
+    }
+    box.innerHTML = html;
+  }
+
+  // Info popovers: one open at a time, any other tap closes it.
+  document.addEventListener("click", ev => {
+    const ib = ev.target.closest(".ib");
+    $$(".iwrap.open").forEach(w => { if (!ib || w !== ib.parentElement) w.classList.remove("open"); });
+    if (ib) ib.parentElement.classList.toggle("open");
+  });
+
+  function renderAll() { renderEvents(); renderDash(); renderAssets(); renderAdminCal(); }
 
   // ---------------------------------------------------------------- csv export
   function csvCell(v) { v = String(v == null ? "" : v); return /[",\n]/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v; }
@@ -2960,8 +3159,15 @@
       }
       return;
     }
-    const b = ev.target.closest("[data-edit],[data-archive],[data-new],[data-edpublish],[data-edsavedraft],[data-eddiscard],[data-edarchive],[data-histload],[data-savewindow],[data-addloc],[data-addhost],[data-delloc],[data-delhost],[data-period],[data-publish],[data-fmt],[data-dates],[data-editrow],[data-export]");
+    const b = ev.target.closest("[data-edit],[data-archive],[data-new],[data-edpublish],[data-edsavedraft],[data-eddiscard],[data-edarchive],[data-histload],[data-savewindow],[data-addloc],[data-addhost],[data-delloc],[data-delhost],[data-period],[data-publish],[data-fmt],[data-dates],[data-editrow],[data-export],[data-evdelete],[data-acal],[data-acev]");
     if (!b) return;
+    if (b.dataset.evdelete) { deleteDraftGroup(b.dataset.evdelete); return; }
+    if (b.dataset.acal !== undefined) { moveAdminCal(Number(b.dataset.acal)); return; }
+    if (b.dataset.acev) {
+      const row = events.find(e => String(e.id) === b.dataset.acev);
+      if (row) openEditor(row.Series ? "s:" + (row.Slug || slugify(row.Title)) : "e:" + row.id, row.id);
+      return;
+    }
     if (b.dataset.export !== undefined) { exportCsv(); return; }
     if (b.dataset.dates) {
       const d = document.querySelector(`[data-dates-for="${CSS.escape(b.dataset.dates)}"]`);
@@ -3018,16 +3224,17 @@
     rpRefresh();
   });
   document.addEventListener("change", ev => {
-    if (["rp-ord", "rp-wd", "rp-times", "rp-until", "f-date"].includes(ev.target.id)) {
+    if (["rp-ord", "rp-wd", "rp-times", "rp-until", "f-date", "f-date2"].includes(ev.target.id)) {
       if (ev.target.id === "rp-ord") rp.ord = ev.target.value;
       if (ev.target.id === "rp-wd") rp.wd = Number(ev.target.value);
       if (ev.target.id === "rp-times") rp.times = Number(ev.target.value);
       if (ev.target.id === "rp-until") rp.until = ev.target.value;
-      if ($("#rp-builder").style.display !== "none") rpRefresh();
+      if (!editing || !editing.row) rpRefresh();
     }
   });
   document.addEventListener("change", ev => {
-    if (ev.target.id === "f-occ" && editing && editing.group) openEditor(editing.group.key, ev.target.value);
+    if (ev.target.id === "f-occ" && editing && editing.group)
+      openEditor(editing.group.key, ev.target.value === "__all" ? undefined : ev.target.value);
     if (ev.target.id === "f-title" || ev.target.id === "f-date" || ev.target.id === "f-slug") $("#f-stem").textContent = stem({ Date: $("#f-date").value, Slug: $("#f-slug").value.trim(), Title: $("#f-title").value });
   });
   document.addEventListener("input", ev => { if (ev.target.id === "f-title" && !editing.row) $("#f-slug").placeholder = slugify(ev.target.value); });

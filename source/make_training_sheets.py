@@ -237,7 +237,7 @@ LEAD_COL1 = [
     ("b", "**181residents.com/admin**, your own email, then the emailed code. The first code may say \u201calready been used\u201d: the mail scanner opened it first. Request another; the second works."),
     ("b", "**Sign out**, top right, on any shared machine."),
     ("h", "2 · Events and the editor"),
-    ("b", "**Events** tab: **+ New Event**, or **Edit** on a row. **Publish calendar** rebuilds the resident site; scheduled rebuilds keep dates current on their own."),
+    ("b", "**Events** tab: **+ New Event**, or **Edit** on a row. A multi-day event takes start and end dates, one entry per day. **Delete draft** on a row removes what was never published. **Publish calendar** rebuilds the resident site."),
     ("b", "**Publish** puts an event out and reads **Unpublish** once it is (RSVPs held). **Save draft** never changes where an event stands. **Archive** is for what is over, kept for reporting."),
     ("b", "On a **Live** event, Save draft keeps your edits as a **working copy** residents never see; **Publish changes** sends them out, **Discard draft** lets them go."),
     ("b", "Every save lands in the **change history** at the editor’s foot: who, when, what. **Load this version** brings any earlier version back for review."),
@@ -246,12 +246,12 @@ LEAD_COL1 = [
     ("b", "**Coming soon** on one event publishes a teaser: date and title showing, RSVP and calendar buttons waiting."),
     ("b", "**Announce ahead of the window**, in the editor, steps one event out on purpose: full page and RSVP now, while everything else keeps to the dials."),
     ("h", "4 · Series"),
-    ("b", "One row per date, so a single week can be moved or skipped without touching the rest. **Which date of this series** picks the week; the **apply to every upcoming date** box decides the reach."),
+    ("b", "One row per date, so a single week can be moved or skipped without touching the rest. **Edit on a series row edits the whole series**; the same dropdown picks one date to touch alone."),
     ("b", "Move a date and its sign-ups follow; nothing is orphaned."),
     ("h", "5 · Capacity, closing, the waitlist"),
     ("b", "RSVPs close three ways: **capacity fills** (waitlist begins), the **RSVP closes** date passes, or the **Close RSVPs now** switch. Held parties always keep their seats."),
     ("b", "Freed seats are never given out on their own. **Confirm seats**, on the Dashboard, hands them to the next waiting party, and a note opens ready to send."),
-    ("b", "Residents book up to 3 on the site; **Please contact me** sends bigger parties to us, and staff seat up to 6 from the Dashboard."),
+    ("b", "Residents book up to the party size each event sets (out of the box 3, up to 5); **Please contact me** always shows, and staff seat up to 6 from the Dashboard."),
 ]
 
 LEAD_COL2 = [

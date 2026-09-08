@@ -62,12 +62,18 @@ function whenOf(ev) {
 // "Just me · +1 · +2 · +3" for parties; plain numbers for outside guests.
 // The chip markup is read from the very section being rendered, so an edit to
 // one section's chips can never be silently shadowed by the other's.
-function chips(section, type, current) {
+// The largest chip is the event's own call (the party column, out of the box
+// three); the template's contact chip stays the doorway for anything bigger,
+// which staff arrange from the dashboard, up to six.
+function partyMax(ev) {
+  const n = Number(ev && ev.party);
+  return Number.isFinite(n) && n >= 1 && n <= 5 ? n : 3;
+}
+
+function chips(section, type, current, max) {
   const chip = inner(section, "CHIP");
-  // Three self-serve, then the doorway chip in the template: larger parties
-  // are arranged with staff, who can seat up to six from the dashboard.
   let out = "";
-  for (let n = 1; n <= 3; n++) {
+  for (let n = 1; n <= max; n++) {
     const label = type === "guest" ? String(n) : (n === 1 ? "Just me" : "+" + (n - 1));
     out += fill(chip, { N: n, LABEL: label, CHECKED: n === current ? "checked" : "" });
   }
@@ -152,7 +158,7 @@ async function rsvpPage(context, ev, key, me) {
 
   if (active) {
     let section = inner(tpl, "EXISTING");
-    section = cut(section, "CHIP", chips(section, type, active.count));
+    section = cut(section, "CHIP", chips(section, type, active.count, partyMax(ev)));
     body = cut(body, "FORM", null);
     body = cut(body, "EXISTING", fill(section, {
       KEY: key,
@@ -171,7 +177,7 @@ async function rsvpPage(context, ev, key, me) {
   section = cut(section, "CLOSEDNOTE", closed
     ? fill(inner(section, "CLOSEDNOTE"), { CLOSEDLINE: esc(closedLine(ev, "RSVPs for this one")) })
     : null);
-  section = cut(section, "CHIP", chips(section, type, 1));
+  section = cut(section, "CHIP", chips(section, type, 1, partyMax(ev)));
   const btn = closed || (full && type !== "guest") ? "Join the Waitlist"
     : type === "guest" ? "Register Guests"
     : type === "paid" ? `${esc(ev.price || "")}${ev.price ? " &middot; " : ""}Request Seats`
@@ -248,7 +254,7 @@ export async function onRequestPost(context) {
       "/message", "Message Resident Experiences");
   }
   let count = Math.round(Number(form.get("count")));
-  if (Number.isFinite(count)) count = Math.max(1, Math.min(3, count));
+  if (Number.isFinite(count)) count = Math.max(1, Math.min(partyMax(ev), count));
   const names = String(form.get("names") || "").trim().slice(0, 120);
 
   // Who holds what decides who gets what. A confirmed party never forfeits its

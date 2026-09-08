@@ -209,11 +209,17 @@ def when_of(e):
         day += f"<br>{esc(e['Start'])}" + (f" &ndash; {esc(e['End'])}" if e.get("End") else "")
     return day
 
-def chips_html(section, rsvp_type, current):
+def party_max(e):
+    """The event's own largest-party call (out of the box three); the contact
+    chip stays the doorway for more. Mirrors functions/rsvp/[key].js."""
+    try: n = int(e.get("Party") or 0)
+    except (TypeError, ValueError): n = 0
+    return n if 1 <= n <= 5 else 3
+
+def chips_html(section, rsvp_type, current, pmax=3):
     chip = inner(section, "CHIP")
-    # Three self-serve; the template's contact chip is the doorway for more.
     out = ""
-    for n in range(1, 4):
+    for n in range(1, pmax + 1):
         label = str(n) if rsvp_type == "guest" else ("Just me" if n == 1 else f"+{n - 1}")
         out += fill(chip, dict(N=n, LABEL=label, CHECKED="checked" if n == current else ""))
     return out
@@ -304,7 +310,7 @@ def rsvp_page(e, key, me):
     body = cut(body, "SIGNIN", None)
     if active:
         ex = inner(tpl, "EXISTING")
-        section = cut(ex, "CHIP", chips_html(ex, rsvp_type, active["count"]))
+        section = cut(ex, "CHIP", chips_html(ex, rsvp_type, active["count"], party_max(e)))
         body = cut(body, "FORM", None)
         body = cut(body, "EXISTING", fill(section, dict(KEY=key, STATE=state_line(active),
             NAMES=esc(active.get("names") or ""),
@@ -319,7 +325,7 @@ def rsvp_page(e, key, me):
         section = cut(section, name, inner(section, name) if keep else None)
     section = cut(section, "CLOSEDNOTE",
                   fill(inner(section, "CLOSEDNOTE"), dict(CLOSEDLINE=esc(closed_line(e, "RSVPs for this one")))) if closed else None)
-    section = cut(section, "CHIP", chips_html(section, rsvp_type, 1))
+    section = cut(section, "CHIP", chips_html(section, rsvp_type, 1, party_max(e)))
     if closed or (full and rsvp_type != "guest"): btn = "Join the Waitlist"
     elif rsvp_type == "guest": btn = "Register Guests"
     elif rsvp_type == "paid": btn = (f"{esc(e['Price'])} &middot; " if e.get("Price") else "") + "Request Seats"
@@ -1064,7 +1070,7 @@ class H(SimpleHTTPRequestHandler):
                 return self._html(done_page(me, "Let&rsquo;s arrange it together",
                     "For a larger party, send us a note from the Message page, or a word at the front desk does it. Nothing is booked or changed yet.",
                     "/message", "Message Resident Experiences"))
-            try: count = max(1, min(3, int(form.get("count"))))
+            try: count = max(1, min(party_max(e), int(form.get("count"))))
             except (TypeError, ValueError):
                 # No chip chosen keeps the party as it stands, so a staff-seated
                 # party above three never quietly shrinks on an untouched save.
@@ -1345,6 +1351,20 @@ class H(SimpleHTTPRequestHandler):
                     rows.remove(row); row = None
             save_store("assets", rows)
             return self._json({"asset": row})
+        if p.path.startswith("/api/events/"):
+            # Drafts only, mirroring functions/api/events/[id].js: nothing ever
+            # published deletes; that road is Unpublish then Archive.
+            if self._role() == "desk": return self._json({"error": "forbidden"}, 403)
+            eid = p.path.rsplit("/", 1)[1]
+            evs = load_events()
+            row = next((e for e in evs if str(e.get("id")) == eid), None)
+            if not row: return self._json({"error": "No such event"}, 404)
+            if (row.get("Status") or "Draft") != "Draft":
+                return self._json({"error": "Only drafts delete. Unpublish first, and the Archive keeps its history."}, 400)
+            evs.remove(row)
+            save_store("events", evs)
+            save_store("history", [h for h in load_store("history", []) if str(h.get("event_id")) != eid])
+            return self._json({"ok": True})
         if p.path.startswith("/api/residents/"):
             rid = p.path.rsplit("/", 1)[1]
             residents = load_store("residents", [])

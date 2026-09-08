@@ -57,9 +57,7 @@
     const out = [];
     const capIso = rp.end === "date" && rp.until ? rp.until : calendarEnd();
     const capN = rp.end === "count" ? Math.max(2, Math.min(60, rp.times || 6)) : 366;
-    if (rp.mode === "daily") {
-      for (let d = anchor; d <= capIso && out.length < capN; d = addDays(d, 1)) out.push(d);
-    } else if (rp.mode === "weekly") {
+    if (rp.mode === "weekly") {
       const want = rp.days.size ? rp.days : new Set([new Date(anchor + "T12:00:00").getDay()]);
       for (let d = anchor; d <= capIso && out.length < capN; d = addDays(d, 1)) {
         if (want.has(new Date(d + "T12:00:00").getDay())) out.push(d);
@@ -86,7 +84,6 @@
   }
 
   function ruleLabel() {
-    if (rp.mode === "daily") return "Every day";
     if (rp.mode === "weekly") {
       const names = [...rp.days].sort().map(i => DOWFULL[i]);
       if (!names.length) return "Every week";
@@ -97,7 +94,36 @@
     return "";
   }
 
+  // A multi-day event is a date range, not a repeat rule: Fleet Week runs
+  // October 9 to 11 and becomes exactly three entries, one per day.
+  function rangeDates(start, end) {
+    const out = [];
+    for (let d = start; d <= end && out.length <= 31; d = addDays(d, 1)) out.push(d);
+    return out;
+  }
+  function rangeLabel(start, end) {
+    const a = new Date(start + "T12:00:00"), b = new Date(end + "T12:00:00");
+    const M = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+    return a.getMonth() === b.getMonth()
+      ? `${M[a.getMonth()]} ${a.getDate()} to ${b.getDate()}`
+      : `${M[a.getMonth()]} ${a.getDate()} to ${M[b.getMonth()]} ${b.getDate()}`;
+  }
+
   function rpRefresh() {
+    // An end date means a run of consecutive days; the repeat builder steps
+    // aside and the range writes the series line itself.
+    const anchor = $("#f-date").value;
+    const d2 = editing && editing.row ? "" : $("#f-date2").value;
+    const ranged = !!(d2 && anchor && d2 > anchor);
+    $("#rp-builder").style.display = (editing && editing.row) || ranged ? "none" : "";
+    if (ranged) {
+      rp.mode = "none";
+      const n = rangeDates(anchor, d2).length;
+      $("#f-series").value = rangeLabel(anchor, d2);
+      $("#ed-date2note").textContent = `${n} days, ${fmt(anchor)} through ${fmt(d2)}. Each day becomes its own entry, and residents RSVP per day.`;
+    } else {
+      $("#ed-date2note").textContent = d2 && anchor && d2 < anchor ? "The end date sits before the start date." : "";
+    }
     $$("#rp-picks .pick").forEach(b => b.classList.toggle("on", b.dataset.rp === rp.mode));
     $$("#rp-days .pick").forEach(b => b.classList.toggle("on", rp.days.has(Number(b.dataset.wd))));
     $$("#rp-endpicks .pick").forEach(b => b.classList.toggle("on", b.dataset.en === rp.end));
@@ -107,8 +133,7 @@
     $("#rp-times").style.display = rp.end === "count" ? "" : "none";
     $("#rp-until").style.display = rp.end === "date" ? "" : "none";
     if (rp.mode !== "none") $("#f-series").value = ruleLabel();
-    else if (!editing || !editing.row) $("#f-series").value = "";
-    const anchor = $("#f-date").value;
+    else if (!ranged && (!editing || !editing.row)) $("#f-series").value = "";
     const n = rp.mode === "none" || !anchor ? 0 : ruleDates(anchor).length;
     $("#rp-preview").textContent = rp.mode === "none" ? "" :
       (n ? `${n} dates, ${fmt(ruleDates(anchor)[0])} through ${fmt(ruleDates(anchor)[n - 1])}. Each becomes its own entry.` :
@@ -190,7 +215,7 @@
         <div class="ecell"><span class="pill ${cls(g.status)}">${esc(g.mixed ? "Mixed" : g.status)}</span></div>
         <div class="ecell"><span class="lbl">RSVPs</span>${rsvp}</div>
         <div class="ecell"><span class="lbl">Asset kit</span>${kits} of 6</div>
-        <div class="ecell eact">${g.series ? `<button class="mini ghost" data-dates="${esc(g.key)}">${(g.upcoming.length || g.rows.length)} dates</button>` : ""}<button class="mini ghost" data-copylink="${esc(stem(h))}" title="Copies this date's page address, for emails and reminders">Link</button><button class="mini" data-edit="${esc(g.key)}">Edit</button>${g.status === "Unpublished" ? `<button class="mini ghost" data-archive="${esc(g.key)}" title="Filed away, kept for reporting">Archive</button>` : ""}</div>
+        <div class="ecell eact">${g.series ? `<button class="mini ghost" data-dates="${esc(g.key)}">${(g.upcoming.length || g.rows.length)} dates</button>` : ""}<button class="mini ghost" data-copylink="${esc(stem(h))}" title="Copies this date's page address, for emails and reminders">Link</button><button class="mini" data-edit="${esc(g.key)}">Edit</button>${g.status === "Unpublished" ? `<button class="mini ghost" data-archive="${esc(g.key)}" title="Filed away, kept for reporting">Archive</button>` : ""}${g.rows.every(r => (r.Status || "Draft") === "Draft") ? `<button class="mini ghost" data-evdelete="${esc(g.key)}" title="Drafts only: residents never saw it, so nothing is lost">Delete draft</button>` : ""}</div>
       </div>
       <div class="edates" data-dates-for="${esc(g.key)}" style="display:none">${(g.upcoming.length ? g.upcoming : g.rows).map(r => `
         <div class="edrow"><span class="edwhen">${esc(fmt(r.Date))} &middot; ${esc(r.Start)}</span>
@@ -235,6 +260,8 @@
     $("#f-announce").checked = e.Announce === true || e.Announce === "True";
     $$("input[name=cat]").forEach((r, i) => r.checked = CATS[i] === e.Category);
     $$("input[name=rt]").forEach((r, i) => r.checked = RSVPS[i] === (e.RSVP || "None"));
+    const pmax = Math.max(1, Math.min(5, Number(e.Party) || 3));
+    $$("input[name=pm]").forEach((r, i) => r.checked = i + 1 === pmax);
     const counted = e.Counted === true || e.Counted === "True";
     $("#co-0").checked = counted; $("#co-1").checked = !counted;
     $("#f-stem").textContent = stem({ Date: e.Date, Slug: e.Slug, Title: e.Title });
@@ -284,9 +311,12 @@
     // itself, what residents see, stays untouched underneath.
     const e = row ? (row.Draft ? { ...row, ...row.Draft } : row)
       : { Status: "Draft", Category: "Enrichment Experience", Location: "Level 39, Residents’ Club", Host: "Resident Experiences", RSVP: "Seat", Counted: true, Date: today() };
+    const wholeSeries = !!(g && g.series && !rowId);
     $("#ed-title").textContent = row ? "Edit event" : "New event";
-    $("#ed-sub").textContent = row ? `${e.Title} · ${fmtLong(e.Date)}` : "Fill in the essentials, save a draft, and come back to it.";
-    // occurrence picker for a series
+    $("#ed-sub").textContent = !row ? "Fill in the essentials, save a draft, and come back to it."
+      : wholeSeries ? `${e.Title} · the whole series, ${g.upcoming.length} upcoming dates`
+      : `${e.Title} · ${fmtLong(e.Date)}${g && g.series ? " · one date of the series" : ""}`;
+    // occurrence picker for a series: the whole series leads, then each date.
     const occ = $("#ed-occ");
     if (g && g.series) {
       occ.style.display = "";
@@ -295,13 +325,18 @@
       // the form matches what is on screen.
       const occRows = g.upcoming.length ? [...g.upcoming] : [...g.rows];
       if (row && !occRows.includes(row)) occRows.unshift(row);
-      $("#f-occ").innerHTML = occRows.map(r => `<option value="${esc(r.id)}"${r.id === e.id ? " selected" : ""}>${esc(fmt(r.Date))} · ${esc(r.Status || "Draft")}${r.Moved ? " · moved" : ""}${r.Date < today() ? " · passed" : ""}</option>`).join("");
+      $("#f-occ").innerHTML =
+        `<option value="__all"${wholeSeries ? " selected" : ""}>The whole series · every upcoming date</option>`
+        + occRows.map(r => `<option value="${esc(r.id)}"${!wholeSeries && r.id === e.id ? " selected" : ""}>${esc(fmt(r.Date))} · ${esc(r.Status || "Draft")}${r.Moved ? " · moved" : ""}${r.Date < today() ? " · passed" : ""}</option>`).join("");
       $("#ed-scope").style.display = "";
-      $("#f-scope").checked = true;
+      $("#f-scope").checked = wholeSeries;
       $("#f-scope-n").textContent = String(g.upcoming.length);
     } else { occ.style.display = "none"; $("#ed-scope").style.display = "none"; $("#f-scope").checked = false; }
-    // The repeat builder creates rows, so it only shows for a brand-new event.
-    // An existing series is edited through the occurrence picker above.
+    // The repeat builder and the end-date box create rows, so they only show
+    // for a brand-new event. An existing series is edited through the picker.
+    $("#ed-date2").style.display = row ? "none" : "";
+    $("#f-date2").value = "";
+    $("#ed-date2note").textContent = "";
     $("#rp-builder").style.display = row ? "none" : "";
     if (!row) { rp = { mode: "none", days: new Set(), ord: "Last", wd: 0, end: "cal", times: 6, until: "" }; rpRefresh(); }
     applyFields(e);
@@ -355,6 +390,7 @@
       Marquee: $("#f-marquee").checked, Teaser: $("#f-teaser").checked, Closed: $("#f-closed").checked,
       Announce: $("#f-announce").checked,
       Counted: $("#co-0").checked, Moved: editing.row ? !!editing.row.Moved : false,
+      Party: (() => { const i = $$("input[name=pm]").findIndex(r => r.checked); return i < 0 ? 3 : i + 1; })(),
       Slug: $("#f-slug").value.trim() || slugify(title),
     };
     return f;
@@ -363,6 +399,9 @@
   function validate(f) {
     if (!f.Title) return "Give the event a title.";
     if (!f.Date) return "Pick a date.";
+    const d2 = (!editing || !editing.row) ? $("#f-date2").value : "";
+    if (d2 && d2 < f.Date) return "The end date sits before the start date.";
+    if (d2 && rangeDates(f.Date, d2).length > 31) return "That range runs past a month. For a standing rhythm, use Repeats instead.";
     if (!f.Start) return "Add a start time, like 5:30 PM.";
     if (f.Status === "Live" && !f.Description && !f.Teaser)
       return "A published event needs a description, since residents will read it. Tick Coming soon to publish it without one.";
@@ -370,7 +409,7 @@
   }
 
   // Which field changes ripple across a series when "apply to every upcoming occurrence" is ticked.
-  const SERIES_FIELDS = ["Title", "Start", "End", "Start24", "Location", "Host", "Category", "RSVP", "Capacity", "Price", "Series", "Cutoff", "Description", "Counted", "Image", "Status", "Teaser", "Closed", "Announce"];
+  const SERIES_FIELDS = ["Title", "Start", "End", "Start24", "Location", "Host", "Category", "RSVP", "Capacity", "Price", "Series", "Cutoff", "Description", "Counted", "Image", "Status", "Teaser", "Closed", "Announce", "Party"];
 
   async function save(status) {
     const f = readForm();
@@ -402,9 +441,22 @@
             changed.push({ o, n: r });
         });
         if (changed.length) { notifyEventChange(changed); told = true; }
+      } else if ($("#f-date2").value && $("#f-date2").value > f.Date) {
+        // A multi-day event: one entry per day across the range, sharing a
+        // series line so the calendar reads it as one thing.
+        const dates = rangeDates(f.Date, $("#f-date2").value);
+        if (!f.Series) f.Series = rangeLabel(f.Date, $("#f-date2").value);
+        let made = 0;
+        for (const d of dates) {
+          const created = await api("/api/events", { method: "POST", body: JSON.stringify({ ...f, Date: d }) });
+          events.push(created); made++;
+        }
+        editing.row = events[events.length - 1];
+        toast(`Created ${made} days of ${f.Title}, ${fmt(dates[0])} through ${fmt(dates[dates.length - 1])}.`); told = true;
       } else if (rp.mode !== "none") {
         const dates = ruleDates(f.Date);
         if (!dates.length) { toast("The repeat rule produces no dates. Check the start date.", "warn"); return; }
+        if (dates.length > 12 && !confirm(`This makes ${dates.length} entries, ${fmt(dates[0])} through ${fmt(dates[dates.length - 1])}, one per date. Create them all?`)) return;
         let made = 0;
         for (const d of dates) {
           const created = await api("/api/events", { method: "POST", body: JSON.stringify({ ...f, Date: d }) });
@@ -1529,7 +1581,76 @@
     } catch (e) { toast(e.message, "warn"); }
   }
 
-  function renderAll() { renderEvents(); renderDash(); renderAssets(); }
+  // ---------------------------------------------------------------- delete drafts
+  // Only drafts delete: residents never saw one, so nothing real is lost.
+  // Anything ever published keeps its history through Unpublish then Archive.
+  async function deleteDraftGroup(key) {
+    const g = groups().find(x => x.key === key); if (!g) return;
+    const n = g.rows.length;
+    if (!confirm(n === 1
+      ? `Delete the draft of "${g.head.Title}"? Residents never saw it.`
+      : `Delete all ${n} dates of the draft "${g.head.Title}"? Residents never saw any of them.`)) return;
+    const goneIds = new Set();
+    let firstErr = "";
+    for (const r of g.rows) {
+      try { await api("/api/events/" + encodeURIComponent(r.id), { method: "DELETE" }); goneIds.add(r.id); }
+      catch (e) { if (!firstErr) firstErr = e.message; }
+    }
+    events = events.filter(e => !goneIds.has(e.id));
+    renderAll();
+    if (goneIds.size < n) toast(`Deleted ${goneIds.size} of ${n}. ${firstErr}`, "warn");
+    else toast(n === 1 ? "Draft deleted." : `Deleted all ${n} dates of the draft.`);
+  }
+
+  // ---------------------------------------------------------------- staff calendar
+  // The month grid for staff eyes: every event in every state, including what
+  // residents cannot see yet, each day opening straight into the editor.
+  let acalYM = null;
+  function moveAdminCal(step) {
+    const t = today().slice(0, 7);
+    if (!acalYM || step === 0) acalYM = t;
+    if (step) {
+      let [y, m] = acalYM.split("-").map(Number);
+      m += step; if (m > 12) { m = 1; y++; } if (m < 1) { m = 12; y--; }
+      acalYM = `${y}-${String(m).padStart(2, "0")}`;
+    }
+    renderAdminCal();
+  }
+  function renderAdminCal() {
+    const box = $("#acal"); if (!box) return;
+    if (!acalYM) acalYM = today().slice(0, 7);
+    const [y, m] = acalYM.split("-").map(Number);
+    $("#acal-label").textContent = ["January","February","March","April","May","June","July",
+      "August","September","October","November","December"][m - 1] + " " + y;
+    const first = new Date(y, m - 1, 1, 12);
+    const days = new Date(y, m, 0).getDate();
+    const t = today();
+    const by = new Map();
+    for (const e of events) {
+      if ((e.Date || "").slice(0, 7) !== acalYM) continue;
+      if (!by.has(e.Date)) by.set(e.Date, []);
+      by.get(e.Date).push(e);
+    }
+    let html = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map(d => `<div class="adow">${d}</div>`).join("");
+    for (let i = 0; i < first.getDay(); i++) html += '<div class="acell out"></div>';
+    for (let d = 1; d <= days; d++) {
+      const iso = `${acalYM}-${String(d).padStart(2, "0")}`;
+      const evs = (by.get(iso) || []).sort((a, b) => (a.Start24 || "").localeCompare(b.Start24 || ""));
+      html += `<div class="acell${iso === t ? " tod" : ""}"><div class="adn">${d}</div>`
+        + evs.map(e => `<button class="acev st-${cls(e.Status)}${iso < t ? " past" : ""}" data-acev="${esc(String(e.id))}" title="${esc(e.Status || "Draft")}${e.Draft ? ", edits pending" : ""}"><span class="at">${esc(e.Start || "")}</span> ${esc(e.Title)}</button>`).join("")
+        + `</div>`;
+    }
+    box.innerHTML = html;
+  }
+
+  // Info popovers: one open at a time, any other tap closes it.
+  document.addEventListener("click", ev => {
+    const ib = ev.target.closest(".ib");
+    $$(".iwrap.open").forEach(w => { if (!ib || w !== ib.parentElement) w.classList.remove("open"); });
+    if (ib) ib.parentElement.classList.toggle("open");
+  });
+
+  function renderAll() { renderEvents(); renderDash(); renderAssets(); renderAdminCal(); }
 
   // ---------------------------------------------------------------- csv export
   function csvCell(v) { v = String(v == null ? "" : v); return /[",\n]/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v; }
@@ -1880,8 +2001,15 @@
       }
       return;
     }
-    const b = ev.target.closest("[data-edit],[data-archive],[data-new],[data-edpublish],[data-edsavedraft],[data-eddiscard],[data-edarchive],[data-histload],[data-savewindow],[data-addloc],[data-addhost],[data-delloc],[data-delhost],[data-period],[data-publish],[data-fmt],[data-dates],[data-editrow],[data-export]");
+    const b = ev.target.closest("[data-edit],[data-archive],[data-new],[data-edpublish],[data-edsavedraft],[data-eddiscard],[data-edarchive],[data-histload],[data-savewindow],[data-addloc],[data-addhost],[data-delloc],[data-delhost],[data-period],[data-publish],[data-fmt],[data-dates],[data-editrow],[data-export],[data-evdelete],[data-acal],[data-acev]");
     if (!b) return;
+    if (b.dataset.evdelete) { deleteDraftGroup(b.dataset.evdelete); return; }
+    if (b.dataset.acal !== undefined) { moveAdminCal(Number(b.dataset.acal)); return; }
+    if (b.dataset.acev) {
+      const row = events.find(e => String(e.id) === b.dataset.acev);
+      if (row) openEditor(row.Series ? "s:" + (row.Slug || slugify(row.Title)) : "e:" + row.id, row.id);
+      return;
+    }
     if (b.dataset.export !== undefined) { exportCsv(); return; }
     if (b.dataset.dates) {
       const d = document.querySelector(`[data-dates-for="${CSS.escape(b.dataset.dates)}"]`);
@@ -1938,16 +2066,17 @@
     rpRefresh();
   });
   document.addEventListener("change", ev => {
-    if (["rp-ord", "rp-wd", "rp-times", "rp-until", "f-date"].includes(ev.target.id)) {
+    if (["rp-ord", "rp-wd", "rp-times", "rp-until", "f-date", "f-date2"].includes(ev.target.id)) {
       if (ev.target.id === "rp-ord") rp.ord = ev.target.value;
       if (ev.target.id === "rp-wd") rp.wd = Number(ev.target.value);
       if (ev.target.id === "rp-times") rp.times = Number(ev.target.value);
       if (ev.target.id === "rp-until") rp.until = ev.target.value;
-      if ($("#rp-builder").style.display !== "none") rpRefresh();
+      if (!editing || !editing.row) rpRefresh();
     }
   });
   document.addEventListener("change", ev => {
-    if (ev.target.id === "f-occ" && editing && editing.group) openEditor(editing.group.key, ev.target.value);
+    if (ev.target.id === "f-occ" && editing && editing.group)
+      openEditor(editing.group.key, ev.target.value === "__all" ? undefined : ev.target.value);
     if (ev.target.id === "f-title" || ev.target.id === "f-date" || ev.target.id === "f-slug") $("#f-stem").textContent = stem({ Date: $("#f-date").value, Slug: $("#f-slug").value.trim(), Title: $("#f-title").value });
   });
   document.addEventListener("input", ev => { if (ev.target.id === "f-title" && !editing.row) $("#f-slug").placeholder = slugify(ev.target.value); });

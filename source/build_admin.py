@@ -11,13 +11,13 @@ CATEGORIES = ["Morning Offering", "Happy Hour", "Community Dinner", "Culinary Ex
 STATUSES = ["Draft", "Live", "Unpublished", "Archived"]
 RSVP_TYPES = ["None", "Guest count only", "Seat", "Paid seat"]
 
-SCREENS = ["dash", "events", "editor", "assets", "arch", "res", "spaces", "msgs", "inst",
+SCREENS = ["dash", "events", "editor", "cal", "assets", "arch", "res", "spaces", "msgs", "inst",
            "inst-events", "inst-brand", "inst-email", "inst-screens", "inst-private"]
-NAV_OF = {"dash": "dash", "events": "events", "editor": "events", "assets": "assets",
+NAV_OF = {"dash": "dash", "events": "events", "editor": "events", "cal": "cal", "assets": "assets",
           "res": "res", "spaces": "spaces", "msgs": "msgs", "inst": "inst",
           "inst-events": "inst", "inst-brand": "inst", "inst-email": "inst",
           "inst-screens": "inst", "inst-private": "inst"}
-NAV = [("dash", "Dashboard"), ("events", "Events"), ("assets", "Assets"),
+NAV = [("dash", "Dashboard"), ("events", "Events"), ("cal", "Calendar"), ("assets", "Assets"),
        ("res", "Residents"), ("spaces", "Spaces"), ("msgs", "Messages"), ("inst", "Settings")]
 
 rules = [f'#s-{s}:checked ~ .body #scr-{s}{{display:block}}' for s in SCREENS]
@@ -35,6 +35,12 @@ def picks(name, options):
 def radios(name, options, checked=0):
     return "".join(f'<input class="state" type="radio" name="{name}" id="{name}-{i}"{" checked" if i == checked else ""}>'
                    for i in range(len(options)))
+
+def info(text):
+    """A quiet i beside a label; the explanation waits in a popover instead of
+    holding a paragraph of open space on the form."""
+    return ('<span class="iwrap"><button type="button" class="ib" aria-label="What this does">i</button>'
+            f'<span class="ipop">{text}</span></span>')
 
 # ---------------------------------------------------------------- page
 HTML = f'''<!DOCTYPE html>
@@ -208,6 +214,45 @@ HTML = f'''<!DOCTYPE html>
     border:1px solid var(--line);border-radius:var(--radius);min-height:36px}}
   textarea.inp{{min-height:110px;resize:vertical;line-height:1.5;font-size:13.5px}}
   .hint{{font-size:11.5px;color:var(--stone);margin-top:4px;line-height:1.45}}
+  /* ---------- info popovers: the form's help, one tap away ---------- */
+  .flrow{{display:flex;align-items:center;gap:6px;margin-bottom:5px}}
+  .flrow .fl{{margin-bottom:0}}
+  .iwrap{{position:relative;display:inline-flex}}
+  .ib{{width:18px;height:18px;border-radius:50%;border:1px solid var(--line);background:var(--paper-2);
+    color:var(--stone);font:italic 600 11px/1 Georgia,serif;cursor:pointer;padding:0;
+    display:inline-flex;align-items:center;justify-content:center;flex:none}}
+  .ib:hover{{border-color:var(--red);color:var(--red)}}
+  .iwrap.open .ib{{background:var(--ink);border-color:var(--ink);color:var(--paper-2)}}
+  .ipop{{display:none;position:absolute;left:0;top:24px;z-index:60;width:320px;max-width:76vw;
+    background:var(--paper-2);border:1px solid var(--line);border-radius:6px;
+    box-shadow:0 12px 32px rgba(22,22,26,.16);padding:12px 14px;font-size:13px;line-height:1.55;
+    color:var(--ink-body);text-transform:none;letter-spacing:0;font-weight:400;text-align:left;white-space:normal}}
+  .iwrap.open .ipop{{display:block}}
+  .drow{{display:grid;gap:12px 16px;grid-template-columns:repeat(4,1fr)}}
+  @media(max-width:1000px){{.drow{{grid-template-columns:1fr 1fr}}}}
+  .pickpair{{display:inline-flex;align-items:center;gap:3px}}
+  /* ---------- the admin's own calendar grid ---------- */
+  .acal{{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin-top:14px}}
+  .acal .adow{{font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--stone);
+    font-weight:600;padding:0 2px 4px}}
+  .acell{{min-height:96px;background:var(--paper-2);border:1px solid var(--line);border-radius:6px;
+    padding:6px;font-size:12px}}
+  .acell.out{{background:transparent;border-color:transparent}}
+  .acell.tod{{border-color:var(--red)}}
+  .acell .adn{{color:var(--stone);font-weight:600;margin-bottom:4px}}
+  .acev{{display:block;width:100%;text-align:left;border:1px solid var(--line);background:var(--paper);
+    border-left:3px solid var(--red);border-radius:4px;padding:4px 6px;margin:0 0 4px;cursor:pointer;
+    font:inherit;font-size:11.5px;line-height:1.35;color:var(--ink)}}
+  .acev:hover{{border-color:var(--red)}}
+  .acev .at{{color:var(--stone)}}
+  .acev.st-draft{{border-style:dashed;border-left-color:var(--stone);color:var(--ink-soft)}}
+  .acev.st-unpublished{{border-left-color:var(--stone);opacity:.65}}
+  .acev.st-archived{{border-left-color:transparent;opacity:.45}}
+  .acev.past{{opacity:.5}}
+  .aleg{{display:flex;gap:16px;flex-wrap:wrap;font-size:12px;color:var(--ink-soft);margin-top:12px}}
+  .aleg span{{display:inline-flex;align-items:center;gap:6px}}
+  .aleg i{{width:12px;height:12px;border-radius:3px;border:1px solid var(--line);display:inline-block;font-style:normal}}
+  @media(max-width:820px){{.acell{{min-height:64px}}.acal{{gap:3px}}}}
   .picks{{display:flex;flex-wrap:wrap;gap:6px}}
   .pick{{border:1px solid var(--line);border-radius:100px;padding:5px 12px;font-size:12px;font-weight:500;
     color:var(--ink-body);background:var(--paper-2);min-height:30px;display:inline-flex;align-items:center}}
@@ -270,6 +315,7 @@ HTML = f'''<!DOCTYPE html>
      Messages, and manages RSVPs; the calendar itself stays out of reach. The
      server enforces this on every endpoint; hiding tabs keeps the view honest. */
   body.role-desk .navbar label[for="s-events"],
+  body.role-desk .navbar label[for="s-cal"],
   body.role-desk .navbar label[for="s-assets"],
   body.role-desk .navbar label[for="s-inst"]{{display:none}}
 
@@ -515,28 +561,30 @@ HTML = f'''<!DOCTYPE html>
   {radios("cat", CATEGORIES, 4)}
   {radios("co", ["Count it", "List only"], 0)}
   {radios("rt", RSVP_TYPES, 2)}
+  {radios("pm", ["1", "2", "3", "4", "5"], 2)}
   <div class="phead"><h1 id="ed-title">Edit event</h1><span class="pill draft" id="ed-pill">Draft</span></div>
   <div class="psub" id="ed-sub"></div>
   <div class="callout" id="ed-draftnote" style="display:none;margin:14px 0 4px"></div>
 
   <div class="form">
-    <div class="field f-full" id="ed-occ" style="display:none"><label class="fl" for="f-occ">Which date of this series</label>
-      <select class="inp" id="f-occ"></select>
-      <div class="hint">A series is one row per date, so a single week can be moved or skipped without touching the rest.</div></div>
+    <div class="field f-full" id="ed-occ" style="display:none"><div class="flrow"><label class="fl" for="f-occ">Editing which date</label>{info("A series is one row per date, so a single week can be moved or skipped without touching the rest. Choose The whole series to change every upcoming date in one save, or one date to touch it alone.")}</div>
+      <select class="inp" id="f-occ"></select></div>
+    <div class="field f-full" id="ed-scope" style="display:none"><label class="check"><input type="checkbox" id="f-scope" checked> Apply these changes to every upcoming date of this series (<span id="f-scope-n">0</span>)</label></div>
     <div class="field f-full"><label class="fl" for="f-title">Event title</label><input class="inp" id="f-title" autocapitalize="words"></div>
-    <div class="field f-full"><label class="fl">Category</label><div class="picks">{picks("cat", CATEGORIES)}</div><div class="hint">Categories match the budget line items, so the monthly report rolls up against what Scott already sees.</div></div>
-    <div class="field"><label class="fl" for="f-date">Date</label><input class="inp" type="date" id="f-date"></div>
-    <div class="field"><label class="fl" for="f-start">Start time</label><input class="inp" id="f-start" placeholder="5:30 PM" inputmode="text"></div>
-    <div class="field"><label class="fl" for="f-end">End time</label><input class="inp" id="f-end" placeholder="7:30 PM"></div>
+    <div class="field f-full"><div class="flrow"><label class="fl">Category</label>{info("Categories match the budget line items, so the monthly report rolls up against what Scott already sees. When an event could sit in two, the budget that pays for it decides.")}</div><div class="picks">{picks("cat", CATEGORIES)}</div></div>
+    <div class="field f-full drow">
+      <div><label class="fl" for="f-date">Event start date</label><input class="inp" type="date" id="f-date"></div>
+      <div id="ed-date2"><div class="flrow"><label class="fl" for="f-date2">Event end date</label>{info("Leave blank for a single-day event. A later day makes one entry per day, so a three-day Fleet Week becomes three; each day can then be moved or skipped on its own, and residents RSVP per day.")}</div><input class="inp" type="date" id="f-date2"></div>
+      <div><label class="fl" for="f-start">Start time</label><input class="inp" id="f-start" placeholder="5:30 PM" inputmode="text"></div>
+      <div><label class="fl" for="f-end">End time</label><input class="inp" id="f-end" placeholder="7:30 PM"></div>
+    </div>
+    <div class="hint f-full" id="ed-date2note" style="margin:-6px 0 0"></div>
     <div class="field"><label class="fl" for="f-loc">Location</label><input class="inp" id="f-loc" list="locs"><datalist id="locs"><option value="Level 39, Residents’ Club"><option value="Level 7 Terrace"><option value="Lobby"><option value="Fitness Center"></datalist></div>
-    <div class="field"><label class="fl" for="f-host">Hosted by</label><input class="inp" id="f-host" list="hosts" autocapitalize="words"><datalist id="hosts"><option value="Resident Experiences"><option value="Leigh Anne"><option value="Front desk"></datalist>
-      <div class="hint">Shown on the event page so residents know who to ask.</div></div>
-    <div class="field"><label class="fl">Count in engagement reporting</label><div class="picks">{picks("co", ["Count it", "List only, don’t count"])}</div>
-      <div class="hint">Choose List only whenever the host is not Resident Experiences, so nothing credits you with someone else&rsquo;s attendance.</div></div>
-    <div class="field f-full" id="rp-builder"><label class="fl">Repeats</label>
+    <div class="field"><div class="flrow"><label class="fl" for="f-host">Hosted by</label>{info("Shown on the event page so residents know who to ask. The list is kept under Settings.")}</div><input class="inp" id="f-host" list="hosts" autocapitalize="words"><datalist id="hosts"><option value="Resident Experiences"><option value="Leigh Anne"><option value="Front desk"></datalist></div>
+    <div class="field"><div class="flrow"><label class="fl">Count in engagement reporting</label>{info("Choose List only whenever the host is not Resident Experiences, so nothing credits you with someone else&rsquo;s attendance. The calendar carries everything happening in the building either way.")}</div><div class="picks">{picks("co", ["Count it", "List only, don’t count"])}</div></div>
+    <div class="field f-full" id="rp-builder"><div class="flrow"><label class="fl">Repeats</label>{info("For the standing rhythm: every Tuesday, the last Friday of the month. Each date becomes its own entry. A run of consecutive days is not a repeat; give it an end date above instead.")}</div>
       <div class="picks" id="rp-picks">
         <label class="pick on" data-rp="none">Does not repeat</label>
-        <label class="pick" data-rp="daily">Daily</label>
         <label class="pick" data-rp="weekly">Weekly</label>
         <label class="pick" data-rp="monthly">Monthly</label>
       </div>
@@ -563,26 +611,34 @@ HTML = f'''<!DOCTYPE html>
           <label class="pick" data-en="count">After a number of times</label>
           <label class="pick" data-en="date">On a date</label>
         </div>
-        <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:10px">
+        <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:10px;align-items:center">
           <input class="inp" type="number" id="rp-times" min="2" max="60" value="6" style="width:120px;display:none">
           <input class="inp" type="date" id="rp-until" style="width:auto;display:none">
+          {info("The resident calendar runs to a fixed end and is extended season by season, so a series runs to the calendar&rsquo;s end rather than forever.")}
         </div>
-        <div class="hint">The resident calendar runs to a fixed end and is extended season by season, so a series runs to the calendar&rsquo;s end rather than forever. Each date becomes its own entry, so a single week can still be moved or skipped later.</div>
       </div>
       <div class="hint" id="rp-preview" style="margin-top:10px"></div>
     </div>
-    <div class="field"><label class="fl" for="f-series">Repeats, as shown to residents</label><input class="inp" id="f-series" placeholder="Writes itself from the rule; edit if you like"></div>
-    <div class="field"><label class="fl">RSVP type</label><div class="picks">{picks("rt", RSVP_TYPES)}</div><div class="hint">Guest count collects non-resident numbers only. Paid seat shows the price.</div></div>
-    <div class="field"><label class="fl" for="f-cap">Capacity</label><input class="inp" type="number" id="f-cap" inputmode="numeric" placeholder="Leave blank for no limit"></div>
+    <div class="field f-full"><div class="flrow"><label class="fl" for="f-series">Repeats, as shown to residents</label>{info("The line on the event page under the date, like Every Tuesday or October 9 to 11. It writes itself from the rule or the date range; edit it if you would say it differently.")}</div><input class="inp" id="f-series" placeholder="Writes itself; edit if you like"></div>
+    <div class="field f-full"><label class="fl">RSVP type</label>
+      <div class="picks">
+        <span class="pickpair"><label class="pick" for="rt-0">None</label>{info("A drop-in. The page shows the full details with no button: nobody signs up, nothing is counted ahead, and residents simply come. Right for happy hours and open houses.")}</span>
+        <span class="pickpair"><label class="pick" for="rt-1">Guest count only</label>{info("For events residents attend freely but may bring outside guests to. Collects only the number of guests coming, so the building knows who to expect at the door; residents themselves are not counted or seated.")}</span>
+        <span class="pickpair"><label class="pick" for="rt-2">Seat</label>{info("Holds real seats for residents and their parties, up to the party size set below. Capacity fills into one waitlist shared with the desk, and freed seats go to the front of that line with Confirm seats on the Dashboard.")}</span>
+        <span class="pickpair"><label class="pick" for="rt-3">Paid seat</label>{info("Seats held exactly as Seat, with the price shown beside the RSVP button and on the page. Payment itself stays off the site; staff arrange it, and the page says seats are held.")}</span>
+      </div></div>
+    <div class="field f-full"><div class="flrow"><label class="fl">Largest party a resident may book</label>{info("Residents choose from Just myself up to this size when they RSVP; chips past it never appear. Please contact me always shows for bigger asks, which staff arrange from the Dashboard, up to six. Out of the box: Myself +2.")}</div>
+      <div class="picks">
+        <label class="pick" for="pm-0">Just myself</label>
+        <label class="pick" for="pm-1">Myself +1</label>
+        <label class="pick" for="pm-2">Myself +2</label>
+        <label class="pick" for="pm-3">Myself +3</label>
+        <label class="pick" for="pm-4">Myself +4</label>
+      </div></div>
+    <div class="field"><div class="flrow"><label class="fl" for="f-cap">Capacity</label>{info("Total heads the room takes; blank means no limit. When it fills, the button becomes Join the Waitlist on its own, one queue shared with the site, the desk, and the Dashboard.")}</div><input class="inp" type="number" id="f-cap" inputmode="numeric" placeholder="Blank for no limit"></div>
     <div class="field"><label class="fl" for="f-price">Price per person</label><input class="inp" id="f-price" placeholder="$75"></div>
-    <div class="field"><label class="fl" for="f-cutoff">RSVP closes</label><input class="inp" type="date" id="f-cutoff">
-      <div class="hint">End of that day, Pacific. From the next morning the button reads Join the Waitlist, and requests
-      come to you for a yes or a no (Confirm seats is the yes). Blank keeps RSVPs open. Workshops close the Monday of the
-      event week, so materials are ordered against a firm count.</div>
-      <label class="check" style="margin-top:12px"><input type="checkbox" id="f-closed"> Close RSVPs now</label>
-      <div class="hint">The by-hand switch, for a sudden max or a change of plans: the button turns to Join the
-      Waitlist the moment this publishes. Capacity and the close date above already do this on their own schedule;
-      untick to reopen.</div></div>
+    <div class="field"><div class="flrow"><label class="fl" for="f-cutoff">RSVP closes</label>{info("End of that day, Pacific. From the next morning the button reads Join the Waitlist and requests come to you for a yes or a no; Confirm seats is the yes. Blank keeps RSVPs open. Workshops close the Monday of the event week, so materials are ordered against a firm count.")}</div><input class="inp" type="date" id="f-cutoff">
+      <div class="flrow" style="margin:10px 0 0"><label class="check"><input type="checkbox" id="f-closed"> Close RSVPs now</label>{info("The by-hand switch, for a sudden max or a change of plans: the button turns to Join the Waitlist the moment this publishes. Capacity and the close date already do this on their own schedule; untick to reopen.")}</div></div>
     <div class="field f-full"><label class="fl" for="f-desc">Description</label>
       <div class="fmtbar">
         <button type="button" class="mini" data-fmt="strong" title="Bold the selected text"><strong>B</strong></button>
@@ -600,8 +656,6 @@ HTML = f'''<!DOCTYPE html>
       date falls, while every other event keeps to the dials. For the holiday party and anything else worth announcing
       early. If its month sits past the calendar&rsquo;s edge, the calendar reaches out to it. Pairs with Coming soon
       when the date should be known before the details are. Untick to hand it back to the window.</div></div>
-    <div class="field f-full" id="ed-scope" style="display:none"><label class="check"><input type="checkbox" id="f-scope" checked> Apply these changes to every upcoming date of this series (<span id="f-scope-n">0</span>)</label>
-      <div class="hint">Untick to change only the date chosen above, for example to move or re-time a single week.</div></div>
     <div class="field f-full"><label class="fl" for="f-slug">File name stem, generated from the date and title</label>
       <div class="inp" style="display:flex;gap:10px;align-items:center;flex-wrap:wrap"><code id="f-stem"></code><input id="f-slug" placeholder="custom slug, optional" style="border:none;background:transparent;font:inherit;flex:1;min-width:160px"></div>
       <div class="hint">Every file in this kit is named from this stem, so it stays identifiable in Canva, on Nixplay, or at the print shop.</div></div>
@@ -627,6 +681,25 @@ HTML = f'''<!DOCTYPE html>
     <div class="sd">Who changed what, and when, newest first. Load an earlier version to review it in the editor;
     nothing on the resident site changes until you publish or save what is loaded.</div>
     <div class="card" id="ed-history"></div>
+  </div>
+</div></section>
+
+<!-- ================= CALENDAR (STAFF VIEW) ================= -->
+<section class="screen" id="scr-cal"><div class="wrap">
+  <div class="phead"><h1>Calendar</h1>
+    <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+      <button class="mini ghost" data-acal="-1" title="Previous month">&larr;</button>
+      <span id="acal-label" style="font-family:Georgia,serif;font-size:19px;color:var(--ink);min-width:170px;text-align:center"></span>
+      <button class="mini ghost" data-acal="1" title="Next month">&rarr;</button>
+      <button class="mini" data-acal="0">Today</button>
+    </div></div>
+  <div class="psub">Everything, in every state: what residents see and what they don&rsquo;t yet. Open any event straight from its day.</div>
+  <div class="acal" id="acal"></div>
+  <div class="aleg">
+    <span><i style="border-left:3px solid var(--red)"></i> Live</span>
+    <span><i style="border-style:dashed"></i> Draft</span>
+    <span><i style="opacity:.55"></i> Unpublished</span>
+    <span><i style="opacity:.35"></i> Archived</span>
   </div>
 </div></section>
 
@@ -800,13 +873,21 @@ HTML = f'''<!DOCTYPE html>
 
   <h2>The loop</h2>
   <ol>
-    <li><strong>Create the draft.</strong> Events &rarr; New Event. Fill in title, category, date, time, location, and capacity, then <em>Save draft</em>: nothing is visible to residents yet.</li>
+    <li><strong>Create the draft.</strong> Events &rarr; New Event. Fill in title, category, dates, times, location, and capacity, then <em>Save draft</em>: nothing is visible to residents yet. A multi-day event takes a start and an end date and becomes one entry per day, so a three-day Fleet Week is three entries residents RSVP to per day; the Repeats picker is for standing rhythms, weekly and monthly. A draft that turns out wrong deletes cleanly from its row on Events; anything ever published keeps its history through Unpublish and the Archive instead.</li>
     <li><strong>Write both descriptions.</strong> The short one is a single line and appears in the list view. The full one appears on the event page. Write the full one as if the reader knows nothing about the event.</li>
     <li><strong>Build the asset kit.</strong> Six pieces, same six every time. See <em>Brand &amp; Canva templates</em> for sizes.</li>
     <li><strong>Publish.</strong> The <em>Publish</em> button puts it on the calendar; the same button reads <em>Unpublish</em> once it is out. An event whose details are still settling can go out early with the <em>Coming soon</em> box ticked: the date and title show, RSVP and calendars wait.</li>
     <li><strong>Promote, in this order:</strong> Mailchimp campaign, then the Nixplay playlist, then the printed signs. All three point at the same event page.</li>
     <li><strong>After it happens:</strong> attendance is whatever the door marked with <em>Arrived</em>; tidy stragglers under Past events on the Dashboard. The Archive files passed events on its own; <em>Archive</em> by hand only from Unpublished.</li>
   </ol>
+
+  <div class="callout"><strong>The Calendar tab</strong> is the staff view of the month: every event in every state,
+  including drafts and unpublished dates residents cannot see, each one opening straight into the editor. When a month
+  feels off, look there first; it shows what is actually posted, and what only exists in here.</div>
+
+  <div class="callout"><strong>Editing a series.</strong> Edit on a series row opens <em>the whole series</em>: one save
+  reaches every upcoming date, and the editor says so at the top. Pick a single date from the same dropdown to move or
+  re-time one week alone; its sign-ups follow wherever it goes.</div>
 
   <div class="callout"><strong>Editing something already published.</strong> On a Live event, <em>Save draft</em> keeps your
   edits as a working copy that residents never see; the editor says so, and <em>Publish changes</em> sends them out when
@@ -860,8 +941,9 @@ HTML = f'''<!DOCTYPE html>
   <em>Join the Waitlist</em> on its own. The <strong>RSVP closes</strong> date passes; from the next morning, new requests
   go to Resident Experiences as requests rather than seats. Or you tick <strong>Close RSVPs now</strong> in the editor,
   which closes them that instant; untick it and they reopen. In every case, parties already holding seats keep them.</div>
-  <p>Residents book for themselves and up to two others on the site. The fourth chip, <em>Please contact me</em>, sends a
-  larger party to the Message page and the desk; staff seat up to six from the Dashboard, which is how that promise is kept.</p>
+  <p>Residents book from <em>Just myself</em> up to the party size each event sets, chosen in the editor under
+  <strong>Largest party a resident may book</strong> (out of the box, Myself +2; up to Myself +4). The <em>Please contact
+  me</em> chip always shows for bigger asks, which staff seat from the Dashboard, up to six.</p>
 
   <h2>Handling RSVPs from the Dashboard</h2>
   <p><em>Add an RSVP for someone</em> covers the resident who phones or asks in passing. On any row, <em>Edit</em> opens the

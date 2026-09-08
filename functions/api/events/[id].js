@@ -52,3 +52,24 @@ export async function onRequestPatch({ request, params, env }) {
   }
   return json(fromRow(row));
 }
+
+
+// DELETE /api/events/:id -> gone, drafts only. A draft has never been seen by
+// residents and holds no RSVPs, so deleting it erases nothing that happened.
+// Anything ever published takes the Unpublish then Archive road instead, which
+// keeps its history and its story for reporting. Not for the desk tier.
+export async function onRequestDelete({ request, params, env }) {
+  const err = noDb(env); if (err) return err;
+  const role = await adminRole(request, env);
+  if (!role || role === "desk") return forbidden();
+  const id = Number(params.id);
+  if (!Number.isInteger(id)) return json({ error: "Bad id" }, 400);
+  await ensureEventTables(env);
+  const row = await env.DB.prepare("SELECT * FROM events WHERE id=?").bind(id).first();
+  if (!row) return json({ error: "No such event" }, 404);
+  if ((row.status || "Draft") !== "Draft")
+    return json({ error: "Only drafts delete. Unpublish first, and the Archive keeps its history." }, 400);
+  await env.DB.prepare("DELETE FROM event_history WHERE event_id=?").bind(id).run();
+  await env.DB.prepare("DELETE FROM events WHERE id=?").bind(id).run();
+  return json({ ok: true });
+}
