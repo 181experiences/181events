@@ -298,7 +298,7 @@
     $("#ed-cancel").disabled = !(live && rsvpOn);
     $("#ed-cancel-note").textContent = live && rsvpOn
       ? (hasRsvpers
-          ? "Cancelling pulls this date from the calendar, holds its RSVPs, and opens a note to everyone signed up."
+          ? "Cancelling pulls this date from the calendar and holds its RSVPs. You then choose whether a note to everyone signed up opens; nothing is ever sent on its own."
           : "Cancelling pulls this date from the calendar. Nobody has signed up yet, so there is nobody to notify.")
       : "";
   }
@@ -741,19 +741,24 @@
   function cancelEvent() {
     const row = editing && editing.row; if (!row) return;
     const st = stem(row);
-    if (!confirm(`Cancel "${row.Title}" on ${fmt(row.Date)}? It leaves the calendar, its RSVPs stay held, and a note opens to everyone signed up.`)) return;
+    if (!confirm(`Cancel "${row.Title}" on ${fmt(row.Date)}? It leaves the calendar and its RSVPs stay held.`)) return;
     api("/api/events/" + encodeURIComponent(row.id), { method: "PATCH", body: JSON.stringify({ Status: "Unpublished" }) })
       .then(upd => {
         Object.assign(row, upd);
         renderAll();
         if (status.publish) api("/api/publish", { method: "POST" }).catch(() => {});
+        // The note is offered, never forced: nothing sends itself anywhere,
+        // and a quiet re-timing deserves the choice of saying nothing yet.
         const emails = rsvperEmails(new Set([st]));
-        if (emails.length) {
+        if (emails.length
+            && confirm(`Open a cancellation note to everyone signed up? ${emails.length} ${emails.length === 1 ? "address" : "addresses"}; it opens in your own mailbox and nothing sends until you send it.`)) {
           const body = `Hello,\n\nWith our apologies, ${row.Title} on ${fmt(row.Date)} is cancelled.\n\n`
             + `If you added it to your calendar, kindly remove that entry. If you subscribe to the calendar, it disappears on its own.\n\n`
             + `Warmly,\nResident Experiences\n181 Fremont`;
           openBccDraft(`Cancelled: ${row.Title}, ${fmt(row.Date)}`, body, emails);
-          toast("Cancelled. The note to everyone signed up is opening; send it and nobody shows up to an empty room.");
+          toast("Cancelled. The note is opening; send it and nobody shows up to an empty room.");
+        } else if (emails.length) {
+          toast("Cancelled and pulled from the calendar. Nobody has been told; to offer the note again, publish the date back and cancel once more.");
         } else {
           toast("Cancelled and pulled from the calendar. Those signed up have no email on file; a call closes the loop.");
         }

@@ -673,7 +673,7 @@
     <button class="btn ghost" id="ed-savedraft" data-edsavedraft>Save draft</button>
     <button class="mini ghost" id="ed-discard" data-eddiscard style="display:none">Discard draft</button>
     <button class="btn ghost" id="ed-archivebtn" data-edarchive disabled title="For safety, an event is archived from Unpublished, never straight off the calendar">Archive</button>
-    <button class="btn ghost" id="ed-cancel" style="border-color:var(--red);color:var(--red)" disabled>Cancel &amp; notify guests</button>
+    <button class="btn ghost" id="ed-cancel" style="border-color:var(--red);color:var(--red)" disabled>Cancel this date</button>
   </div>
   <div class="hint" id="ed-actions-note" style="margin-top:10px"></div>
   <div class="hint" id="ed-cancel-note" style="margin-top:4px"></div>
@@ -912,10 +912,12 @@
     <tr><td>Unpublished</td><td>Was live, now pulled. Disappears from the calendar, <strong>RSVPs are held</strong>, and putting it back Live restores it unchanged.</td></tr>
     <tr><td>Archived</td><td>Over. Hidden from residents, kept in full for reporting.</td></tr>
   </table>
-  <div class="callout"><strong>Unpublishing is silent. Cancelling is not.</strong> If an event has RSVPs and it truly is
-  not happening, use <em>Cancel &amp; notify guests</em>, which emails everyone who signed up. Unpublishing tells nobody,
-  which is right when you are re-timing a date and wrong when twelve people have it in their calendar. The difference between
-  those two buttons is the difference between a quiet edit and someone arriving on Level 39 to an empty room.</div>
+  <div class="callout"><strong>Cancelling offers the word; nothing sends itself.</strong> If an event has RSVPs and it
+  truly is not happening, use <em>Cancel this date</em>: it pulls the event, holds the RSVPs, and then asks whether to
+  open a cancellation note to everyone signed up. The note is an email, a BCC draft in your own mailbox, and nothing
+  reaches a resident unless you press Send there; nothing is posted inside the site, and My RSVPs simply stops listing
+  the event. Say no to the note when you are quietly re-timing; say yes when twelve people have it in their calendar,
+  because the difference is someone arriving on Level 39 to an empty room.</div>
 
   <div class="callout"><strong>Archive, never delete.</strong> An archived event disappears from the resident calendar but keeps its
   views, RSVPs, and attendance. Delete it and the monthly report loses that history permanently, and a comparison to last
@@ -1456,7 +1458,7 @@
     $("#ed-cancel").disabled = !(live && rsvpOn);
     $("#ed-cancel-note").textContent = live && rsvpOn
       ? (hasRsvpers
-          ? "Cancelling pulls this date from the calendar, holds its RSVPs, and opens a note to everyone signed up."
+          ? "Cancelling pulls this date from the calendar and holds its RSVPs. You then choose whether a note to everyone signed up opens; nothing is ever sent on its own."
           : "Cancelling pulls this date from the calendar. Nobody has signed up yet, so there is nobody to notify.")
       : "";
   }
@@ -1899,19 +1901,24 @@
   function cancelEvent() {
     const row = editing && editing.row; if (!row) return;
     const st = stem(row);
-    if (!confirm(`Cancel "${row.Title}" on ${fmt(row.Date)}? It leaves the calendar, its RSVPs stay held, and a note opens to everyone signed up.`)) return;
+    if (!confirm(`Cancel "${row.Title}" on ${fmt(row.Date)}? It leaves the calendar and its RSVPs stay held.`)) return;
     api("/api/events/" + encodeURIComponent(row.id), { method: "PATCH", body: JSON.stringify({ Status: "Unpublished" }) })
       .then(upd => {
         Object.assign(row, upd);
         renderAll();
         if (status.publish) api("/api/publish", { method: "POST" }).catch(() => {});
+        // The note is offered, never forced: nothing sends itself anywhere,
+        // and a quiet re-timing deserves the choice of saying nothing yet.
         const emails = rsvperEmails(new Set([st]));
-        if (emails.length) {
+        if (emails.length
+            && confirm(`Open a cancellation note to everyone signed up? ${emails.length} ${emails.length === 1 ? "address" : "addresses"}; it opens in your own mailbox and nothing sends until you send it.`)) {
           const body = `Hello,\n\nWith our apologies, ${row.Title} on ${fmt(row.Date)} is cancelled.\n\n`
             + `If you added it to your calendar, kindly remove that entry. If you subscribe to the calendar, it disappears on its own.\n\n`
             + `Warmly,\nResident Experiences\n181 Fremont`;
           openBccDraft(`Cancelled: ${row.Title}, ${fmt(row.Date)}`, body, emails);
-          toast("Cancelled. The note to everyone signed up is opening; send it and nobody shows up to an empty room.");
+          toast("Cancelled. The note is opening; send it and nobody shows up to an empty room.");
+        } else if (emails.length) {
+          toast("Cancelled and pulled from the calendar. Nobody has been told; to offer the note again, publish the date back and cancel once more.");
         } else {
           toast("Cancelled and pulled from the calendar. Those signed up have no email on file; a call closes the loop.");
         }

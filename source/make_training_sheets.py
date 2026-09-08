@@ -257,7 +257,7 @@ LEAD_COL1 = [
 LEAD_COL2 = [
     ("h", "6 · Telling residents"),
     ("b", "Change a Live event\u2019s date, time, or place while people are signed up, and one BCC email opens in Outlook to all of them, old and new spelled out. Read it, send it."),
-    ("b", "**Cancel & notify guests**, in the editor, pulls the event, holds the RSVPs, and opens the cancellation draft."),
+    ("b", "**Cancel this date** pulls the event, holds the RSVPs, then asks whether the note opens; nothing sends itself."),
     ("b", "**Link** on any row copies that date’s page. The standing short address **/e/the-slug** always lands on the next upcoming date, made for print."),
     ("b", "Calendar subscribers update on their own; anyone who used **Add to My Calendar** re-taps it after a change. The drafts say so."),
     ("h", "7 · RSVPs from the Dashboard"),

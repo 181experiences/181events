@@ -671,7 +671,7 @@ HTML = f'''<!DOCTYPE html>
     <button class="btn ghost" id="ed-savedraft" data-edsavedraft>Save draft</button>
     <button class="mini ghost" id="ed-discard" data-eddiscard style="display:none">Discard draft</button>
     <button class="btn ghost" id="ed-archivebtn" data-edarchive disabled title="For safety, an event is archived from Unpublished, never straight off the calendar">Archive</button>
-    <button class="btn ghost" id="ed-cancel" style="border-color:var(--red);color:var(--red)" disabled>Cancel &amp; notify guests</button>
+    <button class="btn ghost" id="ed-cancel" style="border-color:var(--red);color:var(--red)" disabled>Cancel this date</button>
   </div>
   <div class="hint" id="ed-actions-note" style="margin-top:10px"></div>
   <div class="hint" id="ed-cancel-note" style="margin-top:4px"></div>
@@ -910,10 +910,12 @@ HTML = f'''<!DOCTYPE html>
     <tr><td>Unpublished</td><td>Was live, now pulled. Disappears from the calendar, <strong>RSVPs are held</strong>, and putting it back Live restores it unchanged.</td></tr>
     <tr><td>Archived</td><td>Over. Hidden from residents, kept in full for reporting.</td></tr>
   </table>
-  <div class="callout"><strong>Unpublishing is silent. Cancelling is not.</strong> If an event has RSVPs and it truly is
-  not happening, use <em>Cancel &amp; notify guests</em>, which emails everyone who signed up. Unpublishing tells nobody,
-  which is right when you are re-timing a date and wrong when twelve people have it in their calendar. The difference between
-  those two buttons is the difference between a quiet edit and someone arriving on Level 39 to an empty room.</div>
+  <div class="callout"><strong>Cancelling offers the word; nothing sends itself.</strong> If an event has RSVPs and it
+  truly is not happening, use <em>Cancel this date</em>: it pulls the event, holds the RSVPs, and then asks whether to
+  open a cancellation note to everyone signed up. The note is an email, a BCC draft in your own mailbox, and nothing
+  reaches a resident unless you press Send there; nothing is posted inside the site, and My RSVPs simply stops listing
+  the event. Say no to the note when you are quietly re-timing; say yes when twelve people have it in their calendar,
+  because the difference is someone arriving on Level 39 to an empty room.</div>
 
   <div class="callout"><strong>Archive, never delete.</strong> An archived event disappears from the resident calendar but keeps its
   views, RSVPs, and attendance. Delete it and the monthly report loses that history permanently, and a comparison to last
