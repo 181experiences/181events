@@ -539,6 +539,10 @@ def rebuild():
     events = load_events()
     live = [dict(e, _id=e["id"]) for e in events]
     json.dump(live, open(os.path.join(HERE, "events_live.json"), "w", encoding="utf-8"), indent=1, ensure_ascii=False)
+    # The hero shelf travels with the build, mirroring publish.py.
+    stems = sorted({a["stem"] for a in load_store("assets", [])
+                    if a.get("kind") == "web-hero" and a.get("filename")})
+    json.dump(stems, open(os.path.join(HERE, "assets_live.json"), "w", encoding="utf-8"))
     subprocess.run([sys.executable, os.path.join(HERE, "build_site.py")], check=True)
 
 def sample_analytics(days):
@@ -719,6 +723,21 @@ class H(SimpleHTTPRequestHandler):
                     LINKHREF="/", LINKTEXT="181 Fremont"))
                 return self._html(shell_page("Not found", body, None, 404))
             return self._html(register_page(b))
+        if p.path.startswith("/hero/"):
+            # The public window into the asset shelf, mirroring functions/hero/[stem].js:
+            # exactly one kind serves here, the picture the event's page wears.
+            stem = p.path.rsplit("/", 1)[1]
+            fp = os.path.join(ASSET_DIR, f"{stem}__web-hero")
+            row = next((a for a in load_store("assets", [])
+                        if a["stem"] == stem and a["kind"] == "web-hero" and a.get("filename")), None)
+            if not re.match(r"^[A-Za-z0-9._-]+$", stem) or not row or not os.path.exists(fp):
+                return self._text("Not here.", "text/plain", 404)
+            data = open(fp, "rb").read()
+            self.send_response(200)
+            self.send_header("content-type", row.get("type") or "image/jpeg")
+            self.send_header("content-length", str(len(data)))
+            self.end_headers(); self.wfile.write(data)
+            return
         if p.path == "/api/assets":
             if self._role() == "desk": return self._json({"error": "forbidden"}, 403)
             return self._json({"storage": True, "assets": load_store("assets", [])})

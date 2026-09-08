@@ -41,6 +41,24 @@ except Exception:
 WINDOW["detail_weeks"] = min(12, max(1, WINDOW["detail_weeks"]))
 WINDOW["horizon_months"] = min(4, max(1, WINDOW["horizon_months"]))
 
+# Uploaded web heroes, pulled from the asset shelf at build time (assets_live.json,
+# written by publish.py from the assets table; the dev server writes its own).
+# An event whose kit holds a web hero wears it on its page; the shelf's
+# master-and-override rule applies: this date's own file first, then the series'.
+HERO_STEMS = set()
+try:
+    HERO_STEMS = set(_json.load(open(_os.path.join(_os.path.dirname(_os.path.abspath(__file__)),
+                                                   "assets_live.json"), encoding="utf-8")))
+except Exception:
+    pass
+
+def hero_img(e):
+    ds = f"{e['on'].isoformat()}_{e['slug']}"
+    for stem_ in (ds, e["slug"]):
+        if stem_ in HERO_STEMS:
+            return f"url('/hero/{stem_}')"
+    return None
+
 DETAIL_END = TODAY + _td(days=WINDOW["detail_weeks"] * 7)
 _hy, _hm = TODAY.year, TODAY.month + WINDOW["horizon_months"]
 while _hm > 12:
@@ -280,8 +298,11 @@ LIST = "".join(list_html)
 # ------------------------------------------------------------------ event screens
 def event_screen(e):
     i = e["id"]
-    if e["img"]:
-        hero = f'<div class="ehero photo{" tall" if e["marquee"] else ""}" style="background-image:{e["img"]}"></div>'
+    # The uploaded kit hero outranks the record's Image: uploading it is the
+    # deliberate act of dressing the page. Without either, the typographic card.
+    img = hero_img(e) or e["img"]
+    if img:
+        hero = f'<div class="ehero photo{" tall" if e["marquee"] else ""}" style="background-image:{img}"></div>'
     else:
         hero = ('<div class="ehero fallback"><div><div class="fb-line"></div>'
                 f'<div class="fb-title">{e["title"]}</div><div class="fb-sub">181 Fremont</div></div></div>')

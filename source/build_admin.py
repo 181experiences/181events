@@ -1060,6 +1060,9 @@ HTML = f'''<!DOCTYPE html>
     <li>Upload the kit here under Assets.</li>
   </ol>
   <p>An event image is optional. If there isn&rsquo;t a good photo, the event page falls back to a typographic card automatically. That is by design, so a rushed event never gets a bad stock photo.</p>
+  <p>The web hero is wired to the site: upload it to the kit and the event&rsquo;s page wears it after the next
+  <em>Publish calendar</em> (the master-and-override rule applies, this date&rsquo;s own file first, then the
+  series&rsquo;). Remove it and the typographic card quietly returns.</p>
 </div></section>
 
 <section class="screen" id="scr-inst-screens"><div class="wrap prose">

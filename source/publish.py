@@ -66,5 +66,19 @@ try:
         print(f"calendar window: {win}")
 except Exception as ex:
     print(f"calendar window settings not read ({ex}); building with what stands")
+
+# Which events have an uploaded web hero: the build dresses those pages with
+# the kit's picture. Unreadable here just means typographic cards this build.
+try:
+    req = urllib.request.Request(url, method="POST",
+        data=json.dumps({"sql": "SELECT stem FROM assets WHERE kind='web-hero' AND filename IS NOT NULL"}).encode(),
+        headers={"Authorization": f"Bearer {token}", "content-type": "application/json"})
+    with urllib.request.urlopen(req) as r:
+        hrows = json.load(r)["result"][0]["results"]
+    stems = sorted({h["stem"] for h in hrows})
+    json.dump(stems, open(os.path.join(HERE, "assets_live.json"), "w", encoding="utf-8"))
+    print(f"web heroes on the shelf: {len(stems)}")
+except Exception as ex:
+    print(f"hero shelf not read ({ex}); building with typographic cards where needed")
 subprocess.run([sys.executable, os.path.join(HERE, "build_site.py")], check=True)
 print("Built. On Cloudflare this deploys automatically; locally, the site/ folder is current.")
