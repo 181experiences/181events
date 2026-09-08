@@ -4,4 +4,5 @@ source/events_live.json
 source/settings_live.json
 source/assets_live.json
 source/dev_*.json
+source/dev_assets/
 .DS_Store
