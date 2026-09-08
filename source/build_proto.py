@@ -79,12 +79,29 @@ ICS_FILES = {}   # filename -> file body; build_site writes these into site/ics/
 BUILD_STAMP = _dt.utcnow().strftime("%Y%m%dT%H%M%SZ")
 BUILD_SEQ = (_dt.utcnow().date() - _dt(2026, 1, 1).date()).days
 
+def end24(e):
+    """The end time as ('HH', 'MM'), read the way a person typed it: '7:30 PM',
+    '7 PM', '7:30pm', or nothing at all. A time the parser cannot read falls
+    back to one hour after the start, so one loosely typed field can never
+    take the whole build down with it (it did once: '7 PM' had no colon)."""
+    import re as _re
+    m = _re.match(r"\s*(\d{1,2})(?::(\d{2}))?\s*([AaPp])?", str(e.get("end") or ""))
+    if m and m.group(1):
+        h = int(m.group(1))
+        mer = (m.group(3) or "").lower()
+        if mer == "p" and h < 12:
+            h += 12
+        elif mer == "a" and h == 12:
+            h = 0
+        if h <= 23:
+            return str(h).zfill(2), (m.group(2) or "00")
+    t = str(e.get("t24") or "0000")
+    return str((int(t[:2]) + 1) % 24).zfill(2), t[2:]
+
 def ics_href(e):
     """A real .ics file served from the site. A data: URL looks the same on a laptop
     but does nothing at all on an iPhone, which is most of the audience."""
-    eh = e["end"].split(":")[0]
-    ehm = e["end"].split(":")[1].split(" ")[0]
-    h24 = str((int(eh) % 12) + (12 if "PM" in e["end"] else 0)).zfill(2)
+    h24, ehm = end24(e)
     d = e["on"].strftime("%Y%m%d")
     body = "\r\n".join([
         "BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//181 Fremont//Resident Experiences//EN",
@@ -95,7 +112,7 @@ def ics_href(e):
         f"DTSTART:{d}T{e['t24']}00",
         f"DTEND:{d}T{h24}{ehm}00",
         f"SUMMARY:{plain(e['title'])}", f"LOCATION:181 Fremont - {plain(e['loc'])}",
-        f"DESCRIPTION:{plain(e['desc'][0])}", "END:VEVENT", "END:VCALENDAR"]) + "\r\n"
+        f"DESCRIPTION:{plain(e['desc'][0]) if e['desc'] else ''}", "END:VEVENT", "END:VCALENDAR"]) + "\r\n"
     fname = f"{e['on'].isoformat()}_{e['slug']}.ics"
     ICS_FILES[fname] = body
     return f"/ics/{fname}"
