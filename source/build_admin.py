@@ -647,7 +647,7 @@ HTML = f'''<!DOCTYPE html>
       </div>
       <textarea class="inp" id="f-desc" rows="7" placeholder="Write it as if the reader knows nothing about the event. It shows exactly as typed: a return starts a new line, a blank line starts a new paragraph."></textarea>
       <div class="hint">Select some text, then B, I, or U. Titles of books and films take italics. Line breaks show exactly as typed: a return is a new line (menus read one item per line), a blank line is a new paragraph. Sizes are set by the calendar itself.</div></div>
-    <div class="field f-full"><label class="check"><input type="checkbox" id="f-marquee"> Feature this on the home screen as the marquee event</label></div>
+    <div class="field f-full"><div class="flrow"><label class="check"><input type="checkbox" id="f-marquee"> Marquee: feature this event on the calendar</label>{info("The featured event: its row on the calendar&rsquo;s list view wears a quiet red highlight so it stands out among the rest. One at a time reads best. The home screen&rsquo;s Next Event tile picks itself and is not affected.")}</div></div>
     <div class="field f-full"><label class="check"><input type="checkbox" id="f-teaser"> Coming soon: publish the date and title, hold the details</label>
       <div class="hint">For an event still taking shape. It appears on the calendar with a Coming soon note; RSVP and
       Add to My Calendar stay closed until this is unticked, so plans can still change without anyone rebooking.</div></div>
