@@ -270,10 +270,20 @@ def month_block(m):
 MONTH_BLOCKS = "".join(month_block(m) for m in MONTHS)
 
 # ------------------------------------------------------------------ list view
+# The list opens at today: what has passed stays in its place, muted as ever,
+# but folded behind one quiet chip so nobody scrolls through August to reach
+# tonight. Every rebuild recounts; a fresh season simply shows no chip.
 list_html = []
+N_PAST = sum(1 for e in EVENTS if e["on"] < TODAY)
+if N_PAST:
+    list_html.append(
+        '<label class="phist" for="p-hist">'
+        f'<span class="ph-show">Show what&rsquo;s passed &middot; {N_PAST}</span>'
+        '<span class="ph-hide">Hide what&rsquo;s passed</span></label>')
 for m in MONTHS:
     k = m["key"]
-    list_html.append(f'<div class="month-label">{m["name"]}</div>')
+    month_past = (m["yr"], m["num"]) < (TODAY.year, TODAY.month)
+    list_html.append(f'<div class="month-label{" past" if month_past else ""}">{m["name"]}</div>')
     for d in days_with_events(k):
         rows = []
         for i, e in enumerate(evs_on(k, d)):
@@ -292,7 +302,7 @@ for m in MONTHS:
                 f'<span class="ev-body"><span class="ev-title">{e["title"]}</span>'
                 f'<span class="ev-meta">{e["time"]} &middot; {e["loc"]}</span>{tag_for(e)}</span>'
                 f'<span class="ev-go">&rarr;</span></label>')
-        list_html.append('<div class="lgroup">' + "".join(rows) + '</div>')
+        list_html.append(f'<div class="lgroup{" past" if day_is_past(m, d) else ""}">' + "".join(rows) + '</div>')
 LIST = "".join(list_html)
 
 # ------------------------------------------------------------------ event screens
@@ -651,6 +661,17 @@ HTML = f'''<!DOCTYPE html>
     padding:26px 0 12px;border-bottom:1px solid var(--line);font-weight:500}}
   .month-label:first-child{{padding-top:6px}}
   .lgroup{{border-bottom:1px solid var(--line)}}
+  /* The list opens at today; the chip above it holds everything that passed. */
+  .month-label.past,.lgroup.past{{display:none}}
+  #p-hist:checked ~ .listwrap .month-label.past{{display:block}}
+  #p-hist:checked ~ .listwrap .lgroup.past{{display:block}}
+  .phist{{display:inline-flex;align-items:center;min-height:44px;padding:8px 18px;margin:16px 0 8px;
+    border:1px solid var(--line);border-radius:100px;background:var(--paper-2);color:var(--stone);
+    font-size:clamp(13px,3.6vw,14px);cursor:pointer}}
+  .phist:hover{{border-color:var(--red);color:var(--red)}}
+  .ph-hide{{display:none}}
+  #p-hist:checked ~ .listwrap .ph-hide{{display:inline}}
+  #p-hist:checked ~ .listwrap .ph-show{{display:none}}
   .lrow{{position:relative;display:flex;gap:22px;width:100%;padding:24px 4px;align-items:flex-start;min-height:72px}}
   .lrow:not(:first-child)::before{{content:'';position:absolute;left:var(--datecol,90px);right:4px;top:0;height:1px;background:#e6ded2}}
   .lrow:hover .ev-title{{color:var(--red)}}
@@ -849,6 +870,7 @@ HTML = f'''<!DOCTYPE html>
   <section class="screen" id="scr-cal">
     <input class="state" type="radio" name="view" id="v-month" checked>
     <input class="state" type="radio" name="view" id="v-list">
+    <input class="state" type="checkbox" id="p-hist">
     {MONTH_RADIOS}
     {DAY_RADIOS}
 
