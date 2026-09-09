@@ -495,6 +495,7 @@ HTML = f'''<!DOCTYPE html>
       <div class="card" id="nextlist"></div>
     </div>
   </div>
+  <div class="flrow" style="margin-top:16px"><span style="font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--stone);font-weight:600">How to read these figures</span>{info("With about ten year-round residents, two people is 20&percnt;. Every figure shows a count alongside its percentage, and month-to-month swings read as noise until three months agree. Events hosted by others are listed but not counted: Caf&eacute; 181 appears on the resident calendar and is excluded from engagement figures, so nothing here credits Resident Experiences with someone else&rsquo;s attendance. Traffic is measured without cookies and without identifying anyone. RSVP figures come from sign-ups on the site; Arrived marks record who came.")}</div>
   </div>
 
   <div class="sec">
@@ -520,16 +521,6 @@ HTML = f'''<!DOCTYPE html>
     <div class="card" id="rsvplist"></div>
   </div>
 
-  <div class="sec">
-    <h2>Reporting note</h2>
-    <div class="card" style="font-size:15px;color:var(--ink-soft)">
-      With about ten year-round residents, two people is 20%. Every figure here shows a <strong style="color:var(--ink);font-weight:500">count alongside its percentage</strong>,
-      and month-to-month swings should be read as noise until there are three months of trend. <strong style="color:var(--ink);font-weight:500">Events hosted by others are listed but not counted.</strong>
-      Caf&eacute; 181 appears on the resident calendar and is excluded from engagement figures, so nothing here credits
-      Resident Experiences with someone else&rsquo;s attendance. Traffic is measured without cookies and without identifying anyone.
-      RSVP figures above come from sign-ups on the site itself; attendance recording joins them next.
-    </div>
-  </div>
 </div></section>
 
 <!-- ================= EVENTS ================= -->
