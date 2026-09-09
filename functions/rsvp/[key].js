@@ -240,7 +240,7 @@ export async function onRequestPost(context) {
 
   if (action === "cancel") {
     await env.DB.prepare(
-      "UPDATE rsvps SET status='Cancelled', updated=? WHERE resident_id=? AND event_key=?")
+      "UPDATE rsvps SET status='Cancelled', updated=?, updated_by='resident' WHERE resident_id=? AND event_key=?")
       .bind(now, me.id, key).run();
     return donePage(context, me, "Cancelled",
       "You&rsquo;re off the list for this one, and always welcome to change your mind while there&rsquo;s room.",
@@ -297,11 +297,11 @@ export async function onRequestPost(context) {
 
   // A revived RSVP queues from now, not from its first life.
   await env.DB.prepare(
-    `INSERT INTO rsvps (resident_id, event_key, event_date, event_title, rsvp_type, count, names, status, created, updated)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `INSERT INTO rsvps (resident_id, event_key, event_date, event_title, rsvp_type, count, names, status, created, updated, updated_by)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'resident')
      ON CONFLICT(resident_id, event_key) DO UPDATE SET
        rsvp_type=excluded.rsvp_type, count=excluded.count, names=excluded.names,
-       status=excluded.status, updated=excluded.updated,
+       status=excluded.status, updated=excluded.updated, updated_by=excluded.updated_by,
        created=CASE WHEN rsvps.status='Cancelled' THEN excluded.created ELSE rsvps.created END`)
     .bind(me.id, key, ev.date, ev.title, type, count, names, status, now, now).run();
 
@@ -311,7 +311,7 @@ export async function onRequestPost(context) {
   if (status === "Confirmed" && ev.capacity && type !== "guest") {
     if (await confirmedHeads(env, key) > ev.capacity) {
       await env.DB.prepare(
-        "UPDATE rsvps SET status='Waitlist', updated=? WHERE resident_id=? AND event_key=?")
+        "UPDATE rsvps SET status='Waitlist', updated=?, updated_by='resident' WHERE resident_id=? AND event_key=?")
         .bind(now, me.id, key).run();
       status = "Waitlist";
     }

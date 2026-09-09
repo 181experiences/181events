@@ -253,6 +253,14 @@ HTML = f'''<!DOCTYPE html>
   .aleg span{{display:inline-flex;align-items:center;gap:6px}}
   .aleg i{{width:12px;height:12px;border-radius:3px;border:1px solid var(--line);display:inline-block;font-style:normal}}
   @media(max-width:820px){{.acell{{min-height:64px}}.acal{{gap:3px}}}}
+  .etbtn{{background:none;border:0;padding:0;font:inherit;color:var(--ink);cursor:pointer;text-align:left}}
+  .etbtn:hover{{color:var(--red)}}
+  .qv{{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:12px 20px;
+    background:var(--paper-2);border:1px solid var(--line);border-radius:6px;padding:16px 18px;margin:4px 0 12px}}
+  .qv .ql{{display:block;font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--stone);
+    font-weight:600;margin-bottom:3px}}
+  .qv .qd{{font-size:13px;color:var(--ink);line-height:1.45;overflow-wrap:break-word}}
+  .qv .qfull{{grid-column:1/-1;white-space:pre-line}}
   .picks{{display:flex;flex-wrap:wrap;gap:6px}}
   .pick{{border:1px solid var(--line);border-radius:100px;padding:5px 12px;font-size:12px;font-weight:500;
     color:var(--ink-body);background:var(--paper-2);min-height:30px;display:inline-flex;align-items:center}}
@@ -450,12 +458,13 @@ HTML = f'''<!DOCTYPE html>
 
 <!-- ================= DASHBOARD ================= -->
 <section class="screen" id="scr-dash"><div class="wrap">
-  <div class="phead"><h1>Dashboard</h1><div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><div class="period" id="period"><button data-period="7" data-days="7">7 days</button><button data-period="30" data-days="30" class="on">30 days</button><button data-period="90" data-days="90">90 days</button></div><button class="mini" data-export title="Downloads a CSV that opens in Excel">Download CSV</button></div></div>
+  <div class="phead"><h1>Dashboard</h1><div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><div class="period" id="period"><button data-period="7" data-days="7">7 days</button><button data-period="30" data-days="30" class="on">30 days</button><button data-period="90" data-days="90">90 days</button></div><button class="mini ghost" id="dash-fold" data-dashfold title="Folds the analytics away, so the RSVP work sits right at the top">Hide the charts</button><button class="mini" data-export title="Downloads a CSV that opens in Excel">Download CSV</button></div></div>
   <div class="psub" id="dash-period">Loading&hellip;</div>
   <div class="callout" id="dash-note" style="display:none;margin:0 0 18px"></div>
 
   <div class="kpis" id="kpis"></div>
 
+  <div id="dash-viz">
   <div class="sec">
     <h2>Visits by day</h2>
     <div class="sd">One visit is one person opening the calendar, however many pages they look at. Tuesdays and Thursdays are marked darker, since that is when the building gathers.</div>
@@ -486,6 +495,7 @@ HTML = f'''<!DOCTYPE html>
       <div class="sd">The next six dates on the resident calendar.</div>
       <div class="card" id="nextlist"></div>
     </div>
+  </div>
   </div>
 
   <div class="sec">
@@ -964,6 +974,9 @@ HTML = f'''<!DOCTYPE html>
   capacity rules, then releases the old seats, and the note offered afterward names both. <em>Cancel</em> asks first, then
   asks separately whether a note should go. After any change, the note opens prefilled from your own mailbox; nothing sends
   itself.</p>
+  <p>Every RSVP row also carries its trail: the date of its last change and who made it, staff by name and residents
+  as <em>resident</em>, so a cancelled seat or a changed party is never a mystery. With each desk and porter signing
+  in under their own email, the trail names the person.</p>
   <p>On the day of an event, <strong>Arrived</strong> beside each party marks attendance at the door: one tap marks the
   whole party in, a second tap asks for the true number when fewer came, and 0 clears the mark. The RSVP itself is never
   touched, so the pair of numbers survives the evening; the export carries an Attendance table of RSVPed beside came,

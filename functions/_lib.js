@@ -274,7 +274,7 @@ export async function ensureResidentTables(env) {
   }
   // Attendance: how many of the party actually came, marked at the door.
   // Kept apart from count so the sign-up story survives the evening.
-  for (const col of ["arrived INTEGER", "arrived_at TEXT"]) {
+  for (const col of ["arrived INTEGER", "arrived_at TEXT", "updated_by TEXT"]) {
     try { await env.DB.prepare(`ALTER TABLE rsvps ADD COLUMN ${col}`).run(); } catch (e) {}
   }
   tablesEnsured = true;

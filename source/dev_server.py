@@ -1031,13 +1031,14 @@ class H(SimpleHTTPRequestHandler):
             mine = next((r for r in rsvps if r["resident_id"] == resident["id"] and r["event_key"] == key), None)
             if mine:
                 if mine["status"] == "Cancelled": mine["created"] = now_iso()
-                mine.update(rsvp_type=rsvp_type, count=count, names=names, status=status, updated=now_iso())
+                mine.update(rsvp_type=rsvp_type, count=count, names=names, status=status,
+                            updated=now_iso(), updated_by=f"{self._role()}@local.dev")
                 row = mine
             else:
                 row = dict(id=max([r["id"] for r in rsvps] or [0]) + 1, resident_id=resident["id"],
                            event_key=key, event_date=e["Date"], event_title=e["Title"],
                            rsvp_type=rsvp_type, count=count, names=names, status=status,
-                           created=now_iso(), updated=now_iso())
+                           created=now_iso(), updated=now_iso(), updated_by=f"{self._role()}@local.dev")
                 rsvps.append(row)
             save_store("rsvps", rsvps)
             return self._json({"rsvp": dict(row, name=resident["name"], unit=resident.get("unit") or "",
@@ -1199,7 +1200,7 @@ class H(SimpleHTTPRequestHandler):
             rsvps = load_store("rsvps", [])
             mine = next((r for r in rsvps if r["resident_id"] == me["id"] and r["event_key"] == key), None)
             if form.get("action") == "cancel":
-                if mine: mine["status"] = "Cancelled"; mine["updated"] = now_iso(); save_store("rsvps", rsvps)
+                if mine: mine["status"] = "Cancelled"; mine["updated"] = now_iso(); mine["updated_by"] = "resident"; save_store("rsvps", rsvps)
                 return self._html(done_page(me, "Cancelled",
                     "You&rsquo;re off the list for this one, and always welcome to change your mind while there&rsquo;s room.",
                     "/my", "My RSVPs"))
@@ -1246,12 +1247,13 @@ class H(SimpleHTTPRequestHandler):
             if mine:
                 if mine["status"] == "Cancelled":
                     mine["created"] = now_iso()   # a revived RSVP queues from now
-                mine.update(rsvp_type=rsvp_type, count=count, names=names, status=status, updated=now_iso())
+                mine.update(rsvp_type=rsvp_type, count=count, names=names, status=status,
+                            updated=now_iso(), updated_by="resident")
             else:
                 rsvps.append(dict(id=max([r["id"] for r in rsvps] or [0]) + 1, resident_id=me["id"],
                                   event_key=key, event_date=e["Date"], event_title=e["Title"],
                                   rsvp_type=rsvp_type, count=count, names=names, status=status,
-                                  created=now_iso(), updated=now_iso()))
+                                  created=now_iso(), updated=now_iso(), updated_by="resident"))
             if status == "Confirmed" and cap and rsvp_type != "guest":
                 total = sum(r["count"] for r in rsvps if r["event_key"] == key and r["status"] == "Confirmed")
                 if total > cap:   # two racers can pass the check; step back onto the waitlist
@@ -1413,6 +1415,7 @@ class H(SimpleHTTPRequestHandler):
                             if n < 0 or n > 6: return self._json({"error": "Arrived runs 0 to 6."}, 400)
                             r["arrived"] = n; r["arrived_at"] = now_iso()
                     r["updated"] = now_iso()
+                    r["updated_by"] = f"{self._role()}@local.dev"
                     save_store("rsvps", rsvps)
                     return self._json({"id": r["id"], "status": r["status"], "count": r["count"],
                                        "names": r.get("names") or "",

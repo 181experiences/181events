@@ -191,6 +191,40 @@
     return out;
   }
 
+  // The view-only record: every field of the event, label over value, tight
+  // and plain, the way a form view reads. Looking is free for everyone on this
+  // screen; changing anything still goes through Edit.
+  function qvHtml(g) {
+    const h = g.head;
+    const yes = v => v === true || v === "True" ? "Yes" : "No";
+    const dash = v => v == null || v === "" ? "&mdash;" : esc(String(v));
+    const dates = g.series
+      ? `${g.upcoming.length || g.rows.length} dates &middot; ${fmt((g.upcoming[0] || g.rows[0]).Date)} to ${fmt((g.upcoming[g.upcoming.length - 1] || g.rows[g.rows.length - 1]).Date)}`
+      : fmt(h.Date);
+    const counts = rsvpForGroup(g);
+    const cell = (l, v) => `<div><span class="ql">${l}</span><span class="qd">${v}</span></div>`;
+    return cell("Status", esc(g.status) + (g.mixed ? " &middot; mixed" : "") + (h.Draft ? " &middot; draft pending" : ""))
+      + cell("Date", dates)
+      + cell("Time", `${dash(h.Start)}${h.End ? " &ndash; " + esc(h.End) : ""}`)
+      + cell("Location", dash(h.Location))
+      + cell("Hosted by", dash(h.Host))
+      + cell("Category", dash(h.Category))
+      + cell("RSVP type", dash(h.RSVP || "None"))
+      + cell("Largest party", esc(String(Math.max(1, Math.min(5, Number(h.Party) || 3)))))
+      + cell("Capacity", dash(h.Capacity))
+      + cell("Price", dash(h.Price))
+      + cell("RSVP closes", dash(cutoffIso(h.Cutoff, h.Date)))
+      + cell("Closed now", yes(h.Closed))
+      + cell("Coming soon", yes(h.Teaser))
+      + cell("Announced ahead", yes(h.Announce))
+      + cell("Marquee", yes(h.Marquee))
+      + cell("Counted", yes(h.Counted))
+      + cell("RSVPs", counts.heads ? `${counts.heads} heads${counts.wait ? " &middot; " + counts.wait + " waitlisted" : ""}` : "&mdash;")
+      + cell("Series line", dash(h.Series))
+      + cell("File stem", esc(stem(h)))
+      + `<div class="qfull"><span class="ql">Description</span><span class="qd">${h.Description ? esc(h.Description) : "&mdash;"}</span></div>`;
+  }
+
   // ---------------------------------------------------------------- events list
   function renderEvents() {
     if (evError) {
@@ -211,7 +245,7 @@
         : `${counts.heads}${h.Capacity && !g.series ? ` of ${h.Capacity}` : ""}${counts.wait ? ` · ${counts.wait} waiting` : ""}`;
       const kits = kitCount(masterKey(h));
       return `<div class="erow ${cls(g.status)}${g.mixed ? " live" : ""}" data-key="${esc(g.key)}">
-        <div class="ecell etitle"><span class="et">${esc(h.Title)}${extra}</span><span class="esub">${esc(h.Category)} &middot; ${when}${g.series ? ` &middot; ${g.upcoming.length} upcoming` : ""}</span></div>
+        <div class="ecell etitle"><span class="et"><button class="etbtn" data-qview="${esc(g.key)}" title="A view-only look at the record; Edit is for changing it">${esc(h.Title)}</button>${extra}</span><span class="esub">${esc(h.Category)} &middot; ${when}${g.series ? ` &middot; ${g.upcoming.length} upcoming` : ""}</span></div>
         <div class="ecell"><span class="pill ${cls(g.status)}">${esc(g.mixed ? "Mixed" : g.status)}</span></div>
         <div class="ecell"><span class="lbl">RSVPs</span>${rsvp}</div>
         <div class="ecell"><span class="lbl">Asset kit</span>${kits} of 6</div>
@@ -224,7 +258,8 @@
           <button class="mini ghost" data-copylink="${esc(stem(r))}" title="Copies this date's page address">Link</button>
           <button class="mini" data-editrow="${esc(g.key)}|${esc(r.id)}">Edit this date</button></div>`).join("")}${g.upcoming.length && g.rows.length > g.upcoming.length ? `
         <div class="edrow" style="color:var(--stone)">${g.rows.length - g.upcoming.length} passed date${g.rows.length - g.upcoming.length === 1 ? "" : "s"} ride with the listing, in reporting and later in the Archive.</div>` : ""}
-      </div>`;
+      </div>
+      <div class="qv" data-qview-for="${esc(g.key)}" style="display:none">${qvHtml(g)}</div>`;
     }).join("");
     $("#evcount").textContent = `${gs.length} current listings, ${events.filter(e => e.Status === "Live" && e.Date >= today()).length} live upcoming dates. Passed and cancelled listings rest in the Archive. Nothing appears on the resident site until its status is Live.`;
   }
@@ -947,7 +982,7 @@
         <div class="card" data-rsvpdetail="${esc(s.key)}" style="${openRsvpDetails.has(s.key) ? "" : "display:none;"}margin:4px 0 10px">
         ${s.rows.map(r => `<div class="srow"><span class="slab">${esc(r.unit || "Role")} &middot; ${esc(r.name)}</span>
           <span class="sgrow" style="font-size:14px;color:var(--ink-soft)">${r.status === "Waitlist" ? "Waitlist" : (s.type === "guest" ? `${r.count} guest${r.count === 1 ? "" : "s"}` : `party of ${r.count}`)}${r.names ? ` &middot; ${esc(r.names)}` : ""}</span>
-          <span class="sval" style="font-size:12px;color:var(--stone)">${esc((r.created || "").slice(0, 10))}</span>
+          <span class="sval" style="font-size:12px;color:var(--stone)" title="Created ${esc((r.created || "").slice(0, 10))}${r.updated_by ? `; last change by ${esc(r.updated_by)}` : ""}">${esc(((r.updated || r.created) || "").slice(0, 10))}${r.updated_by ? ` &middot; ${esc(r.updated_by === "resident" ? "resident" : r.updated_by.split("@")[0])}` : ""}</span>
           <span class="eact">
           ${arriveBtn(r)}
           ${r.status === "Waitlist" ? `<button class="mini" data-wconfirm="${r.id}" title="Give this party the freed seats, then let them know">Confirm seats</button>` : ""}
@@ -979,7 +1014,7 @@
             </div>
             ${s.rows.map(r => `<div class="srow"><span class="slab">${esc(r.unit || "Role")} &middot; ${esc(r.name)}</span>
               <span class="sgrow" style="font-size:14px;color:var(--ink-soft)">${r.status === "Waitlist" ? "Waitlisted" : (s.type === "guest" ? `${r.count} guest${r.count === 1 ? "" : "s"}` : `party of ${r.count}`)}${r.names ? ` &middot; ${esc(r.names)}` : ""}</span>
-              <span class="sval" style="font-size:12px;color:var(--stone)">${esc(r.email || "no email")}</span>
+              <span class="sval" style="font-size:12px;color:var(--stone)" title="${r.updated_by ? `Last change by ${esc(r.updated_by)}, ${esc((r.updated || "").slice(0, 10))}` : ""}">${esc(r.email || "no email")}${r.updated_by ? ` &middot; ${esc(r.updated_by === "resident" ? "resident" : r.updated_by.split("@")[0])}` : ""}</span>
               <span class="eact">${arriveBtn(r)}</span></div>`).join("")}
             </div>`;
         }).join("")}
@@ -1770,6 +1805,23 @@
     loadBookings();
     loadWindow();
     loadNotes();
+    applyDashFold();
+  }
+
+  // The charts fold away so the desk lands nearer the RSVP work. Remembered
+  // per browser; the desk starts folded, everyone else open.
+  function applyDashFold(toggle) {
+    const viz = $("#dash-viz"), btn = $("#dash-fold");
+    if (!viz || !btn) return;
+    let want;
+    try { want = localStorage.getItem("dashviz"); } catch (e) { want = null; }
+    if (!want) want = role === "desk" ? "closed" : "open";
+    if (toggle) {
+      want = want === "closed" ? "open" : "closed";
+      try { localStorage.setItem("dashviz", want); } catch (e) {}
+    }
+    viz.style.display = want === "closed" ? "none" : "";
+    btn.textContent = want === "closed" ? "Show the charts" : "Hide the charts";
   }
 
   // ---------------------------------------------------------------- neighbor notes
@@ -2051,9 +2103,15 @@
       }
       return;
     }
-    const b = ev.target.closest("[data-edit],[data-archive],[data-new],[data-edpublish],[data-edsavedraft],[data-eddiscard],[data-edarchive],[data-histload],[data-savewindow],[data-addloc],[data-addhost],[data-delloc],[data-delhost],[data-period],[data-publish],[data-fmt],[data-dates],[data-editrow],[data-export],[data-evdelete],[data-acal],[data-acev]");
+    const b = ev.target.closest("[data-edit],[data-archive],[data-new],[data-edpublish],[data-edsavedraft],[data-eddiscard],[data-edarchive],[data-histload],[data-savewindow],[data-addloc],[data-addhost],[data-delloc],[data-delhost],[data-period],[data-publish],[data-fmt],[data-dates],[data-editrow],[data-export],[data-evdelete],[data-acal],[data-acev],[data-dashfold],[data-qview]");
     if (!b) return;
     if (b.dataset.evdelete) { deleteDraftGroup(b.dataset.evdelete); return; }
+    if (b.dataset.dashfold !== undefined) { applyDashFold(true); return; }
+    if (b.dataset.qview) {
+      const d = document.querySelector(`[data-qview-for="${CSS.escape(b.dataset.qview)}"]`);
+      if (d) d.style.display = d.style.display === "none" ? "" : "none";
+      return;
+    }
     if (b.dataset.acal !== undefined) { moveAdminCal(Number(b.dataset.acal)); return; }
     if (b.dataset.acev) {
       const row = events.find(e => String(e.id) === b.dataset.acev);

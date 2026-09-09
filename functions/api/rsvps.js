@@ -1,8 +1,8 @@
-import { json, noDb, adminRole, forbidden, ensureResidentTables, labelOf } from "../_lib.js";
+import { json, noDb, adminRole, forbidden, ensureResidentTables, labelOf, accessEmail } from "../_lib.js";
 import { liveEvent, seatsTaken, othersWaiting } from "../_resident.js";
 
 const ROW_SQL = `SELECT r.id, r.resident_id, r.event_key, r.event_date, r.event_title, r.rsvp_type, r.count,
-        r.names, r.status, r.created, r.updated, r.arrived, r.arrived_at, res.name, res.unit, res.email
+        r.names, r.status, r.created, r.updated, r.updated_by, r.arrived, r.arrived_at, res.name, res.unit, res.email
  FROM rsvps r JOIN residents res ON res.id = r.resident_id`;
 
 // GET /api/rsvps -> every non-cancelled RSVP with its person, unit, and email
@@ -54,14 +54,15 @@ export async function onRequestPost({ request, env }) {
   }
 
   const now = new Date().toISOString();
+  const who = (await accessEmail(request)) || env.DEV_ROLE || "staff";
   await env.DB.prepare(
-    `INSERT INTO rsvps (resident_id, event_key, event_date, event_title, rsvp_type, count, names, status, created, updated)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `INSERT INTO rsvps (resident_id, event_key, event_date, event_title, rsvp_type, count, names, status, created, updated, updated_by)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
      ON CONFLICT(resident_id, event_key) DO UPDATE SET
        rsvp_type=excluded.rsvp_type, count=excluded.count, names=excluded.names,
-       status=excluded.status, updated=excluded.updated,
+       status=excluded.status, updated=excluded.updated, updated_by=excluded.updated_by,
        created=CASE WHEN rsvps.status='Cancelled' THEN excluded.created ELSE rsvps.created END`)
-    .bind(resident.id, key, ev.date, ev.title, type, count, names, status, now, now).run();
+    .bind(resident.id, key, ev.date, ev.title, type, count, names, status, now, now, who).run();
 
   const row = await env.DB.prepare(
     `${ROW_SQL} WHERE r.resident_id=? AND r.event_key=?`).bind(resident.id, key).first();

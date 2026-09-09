@@ -1,4 +1,4 @@
-import { json, noDb, adminRole, forbidden, ensureResidentTables } from "../../_lib.js";
+import { json, noDb, adminRole, forbidden, ensureResidentTables, accessEmail } from "../../_lib.js";
 
 // PATCH /api/rsvps/:id {status?, count?, names?} -> staff changes to an RSVP:
 // promote a waitlisted party, adjust a party size for someone who asked in
@@ -36,6 +36,7 @@ export async function onRequestPatch({ request, params, env }) {
   }
   if (!sets.length) return json({ error: "Nothing to change" }, 400);
   sets.push("updated=?"); vals.push(new Date().toISOString());
+  sets.push("updated_by=?"); vals.push((await accessEmail(request)) || env.DEV_ROLE || "staff");
 
   const row = await env.DB.prepare(
     `UPDATE rsvps SET ${sets.join(",")} WHERE id=? RETURNING *`).bind(...vals, id).first();
