@@ -71,8 +71,11 @@ _ann = [(e["on"].year, e["on"].month) for e in EVENTS if e.get("announce")]
 if _ann:
     _hy, _hm = max((_hy, _hm), max(_ann))
 
-# In-place, so events_data's own helpers see the same trimmed lists.
-_kept = [m for m in MONTHS if (m["yr"], m["num"]) <= (_hy, _hm)]
+# In-place, so events_data's own helpers see the same trimmed lists. Months
+# wholly passed leave the calendar with the rebuild that outlives them: the
+# list already folds what's passed, and a grid of finished weeks serves nobody.
+# The current month's own passed days keep their muted place.
+_kept = [m for m in MONTHS if (TODAY.year, TODAY.month) <= (m["yr"], m["num"]) <= (_hy, _hm)]
 MONTHS[:] = _kept if _kept else MONTHS[:1]
 _mkeys = {m["key"] for m in MONTHS}
 EVENTS[:] = [e for e in EVENTS if (e["on"].year, e["on"].month) <= (_hy, _hm) and e["m"] in _mkeys]
@@ -207,6 +210,9 @@ for m in MONTHS:
     rules.append(f'#m-{k}:checked ~ .stickybar .mname[data-m="{k}"]{{display:block}}')
     rules.append(f'#m-{k}:checked ~ .monthwrap[data-m="{k}"]{{display:block}}')
     rules.append(f'#m-{k}:checked ~ .stickybar .navpair[data-m="{k}"]{{display:flex}}')
+    # The Today jump appears only once the reader has paged away from now.
+    if m is not MONTHS[0]:
+        rules.append(f'#m-{k}:checked ~ .stickybar .todaybtn{{display:inline-flex}}')
     for d in days_with_events(k):
         if len(evs_on(k, d)) > 1:
             rules.append(f'#d-{k}-{d}:checked ~ .monthwrap[data-m="{k}"] .daypanel[data-d="{d}"]{{display:block}}')
@@ -606,7 +612,12 @@ HTML = f'''<!DOCTYPE html>
   #v-month:checked ~ .stickybar .toggle label[for="v-month"],
   #v-list:checked ~ .stickybar .toggle label[for="v-list"]{{background:var(--ink);color:var(--paper-2)}}
   #v-list:checked ~ .stickybar .ctrl .navpair,
+  #v-list:checked ~ .stickybar .ctrl .todaybtn,
   #v-list:checked ~ .stickybar .mname{{display:none !important}}
+  .todaybtn{{display:none;border:1px solid var(--line);border-radius:100px;padding:8px 14px;font-size:12px;
+    letter-spacing:.1em;text-transform:uppercase;font-weight:600;color:var(--stone);cursor:pointer;
+    align-items:center;min-height:44px}}
+  .todaybtn:hover{{border-color:var(--red);color:var(--red)}}
   #v-list:checked ~ .stickybar .allmonths{{display:block}}
   .allmonths{{display:none;font-family:var(--fd);font-size:clamp(26px,5.6vw,36px);line-height:1;color:var(--ink)}}
   .monthwrap{{display:none}}
@@ -881,6 +892,7 @@ HTML = f'''<!DOCTYPE html>
       </div>
       <div class="ctrl">
         <div class="toggle"><label for="v-month">Month</label><label for="v-list">List</label></div>
+        <label class="todaybtn" for="m-{MONTHS[0]['key']}">Today</label>
         {MONTH_NAV}
       </div>
     </div></div></div>
