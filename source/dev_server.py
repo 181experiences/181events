@@ -381,6 +381,72 @@ def board_rows():
                    if e.get("Category") == "Board Meeting" and e.get("Status") == "Live" and e.get("Date", "") >= today()],
                   key=lambda e: (e["Date"], e.get("Start24") or ""))
 
+# ---------------------------------------------------------------- neighbor notes
+# Mirrors functions/notes.js: signed notes, three-day fade, raised hands, the
+# admin's resting switch, two per person, plain words only.
+NOTES_KEEP_DAYS = 3
+
+def notes_board_open():
+    try:
+        raw = json.load(open(os.path.join(HERE, "settings_live.json"), encoding="utf-8"))
+        return str(raw.get("notes_open", "1")) not in ("0", "False", "false")
+    except Exception:
+        return True
+
+def sweep_notes():
+    cutoff = (datetime.datetime.now(datetime.timezone.utc)
+              - datetime.timedelta(days=NOTES_KEEP_DAYS)).isoformat()
+    notes = [n for n in load_store("notes", []) if n["created"] >= cutoff]
+    keep = {n["id"] for n in notes}
+    save_store("notes", notes)
+    save_store("hands", [h for h in load_store("hands", []) if h["note_id"] in keep])
+    return notes
+
+def note_age(created):
+    days = (datetime.datetime.now(datetime.timezone.utc)
+            - datetime.datetime.fromisoformat(created)).days
+    return "today" if days <= 0 else ("yesterday" if days == 1 else f"{days} days ago")
+
+def notes_page(me):
+    tpl = template("notes")
+    body = tpl
+    if not me:
+        for name in ("CLOSED", "FORM", "NOTE", "EMPTY", "FOOT"):
+            body = cut(body, name, None)
+        body = cut(body, "SIGNIN", fill(inner(tpl, "SIGNIN"), dict(TO="/notes")))
+        return shell_page("Neighbor Notes", body, None)
+    body = cut(body, "SIGNIN", None)
+    if not notes_board_open():
+        for name in ("FORM", "NOTE", "EMPTY", "FOOT"):
+            body = cut(body, name, None)
+        body = cut(body, "CLOSED", inner(tpl, "CLOSED"))
+        return shell_page("Neighbor Notes", body, me)
+    body = cut(body, "CLOSED", None)
+    notes = sorted(sweep_notes(), key=lambda n: n["created"], reverse=True)
+    hands = load_store("hands", [])
+    residents = {r["id"]: r for r in load_store("residents", [])}
+    note_tpl = inner(tpl, "NOTE")
+    rendered = ""
+    for i, n in enumerate(notes):
+        mine = n["resident_id"] == me["id"]
+        nh = [h for h in hands if h["note_id"] == n["id"]]
+        raised = any(h["resident_id"] == me["id"] for h in nh)
+        author = residents.get(n["resident_id"], dict(name="?", unit=""))
+        s = fill(note_tpl, dict(TILT=f"t{i % 3 + 1}", BODY=esc(n["body"]),
+                                WHO=esc(label_of(author)), AGE=note_age(n["created"]), ID=str(n["id"])))
+        names = ", ".join(esc(label_of(residents.get(h["resident_id"], dict(name="?", unit="")))) for h in nh)
+        asking = n.get("asks", True)
+        s = cut(s, "HANDS", fill(inner(note_tpl, "HANDS"), dict(NAMES=names, ID=str(n["id"]))) if asking and nh else None)
+        s = cut(s, "HAND", inner(note_tpl, "HAND") if asking and not mine and not raised else None)
+        s = cut(s, "UNHAND", inner(note_tpl, "UNHAND") if asking and not mine and raised else None)
+        s = cut(s, "REMOVE", inner(note_tpl, "REMOVE") if mine else None)
+        rendered += fill(s, dict(ID=str(n["id"])))
+    body = cut(body, "FORM", fill(inner(tpl, "FORM"), dict(WHO=esc(label_of(me)))))
+    body = cut(body, "NOTE", rendered)
+    body = cut(body, "EMPTY", None if notes else inner(tpl, "EMPTY"))
+    body = cut(body, "FOOT", inner(tpl, "FOOT"))
+    return shell_page("Neighbor Notes", body, me)
+
 def board_page(me):
     rows = board_rows()
     tpl = template("board")
@@ -510,6 +576,7 @@ def clean_list(v, key):
 
 def load_all_settings():
     out = dict(load_window(), **{k: list(v) for k, v in LIST_DEFAULTS.items()})
+    out["notes_open"] = notes_board_open()
     try:
         raw = json.load(open(os.path.join(HERE, "settings_live.json"), encoding="utf-8"))
         for k in LIST_DEFAULTS:
@@ -665,6 +732,15 @@ class H(SimpleHTTPRequestHandler):
             rows = [h for h in load_store("history", []) if str(h["event_id"]) == str(eid)]
             rows.sort(key=lambda h: h["id"], reverse=True)
             return self._json({"history": rows[:100]})
+        if p.path == "/api/notes":
+            residents = {r["id"]: r for r in load_store("residents", [])}
+            hands = load_store("hands", [])
+            notes = sorted(sweep_notes(), key=lambda n: n["created"], reverse=True)
+            return self._json({"open": notes_board_open(), "notes": [dict(
+                id=n["id"], body=n["body"], created=n["created"],
+                who=label_of(residents.get(n["resident_id"], dict(name="?", unit=""))),
+                hands=[label_of(residents.get(h["resident_id"], dict(name="?", unit="")))
+                       for h in hands if h["note_id"] == n["id"]]) for n in notes]})
         if p.path == "/api/analytics":
             days = max(1, min(90, int((q.get("days") or ["30"])[0])))
             return self._json(sample_analytics(days))
@@ -771,6 +847,8 @@ class H(SimpleHTTPRequestHandler):
             return self._html(my_page(me), cookie=session_cookie(issue_session(me)))
         if p.path == "/message":
             return self._redirect("/")
+        if p.path == "/notes":
+            return self._html(notes_page(me))
         if p.path == "/board":
             return self._html(board_page(me))
         if p.path.startswith("/calendar/my/"):
@@ -1035,6 +1113,46 @@ class H(SimpleHTTPRequestHandler):
             return self._redirect(safe_return(to), cookie=session_cookie(issue_session(resident)))
         if p.path == "/signout":
             return self._redirect("/", cookie=session_cookie(""))
+        if p.path == "/notes":
+            # Mirrors functions/notes.js POST: pin, hand, unhand, remove.
+            if not me or not notes_board_open(): return self._redirect("/notes")
+            form = self._body_form()
+            kind = form.get("kind") or ""
+            sweep_notes()
+            if kind == "post":
+                body = " ".join((form.get("body") or "").split())[:240]
+                if not body: return self._redirect("/notes")
+                if re.search(r"(https?://|www\.)", body, re.I):
+                    return self._html(done_page(me, "Plain words only",
+                        "Notes keep to plain words, no links, so the board stays what it is. Say it in a sentence and pin it again.",
+                        "/notes", "Back to the board"))
+                notes = load_store("notes", [])
+                if sum(1 for n in notes if n["resident_id"] == me["id"]) >= 2:
+                    return self._html(done_page(me, "Two notes at a time",
+                        "The board keeps to two notes per person, so everyone&rsquo;s fits. Take one of yours down and pin the new one.",
+                        "/notes", "Back to the board"))
+                notes.append(dict(id=max([n["id"] for n in notes] or [0]) + 1,
+                                  resident_id=me["id"], body=body, created=now_iso(),
+                                  asks=bool(form.get("asks"))))
+                save_store("notes", notes)
+                return self._redirect("/notes")
+            try: nid = int(form.get("note") or "")
+            except ValueError: return self._redirect("/notes")
+            notes = load_store("notes", [])
+            note = next((n for n in notes if n["id"] == nid), None)
+            if not note: return self._redirect("/notes")
+            hands = load_store("hands", [])
+            if kind == "hand" and note["resident_id"] != me["id"] and note.get("asks", True):
+                if not any(h["note_id"] == nid and h["resident_id"] == me["id"] for h in hands):
+                    hands.append(dict(id=max([h["id"] for h in hands] or [0]) + 1,
+                                      note_id=nid, resident_id=me["id"], created=now_iso()))
+                    save_store("hands", hands)
+            elif kind == "unhand":
+                save_store("hands", [h for h in hands if not (h["note_id"] == nid and h["resident_id"] == me["id"])])
+            elif kind == "remove" and note["resident_id"] == me["id"]:
+                save_store("notes", [n for n in notes if n["id"] != nid])
+                save_store("hands", [h for h in hands if h["note_id"] != nid])
+            return self._redirect("/notes")
         if p.path == "/message":
             form = self._body_form()
             topics = ["Share an idea", "Plan an event with us", "Something else"]
@@ -1179,6 +1297,8 @@ class H(SimpleHTTPRequestHandler):
             for k in LIST_DEFAULTS:
                 if k in body:
                     stored[k] = clean_list(body[k], k)
+            if "notes_open" in body:
+                stored["notes_open"] = "1" if body["notes_open"] else "0"
             json.dump(stored, open(os.path.join(HERE, "settings_live.json"), "w", encoding="utf-8"),
                       ensure_ascii=False)
             return self._json(load_all_settings())
@@ -1370,6 +1490,12 @@ class H(SimpleHTTPRequestHandler):
                     rows.remove(row); row = None
             save_store("assets", rows)
             return self._json({"asset": row})
+        if p.path.startswith("/api/notes/"):
+            if self._role() == "desk": return self._json({"error": "forbidden"}, 403)
+            nid = p.path.rsplit("/", 1)[1]
+            save_store("notes", [n for n in load_store("notes", []) if str(n["id"]) != nid])
+            save_store("hands", [h for h in load_store("hands", []) if str(h["note_id"]) != nid])
+            return self._json({"ok": True})
         if p.path.startswith("/api/events/"):
             # Drafts only, mirroring functions/api/events/[id].js: nothing ever
             # published deletes; that road is Unpublish then Archive.

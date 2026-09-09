@@ -59,6 +59,7 @@ export async function onRequestPut({ request, env }) {
   if ("horizon_months" in body) put("horizon_months", String(Math.min(4, Math.max(1, Number(body.horizon_months) || 4))));
   if ("locations" in body) put("locations", JSON.stringify(cleanList(body.locations, DEFAULTS.locations)));
   if ("hosts" in body) put("hosts", JSON.stringify(cleanList(body.hosts, DEFAULTS.hosts)));
+  if ("notes_open" in body) put("notes_open", body.notes_open ? "1" : "0");
   if (!writes.length) return json({ error: "Nothing to save" }, 400);
   await env.DB.batch(writes);
   return json({ ...(await getWindow(env)), ...(await readLists(env)) });

@@ -285,7 +285,7 @@ RES_SECTIONS_L = [
 RES_SECTIONS_R = [
     ("Changing your mind", "**My RSVPs** keeps everything saved to your name. Change the party or cancel any time; seats already confirmed stay yours."),
     ("Your own calendar", "**Add to My Calendar** puts any event in your calendar app; if a date or time changes, tap it once more and the entry rights itself. Better still, subscribe once at the foot of the calendar and every event keeps itself current."),
-    ("A word to us", "The **Message** tile reaches Resident Experiences directly: an idea, a plan to host, a question, anything. You will hear back within one business day. For building maintenance, please see the front desk or Action Life."),
+    ("Notes to neighbors", "**Neighbor Notes**, on the home screen, is the building&rsquo;s board: pin a signed note, see the hands go up, and each note fades after three days. The **Message** line below it reaches Resident Experiences directly, with a reply within one business day."),
 ]
 
 def qr_image(url, target_px):

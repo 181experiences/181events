@@ -555,6 +555,12 @@ HTML = f'''<!DOCTYPE html>
   @media(max-width:620px){{ .hline{{padding-right:38px}} }}
   .hline:last-child{{border-bottom:1px solid var(--line)}}
   .hline:hover .hl-t{{color:var(--red)}}
+  /* The Message line wears a quiet shade of its own, set slightly apart, so it
+     still reads as a place of its own on a phone without taking a card's room. */
+  .hl-msg{{background:var(--paper-2);border:1px solid var(--line);border-radius:var(--radius);
+    margin-top:14px;padding-left:18px;padding-right:18px;cursor:pointer}}
+  .hl-msg:last-child{{border-bottom:1px solid var(--line)}}
+  @media(max-width:620px){{ .hl-msg{{padding-right:38px}} }}
   .hl-body{{flex:1}}
   .hl-t{{display:block;font-family:var(--fd);font-size:23px;color:var(--ink);line-height:1.2}}
   .hl-s{{display:block;font-size:15px;color:var(--ink-soft);margin-top:4px;line-height:1.4}}
@@ -816,10 +822,10 @@ HTML = f'''<!DOCTYPE html>
           <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M8.2 12.4l2.6 2.6 5-5.4"/></svg></span>
           <span class="label">My RSVPs</span><span class="sub">Saved to your name</span>
         </a>
-        <label class="sq" for="r-msg">
-          <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5.5" width="18" height="13" rx="2"/><path d="M3.5 7l8.5 6 8.5-6"/></svg></span>
-          <span class="label">Message</span><span class="sub">Ideas &amp; requests</span>
-        </label>
+        <a class="sq" href="/notes">
+          <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="9" r="5.2"/><circle cx="12" cy="9" r="1.2" fill="currentColor" stroke="none"/><path d="M12 14.2V21"/></svg></span>
+          <span class="label">Neighbor Notes</span><span class="sub">Pin a note, see who&rsquo;s in</span>
+        </a>
       </div>
       <div class="homelines">
         <a class="hline" href="/board">
@@ -827,6 +833,11 @@ HTML = f'''<!DOCTYPE html>
           <span class="hl-s">Board business, on its own page, with Add to My Calendar</span></span>
           <span class="ev-go">&rarr;</span>
         </a>
+        <label class="hline hl-msg" for="r-msg">
+          <span class="hl-body"><span class="hl-t">Message</span>
+          <span class="hl-s">Ideas &amp; requests, straight to Resident Experiences</span></span>
+          <span class="ev-go">&rarr;</span>
+        </label>
       </div>
       <!-- The Level 39 Spaces line is resting at the Board's request (Aug 2026).
            The /spaces page and the admin's Spaces screen stay live; restore the
@@ -991,6 +1002,31 @@ SHELL_CSS = '''
     font-size:17px;color:#5b4a1f;line-height:1.55;max-width:34em}
   #ccontact:checked ~ .contactnote{display:block}
   #ccontact:checked ~ .field,#ccontact:checked ~ button.btn{display:none}
+  /* ---------- neighbor notes: the board itself ---------- */
+  .nb-lede{font-size:clamp(16px,4.2vw,18px);color:var(--ink-soft);max-width:34em;margin:10px 0 26px}
+  .nb-form{margin:0 0 34px;max-width:34em}
+  .nb-form textarea{font:inherit;font-size:clamp(16px,4.2vw,17px);line-height:1.5;min-height:96px;width:100%}
+  .nb-ask{display:flex;gap:12px;align-items:flex-start;margin:14px 0 18px;cursor:pointer;
+    font-size:clamp(14px,3.8vw,15px);color:var(--ink-body);line-height:1.5;max-width:34em}
+  .nb-ask input{width:22px;height:22px;margin-top:1px;accent-color:var(--red);flex:none}
+  .nb-board{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:22px;align-items:start}
+  .nb-note{position:relative;background:#f9efc6;border:1px solid #e3d49c;border-radius:2px;
+    padding:26px 20px 18px;box-shadow:0 6px 16px rgba(22,22,26,.10)}
+  .nb-note.t1{transform:rotate(-1.1deg)}
+  .nb-note.t2{transform:rotate(.9deg)}
+  .nb-note.t3{transform:rotate(-.4deg)}
+  .nb-pin{position:absolute;top:10px;left:50%;margin-left:-6px;width:12px;height:12px;border-radius:50%;
+    background:var(--red);box-shadow:0 2px 3px rgba(22,22,26,.3)}
+  .nb-body{font-size:clamp(17px,4.4vw,19px);line-height:1.5;color:var(--ink);overflow-wrap:break-word}
+  .nb-who{font-size:13px;letter-spacing:.06em;color:#7a6f4e;margin-top:14px}
+  .nb-hands{font-size:clamp(14px,3.8vw,15px);color:var(--ink-body);border-top:1px solid #e3d49c;
+    margin-top:14px;padding-top:12px;line-height:1.5}
+  .nb-act{margin-top:12px}
+  .nb-btn{display:inline-flex;align-items:center;min-height:44px;padding:8px 16px;border-radius:100px;
+    border:1px solid #d9c98d;background:#fff9dd;color:var(--ink);font:inherit;font-size:15px;cursor:pointer}
+  .nb-btn:hover{border-color:var(--red);color:var(--red)}
+  .nb-empty{grid-column:1/-1;color:var(--ink-soft);font-size:clamp(16px,4.2vw,18px);padding:26px 0}
+  .nb-foot{font-size:clamp(13px,3.6vw,14px);color:var(--stone);margin:36px 0 0;max-width:38em;line-height:1.6}
   .guestbox,.statebox{background:var(--paper-2);border:1px solid var(--line);border-radius:var(--radius);padding:24px;margin:26px 0 0}
   .statebox{border-left:3px solid var(--red)}
   .gq,.statebox h2{font-family:var(--fd);font-size:clamp(19px,4.8vw,24px);color:var(--ink);line-height:1.25}
@@ -1249,6 +1285,49 @@ free, any hour of the day. The hours below are spoken for; everything else is op
 <p class="note">Reservations show the space and hours only. To reserve a space for yourself,
 contact Leo in Resident Experiences.</p>'''
 
+# ---------------------------------------------------------------- neighbor notes
+# The building's board: signed notes that fade after three days, answered with
+# raised hands rather than replies. Small canvas, named authors, nothing kept:
+# the shape of a corkboard, which is what keeps a corkboard civil.
+T_NOTES = '''<a class="back" href="/">&larr; Back home</a>
+<div class="e-eyebrow">Neighbor Notes</div>
+<h1 class="e-title">A note to your neighbors</h1>
+<p class="nb-lede">Going to something and wondering who else is? Pin a note and see the hands go up.
+Every note is signed, and each one quietly comes down after three days.</p>
+<!--SIGNIN--><div class="pagehead"><h2>Sign in to see the board</h2>
+<p>Notes are for the household only, so the board opens with your resident code.
+One sign-in lasts a month on this device.</p></div>
+''' + SIGNIN_FORM + '''<!--/SIGNIN-->
+<!--CLOSED--><div class="statebox"><h2>The board is resting</h2>
+<p>Notes will be back shortly. For anything that needs us meanwhile, the
+<a class="rlink" href="/message">Message page</a> is always open.</p></div><!--/CLOSED-->
+<!--FORM--><form method="post" action="/notes" class="nb-form">
+<input type="hidden" name="kind" value="post">
+<label class="field"><span>Your note, pinned as {{WHO}}</span>
+<textarea name="body" maxlength="240" required
+placeholder="Heading to happy hour tonight. Who else is going?"></textarea></label>
+<label class="nb-ask"><input type="checkbox" name="asks" value="1" checked>
+<span>Ask who else is in. Neighbors can raise a hand on your note; untick when a note is just a note.</span></label>
+<button class="btn" type="submit">Pin It to the Board</button>
+</form><!--/FORM-->
+<div class="nb-board">
+<!--NOTE--><div class="nb-note {{TILT}}"><span class="nb-pin"></span>
+<div class="nb-body">{{BODY}}</div>
+<div class="nb-who">{{WHO}} &middot; {{AGE}}</div>
+<!--HANDS--><div class="nb-hands">Joining: {{NAMES}}</div><!--/HANDS-->
+<!--HAND--><form method="post" action="/notes" class="nb-act"><input type="hidden" name="kind" value="hand">
+<input type="hidden" name="note" value="{{ID}}"><button class="nb-btn" type="submit">Count me in</button></form><!--/HAND-->
+<!--UNHAND--><form method="post" action="/notes" class="nb-act"><input type="hidden" name="kind" value="unhand">
+<input type="hidden" name="note" value="{{ID}}"><button class="nb-btn" type="submit">Take my name off</button></form><!--/UNHAND-->
+<!--REMOVE--><form method="post" action="/notes" class="nb-act"><input type="hidden" name="kind" value="remove">
+<input type="hidden" name="note" value="{{ID}}"><button class="nb-btn" type="submit">Take this note down</button></form><!--/REMOVE-->
+</div><!--/NOTE-->
+<!--EMPTY--><div class="nb-empty">Nothing pinned right now. Yours could be first.</div><!--/EMPTY-->
+</div>
+<!--FOOT--><div class="nb-foot">Notes are signed and keep to plain words, no links. Building matters go to
+the front desk as always; ideas and requests for us reach the
+<a class="rlink" href="/message">Message page</a> any time.</div><!--/FOOT-->'''
+
 TEMPLATES = {
     "shell": SHELL,
     "signin": T_SIGNIN,
@@ -1259,6 +1338,7 @@ TEMPLATES = {
     "msgstep": T_MSGSTEP,
     "board": T_BOARD,
     "spaces": T_SPACES,
+    "notes": T_NOTES,
 }
 
 import os

@@ -815,12 +815,23 @@ HTML = f'''<!DOCTYPE html>
 <!-- ================= MESSAGES ================= -->
 <section class="screen" id="scr-msgs"><div class="wrap">
   <div class="phead"><h1>Messages</h1></div>
-  <div class="psub" id="msgcount">What residents send from the Message tile, with the promise of a reply within one business day.</div>
+  <div class="psub" id="msgcount">What residents send from the Message page, with the promise of a reply within one business day.</div>
   <div class="callout" id="msg-redacted" style="display:none;margin:0 0 18px">
     <strong>Message text is private to Leo.</strong> This view shows who wrote, when, and whether it has
     been answered, so response times are visible without reading residents&rsquo; words.
   </div>
   <div id="msglist"></div>
+
+  <div class="sec" style="margin-top:36px">
+    <div style="display:flex;align-items:baseline;justify-content:space-between;gap:12px;flex-wrap:wrap">
+      <h2>Neighbor Notes</h2>
+      <label class="check" id="nb-openwrap" style="display:none"><input type="checkbox" id="nb-open" data-notesopen> The board is open</label>
+    </div>
+    <div class="sd">The residents&rsquo; board: signed notes that fade after three days, answered with raised hands.
+    Take any note down without ceremony; untick the switch and the whole board rests instantly, no deploy, until
+    it is ticked back.</div>
+    <div class="card" id="nblist"></div>
+  </div>
 </div></section>
 
 <!-- ================= INSTRUCTIONS ================= -->

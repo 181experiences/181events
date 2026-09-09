@@ -73,6 +73,31 @@
     font-size:17px;color:#5b4a1f;line-height:1.55;max-width:34em}
   #ccontact:checked ~ .contactnote{display:block}
   #ccontact:checked ~ .field,#ccontact:checked ~ button.btn{display:none}
+  /* ---------- neighbor notes: the board itself ---------- */
+  .nb-lede{font-size:clamp(16px,4.2vw,18px);color:var(--ink-soft);max-width:34em;margin:10px 0 26px}
+  .nb-form{margin:0 0 34px;max-width:34em}
+  .nb-form textarea{font:inherit;font-size:clamp(16px,4.2vw,17px);line-height:1.5;min-height:96px;width:100%}
+  .nb-ask{display:flex;gap:12px;align-items:flex-start;margin:14px 0 18px;cursor:pointer;
+    font-size:clamp(14px,3.8vw,15px);color:var(--ink-body);line-height:1.5;max-width:34em}
+  .nb-ask input{width:22px;height:22px;margin-top:1px;accent-color:var(--red);flex:none}
+  .nb-board{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:22px;align-items:start}
+  .nb-note{position:relative;background:#f9efc6;border:1px solid #e3d49c;border-radius:2px;
+    padding:26px 20px 18px;box-shadow:0 6px 16px rgba(22,22,26,.10)}
+  .nb-note.t1{transform:rotate(-1.1deg)}
+  .nb-note.t2{transform:rotate(.9deg)}
+  .nb-note.t3{transform:rotate(-.4deg)}
+  .nb-pin{position:absolute;top:10px;left:50%;margin-left:-6px;width:12px;height:12px;border-radius:50%;
+    background:var(--red);box-shadow:0 2px 3px rgba(22,22,26,.3)}
+  .nb-body{font-size:clamp(17px,4.4vw,19px);line-height:1.5;color:var(--ink);overflow-wrap:break-word}
+  .nb-who{font-size:13px;letter-spacing:.06em;color:#7a6f4e;margin-top:14px}
+  .nb-hands{font-size:clamp(14px,3.8vw,15px);color:var(--ink-body);border-top:1px solid #e3d49c;
+    margin-top:14px;padding-top:12px;line-height:1.5}
+  .nb-act{margin-top:12px}
+  .nb-btn{display:inline-flex;align-items:center;min-height:44px;padding:8px 16px;border-radius:100px;
+    border:1px solid #d9c98d;background:#fff9dd;color:var(--ink);font:inherit;font-size:15px;cursor:pointer}
+  .nb-btn:hover{border-color:var(--red);color:var(--red)}
+  .nb-empty{grid-column:1/-1;color:var(--ink-soft);font-size:clamp(16px,4.2vw,18px);padding:26px 0}
+  .nb-foot{font-size:clamp(13px,3.6vw,14px);color:var(--stone);margin:36px 0 0;max-width:38em;line-height:1.6}
   .guestbox,.statebox{background:var(--paper-2);border:1px solid var(--line);border-radius:var(--radius);padding:24px;margin:26px 0 0}
   .statebox{border-left:3px solid var(--red)}
   .gq,.statebox h2{font-family:var(--fd);font-size:clamp(19px,4.8vw,24px);color:var(--ink);line-height:1.25}

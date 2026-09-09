@@ -67,6 +67,16 @@ export async function getWindow(env) {
   return out;
 }
 
+// The neighbor-notes board's standing switch: staff can rest the whole board
+// from the admin in one tick, no deploy, which is the promised brake if the
+// board ever turns. Default open.
+export async function notesOpen(env) {
+  try {
+    const r = await env.DB.prepare("SELECT value FROM settings WHERE key='notes_open'").first();
+    return !r || r.value !== "0";
+  } catch (e) { return true; }
+}
+
 // Last date (YYYY-MM-DD, Pacific) still inside the detail window.
 export function detailEnd(win) {
   const t = todayPacific();
@@ -105,6 +115,18 @@ export const RESIDENT_TABLES = [
     state TEXT NOT NULL DEFAULT 'New', replied TEXT, created TEXT NOT NULL
   )`,
   `CREATE TABLE IF NOT EXISTS attempts (ip TEXT NOT NULL, ts INTEGER NOT NULL)`,
+  `CREATE TABLE IF NOT EXISTS notes (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    resident_id INTEGER NOT NULL,
+    body TEXT NOT NULL, created TEXT NOT NULL,
+    asks INTEGER NOT NULL DEFAULT 1
+  )`,
+  `CREATE TABLE IF NOT EXISTS note_hands (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    note_id INTEGER NOT NULL, resident_id INTEGER NOT NULL,
+    created TEXT NOT NULL
+  )`,
+  `CREATE UNIQUE INDEX IF NOT EXISTS note_hands_once ON note_hands(note_id, resident_id)`,
   `CREATE TABLE IF NOT EXISTS bookings (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     space TEXT NOT NULL, date TEXT NOT NULL,

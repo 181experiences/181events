@@ -1769,10 +1769,54 @@
     loadMsgs();
     loadBookings();
     loadWindow();
+    loadNotes();
+  }
+
+  // ---------------------------------------------------------------- neighbor notes
+  // The oversight card: every active note, its raised hands, a Remove that asks
+  // no questions, and the board's standing open switch (staff and owner only;
+  // the desk looks without touching).
+  let nbOpen = true;
+  async function loadNotes() {
+    const box = $("#nblist"); if (!box) return;
+    let d;
+    try { d = await api("/api/notes"); } catch (e) { box.innerHTML = `<div class="nodata">${esc(e.message)}</div>`; return; }
+    nbOpen = d.open !== false;
+    const wrap = $("#nb-openwrap");
+    if (wrap && role !== "desk") { wrap.style.display = ""; $("#nb-open").checked = nbOpen; }
+    if (!nbOpen) {
+      box.innerHTML = '<div class="nodata">The board is resting. Residents see a quiet note saying so; tick the switch to reopen.</div>';
+      return;
+    }
+    if (!d.notes.length) {
+      box.innerHTML = '<div class="nodata">Nothing pinned right now. Notes fade on their own after three days.</div>';
+      return;
+    }
+    box.innerHTML = d.notes.map(n => {
+      const when = new Date(n.created).toLocaleString([], { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" });
+      return `<div class="srow"><span class="slab" style="white-space:nowrap">${esc(n.who)}</span>
+        <span class="sgrow" style="color:var(--ink)">${esc(n.body)}${n.hands.length ? `<br><span style="font-size:12.5px;color:var(--ink-soft)">Joining: ${esc(n.hands.join(", "))}</span>` : ""}</span>
+        <span class="sval" style="font-size:12px;color:var(--stone);white-space:nowrap">${esc(when)}</span>
+        ${role !== "desk" ? `<span class="eact"><button class="mini ghost" data-notedel="${n.id}" title="Comes down at once; nothing is said to anyone">Remove</button></span>` : ""}</div>`;
+    }).join("");
+  }
+
+  async function deleteNote(id) {
+    if (!confirm("Take this note down? It comes down at once, and nothing is said to anyone.")) return;
+    try { await api("/api/notes/" + encodeURIComponent(id), { method: "DELETE" }); loadNotes(); toast("Note removed."); }
+    catch (e) { toast(e.message, "warn"); }
+  }
+
+  async function saveNotesOpen(on) {
+    try {
+      await api("/api/settings", { method: "PUT", body: JSON.stringify({ notes_open: !!on }) });
+      toast(on ? "The board is open again." : "The board is resting. Residents see a quiet note saying so.");
+      loadNotes();
+    } catch (e) { toast(e.message, "warn"); $("#nb-open").checked = nbOpen; }
   }
 
   document.addEventListener("click", ev => {
-    const r = ev.target.closest("[data-rotate],[data-ends],[data-toggle],[data-rdelete],[data-resedit],[data-saveres],[data-cancelres],[data-edittoggle],[data-editdelete],[data-addres],[data-addbulk],[data-printcards],[data-mreplied],[data-marchive],[data-wconfirm],[data-redit],[data-rcancel],[data-rarrive],[data-pastchev],[data-pastmail],[data-addrsvp],[data-savearsvp],[data-closearsvp],[data-copylink],[data-aupload],[data-acanva],[data-adelete],[data-rsvpkey],[data-addbooking],[data-unbook],[data-bkchev],[data-bkreg],[data-bkcopy],[data-bkprint],[data-gadd],[data-garrive],[data-gdel],[data-bkedit],[data-savebk],[data-cancelbk]");
+    const r = ev.target.closest("[data-rotate],[data-ends],[data-toggle],[data-rdelete],[data-resedit],[data-saveres],[data-cancelres],[data-edittoggle],[data-editdelete],[data-addres],[data-addbulk],[data-printcards],[data-mreplied],[data-marchive],[data-wconfirm],[data-redit],[data-rcancel],[data-rarrive],[data-pastchev],[data-pastmail],[data-notedel],[data-addrsvp],[data-savearsvp],[data-closearsvp],[data-copylink],[data-aupload],[data-acanva],[data-adelete],[data-rsvpkey],[data-addbooking],[data-unbook],[data-bkchev],[data-bkreg],[data-bkcopy],[data-bkprint],[data-gadd],[data-garrive],[data-gdel],[data-bkedit],[data-savebk],[data-cancelbk]");
     if (r) {
       if (r.dataset.bkedit) {
         const b = bookings.find(x => String(x.id) === r.dataset.bkedit);
@@ -1974,6 +2018,7 @@
       else if (r.dataset.closearsvp !== undefined) exitRsvpEdit();
       else if (r.dataset.pastchev !== undefined) { pastRsvpsOpen = !pastRsvpsOpen; renderRsvps(); }
       else if (r.dataset.pastmail) emailPastGuests(r.dataset.pastmail);
+      else if (r.dataset.notedel) deleteNote(r.dataset.notedel);
       else if (r.dataset.rarrive) {
         const row = rsvps.find(x => String(x.id) === r.dataset.rarrive);
         if (row) {
@@ -2080,6 +2125,7 @@
     }
   });
   document.addEventListener("change", ev => {
+    if (ev.target.id === "nb-open") { saveNotesOpen(ev.target.checked); return; }
     if (ev.target.id === "f-occ" && editing && editing.group)
       openEditor(editing.group.key, ev.target.value === "__all" ? undefined : ev.target.value);
     if (ev.target.id === "f-title" || ev.target.id === "f-date" || ev.target.id === "f-slug") $("#f-stem").textContent = stem({ Date: $("#f-date").value, Slug: $("#f-slug").value.trim(), Title: $("#f-title").value });

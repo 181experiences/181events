@@ -1,0 +1,44 @@
+<a class="back" href="/">&larr; Back home</a>
+<div class="e-eyebrow">Neighbor Notes</div>
+<h1 class="e-title">A note to your neighbors</h1>
+<p class="nb-lede">Going to something and wondering who else is? Pin a note and see the hands go up.
+Every note is signed, and each one quietly comes down after three days.</p>
+<!--SIGNIN--><div class="pagehead"><h2>Sign in to see the board</h2>
+<p>Notes are for the household only, so the board opens with your resident code.
+One sign-in lasts a month on this device.</p></div>
+<form method="post" action="/signin" class="pageform">
+<input type="hidden" name="to" value="{{TO}}">
+<label class="field"><span>Resident code</span>
+<input type="text" name="code" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="XXXX-XXXX" required></label>
+<button class="btn" type="submit">Sign In</button>
+</form>
+<p class="note">No code yet, or lost it? The front desk can hand you a fresh one any hour of the day.</p><!--/SIGNIN-->
+<!--CLOSED--><div class="statebox"><h2>The board is resting</h2>
+<p>Notes will be back shortly. For anything that needs us meanwhile, the
+<a class="rlink" href="/message">Message page</a> is always open.</p></div><!--/CLOSED-->
+<!--FORM--><form method="post" action="/notes" class="nb-form">
+<input type="hidden" name="kind" value="post">
+<label class="field"><span>Your note, pinned as {{WHO}}</span>
+<textarea name="body" maxlength="240" required
+placeholder="Heading to happy hour tonight. Who else is going?"></textarea></label>
+<label class="nb-ask"><input type="checkbox" name="asks" value="1" checked>
+<span>Ask who else is in. Neighbors can raise a hand on your note; untick when a note is just a note.</span></label>
+<button class="btn" type="submit">Pin It to the Board</button>
+</form><!--/FORM-->
+<div class="nb-board">
+<!--NOTE--><div class="nb-note {{TILT}}"><span class="nb-pin"></span>
+<div class="nb-body">{{BODY}}</div>
+<div class="nb-who">{{WHO}} &middot; {{AGE}}</div>
+<!--HANDS--><div class="nb-hands">Joining: {{NAMES}}</div><!--/HANDS-->
+<!--HAND--><form method="post" action="/notes" class="nb-act"><input type="hidden" name="kind" value="hand">
+<input type="hidden" name="note" value="{{ID}}"><button class="nb-btn" type="submit">Count me in</button></form><!--/HAND-->
+<!--UNHAND--><form method="post" action="/notes" class="nb-act"><input type="hidden" name="kind" value="unhand">
+<input type="hidden" name="note" value="{{ID}}"><button class="nb-btn" type="submit">Take my name off</button></form><!--/UNHAND-->
+<!--REMOVE--><form method="post" action="/notes" class="nb-act"><input type="hidden" name="kind" value="remove">
+<input type="hidden" name="note" value="{{ID}}"><button class="nb-btn" type="submit">Take this note down</button></form><!--/REMOVE-->
+</div><!--/NOTE-->
+<!--EMPTY--><div class="nb-empty">Nothing pinned right now. Yours could be first.</div><!--/EMPTY-->
+</div>
+<!--FOOT--><div class="nb-foot">Notes are signed and keep to plain words, no links. Building matters go to
+the front desk as always; ideas and requests for us reach the
+<a class="rlink" href="/message">Message page</a> any time.</div><!--/FOOT-->
