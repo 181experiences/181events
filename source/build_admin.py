@@ -323,7 +323,6 @@ HTML = f'''<!DOCTYPE html>
      Messages, and manages RSVPs; the calendar itself stays out of reach. The
      server enforces this on every endpoint; hiding tabs keeps the view honest. */
   body.role-desk .navbar label[for="s-events"],
-  body.role-desk .navbar label[for="s-cal"],
   body.role-desk .navbar label[for="s-assets"],
   body.role-desk .navbar label[for="s-inst"]{{display:none}}
 
@@ -703,7 +702,7 @@ HTML = f'''<!DOCTYPE html>
       <button class="mini ghost" data-acal="1" title="Next month">&rarr;</button>
       <button class="mini" data-acal="0">Today</button>
     </div></div>
-  <div class="psub">Everything, in every state: what residents see and what they don&rsquo;t yet. Open any event straight from its day.</div>
+  <div class="psub" id="acal-sub">Everything, in every state: what residents see and what they don&rsquo;t yet. Open any event straight from its day.</div>
   <div class="acal" id="acal"></div>
   <div class="aleg">
     <span><i style="border-left:3px solid var(--red)"></i> Live</span>

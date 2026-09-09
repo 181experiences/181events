@@ -1676,11 +1676,18 @@
     for (let d = 1; d <= days; d++) {
       const iso = `${acalYM}-${String(d).padStart(2, "0")}`;
       const evs = (by.get(iso) || []).sort((a, b) => (a.Start24 || "").localeCompare(b.Start24 || ""));
+      // The desk looks without opening: same grid, no editor behind the chips.
+      const chip = e => role === "desk"
+        ? `<span class="acev st-${cls(e.Status)}${iso < t ? " past" : ""}" style="cursor:default" title="${esc(e.Status || "Draft")}"><span class="at">${esc(e.Start || "")}</span> ${esc(e.Title)}</span>`
+        : `<button class="acev st-${cls(e.Status)}${iso < t ? " past" : ""}" data-acev="${esc(String(e.id))}" title="${esc(e.Status || "Draft")}${e.Draft ? ", edits pending" : ""}"><span class="at">${esc(e.Start || "")}</span> ${esc(e.Title)}</button>`;
       html += `<div class="acell${iso === t ? " tod" : ""}"><div class="adn">${d}</div>`
-        + evs.map(e => `<button class="acev st-${cls(e.Status)}${iso < t ? " past" : ""}" data-acev="${esc(String(e.id))}" title="${esc(e.Status || "Draft")}${e.Draft ? ", edits pending" : ""}"><span class="at">${esc(e.Start || "")}</span> ${esc(e.Title)}</button>`).join("")
+        + evs.map(chip).join("")
         + `</div>`;
     }
     box.innerHTML = html;
+    const sub2 = $("#acal-sub");
+    if (sub2 && role === "desk")
+      sub2.textContent = "The month at a glance, every event in every state. Event changes are Resident Experiences’ side of the desk.";
   }
 
   // Info popovers: one open at a time, any other tap closes it.
