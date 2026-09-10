@@ -1454,7 +1454,7 @@
       const d = await r.json();
       if (!r.ok) throw new Error(d.error || "Upload failed: " + r.status);
       assets = assets.filter(a => !(a.stem === st && a.kind === slug)).concat([d.asset]);
-      renderAssets(); renderEvents(); renderEditorKit();
+      renderAssets(); renderEvents(); renderEditorKit(); renderBookings();
       toast(`${file.name} is up. Any admin can download it from here now.`);
     } catch (e) { toast(e.message, "warn"); }
   }
@@ -1508,6 +1508,8 @@
         <button class="mini ghost" data-bkcopy="${b.id}" title="The unguessable page the host sends to invitees">Copy registration link</button>
         <a class="mini ghost" href="${esc(regPath(b))}" target="_blank" rel="noopener" title="The page invitees see, exactly as it stands">View page</a>
         <button class="mini ghost" data-bkprint="${b.id}" title="The list the desk and security run from">Print guest list</button>
+        ${(() => { const st = b.reg_slug || b.reg_token; const up = assetOf(st, "web-hero");
+          return `<button class="mini ghost" data-aupload="${esc(st)}|web-hero" title="A 1600 x 900 picture atop the registration page, the same size as any web hero">${up && up.uploaded ? "Replace page header" : "Upload page header"}</button>${up && up.uploaded ? `<button class="mini ghost" data-adelete="${esc(st)}|web-hero" title="The page returns to plain">Remove header</button>` : ""}`; })()}
         <span class="hint" style="margin:0">${b.reg_open ? "Registration is open" : "Registration is closed"}${b.guest_cap ? ` · cap ${b.guest_cap}` : ""}${g ? ` · ${confirmed.length} ${confirmed.length === 1 ? "party" : "parties"}, ${total} guests${waitHeads ? `, ${waitHeads} waitlisted` : ""}, ${inCount} arrived` : ""}</span>
       </div>
       <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;margin-bottom:6px">
@@ -1619,6 +1621,7 @@
     $("#bk-note").value = b.note || ""; $("#bk-event").value = b.event_name || "";
     $("#bk-host").value = b.host || ""; $("#bk-cap").value = b.guest_cap || "";
     $("#bk-slug").value = b.reg_slug || "";
+    $("#bk-details").value = b.details || "";
     $("#bk-formhead").style.display = "";
     $("#bk-formhead").textContent = `Editing ${b.event_name || b.space} · ${fmt(b.date)}`;
     document.querySelector("[data-addbooking]").style.display = "none";
@@ -1629,7 +1632,7 @@
   }
   function exitBkEdit() {
     editingBkId = null;
-    ["#bk-space", "#bk-date", "#bk-start", "#bk-end", "#bk-note", "#bk-event", "#bk-host", "#bk-cap", "#bk-slug"]
+    ["#bk-space", "#bk-date", "#bk-start", "#bk-end", "#bk-note", "#bk-event", "#bk-host", "#bk-cap", "#bk-slug", "#bk-details"]
       .forEach(s => { $(s).value = ""; });
     $("#bk-formhead").style.display = "none";
     document.querySelector("[data-addbooking]").style.display = "";
@@ -1646,7 +1649,7 @@
         space, date, start: $("#bk-start").value.trim(), end: $("#bk-end").value.trim(),
         note: $("#bk-note").value.trim(), event_name: $("#bk-event").value.trim(),
         host: $("#bk-host").value.trim(), guest_cap: $("#bk-cap").value ? Number($("#bk-cap").value) : null,
-        reg_slug: $("#bk-slug").value.trim(),
+        reg_slug: $("#bk-slug").value.trim(), details: $("#bk-details").value.trim(),
       }) });
       Object.assign(b, d.booking);
       renderBookings();
@@ -1662,13 +1665,13 @@
       note: $("#bk-note").value.trim(),
       event_name: $("#bk-event").value.trim(), host: $("#bk-host").value.trim(),
       guest_cap: $("#bk-cap").value ? Number($("#bk-cap").value) : null,
-      reg_slug: $("#bk-slug").value.trim(),
+      reg_slug: $("#bk-slug").value.trim(), details: $("#bk-details").value.trim(),
     };
     if (!body.space || !body.date) { toast("A space and a date are needed.", "warn"); return; }
     try {
       const d = await api("/api/bookings", { method: "POST", body: JSON.stringify(body) });
       bookings.push(d.booking); renderBookings();
-      ["#bk-space", "#bk-date", "#bk-start", "#bk-end", "#bk-note", "#bk-event", "#bk-host", "#bk-cap", "#bk-slug"].forEach(s => $(s).value = "");
+      ["#bk-space", "#bk-date", "#bk-start", "#bk-end", "#bk-note", "#bk-event", "#bk-host", "#bk-cap", "#bk-slug", "#bk-details"].forEach(s => $(s).value = "");
       toast(body.event_name
         ? "Reserved. Open its Guests panel to switch on registration and copy the link for the host."
         : "Reserved. It shows on the Spaces page immediately.");
@@ -2118,7 +2121,7 @@
             .then(d => {
               assets = assets.filter(x => !(x.stem === st && x.kind === slug));
               if (d.asset) assets.push(d.asset);
-              renderAssets(); renderEvents(); renderEditorKit();
+              renderAssets(); renderEvents(); renderEditorKit(); renderBookings();
               toast("File removed.");
             })
             .catch(e => toast(e.message, "warn"));

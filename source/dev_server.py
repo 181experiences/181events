@@ -483,14 +483,34 @@ def reg_full(b):
     # A full list waitlists rather than closes, mirroring functions/register.
     return bool(b.get("guest_cap") and guest_heads(b["id"]) >= int(b["guest_cap"]))
 
+def reg_paragraphs(text):
+    """Typed text -> paragraphs with line breaks, mirroring the functions side."""
+    out = ""
+    for p in (text or "").replace("\r", "").split("\n\n"):
+        p = p.strip()
+        if p:
+            out += "<p>" + esc(p).replace("\n", "<br>") + "</p>"
+    return out
+
+def reg_hero_stem(b):
+    stem = b.get("reg_slug") or b.get("reg_token")
+    row = next((a for a in load_store("assets", [])
+                if a["stem"] == stem and a["kind"] == "web-hero" and a.get("filename")), None)
+    return stem if row and os.path.exists(os.path.join(ASSET_DIR, f"{stem}__web-hero")) else None
+
 def register_page(b):
     tpl = template("register")
     d = datetime.date.fromisoformat(b["date"])
     when = f"{DOW[(d.weekday() + 1) % 7]}, {MONTHS_S[d.month - 1]} {d.day}"
     if b.get("start"):
         when += f"<br>{esc(b['start'])}" + (f" &ndash; {esc(b['end_time'])}" if b.get("end_time") else "")
-    body = fill(tpl, dict(EVENT=esc(b.get("event_name") or "A private event"), WHEN=when,
+    body = fill(tpl, dict(EYEBROW="By invitation",
+                          EVENT=esc(b.get("event_name") or "A private event"), WHEN=when,
                           WHERE=esc(b.get("space") or "Level 39, Residents’ Club")))
+    hs = reg_hero_stem(b)
+    body = cut(body, "HERO", fill(inner(tpl, "HERO"), dict(HEROSTEM=esc(hs))) if hs else None)
+    body = cut(body, "DETAILS", fill(inner(tpl, "DETAILS"), dict(DETAILS=reg_paragraphs(b.get("details"))))
+               if b.get("details") else None)
     body = cut(body, "HOST", fill(inner(tpl, "HOST"), dict(HOST=esc(b["host"]))) if b.get("host") else None)
     body = cut(body, "ICS", fill(inner(tpl, "ICS"), dict(ICSKEY=esc(b.get("reg_slug") or b["reg_token"])))
                if b["date"] >= today() else None)
@@ -1083,6 +1103,7 @@ class H(SimpleHTTPRequestHandler):
                        start24=to24(b.get("start")), note=(b.get("note") or "").strip(), created=now_iso(),
                        event_name=(b.get("event_name") or "").strip() or None,
                        host=(b.get("host") or "").strip() or None,
+                       details=(b.get("details") or "").strip()[:4000] or None,
                        reg_token="".join(secrets.choice("abcdefghjkmnpqrstuvwxyz23456789") for _ in range(20)),
                        reg_open=0, guest_cap=cap, reg_slug=slug or None)
             bookings.append(row); save_store("bookings", bookings)
@@ -1346,7 +1367,7 @@ class H(SimpleHTTPRequestHandler):
             rows = load_store("assets", [])
             row = next((a for a in rows if a["stem"] == parts[3] and a["kind"] == parts[4]), None)
             if not row:
-                row = dict(id=max([a["id"] for a in rows] or [0]) + 1, stem=parts[3], kind=parts[4], canva=None)
+                row = dict(id=max([a.get("id", 0) for a in rows] or [0]) + 1, stem=parts[3], kind=parts[4], canva=None)
                 rows.append(row)
             row.update(filename=filename, size=n, type=self.headers.get("content-type") or "application/octet-stream",
                        uploaded=now_iso())
@@ -1471,7 +1492,7 @@ class H(SimpleHTTPRequestHandler):
                         b["start"] = v; b["start24"] = to24(v)
                     if "end" in body: b["end_time"] = (str(body["end"] or "")).strip()
                     if "reg_open" in body: b["reg_open"] = 1 if body["reg_open"] else 0
-                    for f in ("event_name", "host", "note"):
+                    for f in ("event_name", "host", "note", "details"):
                         if f in body: b[f] = (str(body[f] or "")).strip() or None
                     if "guest_cap" in body:
                         try: b["guest_cap"] = max(1, min(1000, int(body["guest_cap"]))) if body["guest_cap"] else None

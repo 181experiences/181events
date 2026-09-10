@@ -1036,6 +1036,14 @@ SHELL_CSS = '''
     font-size:17px;color:#5b4a1f;line-height:1.55;max-width:34em}
   #ccontact:checked ~ .contactnote{display:block}
   #ccontact:checked ~ .field,#ccontact:checked ~ button.btn{display:none}
+  /* ---------- registration pages: a calmer, dressed guest page ---------- */
+  .regwrap{font-size:17px}
+  .regwrap .e-title{font-size:clamp(28px,4.8vw,38px)}
+  .regwrap .ehero{aspect-ratio:16/9;border-radius:var(--radius);overflow:hidden;margin:22px 0 4px;
+    background-size:cover;background-position:center}
+  .regwrap .regdesc{max-width:38em;margin:4px 0 8px}
+  .regwrap .regdesc p{margin:0 0 14px;line-height:1.6}
+  .regwrap .e-facts dd,.regwrap .pageform,.regwrap .note{font-size:17px}
   /* ---------- neighbor notes: the board itself ---------- */
   .nb-lede{font-size:clamp(16px,4.2vw,18px);color:var(--ink-soft);max-width:34em;margin:10px 0 26px}
   .nb-form{margin:0 0 34px;max-width:34em}
@@ -1234,13 +1242,15 @@ your request joins the waitlist, lands with Resident Experiences, and we reach o
 </form><!--/FORM-->
 <p class="note">Full details for this event are on <a href="/">the calendar</a>.</p>'''
 
-T_REGISTER = '''<div class="e-eyebrow">Private event &middot; 181 Fremont</div>
+T_REGISTER = '''<div class="regwrap"><div class="e-eyebrow">{{EYEBROW}} &middot; 181 Fremont</div>
 <h1 class="e-title">{{EVENT}}</h1>
+<!--HERO--><div class="ehero photo" style="background-image:url('/hero/{{HEROSTEM}}')"></div><!--/HERO-->
 <dl class="e-facts">
 <div class="fact"><dt>When</dt><dd>{{WHEN}}</dd></div>
 <div class="fact"><dt>Where</dt><dd>{{WHERE}}, 181 Fremont, San Francisco</dd></div>
 <!--HOST--><div class="fact"><dt>Hosted by</dt><dd>{{HOST}}</dd></div><!--/HOST-->
 </dl>
+<!--DETAILS--><div class="regdesc">{{DETAILS}}</div><!--/DETAILS-->
 <!--ICS--><p class="note" style="margin-top:6px"><a class="rlink" href="/register/{{ICSKEY}}.ics">Add to My Calendar</a></p><!--/ICS-->
 <!--WAITNOTE--><div class="fullnote">The list is full at the moment. Register below and you join the
 waitlist, in order; if seats open, you&rsquo;ll hear at the email you leave.</div><!--/WAITNOTE-->
@@ -1259,7 +1269,7 @@ Add their name as your plus one, and you&rsquo;re both on the list.</p></div>
 </form><!--/FORM-->
 <!--CLOSED--><div class="fullnote">{{CLOSEDMSG}}</div><!--/CLOSED-->
 <p class="note">On the day: come to the 181 Fremont lobby and give the event name. Questions go to your host,
-or to the front desk at 181 Fremont.</p>'''
+or to the front desk at 181 Fremont.</p></div>'''
 
 T_DONE = '''<div class="msgsent">
 <!--ICON--><div class="check2"><svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 12.8l5 5 10-11"/></svg></div><!--/ICON-->

@@ -801,6 +801,7 @@ HTML = f'''<!DOCTYPE html>
       <div class="field"><label class="fl" for="bk-host">Hosted by</label><input class="inp" id="bk-host" autocapitalize="words" placeholder="The resident hosting"></div>
       <div class="field"><label class="fl" for="bk-cap">Guest cap</label><input class="inp" id="bk-cap" type="number" inputmode="numeric" placeholder="Blank for none"></div>
       <div class="field"><label class="fl" for="bk-slug">Custom address, optional</label><input class="inp" id="bk-slug" autocapitalize="none" placeholder="summit-reception"><div class="hint">Reads as 181residents.com/register/summit-reception. A written address can be guessed from the event name; add a number if that matters.</div></div>
+      <div class="field f-full"><div class="flrow"><label class="fl" for="bk-details">Details, shown on the registration page</label>{info("What invitees read under the facts: the evening&rsquo;s shape, a schedule one line per return, parking, whatever guests should know. A blank line starts a new paragraph. Leave it empty and the page keeps just the facts.")}</div><textarea class="inp" id="bk-details" rows="5" placeholder="The schedule, parking, and anything guests should know. A return is a new line; a blank line starts a paragraph."></textarea></div>
     </div>
     <div style="margin-top:14px;display:flex;gap:12px;align-items:center;flex-wrap:wrap">
       <button class="btn" data-addbooking>Reserve the Space</button>
@@ -1009,8 +1010,12 @@ HTML = f'''<!DOCTYPE html>
     <li>Flip <strong>Open registration</strong> on the reservation&rsquo;s row. <strong>Copy registration link</strong>
     puts the page&rsquo;s address on the clipboard; the host sends it to their invitees, and the link itself is the
     invitation. <strong>View page</strong> shows exactly what a guest sees.</li>
-    <li>Guests open the link, give their name, and say whether they bring a plus-one. No resident code is involved;
-    these are outside guests.</li>
+    <li>Guests open the link, give their name and email, and say whether they bring a plus-one. No resident code
+    is involved; these are outside guests. A full list starts a waitlist rather than closing.</li>
+    <li>Dress the page if the evening deserves it: the <strong>Details</strong> box on the card renders under the
+    facts the way event pages read (a return is a new line, a blank line a new paragraph), and <strong>Upload page
+    header</strong> on the guest panel puts a 1600 &times; 900 picture atop the page, the same size as any web hero,
+    so one Canva design can dress both the resident page and the guest page.</li>
   </ol>
   <div class="callout"><strong>The written address, when a link is too clumsy.</strong> The card offers an optional
   custom address, so <code>181residents.com/register/tang50</code> can go on a printed card or be read over the phone.

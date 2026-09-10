@@ -46,13 +46,34 @@ function hhmm(t, fallbackStart) {
   return String((Number(st.slice(0, 2)) + 1) % 24).padStart(2, "0") + st.slice(2);
 }
 
+// Plain typed text -> gentle paragraphs, the same manners event pages keep:
+// a blank line starts a new paragraph, a single return stays a line break.
+function paragraphs(text) {
+  return String(text || "").replace(/\r/g, "").split(/\n\n+/)
+    .map(p => p.trim()).filter(Boolean)
+    .map(p => `<p>${esc(p).replace(/\n/g, "<br>")}</p>`).join("");
+}
+
+async function heroStem(env, b) {
+  const stem = b.reg_slug || b.reg_token;
+  const r = await env.DB.prepare(
+    "SELECT 1 AS x FROM assets WHERE stem=? AND kind='web-hero' AND filename IS NOT NULL").bind(stem).first();
+  return r ? stem : null;
+}
+
 async function regPage(context, b, state, waitlisting) {
+  const { env } = context;
   const tpl = await template(context, "register");
   let body = fill(tpl, {
+    EYEBROW: "By invitation",
     EVENT: esc(b.event_name || "A private event"),
     WHEN: whenOf(b),
     WHERE: esc(b.space || "Level 39, Residents’ Club"),
   });
+  const hs = await heroStem(env, b);
+  body = cut(body, "HERO", hs ? fill(inner(tpl, "HERO"), { HEROSTEM: esc(hs) }) : null);
+  body = cut(body, "DETAILS", b.details
+    ? fill(inner(tpl, "DETAILS"), { DETAILS: paragraphs(b.details) }) : null);
   body = cut(body, "HOST", b.host
     ? fill(inner(tpl, "HOST"), { HOST: esc(b.host) }) : null);
   body = cut(body, "ICS", b.date >= todayPacific()

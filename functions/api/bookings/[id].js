@@ -28,7 +28,7 @@ export async function onRequestPatch({ request, params, env }) {
   }
   if ("end" in b) { sets.push("end_time=?"); vals.push(String(b.end || "").trim()); }
   if ("reg_open" in b) { sets.push("reg_open=?"); vals.push(b.reg_open ? 1 : 0); }
-  for (const f of ["event_name", "host", "note"]) {
+  for (const f of ["event_name", "host", "note", "details"]) {
     if (f in b) { sets.push(`${f}=?`); vals.push(String(b[f] || "").trim() || null); }
   }
   if ("guest_cap" in b) {

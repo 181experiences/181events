@@ -50,10 +50,11 @@ export async function onRequestPost({ request, env }) {
   }
   const row = await env.DB.prepare(
     `INSERT INTO bookings (space, date, start, end_time, start24, note, created,
-                           event_name, host, reg_token, reg_open, guest_cap, reg_slug)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?, ?) RETURNING *`)
+                           event_name, host, reg_token, reg_open, guest_cap, reg_slug, details)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?, ?, ?) RETURNING *`)
     .bind(space, date, start, end, to24(start), String(b.note || "").trim(),
       new Date().toISOString(), String(b.event_name || "").trim() || null,
-      String(b.host || "").trim() || null, makeFeedToken(), cap, slug || null).first();
+      String(b.host || "").trim() || null, makeFeedToken(), cap, slug || null,
+      String(b.details || "").trim().slice(0, 4000) || null).first();
   return json({ booking: { ...row, guest_parties: 0, guest_heads: 0, guest_arrived: 0 } }, 201);
 }

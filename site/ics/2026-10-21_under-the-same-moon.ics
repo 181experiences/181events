@@ -1,0 +1,15 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//181 Fremont//Resident Experiences//EN
+BEGIN:VEVENT
+UID:181fremont-under-the-same-moon-20261021@181residents.com
+DTSTAMP:20260910T184901Z
+SEQUENCE:252
+LAST-MODIFIED:20260910T184901Z
+DTSTART:20261021T173000
+DTEND:20261021T193000
+SUMMARY:Under the Same Moon: An Evening of Poetry and Prose
+LOCATION:181 Fremont - Level 39, Residents’ Club
+DESCRIPTION:The inaugural evening of our new reading series. Three writers, former Santa Clara County Poet Laureate Sally Ashton (Going to the Moon), poet Veronica Kornberg (Strange Gift), and 181 resident and poet Nancy Meyer (The Stoop and The Steeple), read from their latest books, share the stories behind them, and take questions. A book signing follows, with wine and light bites, and signed books available to purchase.
+END:VEVENT
+END:VCALENDAR

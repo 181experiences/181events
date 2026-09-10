@@ -269,7 +269,7 @@ export async function ensureResidentTables(env) {
   try { await env.DB.prepare("ALTER TABLE residents ADD COLUMN feed_token TEXT").run(); } catch (e) {}
   try { await env.DB.prepare("ALTER TABLE residents ADD COLUMN tenure TEXT").run(); } catch (e) {}
   for (const col of ["event_name TEXT", "host TEXT", "reg_token TEXT",
-                     "reg_open INTEGER DEFAULT 0", "guest_cap INTEGER", "reg_slug TEXT"]) {
+                     "reg_open INTEGER DEFAULT 0", "guest_cap INTEGER", "reg_slug TEXT", "details TEXT"]) {
     try { await env.DB.prepare(`ALTER TABLE bookings ADD COLUMN ${col}`).run(); } catch (e) {}
   }
   // Attendance: how many of the party actually came, marked at the door.
