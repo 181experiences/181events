@@ -2565,7 +2565,8 @@
           ? `<button class="mini ghost" data-aupload="${esc(dk)}|${k.slug}" ${assetStorage ? "" : 'disabled title="Link the R2 bucket first"'}>${ownUp ? "Replace override" : "Override this date"}</button>`
           : `<button class="mini${eff ? " ghost" : ""}" data-aupload="${esc(mk)}|${k.slug}" ${assetStorage ? "" : 'disabled title="Link the R2 bucket first"'}>${eff ? "Replace" : "Upload"}</button>`,
         ownUp ? `<button class="mini ghost" data-adelete="${esc(dk)}|${k.slug}" title="This date returns to the series kit">Back to series kit</button>` : "",
-        canva ? `<a class="mini ghost" href="${esc(canva)}" target="_blank" rel="noopener">Canva</a>` : "",
+        canva ? `<a class="mini ghost" href="${esc(canva)}" target="_blank" rel="noopener" title="Opens the design in Canva for editing">Canva</a>` : "",
+        `<button class="mini ghost" data-acanva="${esc(mk)}|${k.slug}" title="Save the Canva address where this piece is edited; it saves to the ${isSeries ? "series kit, every date" : "kit"}">${canva ? "Edit link" : "Canva link"}</button>`,
       ].join("");
       return `<div class="akrow"><span class="akname">${k.name}<em>${k.spec}</em></span><span>${state}</span><span class="akact">${acts}</span></div>`;
     }).join("");
