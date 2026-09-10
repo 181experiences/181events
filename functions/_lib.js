@@ -277,6 +277,11 @@ export async function ensureResidentTables(env) {
   for (const col of ["arrived INTEGER", "arrived_at TEXT", "updated_by TEXT"]) {
     try { await env.DB.prepare(`ALTER TABLE rsvps ADD COLUMN ${col}`).run(); } catch (e) {}
   }
+  // Outside guests carry an email for updates, and a standing once a guest
+  // cap fills: past it, registration keeps taking names onto a waitlist.
+  for (const col of ["email TEXT", "status TEXT"]) {
+    try { await env.DB.prepare(`ALTER TABLE guests ADD COLUMN ${col}`).run(); } catch (e) {}
+  }
   tablesEnsured = true;
 }
 

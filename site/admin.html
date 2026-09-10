@@ -2157,6 +2157,7 @@
         <span class="sgrow" style="font-size:15px;color:var(--ink)">${esc(s.title)}${dupUnit ? ' <span class="flagmany" title="One unit holds more than one RSVP for this event">unit twice</span>' : ""}</span>
         <span class="sval">${what}${wait}</span></div>
         <div class="card" data-rsvpdetail="${esc(s.key)}" style="${openRsvpDetails.has(s.key) ? "" : "display:none;"}margin:4px 0 10px">
+        <div style="display:flex;justify-content:flex-end;margin-bottom:6px"><button class="mini ghost" data-rsvpprint="${esc(s.key)}" title="The check-in sheet: names, parties, tick boxes">Print check-in list</button></div>
         ${s.rows.map(r => `<div class="srow"><span class="slab">${esc(r.unit || "Role")} &middot; ${esc(r.name)}</span>
           <span class="sgrow" style="font-size:14px;color:var(--ink-soft)">${r.status === "Waitlist" ? "Waitlist" : (s.type === "guest" ? `${r.count} guest${r.count === 1 ? "" : "s"}` : `party of ${r.count}`)}${r.names ? ` &middot; ${esc(r.names)}` : ""}</span>
           <span class="sval" style="font-size:12px;color:var(--stone)" title="Created ${esc((r.created || "").slice(0, 10))}${r.updated_by ? `; last change by ${esc(r.updated_by)}` : ""}">${esc(((r.updated || r.created) || "").slice(0, 10))}${r.updated_by ? ` &middot; ${esc(r.updated_by === "resident" ? "resident" : r.updated_by.split("@")[0])}` : ""}</span>
@@ -2199,6 +2200,47 @@
     }
     box.innerHTML = html;
   }
+  // The check-in sheet for a calendar event's RSVPs: the residents' side of
+  // the door, the same paper the private guest list prints, boxes and all.
+  function printRsvpList(key) {
+    const all = rsvpSummaries();
+    const sm = all.upcoming.find(x => x.key === key) || all.past.find(x => x.key === key);
+    if (!sm) return;
+    const conf = sm.rows.filter(r => r.status !== "Waitlist");
+    const wait = sm.rows.filter(r => r.status === "Waitlist");
+    const row = (r, i, pre) => `<tr><td><span class="box"></span></td><td class="n">${pre || ""}${i + 1}</td>
+      <td>${esc(r.name)}${r.unit ? ` &middot; ${esc(r.unit)}` : ""}</td>
+      <td>${sm.type === "guest" ? `${r.count} outside guest${r.count === 1 ? "" : "s"}` : `party of ${r.count}`}</td>
+      <td class="note">${esc(r.names || "")}</td></tr>`;
+    const heads = conf.reduce((a, r) => a + r.count, 0);
+    const w = window.open("", "_blank");
+    w.document.write(`<!DOCTYPE html><html><head><title>${esc(sm.title)}</title><style>
+      body{font-family:Georgia,serif;color:#16161a;margin:40px;font-size:14px}
+      h1{font-size:22px;margin:0 0 2px} .sub{color:#55555f;margin:0 0 6px}
+      .meta{font-size:12px;color:#7a7266;margin-bottom:20px}
+      table{width:100%;border-collapse:collapse}
+      th{text-align:left;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:#7a7266;padding:6px 8px;border-bottom:2px solid #16161a}
+      td{padding:8px;border-bottom:1px solid #ddd6cb}
+      .box{display:inline-block;width:14px;height:14px;border:1.5px solid #16161a}
+      .n{color:#7a7266;width:34px} .note{color:#7a7266;font-style:italic}
+      @media print{ body{margin:16px} }
+    </style></head><body>
+    <h1>${esc(sm.title)} &middot; RSVP Check-In</h1>
+    <p class="sub">${esc(fmt(sm.date))}</p>
+    <p class="meta">${conf.length} ${conf.length === 1 ? "party" : "parties"}, ${heads} expected &middot; printed ${new Date().toLocaleString([], { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" })}</p>
+    <table><tr><th></th><th>#</th><th>Name</th><th>Party</th><th>With</th></tr>
+    ${conf.map((r, i) => row(r, i)).join("")}
+    </table>
+    ${wait.length ? `<h1 style="font-size:16px;margin-top:26px">Waitlist &middot; seated only if room opens</h1>
+    <table><tr><th></th><th>#</th><th>Name</th><th>Party</th><th>With</th></tr>
+    ${wait.map((r, i) => row(r, i, "W")).join("")}
+    </table>` : ""}
+    </body></html>`);
+    w.document.close();
+    w.focus();
+    w.print();
+  }
+
   function emailPastGuests(key) {
     const s = rsvpSummaries().past.find(x => x.key === key);
     if (!s) return;
@@ -2627,13 +2669,15 @@
     const rows = !g ? '<div class="nodata" style="padding:12px">Loading&hellip;</div>'
       : !g.length ? '<div class="nodata" style="padding:12px">Nobody registered yet. Copy the link and the host sends it to the invitees.</div>'
       : g.map(r => `<div class="srow">
-          <span class="slab">${esc(r.name)}${r.plus_one ? ` <span style="color:var(--stone)">+ ${esc(r.plus_one)}</span>` : ""}</span>
-          <span class="sgrow" style="font-size:12px;color:var(--stone)">${esc((r.created || "").slice(0, 10))}${r.arrived ? ` · in at ${new Date(r.arrived).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })}` : ""}</span>
+          <span class="slab">${esc(r.name)}${r.plus_one ? ` <span style="color:var(--stone)">+ ${esc(r.plus_one)}</span>` : ""}${r.status === "Waitlist" ? ' <span class="pill draft">Waitlist</span>' : ""}</span>
+          <span class="sgrow" style="font-size:12px;color:var(--stone)">${r.email ? esc(r.email) + " · " : ""}${esc((r.created || "").slice(0, 10))}${r.arrived ? ` · in at ${new Date(r.arrived).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })}` : ""}</span>
           <span class="eact">
             <button class="mini${r.arrived ? "" : " ghost"}" data-garrive="${r.id}|${b.id}">${r.arrived ? "Arrived ✓" : "Arrived"}</button>
             <button class="mini ghost" data-gdel="${r.id}|${b.id}" title="Remove this registration">Remove</button>
           </span></div>`).join("");
-    const total = (g || []).reduce((a, r) => a + heads(r), 0);
+    const confirmed = (g || []).filter(r => r.status !== "Waitlist");
+    const total = confirmed.reduce((a, r) => a + heads(r), 0);
+    const waitHeads = (g || []).filter(r => r.status === "Waitlist").reduce((a, r) => a + heads(r), 0);
     const inCount = (g || []).filter(r => r.arrived).length;
     return `
       <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:14px 0 12px">
@@ -2641,7 +2685,7 @@
         <button class="mini ghost" data-bkcopy="${b.id}" title="The unguessable page the host sends to invitees">Copy registration link</button>
         <a class="mini ghost" href="${esc(regPath(b))}" target="_blank" rel="noopener" title="The page invitees see, exactly as it stands">View page</a>
         <button class="mini ghost" data-bkprint="${b.id}" title="The list the desk and security run from">Print guest list</button>
-        <span class="hint" style="margin:0">${b.reg_open ? "Registration is open" : "Registration is closed"}${b.guest_cap ? ` · cap ${b.guest_cap}` : ""}${g ? ` · ${g.length} ${g.length === 1 ? "party" : "parties"}, ${total} guests, ${inCount} arrived` : ""}</span>
+        <span class="hint" style="margin:0">${b.reg_open ? "Registration is open" : "Registration is closed"}${b.guest_cap ? ` · cap ${b.guest_cap}` : ""}${g ? ` · ${confirmed.length} ${confirmed.length === 1 ? "party" : "parties"}, ${total} guests${waitHeads ? `, ${waitHeads} waitlisted` : ""}, ${inCount} arrived` : ""}</span>
       </div>
       <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;margin-bottom:6px">
         <div class="field" style="margin:0"><label class="fl" for="g-name-${b.id}">Add at the desk</label><input class="inp" id="g-name-${b.id}" autocapitalize="words" placeholder="Guest name"></div>
@@ -2693,12 +2737,17 @@
 
   function printGuestList(b) {
     const g = guestsByBooking[b.id] || [];
-    const lines = [];
-    let n = 0;
-    for (const r of g) {
-      n++; lines.push({ n, name: r.name, note: "" });
-      if (r.plus_one) { n++; lines.push({ n, name: r.plus_one, note: `guest of ${r.name}` }); }
-    }
+    const mk = rows => {
+      const lines = [];
+      let n = 0;
+      for (const r of rows) {
+        n++; lines.push({ n, name: r.name, note: r.email || "" });
+        if (r.plus_one) { n++; lines.push({ n, name: r.plus_one, note: `guest of ${r.name}` }); }
+      }
+      return lines;
+    };
+    const lines = mk(g.filter(r => r.status !== "Waitlist"));
+    const waitLines = mk(g.filter(r => r.status === "Waitlist"));
     const w = window.open("", "_blank");
     w.document.write(`<!DOCTYPE html><html><head><title>${esc(b.event_name || "Guest list")}</title><style>
       body{font-family:Georgia,serif;color:#16161a;margin:40px;font-size:14px}
@@ -2713,10 +2762,15 @@
     </style></head><body>
     <h1>${esc(b.event_name || "Private event")} &middot; Guest List</h1>
     <p class="sub">${esc(b.space)}, 181 Fremont &middot; ${esc(fmt(b.date))}${b.start ? ` &middot; ${esc(b.start)}${b.end_time ? " – " + esc(b.end_time) : ""}` : ""}${b.host ? ` &middot; hosted by ${esc(b.host)}` : ""}</p>
-    <p class="meta">${g.length} ${g.length === 1 ? "party" : "parties"}, ${lines.length} expected guests &middot; guests give the event name at the door &middot; printed ${new Date().toLocaleString([], { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" })}</p>
+    <p class="meta">${lines.length} expected guest${lines.length === 1 ? "" : "s"}${waitLines.length ? ` &middot; ${waitLines.length} on the waitlist below` : ""} &middot; guests give the event name at the door &middot; printed ${new Date().toLocaleString([], { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" })}</p>
     <table><tr><th></th><th>#</th><th>Guest</th><th></th></tr>
     ${lines.map(l => `<tr><td><span class="box"></span></td><td class="n">${l.n}</td><td>${esc(l.name)}</td><td class="note">${esc(l.note)}</td></tr>`).join("")}
-    </table></body></html>`);
+    </table>
+    ${waitLines.length ? `<h1 style="font-size:16px;margin-top:26px">Waitlist &middot; admitted only if seats open</h1>
+    <table><tr><th></th><th>#</th><th>Guest</th><th></th></tr>
+    ${waitLines.map(l => `<tr><td><span class="box"></span></td><td class="n">W${l.n}</td><td>${esc(l.name)}</td><td class="note">${esc(l.note)}</td></tr>`).join("")}
+    </table>` : ""}
+    </body></html>`);
     w.document.close();
     w.focus();
     w.print();
@@ -3054,7 +3108,7 @@
   }
 
   document.addEventListener("click", ev => {
-    const r = ev.target.closest("[data-rotate],[data-ends],[data-toggle],[data-rdelete],[data-resedit],[data-saveres],[data-cancelres],[data-edittoggle],[data-editdelete],[data-addres],[data-addbulk],[data-printcards],[data-mreplied],[data-marchive],[data-wconfirm],[data-redit],[data-rcancel],[data-rarrive],[data-pastchev],[data-pastmail],[data-notedel],[data-addrsvp],[data-savearsvp],[data-closearsvp],[data-copylink],[data-aupload],[data-acanva],[data-adelete],[data-rsvpkey],[data-addbooking],[data-unbook],[data-bkchev],[data-bkreg],[data-bkcopy],[data-bkprint],[data-gadd],[data-garrive],[data-gdel],[data-bkedit],[data-savebk],[data-cancelbk]");
+    const r = ev.target.closest("[data-rotate],[data-ends],[data-toggle],[data-rdelete],[data-resedit],[data-saveres],[data-cancelres],[data-edittoggle],[data-editdelete],[data-addres],[data-addbulk],[data-printcards],[data-mreplied],[data-marchive],[data-wconfirm],[data-redit],[data-rcancel],[data-rarrive],[data-pastchev],[data-pastmail],[data-notedel],[data-rsvpprint],[data-addrsvp],[data-savearsvp],[data-closearsvp],[data-copylink],[data-aupload],[data-acanva],[data-adelete],[data-rsvpkey],[data-addbooking],[data-unbook],[data-bkchev],[data-bkreg],[data-bkcopy],[data-bkprint],[data-gadd],[data-garrive],[data-gdel],[data-bkedit],[data-savebk],[data-cancelbk]");
     if (r) {
       if (r.dataset.bkedit) {
         const b = bookings.find(x => String(x.id) === r.dataset.bkedit);
@@ -3256,6 +3310,7 @@
       else if (r.dataset.closearsvp !== undefined) exitRsvpEdit();
       else if (r.dataset.pastchev !== undefined) { pastRsvpsOpen = !pastRsvpsOpen; renderRsvps(); }
       else if (r.dataset.pastmail) emailPastGuests(r.dataset.pastmail);
+      else if (r.dataset.rsvpprint) printRsvpList(r.dataset.rsvpprint);
       else if (r.dataset.notedel) deleteNote(r.dataset.notedel);
       else if (r.dataset.rarrive) {
         const row = rsvps.find(x => String(x.id) === r.dataset.rarrive);

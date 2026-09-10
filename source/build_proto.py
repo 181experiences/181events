@@ -1241,12 +1241,17 @@ T_REGISTER = '''<div class="e-eyebrow">Private event &middot; 181 Fremont</div>
 <div class="fact"><dt>Where</dt><dd>{{WHERE}}, 181 Fremont, San Francisco</dd></div>
 <!--HOST--><div class="fact"><dt>Hosted by</dt><dd>{{HOST}}</dd></div><!--/HOST-->
 </dl>
+<!--ICS--><p class="note" style="margin-top:6px"><a class="rlink" href="/register/{{ICSKEY}}.ics">Add to My Calendar</a></p><!--/ICS-->
+<!--WAITNOTE--><div class="fullnote">The list is full at the moment. Register below and you join the
+waitlist, in order; if seats open, you&rsquo;ll hear at the email you leave.</div><!--/WAITNOTE-->
 <!--FORM--><div class="pagehead"><h2>May we have your name?</h2>
 <p>Register below and the front desk will be expecting you. Bringing someone?
 Add their name as your plus one, and you&rsquo;re both on the list.</p></div>
 <form method="post" action="/register/{{TOKEN}}" class="pageform">
 <label class="field"><span>Your name</span>
 <input type="text" name="name" autocomplete="name" autocapitalize="words" maxlength="80" required></label>
+<label class="field"><span>Your email, for any updates about the evening</span>
+<input type="email" name="email" autocomplete="email" inputmode="email" autocapitalize="none" maxlength="120" required></label>
 <label class="field"><span>Plus one, if you&rsquo;re bringing someone</span>
 <input type="text" name="plus" autocomplete="off" autocapitalize="words" maxlength="80" placeholder="Optional"></label>
 <div style="position:absolute;left:-9999px" aria-hidden="true"><input type="text" name="website" tabindex="-1" autocomplete="off"></div>

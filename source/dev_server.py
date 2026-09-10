@@ -467,7 +467,8 @@ def board_page(me):
 
 # The private-event registration page, mirroring functions/register/[token].js.
 def guest_heads(bid):
-    rows = [g for g in load_store("guests", []) if g["booking_id"] == bid]
+    rows = [g for g in load_store("guests", [])
+            if g["booking_id"] == bid and g.get("status") != "Waitlist"]
     return sum(2 if g.get("plus_one") else 1 for g in rows)
 
 def reg_state(b):
@@ -476,10 +477,11 @@ def reg_state(b):
                 "on the list; otherwise, kindly check with your host.")
     if b["date"] < today():
         return "This event has passed."
-    if b.get("guest_cap") and guest_heads(b["id"]) >= int(b["guest_cap"]):
-        return ("The guest list is full. If you were invited, kindly check with your host; there may be room "
-                "for adjustments.")
     return None
+
+def reg_full(b):
+    # A full list waitlists rather than closes, mirroring functions/register.
+    return bool(b.get("guest_cap") and guest_heads(b["id"]) >= int(b["guest_cap"]))
 
 def register_page(b):
     tpl = template("register")
@@ -490,6 +492,9 @@ def register_page(b):
     body = fill(tpl, dict(EVENT=esc(b.get("event_name") or "A private event"), WHEN=when,
                           WHERE=esc(b.get("space") or "Level 39, Residents’ Club")))
     body = cut(body, "HOST", fill(inner(tpl, "HOST"), dict(HOST=esc(b["host"]))) if b.get("host") else None)
+    body = cut(body, "ICS", fill(inner(tpl, "ICS"), dict(ICSKEY=esc(b.get("reg_slug") or b["reg_token"])))
+               if b["date"] >= today() else None)
+    body = cut(body, "WAITNOTE", inner(tpl, "WAITNOTE") if not reg_state(b) and reg_full(b) else None)
     state = reg_state(b)
     if state:
         body = cut(cut(body, "FORM", None), "CLOSED", fill(inner(tpl, "CLOSED"), dict(CLOSEDMSG=state)))
@@ -787,6 +792,21 @@ class H(SimpleHTTPRequestHandler):
             ahead = sorted([e for e in live if e["Date"] >= today()], key=lambda e: e["Date"])
             pick = ahead[0] if ahead else (sorted(live, key=lambda e: e["Date"])[-1] if live else None)
             return self._redirect(f"/rsvp/{pick['Date']}_{pick['Slug']}" if pick else "/")
+        if p.path.startswith("/register/") and p.path.endswith(".ics"):
+            key = p.path[len("/register/"):-4].lower()
+            b = next((x for x in load_store("bookings", [])
+                      if x.get("reg_token") == key or x.get("reg_slug") == key), None)
+            if not b: return self._text("Not here.", "text/plain", 404)
+            d2 = b["date"].replace("-", "")
+            start = b.get("start24") or "1800"
+            end = to24(b.get("end_time")) if b.get("end_time") else f"{(int(start[:2]) + 1) % 24:02d}{start[2:]}"
+            out = "\r\n".join(["BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//181 Fremont//Private Events//EN",
+                "BEGIN:VEVENT", f"UID:181fremont-reg-{b['id']}@181residents.com",
+                f"DTSTART:{d2}T{start}00", f"DTEND:{d2}T{end}00",
+                f"SUMMARY:{b.get('event_name') or 'Private event'}",
+                f"LOCATION:181 Fremont - {b.get('space') or 'Level 39'}",
+                "END:VEVENT", "END:VCALENDAR"]) + "\r\n"
+            return self._text(out, "text/calendar; charset=utf-8")
         if p.path.startswith("/register/"):
             token = p.path[len("/register/"):].lower()
             b = next((x for x in load_store("bookings", [])
@@ -1087,14 +1107,25 @@ class H(SimpleHTTPRequestHandler):
             if not b: return self._redirect("/")
             form = self._body_form()
             name = (form.get("name") or "").strip()[:80]
+            email = (form.get("email") or "").strip()[:120]
             plus = (form.get("plus") or "").strip()[:80]
-            if reg_state(b) or not name: return self._redirect(f"/register/{token}")
+            if reg_state(b) or not name or not re.match(r".+@.+\..+", email):
+                return self._redirect(f"/register/{token}")
+            wanting = 2 if plus else 1
+            waitlisted = bool(b.get("guest_cap") and guest_heads(b["id"]) + wanting > int(b["guest_cap"]))
             if not (form.get("website") or "").strip():   # the honeypot stays empty for people
                 guests = load_store("guests", [])
                 guests.append(dict(id=max([g["id"] for g in guests] or [0]) + 1, booking_id=b["id"],
-                                   name=name, plus_one=plus or None, created=now_iso(), arrived=None))
+                                   name=name, plus_one=plus or None, created=now_iso(), arrived=None,
+                                   email=email, status="Waitlist" if waitlisted else None))
                 save_store("guests", guests)
             tpl = template("done")
+            if waitlisted:
+                body = fill(cut(tpl, "LINK", None), dict(
+                    HEAD="You&rsquo;re on the waitlist",
+                    SUB=f"{esc(name)}{' and ' + esc(plus) if plus else ''}, on the waitlist for {esc(b.get('event_name') or 'the event')}. "
+                        f"The list is full at the moment; if seats open, you&rsquo;ll hear at {esc(email)}."))
+                return self._html(shell_page("On the waitlist", body, None))
             body = fill(cut(tpl, "LINK", None), dict(
                 HEAD="You&rsquo;re on the list",
                 SUB=f"{esc(name)}{' and ' + esc(plus) if plus else ''}, registered for {esc(b.get('event_name') or 'the event')}. "
