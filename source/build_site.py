@@ -198,10 +198,17 @@ admin = admin.replace('<div class="mocknote">Admin prototype — sample data, no
 # The status bar goes solid ("default") for the admin app: unlike the resident
 # page, its bars have no safe-area padding, so drawing beneath the iPhone clock
 # would put the top bar behind the camera notch.
+# The admin wears the same bay mark on brand red (make_admin_icons.py), so the
+# two apps read apart on a home screen and in a row of tabs. The icon filenames
+# avoid the /admin path prefix on purpose: Access locks everything under it.
 ADMIN_HEAD = HEAD.replace('href="/manifest.webmanifest"',
                           'href="/admin.webmanifest" crossorigin="use-credentials"').replace(
     'content="181 Events"', 'content="181 Events Admin"').replace(
-    'content="black-translucent"', 'content="default"')
+    'content="black-translucent"', 'content="default"').replace(
+    'href="/apple-touch-icon.png"', 'href="/apple-touch-icon-admin.png"').replace(
+    'href="/favicon-32.png"', 'href="/favicon-admin-32.png"').replace(
+    'href="/icon.svg"', 'href="/icon-admin.svg"').replace(
+    '<meta name="theme-color" content="#16161a">', '<meta name="theme-color" content="#c41f26">')
 admin = admin.replace("</head>", ADMIN_HEAD + "</head>", 1)
 open(f"{SITE}/admin.html", "w", encoding="utf-8").write(admin)
 
@@ -231,6 +238,14 @@ admin_manifest = dict(manifest,
     description="Resident Experiences admin for 181 Fremont.",
     start_url="/admin",
     scope="/admin",
+    background_color="#c41f26",
+    theme_color="#c41f26",
+    icons=[
+        {"src": "/icon-admin-192.png", "sizes": "192x192", "type": "image/png"},
+        {"src": "/icon-admin-512.png", "sizes": "512x512", "type": "image/png"},
+        {"src": "/icon-admin-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable"},
+        {"src": "/icon-admin.svg", "sizes": "any", "type": "image/svg+xml"},
+    ],
 )
 open(f"{SITE}/admin.webmanifest", "w", encoding="utf-8").write(json.dumps(admin_manifest, indent=2))
 
