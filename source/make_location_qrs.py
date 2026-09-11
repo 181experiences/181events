@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
-"""Location QR pieces for 181residents.com, one per standee spot.
+"""Location QR pieces for 181residents.com, sized for where each one lives.
 
+The Nixplay frames sit on credenzas at walk-up distance, so the bar, lobby,
+and Level 7 get 1080 x 1920 JPGs for the screens. The Level 39 landing
+credenza and the elevator frames take 8.5 x 11 prints at 300 DPI (PDF + PNG).
 Each location scans to its own tracked path, so the dashboard can say which
-sign earns its place. Rendered into ../print/qr/ as PNG + PDF at 300 DPI,
-4 x 5 inches: a small brand head, the location's name, the code on its own
-card, and the address written out for anyone who would rather type.
+sign earns its place.
 
 Fonts and palette follow make_qr_signs.py. Run: python source/make_location_qrs.py"""
 
@@ -66,40 +67,54 @@ def qr_image(url, target_px):
     q.box_size = max(1, target_px // q.modules_count)
     return q.make_image(fill_color=INK, back_color=PAPER2).get_image().convert("RGB")
 
-# 4 x 5 inches at 300 DPI
-W, H = 1200, 1500
+HEADLINE = "Your club calendar"
 
-LOCATIONS = [
-    ("lobby",   "THE LOBBY",         "https://181residents.com/q/lobby/"),
-    ("level7",  "LEVEL 7",           "https://181residents.com/q/level7/"),
-    ("level39", "LEVEL 39 LANDING",  "https://181residents.com/q/level39/"),
-    ("bar",     "LEVEL 39 BAR",      "https://181residents.com/q/bar/"),
-]
-
-for key, label, url in LOCATIONS:
+def render(W, H, label, url, m):
+    """One piece at any size; m scales every measure from the 1080-wide base."""
     img = Image.new("RGB", (W, H), PAPER)
     d = ImageDraw.Draw(img)
     cx = W / 2
-    tracked(d, cx, 90, "181 FREMONT", display_font(64), 16, INK)
-    tracked(d, cx, 186, "THE RESIDENTS\u2019 CLUB", body_font(26, 500), 9, STONE)
-    d.rectangle([cx - 46, 250, cx + 46, 254], fill=RED)
-    centered(d, cx, 292, "Everything happening here,", display_font(56), INK)
-    centered(d, cx, 362, "in one place.", display_font(56), INK)
+    y = int(120 * m)
+    tracked(d, cx, y, "181 FREMONT", display_font(int(66 * m)), int(16 * m), INK)
+    tracked(d, cx, y + int(100 * m), "THE RESIDENTS\u2019 CLUB", body_font(int(27 * m), 500), int(9 * m), STONE)
+    d.rectangle([cx - int(46 * m), y + int(166 * m), cx + int(46 * m), y + int(170 * m)], fill=RED)
+    centered(d, cx, y + int(212 * m), HEADLINE, display_font(int(64 * m)), INK)
 
-    code = qr_image(url, 640)
-    pad = 40
+    code = qr_image(url, int(640 * m))
+    pad = int(42 * m)
     w2 = code.width + pad * 2
-    x0 = int(cx - w2 / 2); y0 = 480
-    d.rounded_rectangle([x0, y0, x0 + w2, y0 + w2], radius=18, fill=PAPER2, outline=LINE, width=3)
+    x0 = int(cx - w2 / 2); y0 = y + int(340 * m)
+    d.rounded_rectangle([x0, y0, x0 + w2, y0 + w2], radius=int(18 * m), fill=PAPER2, outline=LINE, width=max(2, int(3 * m)))
     img.paste(code, (x0 + pad, y0 + pad))
-    y = y0 + w2 + 54
+    yy = y0 + w2 + int(60 * m)
 
-    centered(d, cx, y, "Point your camera at the code, or visit", body_font(30, 500), INK)
-    centered(d, cx, y + 52, "181residents.com", body_font(42, 600), INK)
+    centered(d, cx, yy, "Point your camera at the code, or visit", body_font(int(32 * m), 500), INK)
+    centered(d, cx, yy + int(54 * m), "181residents.com", body_font(int(44 * m), 600), INK)
+    centered(d, cx, yy + int(126 * m), "Every gathering, dinner, and class, with RSVP built in.",
+             body_font(int(26 * m), 400), INK_SOFT)
 
-    tracked(d, cx, H - 120, label, body_font(24, 600), 7, RED)
-    centered(d, cx, H - 76, "Resident Experiences \u00b7 181 Fremont Residences", body_font(20), STONE)
+    tracked(d, cx, H - int(150 * m), label, body_font(int(25 * m), 600), int(7 * m), RED)
+    centered(d, cx, H - int(100 * m), "Resident Experiences \u00b7 181 Fremont Residences", body_font(int(21 * m)), STONE)
+    return img
 
-    img.save(os.path.join(OUT, f"{key}-qr.png"))
-    img.save(os.path.join(OUT, f"{key}-qr.pdf"), "PDF", resolution=300.0)
-    print(f"{key}: {url} -> print/qr/{key}-qr.png + .pdf")
+# The screens: credenza distance, portrait frames.
+NIXPLAY = [
+    ("lobby",  "THE LOBBY",    "https://181residents.com/q/lobby/"),
+    ("level7", "LEVEL 7",      "https://181residents.com/q/level7/"),
+    ("bar",    "LEVEL 39 BAR", "https://181residents.com/q/bar/"),
+]
+for key, label, url in NIXPLAY:
+    img = render(1080, 1920, label, url, 1.0)
+    img.save(os.path.join(OUT, f"{key}-nixplay.jpg"), "JPEG", quality=92)
+    print(f"{key}: {url} -> print/qr/{key}-nixplay.jpg (1080x1920)")
+
+# The prints: letter portrait at 300 DPI.
+PRINTS = [
+    ("level39",  "LEVEL 39 LANDING", "https://181residents.com/q/level39/"),
+    ("elevator", "THE ELEVATOR",     "https://181residents.com/q/elevator/"),
+]
+for key, label, url in PRINTS:
+    img = render(2550, 3300, label, url, 2550 / 1080 * 0.82)
+    img.save(os.path.join(OUT, f"{key}-print.png"))
+    img.save(os.path.join(OUT, f"{key}-print.pdf"), "PDF", resolution=300.0)
+    print(f"{key}: {url} -> print/qr/{key}-print.pdf (8.5x11 at 300 DPI)")
