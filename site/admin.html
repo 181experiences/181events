@@ -697,6 +697,7 @@
     </div></div>
   <div class="psub" id="acal-sub">Everything, in every state: what residents see and what they don&rsquo;t yet. Open any event straight from its day.</div>
   <div class="acal" id="acal"></div>
+  <div id="acal-qv" style="display:none"></div>
   <div class="aleg">
     <span><i style="border-left:3px solid var(--red)"></i> Live</span>
     <span><i style="border-style:dashed"></i> Draft</span>
@@ -2918,15 +2919,17 @@
     for (let d = 1; d <= days; d++) {
       const iso = `${acalYM}-${String(d).padStart(2, "0")}`;
       const evs = (by.get(iso) || []).sort((a, b) => (a.Start24 || "").localeCompare(b.Start24 || ""));
-      // The desk looks without opening: same grid, no editor behind the chips.
+      // The desk looks without editing: the same grid, and a chip opens the
+      // view-only record below it rather than the editor.
       const chip = e => role === "desk"
-        ? `<span class="acev st-${cls(e.Status)}${iso < t ? " past" : ""}" style="cursor:default" title="${esc(e.Status || "Draft")}"><span class="at">${esc(e.Start || "")}</span> ${esc(e.Title)}</span>`
+        ? `<button class="acev st-${cls(e.Status)}${iso < t ? " past" : ""}" data-acalqv="${esc(String(e.id))}" title="A view-only look at ${esc(e.Title)}"><span class="at">${esc(e.Start || "")}</span> ${esc(e.Title)}</button>`
         : `<button class="acev st-${cls(e.Status)}${iso < t ? " past" : ""}" data-acev="${esc(String(e.id))}" title="${esc(e.Status || "Draft")}${e.Draft ? ", edits pending" : ""}"><span class="at">${esc(e.Start || "")}</span> ${esc(e.Title)}</button>`;
       html += `<div class="acell${iso === t ? " tod" : ""}"><div class="adn">${d}</div>`
         + evs.map(chip).join("")
         + `</div>`;
     }
     box.innerHTML = html;
+    const qv = $("#acal-qv"); if (qv) { qv.style.display = "none"; qv.innerHTML = ""; }
     const sub2 = $("#acal-sub");
     if (sub2 && role === "desk")
       sub2.textContent = "The month at a glance, every event in every state. Event changes are Resident Experiences’ side of the desk.";
@@ -3353,7 +3356,7 @@
       }
       return;
     }
-    const b = ev.target.closest("[data-edit],[data-archive],[data-new],[data-edpublish],[data-edsavedraft],[data-eddiscard],[data-edarchive],[data-histload],[data-savewindow],[data-addloc],[data-addhost],[data-delloc],[data-delhost],[data-period],[data-publish],[data-fmt],[data-dates],[data-editrow],[data-export],[data-evdelete],[data-acal],[data-acev],[data-dashfold],[data-qview]");
+    const b = ev.target.closest("[data-edit],[data-archive],[data-new],[data-edpublish],[data-edsavedraft],[data-eddiscard],[data-edarchive],[data-histload],[data-savewindow],[data-addloc],[data-addhost],[data-delloc],[data-delhost],[data-period],[data-publish],[data-fmt],[data-dates],[data-editrow],[data-export],[data-evdelete],[data-acal],[data-acev],[data-acalqv],[data-dashfold],[data-qview]");
     if (!b) return;
     if (b.dataset.evdelete) { deleteDraftGroup(b.dataset.evdelete); return; }
     if (b.dataset.dashfold !== undefined) { applyDashFold(true); return; }
@@ -3366,6 +3369,18 @@
     if (b.dataset.acev) {
       const row = events.find(e => String(e.id) === b.dataset.acev);
       if (row) openEditor(row.Series ? "s:" + (row.Slug || slugify(row.Title)) : "e:" + row.id, row.id);
+      return;
+    }
+    if (b.dataset.acalqv) {
+      const row = events.find(e => String(e.id) === b.dataset.acalqv);
+      const qv = $("#acal-qv");
+      if (row && qv) {
+        const g = { head: row, rows: [row], upcoming: row.Date >= today() ? [row] : [], series: false,
+                    status: row.Status || "Draft", mixed: false };
+        qv.innerHTML = `<div class="flrow" style="margin:16px 0 6px"><span style="font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--stone);font-weight:600">${esc(row.Title)} &middot; ${esc(fmt(row.Date))}</span></div><div class="qv">${qvHtml(g)}</div>`;
+        qv.style.display = "";
+        qv.scrollIntoView({ behavior: "smooth", block: "nearest" });
+      }
       return;
     }
     if (b.dataset.export !== undefined) { exportCsv(); return; }

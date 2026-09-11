@@ -695,6 +695,7 @@ HTML = f'''<!DOCTYPE html>
     </div></div>
   <div class="psub" id="acal-sub">Everything, in every state: what residents see and what they don&rsquo;t yet. Open any event straight from its day.</div>
   <div class="acal" id="acal"></div>
+  <div id="acal-qv" style="display:none"></div>
   <div class="aleg">
     <span><i style="border-left:3px solid var(--red)"></i> Live</span>
     <span><i style="border-style:dashed"></i> Draft</span>
