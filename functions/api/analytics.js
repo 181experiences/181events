@@ -26,7 +26,8 @@ query ($accountTag: String!, $siteTag: String!, $since: Date!, $until: Date!) {
 export const SOURCES = { "/q/lobby/": "QR, Lobby", "/q/coffee/": "QR, Coffee Bar",
   "/q/fitness/": "QR, Fitness Center", "/q/office/": "QR, Leo's Office", "/q/email/": "Weekly email",
   "/q/bar/": "QR, Level 39 Bar", "/q/screens/": "QR, Building screens",
-  "/q/welcome/": "QR, Welcome sheet" };
+  "/q/welcome/": "QR, Welcome sheet", "/q/level7/": "QR, Level 7",
+  "/q/level39/": "QR, Level 39 landing" };
 
 export async function onRequestGet({ request, env }) {
   const days = Math.min(90, Math.max(1, Number(new URL(request.url).searchParams.get("days") || 30)));
