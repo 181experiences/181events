@@ -497,7 +497,7 @@
       <div class="card" id="nextlist"></div>
     </div>
   </div>
-  <div class="flrow" style="margin-top:16px"><span style="font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--stone);font-weight:600">How to read these figures</span><span class="iwrap"><button type="button" class="ib" aria-label="What this does">i</button><span class="ipop">With about ten year-round residents, two people is 20&percnt;. Every figure shows a count alongside its percentage, and month-to-month swings read as noise until three months agree. Events hosted by others are listed but not counted: Caf&eacute; 181 appears on the resident calendar and is excluded from engagement figures, so nothing here credits Resident Experiences with someone else&rsquo;s attendance. Traffic is measured without cookies and without identifying anyone. RSVP figures come from sign-ups on the site; Arrived marks record who came.</span></span></div>
+  <div class="flrow" style="margin-top:16px"><span style="font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--stone);font-weight:600">How to read these figures</span><span class="iwrap"><button type="button" class="ib" aria-label="What this does">i</button><span class="ipop">With about ten year-round residents, two people is 20&percnt;. Every figure shows a count alongside its percentage, and month-to-month swings read as noise until three months agree. Events hosted by others are listed but not counted: Caf&eacute; 181 appears on the resident calendar and is excluded from engagement figures, so nothing here credits Resident Experiences with someone else&rsquo;s attendance. Traffic is measured without cookies and without identifying anyone. RSVP figures come from sign-ups on the site; Arrived marks record who came. Staff role accounts (the desk, leadership) hold real seats, so capacity lines count them, but every reported figure here and in the CSV is residents only; a rollup line says when staff are in the room.</span></span></div>
   </div>
 
   <div class="sec">
@@ -1858,11 +1858,13 @@
       : "<strong>Analytics not connected yet.</strong> Traffic figures begin once Cloudflare Web Analytics is switched on for the site.";
     const perUnit = a.visits ? (a.visits / UNITS).toFixed(1) : "0";
     const sums = rsvpSummary();
-    const heads = sums.reduce((s, x) => s + x.heads, 0), waiting = sums.reduce((s, x) => s + x.waitHeads, 0);
+    const heads = sums.reduce((s, x) => s + x.resHeads, 0), waiting = sums.reduce((s, x) => s + x.resWaitHeads, 0);
+    const staffAhead = sums.reduce((s, x) => s + x.roleHeads + x.roleWaitHeads, 0);
     $("#kpis").innerHTML = [
       ["Visits", a.visits, `${a.pageviews} page views · ${perUnit} per unit`],
       ["Busiest day", a.byDay.length ? Math.max(...a.byDay.map(d => d.visits)) : 0, a.byDay.length ? "visits on " + fmt(a.byDay.reduce((m, d) => d.visits > m.visits ? d : m).date) : "no traffic yet"],
-      ["RSVPs ahead", heads, waiting ? `${waiting} on waitlists` : "confirmed heads for upcoming dates"],
+      ["RSVPs ahead", heads, waiting ? `${waiting} on waitlists${staffAhead ? " · staff not counted" : ""}`
+        : staffAhead ? `resident heads · ${staffAhead} staff not counted` : "confirmed heads for upcoming dates"],
       ["Upcoming dates", upcoming.length, `${new Set(upcoming.map(e => e.Slug)).size} live listings on the calendar`],
       ["Next up", upcoming[0] ? fmt(upcoming[0].Date).replace(/^\w+, /, "") : "None", upcoming[0] ? `${upcoming[0].Title}, ${upcoming[0].Start}` : "Nothing scheduled"],
     ].map(([k, v, n]) => `<div class="kpi"><div class="k">${k}</div><div class="v">${esc(v)}</div><div class="n">${esc(n)}</div></div>`).join("");
@@ -1892,14 +1894,25 @@
       if (r.status === "Cancelled") continue;
       if (!by.has(r.event_key)) by.set(r.event_key, {
         key: r.event_key, date: r.event_date, title: r.event_title, type: r.rsvp_type,
-        parties: 0, heads: 0, waitParties: 0, waitHeads: 0, arrivedHeads: 0, arrivedMarks: 0, rows: [],
+        parties: 0, heads: 0, waitParties: 0, waitHeads: 0, arrivedHeads: 0, arrivedMarks: 0,
+        resParties: 0, resHeads: 0, resWaitHeads: 0, resArrivedHeads: 0, roleHeads: 0, roleWaitHeads: 0, rows: [],
       });
       const s = by.get(r.event_key);
       s.rows.push(r);
-      if (r.status === "Waitlist") { s.waitParties++; s.waitHeads += r.count; }
-      else {
+      // A role account (no unit: the desk, leadership) holds real seats, so the
+      // plain tallies keep everyone for capacity work; the res* tallies carry
+      // residents only, and every reported figure reads from those.
+      const role = !r.unit;
+      if (r.status === "Waitlist") {
+        s.waitParties++; s.waitHeads += r.count;
+        if (role) s.roleWaitHeads += r.count; else s.resWaitHeads += r.count;
+      } else {
         s.parties++; s.heads += r.count;
-        if (r.arrived != null) { s.arrivedHeads += r.arrived; s.arrivedMarks++; }
+        if (role) s.roleHeads += r.count; else { s.resParties++; s.resHeads += r.count; }
+        if (r.arrived != null) {
+          s.arrivedHeads += r.arrived; s.arrivedMarks++;
+          if (!role) s.resArrivedHeads += r.arrived;
+        }
       }
     }
     const all = [...by.values()];
@@ -2155,7 +2168,7 @@
     html += sums.map(s => {
       const e = ev(s.key);
       const cap = e && e.Capacity ? ` of ${e.Capacity}` : "";
-      const what = s.type === "guest" ? `${s.heads} outside guests` : `${s.heads}${cap} ${s.type === "paid" ? "seats" : "going"}`;
+      const what = s.type === "guest" ? `${s.heads} outside guests` : `${s.heads}${cap} ${s.type === "paid" ? "seats" : "going"}${s.roleHeads ? ` &middot; incl. ${s.roleHeads} staff` : ""}`;
       const wait = s.waitHeads ? ` &middot; ${s.waitHeads} waitlisted` : "";
       const units = new Set(s.rows.map(r => r.unit).filter(Boolean));
       const dupUnit = units.size < s.rows.filter(r => r.unit).length;
@@ -2183,8 +2196,9 @@
         <span class="sval" style="color:var(--stone)">${pastRsvpsOpen ? "Hide" : "Show"}</span></div>
       <div id="pastrsvps" style="${pastRsvpsOpen ? "" : "display:none"}">
         ${past.map(s => {
-          const went = s.arrivedMarks ? `${s.arrivedHeads} of ${s.heads} arrived`
-            : s.type === "guest" ? `${s.heads} outside guests` : `${s.heads} confirmed`;
+          const staffTail = s.roleHeads ? ` &middot; +${s.roleHeads} staff` : "";
+          const went = s.arrivedMarks ? `${s.resArrivedHeads} of ${s.resHeads} arrived${staffTail}`
+            : s.type === "guest" ? `${s.heads} outside guests` : `${s.resHeads} confirmed${staffTail}`;
           const wait = s.waitParties ? ` &middot; ${s.waitParties} stayed waitlisted` : "";
           const mails = new Set(s.rows.filter(r => r.status !== "Waitlist" && r.email).map(r => r.email.toLowerCase()));
           const dark = s.rows.filter(r => r.status !== "Waitlist" && !r.email).length;
@@ -2970,11 +2984,11 @@
     for (const c of CATS) { const n = upcoming.filter(e => e.Category === c).length; if (n) rows.push([c, n]); }
     const sums = rsvpSummary();
     rows.push([]);
-    rows.push(["RSVPs by event, upcoming"]);
-    rows.push(["Date", "Event", "Type", "Parties", "Heads", "Capacity", "Waitlisted heads"]);
+    rows.push(["RSVPs by event, upcoming", "resident figures; staff role accounts sit in their own column"]);
+    rows.push(["Date", "Event", "Type", "Parties", "Heads", "Capacity", "Waitlisted heads", "Staff heads"]);
     for (const s2 of sums) {
       const e = events.find(x => stem(x) === s2.key);
-      rows.push([s2.date, s2.title, s2.type, s2.parties, s2.heads, e && e.Capacity ? e.Capacity : "", s2.waitHeads]);
+      rows.push([s2.date, s2.title, s2.type, s2.resParties, s2.resHeads, e && e.Capacity ? e.Capacity : "", s2.resWaitHeads, s2.roleHeads || ""]);
     }
     if (!sums.length) rows.push(["No RSVPs yet"]);
     // Attendance, once the door starts marking arrivals: RSVPed beside came
@@ -2982,10 +2996,10 @@
     const past = rsvpSummaries().past;
     if (past.length) {
       rows.push([]);
-      rows.push(["Attendance, past events"]);
-      rows.push(["Date", "Event", "Confirmed heads", "Arrived heads", "Parties marked"]);
-      for (const s2 of past) rows.push([s2.date, s2.title, s2.heads,
-        s2.arrivedMarks ? s2.arrivedHeads : "not marked", s2.arrivedMarks || ""]);
+      rows.push(["Attendance, past events", "resident figures; staff role accounts sit in their own column"]);
+      rows.push(["Date", "Event", "Confirmed heads", "Arrived heads", "Parties marked", "Staff heads"]);
+      for (const s2 of past) rows.push([s2.date, s2.title, s2.resHeads,
+        s2.arrivedMarks ? s2.resArrivedHeads : "not marked", s2.arrivedMarks || "", s2.roleHeads || ""]);
     }
     rows.push([]);
     rows.push(["Messages"]);
