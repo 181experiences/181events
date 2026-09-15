@@ -120,7 +120,9 @@ async function rsvpPage(context, ev, key, me) {
     EYEBROW: esc(ev.category || "On the calendar"),
     TITLE: esc(ev.title),
     WHEN: whenOf(ev),
-    WHERE: esc(ev.location || "Level 39, Residents’ Club"),
+    WHERE: esc(ev.location || "Level 39, Residents’ Club")
+      + (ev.rsvp === "Partner email" && ev.address
+          ? `<br><span style="font-size:15px;color:#7a7266">${esc(ev.address)}</span>` : ""),
   });
   body = cut(body, "SEATS", ev.capacity
     ? fill(inner(tpl, "SEATS"), {

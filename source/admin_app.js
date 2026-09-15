@@ -210,7 +210,7 @@
       + cell("Hosted by", dash(h.Host))
       + cell("Category", dash(h.Category))
       + cell("RSVP type", dash(h.RSVP || "None"))
-      + (h.RSVP === "Partner email" ? cell("Partner RSVP email", dash(h.Partner)) : "")
+      + (h.RSVP === "Partner email" ? cell("Partner RSVP email", dash(h.Partner)) + cell("Calendar address", dash(h.Address)) : "")
       + cell("Largest party", esc(String(Math.max(1, Math.min(5, Number(h.Party) || 3)))))
       + cell("Capacity", dash(h.Capacity))
       + cell("Price", dash(h.Price))
@@ -284,10 +284,13 @@
     return mk(y) > eventDate ? mk(y - 1) : mk(y);
   }
 
-  // The partner-email box shows only while the Partner email type is picked.
+  // The partner-email and street-address boxes show only while the Partner
+  // email type is picked.
   function syncPartnerField() {
     const i = $$("input[name=rt]").findIndex(r => r.checked);
-    $("#ed-partner").style.display = RSVPS[i] === "Partner email" ? "" : "none";
+    const on = RSVPS[i] === "Partner email";
+    $("#ed-partner").style.display = on ? "" : "none";
+    $("#ed-address").style.display = on ? "" : "none";
   }
   $$("input[name=rt]").forEach(r => r.addEventListener("change", syncPartnerField));
 
@@ -305,6 +308,7 @@
     $$("input[name=cat]").forEach((r, i) => r.checked = CATS[i] === e.Category);
     $$("input[name=rt]").forEach((r, i) => r.checked = RSVPS[i] === (e.RSVP || "None"));
     $("#f-partner").value = e.Partner || "";
+    $("#f-address").value = e.Address || "";
     syncPartnerField();
     const pmax = Math.max(1, Math.min(5, Number(e.Party) || 3));
     $$("input[name=pm]").forEach((r, i) => r.checked = i + 1 === pmax);
@@ -438,9 +442,10 @@
       Counted: $("#co-0").checked, Moved: editing.row ? !!editing.row.Moved : false,
       Party: (() => { const i = $$("input[name=pm]").findIndex(r => r.checked); return i < 0 ? 3 : i + 1; })(),
       Partner: $("#f-partner").value.trim(),
+      Address: $("#f-address").value.trim(),
       Slug: $("#f-slug").value.trim() || slugify(title),
     };
-    if (f.RSVP !== "Partner email") f.Partner = "";
+    if (f.RSVP !== "Partner email") { f.Partner = ""; f.Address = ""; }
     return f;
   }
 
@@ -459,7 +464,7 @@
   }
 
   // Which field changes ripple across a series when "apply to every upcoming occurrence" is ticked.
-  const SERIES_FIELDS = ["Title", "Start", "End", "Start24", "Location", "Host", "Category", "RSVP", "Capacity", "Price", "Series", "Cutoff", "Description", "Counted", "Image", "Status", "Teaser", "Closed", "Announce", "Party", "Partner"];
+  const SERIES_FIELDS = ["Title", "Start", "End", "Start24", "Location", "Host", "Category", "RSVP", "Capacity", "Price", "Series", "Cutoff", "Description", "Counted", "Image", "Status", "Teaser", "Closed", "Announce", "Party", "Partner", "Address"];
 
   async function save(status) {
     const f = readForm();

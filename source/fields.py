@@ -5,7 +5,7 @@ import html
 
 FIELDS = ["Status", "Date", "Title", "Category", "Start", "End", "Start24", "Location",
           "Host", "RSVP", "Capacity", "Price", "Series", "Description", "Cutoff", "Marquee",
-          "Counted", "Moved", "Image", "Slug", "Teaser", "Closed", "Announce", "Party", "Partner"]
+          "Counted", "Moved", "Image", "Slug", "Teaser", "Closed", "Announce", "Party", "Partner", "Address"]
 
 # SQL column per field in the D1 events table ("End" would collide with the SQL keyword).
 COLS = {f: f.lower() for f in FIELDS}
@@ -43,7 +43,7 @@ def to_record(e):
         "Marquee": bool(e["marquee"]), "Counted": bool(e["counted"]), "Moved": bool(e["moved"]),
         "Image": e["img"] or "", "Slug": e["slug"], "Teaser": bool(e.get("teaser")),
         "Closed": bool(e.get("closed")), "Announce": bool(e.get("announce")),
-        "Party": e.get("party") or "", "Partner": e.get("partner") or "",
+        "Party": e.get("party") or "", "Partner": e.get("partner") or "", "Address": e.get("address") or "",
     }
 
 def from_record(f, month_keys):
@@ -66,5 +66,5 @@ def from_record(f, month_keys):
         status=f.get("Status") or "Draft", rec=f.get("_id"), teaser=bool(f.get("Teaser")),
         closed=bool(f.get("Closed")), announce=bool(f.get("Announce")),
         party=int(f["Party"]) if f.get("Party") else None,
-        partner=f.get("Partner") or None,
+        partner=f.get("Partner") or None, address=f.get("Address") or None,
     )

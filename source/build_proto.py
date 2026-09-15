@@ -132,7 +132,11 @@ def ics_href(e):
         f"LAST-MODIFIED:{BUILD_STAMP}",
         f"DTSTART:{d}T{e['t24']}00",
         f"DTEND:{d}T{h24}{ehm}00",
-        f"SUMMARY:{plain(e['title'])}", f"LOCATION:181 Fremont - {plain(e['loc'])}",
+        f"SUMMARY:{plain(e['title'])}",
+        # An offsite partner event files itself at the venue, so a tap on the
+        # calendar entry maps to the boutique, never to our lobby.
+        (f"LOCATION:{plain(e.get('address') or e['loc'])}" if e["rsvp"] == "partner"
+         else f"LOCATION:181 Fremont - {plain(e['loc'])}"),
         f"DESCRIPTION:{plain(e['desc'][0]) if e['desc'] else ''}", "END:VEVENT", "END:VCALENDAR"]) + "\r\n"
     fname = f"{e['on'].isoformat()}_{e['slug']}.ics"
     ICS_FILES[fname] = body
@@ -343,7 +347,9 @@ def event_screen(e):
     facts = ('<dl class="e-facts">'
              f'<div class="fact"><dt>When</dt><dd>{dow_of(e["m"],e["d"])}, {short_month(e["m"])} {e["d"]}<br>'
              f'{e["time"]} &ndash; {e["end"]}</dd></div>'
-             f'<div class="fact"><dt>Where</dt><dd>{e["loc"]}</dd></div>')
+             f'<div class="fact"><dt>Where</dt><dd>{e["loc"]}'
+             + (f'<br><span style="font-size:15px;color:var(--stone)">{e["address"]}</span>' if e.get("address") else '')
+             + '</dd></div>')
     if e["cap"] and e["price"]:
         facts += f'<div class="fact"><dt>Seats</dt><dd>{e["cap"]} &middot; {e["price"]} per person</dd></div>'
     elif e["cap"]:

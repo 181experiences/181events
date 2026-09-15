@@ -284,9 +284,12 @@ def rsvp_page(e, key, me):
     taken = seats_taken(key, me["id"] if me else 0) if cap else 0
     full = bool(cap and taken >= cap)
 
+    where = esc(e.get("Location") or "Level 39, Residents’ Club")
+    if e.get("RSVP") == "Partner email" and e.get("Address"):
+        where += f'<br><span style="font-size:15px;color:#7a7266">{esc(e["Address"])}</span>'
     body = fill(tpl, dict(EYEBROW=esc(e.get("Category") or "On the calendar"),
         TITLE=esc(e["Title"]), WHEN=when_of(e),
-        WHERE=esc(e.get("Location") or "Level 39, Residents’ Club")))
+        WHERE=where))
     seats_text = None
     if cap:
         seats_text = (f"{cap} at the table &middot; {esc(e['Price'])} per person" if e.get("Price")
@@ -572,6 +575,12 @@ def to24(t):
         h = h % 12 + (12 if m.group(3).upper() == "PM" else 0)
     if h > 23: return "0000"
     return f"{h:02d}" + (m.group(2) or "00")
+
+def dev_loc_line(e):
+    # Mirrors calendar/feed.js: a partner event files itself at the venue.
+    if e.get("RSVP") == "Partner email":
+        return f"LOCATION:{e.get('Address') or e.get('Location') or 'Level 39'}"
+    return f"LOCATION:181 Fremont - {e.get('Location') or 'Level 39'}"
 
 def board_ics(rows, name):
     out = ["BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//181 Fremont//Board Meetings//EN", f"X-WR-CALNAME:{name}"]
@@ -935,7 +944,7 @@ class H(SimpleHTTPRequestHandler):
                     party = f" (party of {r['count']})" if r["count"] > 1 else ""
                     out += ["BEGIN:VEVENT", f"UID:181fremont-{e.get('Slug') or 'event'}-{d}@181residents.com",
                             f"DTSTAMP:{d}T000000Z", f"DTSTART:{d}T{start}00", f"DTEND:{d}T{end}00",
-                            f"SUMMARY:{e['Title']}{party}", f"LOCATION:181 Fremont - {e.get('Location') or 'Level 39'}",
+                            f"SUMMARY:{e['Title']}{party}", dev_loc_line(e),
                             "END:VEVENT"]
             return self._text("\r\n".join(out) + "\r\n" + "END:VCALENDAR", "text/calendar; charset=utf-8")
         if p.path == "/calendar/feed":
@@ -953,7 +962,7 @@ class H(SimpleHTTPRequestHandler):
                 end = to24(e.get("End")) if e.get("End") else start
                 out += ["BEGIN:VEVENT", f"UID:181fremont-{e.get('Slug') or 'event'}-{d}@181residents.com",
                         f"DTSTAMP:{d}T000000Z", f"DTSTART:{d}T{start}00", f"DTEND:{d}T{end}00",
-                        f"SUMMARY:{e['Title']}", f"LOCATION:181 Fremont - {e.get('Location') or 'Level 39'}",
+                        f"SUMMARY:{e['Title']}", dev_loc_line(e),
                         f"URL:https://181residents.com/rsvp/{e['Date']}_{e.get('Slug') or ''}", "END:VEVENT"]
             return self._text("\r\n".join(out) + "\r\nEND:VCALENDAR\r\n", "text/calendar; charset=utf-8")
         if p.path == "/board/feed":

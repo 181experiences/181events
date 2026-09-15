@@ -33,12 +33,15 @@ export async function onRequestGet({ env, params }) {
         const end = ev.end_time ? to24(ev.end_time) : start;
         const title = String(ev.title || "").replace(/[\r\n,;]/g, " ");
         const loc = String(ev.location || "Level 39").replace(/[\r\n,;]/g, " ");
+        const locLine = ev.rsvp === "Partner email"
+          ? `LOCATION:${String(ev.address || "").replace(/[\r\n,;]/g, " ") || loc}`
+          : `LOCATION:181 Fremont - ${loc}`;
         out.push("BEGIN:VEVENT",
           `UID:181fremont-${ev.slug || "event"}-${d}@181residents.com`,
           `DTSTAMP:${stamp}`, `SEQUENCE:${seq}`,
           `DTSTART:${d}T${start}00`, `DTEND:${d}T${end}00`,
           `SUMMARY:${title}${ev.count > 1 ? ` (party of ${ev.count})` : ""}`,
-          `LOCATION:181 Fremont - ${loc}`,
+          locLine,
           `URL:https://181residents.com/rsvp/${ev.date}_${ev.slug || ""}`,
           "END:VEVENT");
       }

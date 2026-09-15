@@ -3,13 +3,13 @@ VERSION:2.0
 PRODID:-//181 Fremont//Resident Experiences//EN
 BEGIN:VEVENT
 UID:181fremont-an-evening-with-saint-laurent-20261016@181residents.com
-DTSTAMP:20260915T192803Z
+DTSTAMP:20260915T202020Z
 SEQUENCE:257
-LAST-MODIFIED:20260915T192803Z
+LAST-MODIFIED:20260915T202020Z
 DTSTART:20261016T180000
 DTEND:20261016T200000
 SUMMARY:An Evening with Saint Laurent
-LOCATION:181 Fremont - Saint Laurent, Union Square
+LOCATION:384 Post St, San Francisco
 DESCRIPTION:Join us at the Saint Laurent flagship boutique in Union Square as we celebrate the arrival of their Fall Collection, an evening shared with owners and residents from our neighboring Action properties.
 END:VEVENT
 END:VCALENDAR

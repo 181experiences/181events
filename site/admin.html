@@ -632,6 +632,7 @@
         <span class="pickpair"><label class="pick" for="rt-4">Partner email</label><span class="iwrap"><button type="button" class="ib" aria-label="What this does">i</button><span class="ipop">For an event hosted with a partner building, held offsite, where their team keeps the list. The page shows an Offsite tag in bronze, and the button opens an email to the partner's address with the event named in the subject. Nothing lands on our Dashboard, and Add to My Calendar works as usual. Put the venue in Location and the partner in Hosted by.</span></span></span>
       </div></div>
     <div class="field f-full" id="ed-partner" style="display:none"><div class="flrow"><label class="fl" for="f-partner">Partner RSVP email</label><span class="iwrap"><button type="button" class="ib" aria-label="What this does">i</button><span class="ipop">Where resident RSVPs go for this event. The RSVP by Email button opens a message to this address; the resident's name and unit are prompted in the body. The Close RSVPs switch still works once the host says their list is set.</span></span></div><input class="inp" id="f-partner" type="email" inputmode="email" autocapitalize="none" spellcheck="false" placeholder="events@partnerbuilding.com"></div>
+    <div class="field f-full" id="ed-address" style="display:none"><div class="flrow"><label class="fl" for="f-address">Street address, for calendar apps</label><span class="iwrap"><button type="button" class="ib" aria-label="What this does">i</button><span class="ipop">Optional. When set, Add to My Calendar files the event at this address, so tapping the entry maps residents to the venue rather than to 181 Fremont. It also appears quietly under Where on the event page. Without it, the calendar entry carries the Location text as written.</span></span></div><input class="inp" id="f-address" autocapitalize="words" placeholder="384 Post St, San Francisco"></div>
     <div class="field f-full"><div class="flrow"><label class="fl">Largest party a resident may book</label><span class="iwrap"><button type="button" class="ib" aria-label="What this does">i</button><span class="ipop">Residents choose from Just myself up to this size when they RSVP; chips past it never appear. Please contact me always shows for bigger asks, which staff arrange from the Dashboard, up to six. Out of the box: Myself +2.</span></span></div>
       <div class="picks">
         <label class="pick" for="pm-0">Just myself</label>
@@ -652,7 +653,7 @@
       </div>
       <textarea class="inp" id="f-desc" rows="7" placeholder="Write it as if the reader knows nothing about the event. It shows exactly as typed: a return starts a new line, a blank line starts a new paragraph."></textarea>
       <div class="hint">Select some text, then B, I, or U. Titles of books and films take italics. Line breaks show exactly as typed: a return is a new line (menus read one item per line), a blank line is a new paragraph. Sizes are set by the calendar itself.</div></div>
-    <div class="field f-full"><div class="flrow"><label class="check"><input type="checkbox" id="f-marquee"> Marquee: feature this event on the calendar</label><span class="iwrap"><button type="button" class="ib" aria-label="What this does">i</button><span class="ipop">The featured event: its row on the calendar&rsquo;s list view wears a quiet red highlight so it stands out among the rest. One at a time reads best. The home screen&rsquo;s Next Event tile picks itself and is not affected.</span></span></div></div>
+    <div class="field f-full"><div class="flrow"><label class="check"><input type="checkbox" id="f-marquee"> Marquee: feature this event on the calendar</label><span class="iwrap"><button type="button" class="ib" aria-label="What this does">i</button><span class="ipop">The featured event: its row on the calendar&rsquo;s list view wears a quiet red highlight so it stands out among the rest. One at a time reads best. The home screen&rsquo;s Next Event tile picks itself and is not affected. The bronze offsite treatment is different: it comes from the Partner email RSVP type, never from this box or the category, and on a partner event the bronze stays.</span></span></div></div>
     <div class="field f-full"><label class="check"><input type="checkbox" id="f-teaser"> Coming soon: publish the date and title, hold the details</label>
       <div class="hint">For an event still taking shape. It appears on the calendar with a Coming soon note; RSVP and
       Add to My Calendar stay closed until this is unticked, so plans can still change without anyone rebooking.</div></div>
@@ -1396,7 +1397,7 @@
       + cell("Hosted by", dash(h.Host))
       + cell("Category", dash(h.Category))
       + cell("RSVP type", dash(h.RSVP || "None"))
-      + (h.RSVP === "Partner email" ? cell("Partner RSVP email", dash(h.Partner)) : "")
+      + (h.RSVP === "Partner email" ? cell("Partner RSVP email", dash(h.Partner)) + cell("Calendar address", dash(h.Address)) : "")
       + cell("Largest party", esc(String(Math.max(1, Math.min(5, Number(h.Party) || 3)))))
       + cell("Capacity", dash(h.Capacity))
       + cell("Price", dash(h.Price))
@@ -1470,10 +1471,13 @@
     return mk(y) > eventDate ? mk(y - 1) : mk(y);
   }
 
-  // The partner-email box shows only while the Partner email type is picked.
+  // The partner-email and street-address boxes show only while the Partner
+  // email type is picked.
   function syncPartnerField() {
     const i = $$("input[name=rt]").findIndex(r => r.checked);
-    $("#ed-partner").style.display = RSVPS[i] === "Partner email" ? "" : "none";
+    const on = RSVPS[i] === "Partner email";
+    $("#ed-partner").style.display = on ? "" : "none";
+    $("#ed-address").style.display = on ? "" : "none";
   }
   $$("input[name=rt]").forEach(r => r.addEventListener("change", syncPartnerField));
 
@@ -1491,6 +1495,7 @@
     $$("input[name=cat]").forEach((r, i) => r.checked = CATS[i] === e.Category);
     $$("input[name=rt]").forEach((r, i) => r.checked = RSVPS[i] === (e.RSVP || "None"));
     $("#f-partner").value = e.Partner || "";
+    $("#f-address").value = e.Address || "";
     syncPartnerField();
     const pmax = Math.max(1, Math.min(5, Number(e.Party) || 3));
     $$("input[name=pm]").forEach((r, i) => r.checked = i + 1 === pmax);
@@ -1624,9 +1629,10 @@
       Counted: $("#co-0").checked, Moved: editing.row ? !!editing.row.Moved : false,
       Party: (() => { const i = $$("input[name=pm]").findIndex(r => r.checked); return i < 0 ? 3 : i + 1; })(),
       Partner: $("#f-partner").value.trim(),
+      Address: $("#f-address").value.trim(),
       Slug: $("#f-slug").value.trim() || slugify(title),
     };
-    if (f.RSVP !== "Partner email") f.Partner = "";
+    if (f.RSVP !== "Partner email") { f.Partner = ""; f.Address = ""; }
     return f;
   }
 
@@ -1645,7 +1651,7 @@
   }
 
   // Which field changes ripple across a series when "apply to every upcoming occurrence" is ticked.
-  const SERIES_FIELDS = ["Title", "Start", "End", "Start24", "Location", "Host", "Category", "RSVP", "Capacity", "Price", "Series", "Cutoff", "Description", "Counted", "Image", "Status", "Teaser", "Closed", "Announce", "Party", "Partner"];
+  const SERIES_FIELDS = ["Title", "Start", "End", "Start24", "Location", "Host", "Category", "RSVP", "Capacity", "Price", "Series", "Cutoff", "Description", "Counted", "Image", "Status", "Teaser", "Closed", "Announce", "Party", "Partner", "Address"];
 
   async function save(status) {
     const f = readForm();
