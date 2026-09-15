@@ -59,7 +59,9 @@ DOW = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturd
 DOW_S = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
 sys.path.insert(0, HERE)
 from fields import RSVP_KEYS
-TYPE_OF = {label: key for label, key in RSVP_KEYS.items() if key}
+# Partner events take no RSVPs here (their host's team keeps the list), so the
+# type map leaves them out and every RSVP path treats them as it would a drop-in.
+TYPE_OF = {label: key for label, key in RSVP_KEYS.items() if key and key != "partner"}
 ASSET_KINDS = ["web-hero", "nixplay-still", "nixplay-video", "elevator-print", "level39-print", "email-header"]
 ASSET_DIR = os.path.join(HERE, "dev_assets")
 
@@ -293,6 +295,29 @@ def rsvp_page(e, key, me):
     closed = rsvp_closed(e)
     body = cut(body, "CUTOFF", fill(inner(tpl, "CUTOFF"),
         dict(CUTOFF=esc(cutoff_pretty(e)) + (" &middot; now closed" if closed else ""))) if e.get("Cutoff") else None)
+    # Partner-hosted offsite event: mailto CTA, no forms. Mirrors rsvp/[key].js.
+    if e["RSVP"] == "Partner email":
+        from urllib.parse import quote as _q
+        body = cut(cut(cut(cut(cut(body, "ALSO", None), "SIGNIN", None), "EXISTING", None), "FORM", None), "DROPIN", None)
+        d = datetime.date.fromisoformat(e["Date"])
+        when = f"{DOW[(d.weekday() + 1) % 7]}, {MON_PRETTY[d.month]} {d.day}"
+        subject = f'RSVP: {e["Title"]}, {when}'
+        mail_body = (f'Hello,\n\nI would like to RSVP for {e["Title"]} on {when}.\n'
+                     'I am an owner or resident at 181 Fremont.\n\nName:\nUnit:\nParty size:\n\nThank you.')
+        # Cut first, fill once: fill() blanks placeholders it was not given, so
+        # a nested section must keep its {{...}} until the single fill at the end.
+        section = inner(tpl, "PARTNER")
+        section = cut(section, "PBTN", None if closed else inner(section, "PBTN"))
+        section = cut(section, "PCLOSED", inner(section, "PCLOSED") if closed else None)
+        section = fill(section, dict(
+            PHOST=esc(e.get("Host") or "our partner building"),
+            PMAILTO=f'mailto:{esc(e.get("Partner") or "")}?subject={_q(subject)}&body={_q(mail_body)}',
+            PEMAIL=esc(e.get("Partner") or ""),
+            PCLOSEDLINE=f'{esc(closed_line(e, "RSVPs for this one"))}, and the host&rsquo;s team has set the list.'))
+        body = cut(body, "PARTNER", section)
+        return shell_page(e["Title"], body, me)
+    body = cut(body, "PARTNER", None)
+
     if not rsvp_type:
         body = cut(cut(cut(cut(body, "ALSO", None), "SIGNIN", None), "EXISTING", None), "FORM", None)
         body = cut(body, "DROPIN", inner(tpl, "DROPIN"))
@@ -1053,6 +1078,8 @@ class H(SimpleHTTPRequestHandler):
             key = str(body.get("event_key") or "")
             e = live_event(key)
             if not e: return self._json({"error": "That event is not on the live calendar."}, 400)
+            if e.get("RSVP") == "Partner email":
+                return self._json({"error": f"RSVPs for {e['Title']} go to the host's team by email ({e.get('Partner') or 'see the event page'}), not through this site."}, 400)
             if e.get("RSVP") not in TYPE_OF:
                 return self._json({"error": f"{label_of(resident)} is always welcome: {e['Title']} is drop-in, no RSVP needed."}, 400)
             rsvp_type = TYPE_OF[e["RSVP"]]

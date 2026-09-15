@@ -13,7 +13,7 @@
   const UNITS = 55;
   const CATS = ["Morning Offering", "Happy Hour", "Community Dinner", "Culinary Experience", "Enrichment Experience", "Signature Event", "Board Meeting"];
   const STATUSES = ["Draft", "Live", "Unpublished", "Archived"];
-  const RSVPS = ["None", "Guest count", "Seat", "Paid seat"];
+  const RSVPS = ["None", "Guest count", "Seat", "Paid seat", "Partner email"];
   // The six pieces of every event's kit: what each is, and where it actually goes.
   const KITINFO = [
     { slug: "web-hero", name: "Web hero", spec: "1600 × 900 JPG, under 500 KB",
@@ -210,6 +210,7 @@
       + cell("Hosted by", dash(h.Host))
       + cell("Category", dash(h.Category))
       + cell("RSVP type", dash(h.RSVP || "None"))
+      + (h.RSVP === "Partner email" ? cell("Partner RSVP email", dash(h.Partner)) : "")
       + cell("Largest party", esc(String(Math.max(1, Math.min(5, Number(h.Party) || 3)))))
       + cell("Capacity", dash(h.Capacity))
       + cell("Price", dash(h.Price))
@@ -242,6 +243,7 @@
         (h.Counted === true || h.Counted === "True" ? "" : badge("Not counted", "ext"));
       const counts = rsvpForGroup(g);
       const rsvp = h.RSVP === "None" || !h.RSVP ? "Drop in"
+        : h.RSVP === "Partner email" ? "By email · partner"
         : `${counts.heads}${h.Capacity && !g.series ? ` of ${h.Capacity}` : ""}${counts.wait ? ` · ${counts.wait} waiting` : ""}`;
       const kits = kitCount(masterKey(h));
       return `<div class="erow ${cls(g.status)}${g.mixed ? " live" : ""}" data-key="${esc(g.key)}">
@@ -282,6 +284,13 @@
     return mk(y) > eventDate ? mk(y - 1) : mk(y);
   }
 
+  // The partner-email box shows only while the Partner email type is picked.
+  function syncPartnerField() {
+    const i = $$("input[name=rt]").findIndex(r => r.checked);
+    $("#ed-partner").style.display = RSVPS[i] === "Partner email" ? "" : "none";
+  }
+  $$("input[name=rt]").forEach(r => r.addEventListener("change", syncPartnerField));
+
   // The form's field inputs, set from one place so the editor and the change
   // history's "Load this version" fill them identically.
   function applyFields(e) {
@@ -295,6 +304,8 @@
     $("#f-announce").checked = e.Announce === true || e.Announce === "True";
     $$("input[name=cat]").forEach((r, i) => r.checked = CATS[i] === e.Category);
     $$("input[name=rt]").forEach((r, i) => r.checked = RSVPS[i] === (e.RSVP || "None"));
+    $("#f-partner").value = e.Partner || "";
+    syncPartnerField();
     const pmax = Math.max(1, Math.min(5, Number(e.Party) || 3));
     $$("input[name=pm]").forEach((r, i) => r.checked = i + 1 === pmax);
     const counted = e.Counted === true || e.Counted === "True";
@@ -426,8 +437,10 @@
       Announce: $("#f-announce").checked,
       Counted: $("#co-0").checked, Moved: editing.row ? !!editing.row.Moved : false,
       Party: (() => { const i = $$("input[name=pm]").findIndex(r => r.checked); return i < 0 ? 3 : i + 1; })(),
+      Partner: $("#f-partner").value.trim(),
       Slug: $("#f-slug").value.trim() || slugify(title),
     };
+    if (f.RSVP !== "Partner email") f.Partner = "";
     return f;
   }
 
@@ -438,13 +451,15 @@
     if (d2 && d2 < f.Date) return "The end date sits before the start date.";
     if (d2 && rangeDates(f.Date, d2).length > 31) return "That range runs past a month. For a standing rhythm, use Repeats instead.";
     if (!f.Start) return "Add a start time, like 5:30 PM.";
+    if (f.RSVP === "Partner email" && !/.+@.+\..+/.test(f.Partner))
+      return "A partner event needs the partner's RSVP email address.";
     if (f.Status === "Live" && !f.Description && !f.Teaser)
       return "A published event needs a description, since residents will read it. Tick Coming soon to publish it without one.";
     return null;
   }
 
   // Which field changes ripple across a series when "apply to every upcoming occurrence" is ticked.
-  const SERIES_FIELDS = ["Title", "Start", "End", "Start24", "Location", "Host", "Category", "RSVP", "Capacity", "Price", "Series", "Cutoff", "Description", "Counted", "Image", "Status", "Teaser", "Closed", "Announce", "Party"];
+  const SERIES_FIELDS = ["Title", "Start", "End", "Start24", "Location", "Host", "Category", "RSVP", "Capacity", "Price", "Series", "Cutoff", "Description", "Counted", "Image", "Status", "Teaser", "Closed", "Announce", "Party", "Partner"];
 
   async function save(status) {
     const f = readForm();
@@ -872,7 +887,7 @@
       .sort((a, b) => (a.unit + a.name).localeCompare(b.unit + b.name, undefined, { numeric: true }));
     $("#ar-person").innerHTML = people.map(p => `<option value="${p.id}">${esc(p.label)}</option>`).join("");
     const t = today();
-    const evs = events.filter(e => e.Status === "Live" && e.Date >= t && e.RSVP && e.RSVP !== "None")
+    const evs = events.filter(e => e.Status === "Live" && e.Date >= t && e.RSVP && e.RSVP !== "None" && e.RSVP !== "Partner email")
       .sort((a, b) => (a.Date + a.Start24).localeCompare(b.Date + b.Start24));
     $("#ar-event").innerHTML = evs.map(e => `<option value="${esc(stem(e))}">${esc(fmt(e.Date))} · ${esc(e.Title)}${e.RSVP === "Guest count" ? " (outside guests)" : ""}</option>`).join("");
     if (!people.length || !evs.length) { toast("Needs at least one active person and one live upcoming event.", "warn"); return; }

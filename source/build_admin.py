@@ -9,7 +9,7 @@ APP_JS = open(os.path.join(HERE, "admin_app.js"), encoding="utf-8").read()
 CATEGORIES = ["Morning Offering", "Happy Hour", "Community Dinner", "Culinary Experience",
               "Enrichment Experience", "Signature Event", "Board Meeting"]
 STATUSES = ["Draft", "Live", "Unpublished", "Archived"]
-RSVP_TYPES = ["None", "Guest count only", "Seat", "Paid seat"]
+RSVP_TYPES = ["None", "Guest count only", "Seat", "Paid seat", "Partner email"]
 
 SCREENS = ["dash", "events", "editor", "cal", "assets", "arch", "res", "spaces", "msgs", "inst",
            "inst-events", "inst-brand", "inst-email", "inst-screens", "inst-private"]
@@ -285,6 +285,7 @@ HTML = f'''<!DOCTYPE html>
   #rt-1:checked ~ .form label[for="rt-1"]{{background:var(--ink);color:var(--paper-2);border-color:var(--ink)}}
   #rt-2:checked ~ .form label[for="rt-2"]{{background:var(--ink);color:var(--paper-2);border-color:var(--ink)}}
   #rt-3:checked ~ .form label[for="rt-3"]{{background:var(--ink);color:var(--paper-2);border-color:var(--ink)}}
+  #rt-4:checked ~ .form label[for="rt-4"]{{background:var(--ink);color:var(--paper-2);border-color:var(--ink)}}
   @media(max-width:700px){{ .form{{grid-template-columns:1fr}} }}
   .chips{{display:flex;flex-wrap:wrap;gap:8px}}
   .chip{{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--line);border-radius:100px;
@@ -626,7 +627,9 @@ HTML = f'''<!DOCTYPE html>
         <span class="pickpair"><label class="pick" for="rt-1">Guest count only</label>{info("For events residents attend freely but may bring outside guests to. Collects only the number of guests coming, so the building knows who to expect at the door; residents themselves are not counted or seated.")}</span>
         <span class="pickpair"><label class="pick" for="rt-2">Seat</label>{info("Holds real seats for residents and their parties, up to the party size set below. Capacity fills into one waitlist shared with the desk, and freed seats go to the front of that line with Confirm seats on the Dashboard.")}</span>
         <span class="pickpair"><label class="pick" for="rt-3">Paid seat</label>{info("Seats held exactly as Seat, with the price shown beside the RSVP button and on the page. Payment itself stays off the site; staff arrange it, and the page says seats are held.")}</span>
+        <span class="pickpair"><label class="pick" for="rt-4">Partner email</label>{info("For an event hosted with a partner building, held offsite, where their team keeps the list. The page shows an Offsite tag in bronze, and the button opens an email to the partner's address with the event named in the subject. Nothing lands on our Dashboard, and Add to My Calendar works as usual. Put the venue in Location and the partner in Hosted by.")}</span>
       </div></div>
+    <div class="field f-full" id="ed-partner" style="display:none"><div class="flrow"><label class="fl" for="f-partner">Partner RSVP email</label>{info("Where resident RSVPs go for this event. The RSVP by Email button opens a message to this address; the resident's name and unit are prompted in the body. The Close RSVPs switch still works once the host says their list is set.")}</div><input class="inp" id="f-partner" type="email" inputmode="email" autocapitalize="none" spellcheck="false" placeholder="events@partnerbuilding.com"></div>
     <div class="field f-full"><div class="flrow"><label class="fl">Largest party a resident may book</label>{info("Residents choose from Just myself up to this size when they RSVP; chips past it never appear. Please contact me always shows for bigger asks, which staff arrange from the Dashboard, up to six. Out of the box: Myself +2.")}</div>
       <div class="picks">
         <label class="pick" for="pm-0">Just myself</label>

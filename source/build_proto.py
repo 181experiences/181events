@@ -186,11 +186,27 @@ def closed_line(e):
     p = cutoff_pretty(e) if cutoff_date(e) and not e.get("closed") else ""
     return f"RSVPs closed {p}" if p else "RSVPs are closed for this one"
 
+from urllib.parse import quote as _quote
+
+def partner_when(e):
+    return f'{dow_of(e["m"], e["d"])}, {month_name(e["m"]).split()[0]} {e["d"]}'
+
+def partner_mailto(e):
+    """The RSVP by Email button for a partner-hosted offsite event: a mailto to
+    the host's team, event named in the subject, name and unit prompted in the
+    body, so the desk at the other building knows exactly what landed."""
+    subject = f'RSVP: {plain(e["title"])}, {partner_when(e)}'
+    body = (f'Hello,\n\nI would like to RSVP for {plain(e["title"])} on {partner_when(e)}.\n'
+            'I am an owner or resident at 181 Fremont.\n\nName:\nUnit:\nParty size:\n\nThank you.')
+    return f'mailto:{e["partner"]}?subject={_quote(subject)}&body={_quote(body)}'
+
 def tag_for(e):
     if e.get("far"):
         return '<span class="tag">Details to come</span>'
     if e.get("teaser"):
         return '<span class="tag">Coming soon</span>'
+    if e["rsvp"] == "partner":
+        return f'<span class="tag partner">Offsite &middot; with {e["host"]}</span>'
     if e["rsvp"] == "guest":
         return '<span class="tag">Drop in &middot; guests welcome</span>'
     if e["rsvp"] == "paid":
@@ -233,7 +249,8 @@ def month_block(m):
     for d in range(1, days + 1):
         evs = evs_on(k, d)
         gone = " past" if day_is_past(m, d) else ""
-        dots = '<span class="dots">' + '<span class="dot"></span>' * min(len(evs), 3) + '</span>'
+        dots = '<span class="dots">' + "".join(
+            f'<span class="dot{" p" if x["rsvp"] == "partner" else ""}"></span>' for x in evs[:3]) + '</span>'
         if not evs:
             cells.append(f'<div class="cell plain{gone}"><span>{d}</span><span class="dots"></span></div>')
         elif all(e.get("far") for e in evs):
@@ -303,7 +320,7 @@ for m in MONTHS:
                     f'<span class="ev-meta">{e["time"]} &middot; {e["loc"]}</span>{tag_for(e)}</span></div>')
                 continue
             rows.append(
-                f'<label class="lrow{" marquee" if e["marquee"] else ""}{" past" if day_is_past(m, d) else ""}" for="r-ev{e["id"]}">'
+                f'<label class="lrow{" marquee" if e["marquee"] else ""}{" partner" if e["rsvp"] == "partner" else ""}{" past" if day_is_past(m, d) else ""}" for="r-ev{e["id"]}">'
                 f'<span class="ldate">{datecell}</span>'
                 f'<span class="ev-body"><span class="ev-title">{e["title"]}</span>'
                 f'<span class="ev-meta">{e["time"]} &middot; {e["loc"]}</span>{tag_for(e)}</span>'
@@ -382,7 +399,7 @@ def event_screen(e):
         # Published on purpose before it is fully formed: the date is claimed and
         # the anticipation is real, but nothing can be RSVP'd or saved to a
         # calendar until the details settle, so plans can still pivot cleanly.
-        if e["rsvp"] in ("guest", "paid", "standard"):
+        if e["rsvp"] in ("guest", "paid", "standard", "partner"):
             cta += '<span class="btn off">RSVP Opens Soon</span>'
         cta += '<span class="btn ghost off">Add to My Calendar</span></div>'
         box = ('<div class="note" style="margin-top:14px">We&rsquo;re still putting this one together. '
@@ -402,7 +419,20 @@ def event_screen(e):
     </div>
   </section>'''
 
-    if e["rsvp"] in ("guest", "paid", "standard") and rsvp_closed(e):
+    if e["rsvp"] == "partner":
+        # Hosted by a partner building, held offsite: our calendar advertises
+        # it, their team keeps the list. The button opens the resident's own
+        # mail program; no sign-in, no seats held here, nothing to count.
+        if rsvp_closed(e):
+            cta += '<span class="btn off">RSVP Closed</span>'
+            note = (f'{closed_line(e)}. RSVPs for this one went by email to {e["host"]}, '
+                    'and their team has set the list.')
+        else:
+            cta += f'<a class="btn" href="{partner_mailto(e)}">RSVP by Email</a>'
+            note = (f'This one is hosted with {e["host"]} and happens offsite, so RSVPs go to their '
+                    f'team rather than through this site. The button opens an email with the details '
+                    f'filled in; kindly include your name and unit. Or write to <strong>{e["partner"]}</strong>.')
+    elif e["rsvp"] in ("guest", "paid", "standard") and rsvp_closed(e):
         # Closed is not a wall; it is a change of channel. The button asks
         # instead of books: the request lands on the waitlist, Resident
         # Experiences sees it, and Confirm seats (or a call) is the answer.
@@ -430,9 +460,9 @@ def event_screen(e):
     cta += (f'<a class="btn ghost" href="{ics_href(e)}" download="{e["on"].isoformat()}_{e["slug"]}.ics">'
             'Add to My Calendar</a></div>')
     if note:
-        box = f'<div class="note" style="margin-top:14px">{note}</div>' 
+        box = f'<div class="note" style="margin-top:14px">{note}</div>'
 
-    eyebrow = e["sub"] or e["cat"]
+    eyebrow = (e["sub"] or e["cat"]) + (" &middot; Offsite" if e["rsvp"] == "partner" else "")
     return f'''<section class="screen" id="scr-ev{i}">
     <div class="wrap">
       <label class="back" for="r-cal">&larr; Back to calendar</label>
@@ -526,7 +556,7 @@ HTML = f'''<!DOCTYPE html>
   :root{{
     --ink:#16161a; --ink-body:#3a3a43; --ink-soft:#55555f;
     --paper:#f7f4ef; --paper-2:#fffdfa; --line:#ddd6cb;
-    --red:#c41f26; --stone:#7a7266; --radius:4px;
+    --red:#c41f26; --stone:#7a7266; --bronze:#7d5b1c; --radius:4px;
     --pad:clamp(20px,5vw,44px);
     --fd:'Marcellus',Georgia,serif;
     --fb:'Hanken Grotesk',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
@@ -638,6 +668,7 @@ HTML = f'''<!DOCTYPE html>
   .cell.plain{{color:#a9a196}}
   .dots{{display:flex;gap:5px;height:8px}}
   .dot{{width:8px;height:8px;border-radius:50%;background:var(--red)}}
+  .dot.p{{background:#a3812e}}
   @media(min-width:720px){{
     .cell{{aspect-ratio:auto;min-height:104px;justify-content:flex-start;align-items:flex-start;padding:12px 14px;gap:9px}}
     .dots{{margin-top:auto}}
@@ -667,6 +698,7 @@ HTML = f'''<!DOCTYPE html>
     border:1px solid var(--line);border-radius:100px;padding:5px 13px;color:var(--stone);margin-top:10px}}
   .tag.open{{border-color:var(--red);color:var(--red)}}
   .tag.paid{{background:var(--ink);border-color:var(--ink);color:var(--paper-2)}}
+  .tag.partner{{border-color:var(--bronze);color:var(--bronze)}}
 
   .month-label{{font-size:13px;letter-spacing:.26em;text-transform:uppercase;color:var(--stone);
     padding:26px 0 12px;border-bottom:1px solid var(--line);font-weight:500}}
@@ -688,6 +720,8 @@ HTML = f'''<!DOCTYPE html>
   .lrow:hover .ev-title{{color:var(--red)}}
   .lrow.marquee{{background:linear-gradient(90deg,rgba(196,31,38,.05),transparent 60%);
     border-left:3px solid var(--red);padding-left:14px}}
+  .lrow.partner{{background:linear-gradient(90deg,rgba(125,91,28,.06),transparent 60%);
+    border-left:3px solid var(--bronze);padding-left:14px}}
   .ldate{{flex:0 0 68px;text-align:center;padding-top:2px}}
   .ldate .dnum{{display:block;font-family:var(--fd);font-size:34px;line-height:1;color:var(--ink)}}
   .ldate .dday{{display:block;font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--stone);margin-top:5px;font-weight:500}}
@@ -744,15 +778,18 @@ HTML = f'''<!DOCTYPE html>
   .btn.ghost.off{{background:transparent;color:#b8b0a4;border-color:#e0d9cd;cursor:default;pointer-events:none}}
   .cell.past{{background:#f2eee7;border-color:#e7e0d5;color:#c3bbae}}
   .cell.past .dot{{background:#d9b3b5}}
+  .cell.past .dot.p{{background:#d6c9a8}}
   .cell.has.past:hover{{border-color:#c9c0b3}}
   .ev.past .ev-title,.lrow.past .ev-title{{color:#a9a196}}
   .ev.past .ev-meta,.lrow.past .ev-meta,.lrow.past .ldate .dnum{{color:#b8b0a4}}
   .ev.past .tag,.lrow.past .tag{{opacity:.55}}
   .lrow.past.marquee{{background:none;border-left-color:#d9b3b5}}
+  .lrow.past.partner{{background:none;border-left-color:#d6c9a8}}
   /* Beyond the detail window: present, spoken for, and quiet. The translucency
      says "not yet" the way the muting says "already was". */
   .cell.far{{background:#f2eee7;border-color:#e7e0d5;color:#c3bbae;cursor:default;opacity:.8}}
   .cell.far .dot{{background:#d9b3b5}}
+  .cell.far .dot.p{{background:#d6c9a8}}
   .ev.far,.lrow.far{{cursor:default;opacity:.75}}
   .ev.far .ev-title,.lrow.far .ev-title{{color:#a9a196}}
   .ev.far .ev-meta,.lrow.far .ev-meta,.lrow.far .ldate .dnum{{color:#b8b0a4}}
@@ -974,7 +1011,7 @@ SHELL_CSS = '''
   :root{
     --ink:#16161a; --ink-body:#3a3a43; --ink-soft:#55555f;
     --paper:#f7f4ef; --paper-2:#fffdfa; --line:#ddd6cb;
-    --red:#c41f26; --stone:#7a7266; --radius:4px;
+    --red:#c41f26; --stone:#7a7266; --bronze:#7d5b1c; --radius:4px;
     --pad:clamp(20px,5vw,44px);
     --fd:'Marcellus',Georgia,serif;
     --fb:'Hanken Grotesk',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
@@ -1094,6 +1131,7 @@ SHELL_CSS = '''
   .tag{display:inline-block;font-size:13px;letter-spacing:.1em;text-transform:uppercase;font-weight:500;
     border:1px solid var(--line);border-radius:100px;padding:5px 13px;color:var(--stone);margin-top:10px}
   .tag.open{border-color:var(--red);color:var(--red)}
+  .tag.partner{border-color:var(--bronze);color:var(--bronze)}
   .emptybox{background:var(--paper-2);border:1px dashed var(--line);border-radius:var(--radius);padding:30px 26px;margin-top:26px;max-width:34em}
   .emptybox p{margin:0 0 20px;color:var(--ink-soft)}
   .signoutform{margin-top:44px}
@@ -1209,6 +1247,12 @@ T_RSVP = '''<a class="back" href="/">&larr; Back to the calendar</a>
 </div><!--/ALSO-->
 <!--DROPIN--><div class="pagehead"><h2>No RSVP needed</h2>
 <p>This one is drop-in. Just come along; we&rsquo;ll be glad to see you.</p></div><!--/DROPIN-->
+<!--PARTNER--><div class="pagehead"><h2>Hosted with {{PHOST}}</h2>
+<p>This one happens offsite, and RSVPs go to the host&rsquo;s team by email rather than through this site.</p></div>
+<!--PBTN--><div style="margin-top:22px"><a class="btn" href="{{PMAILTO}}">RSVP by Email</a></div>
+<p style="margin-top:12px;font-size:15px;color:#6d6355;max-width:34em">The button opens an email with the details filled in; kindly include your name and unit. Or write to {{PEMAIL}}.</p><!--/PBTN-->
+<!--PCLOSED--><div class="statebox" style="margin-top:18px"><h2>RSVPs are closed</h2>
+<p>{{PCLOSEDLINE}}</p></div><!--/PCLOSED--><!--/PARTNER-->
 <!--SIGNIN--><div class="pagehead"><h2>Sign in to RSVP</h2>
 <p>Enter your resident code, and you&rsquo;ll come straight back to this page. One sign-in lasts a month on this device.</p></div>
 ''' + SIGNIN_FORM + '''<!--/SIGNIN-->

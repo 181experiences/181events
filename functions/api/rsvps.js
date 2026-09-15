@@ -36,6 +36,8 @@ export async function onRequestPost({ request, env }) {
   if (!ev) return json({ error: "That event is not on the live calendar." }, 400);
   const TYPE = { "Seat": "standard", "Paid seat": "paid", "Guest count": "guest" };
   const type = TYPE[ev.rsvp];
+  if (ev.rsvp === "Partner email")
+    return json({ error: `RSVPs for ${ev.title} go to the host's team by email (${ev.partner || "see the event page"}), not through this site.` }, 400);
   if (!type) return json({ error: `${labelOf(resident)} is always welcome: ${ev.title} is drop-in, no RSVP needed.` }, 400);
 
   // Staff seat up to six: this endpoint is the fulfillment of the resident

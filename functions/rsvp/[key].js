@@ -134,6 +134,33 @@ async function rsvpPage(context, ev, key, me) {
     ? fill(inner(tpl, "CUTOFF"), { CUTOFF: esc(cutoffPretty(ev)) + (closed ? " &middot; now closed" : "") })
     : null);
 
+  // A partner-hosted offsite event: our page advertises it, their team keeps
+  // the list. The button is a mailto to the partner's address, subject and
+  // details filled in; no sign-in, no seats held here. Keep the wording in
+  // step with build_proto.py's partner branch.
+  if (ev.rsvp === "Partner email") {
+    body = cut(cut(cut(cut(cut(body, "ALSO", null), "SIGNIN", null), "EXISTING", null), "FORM", null), "DROPIN", null);
+    const d = new Date(ev.date + "T12:00:00");
+    const when = `${DOW[d.getDay()]}, ${MON_PRETTY[d.getMonth() + 1]} ${d.getDate()}`;
+    const subject = `RSVP: ${ev.title}, ${when}`;
+    const mailBody = `Hello,\n\nI would like to RSVP for ${ev.title} on ${when}.\n`
+      + `I am an owner or resident at 181 Fremont.\n\nName:\nUnit:\nParty size:\n\nThank you.`;
+    // Cut first, fill once: fill() blanks placeholders it was not given, so a
+    // nested section must keep its {{...}} until the single fill at the end.
+    let section = inner(tpl, "PARTNER");
+    section = cut(section, "PBTN", closed ? null : inner(section, "PBTN"));
+    section = cut(section, "PCLOSED", closed ? inner(section, "PCLOSED") : null);
+    section = fill(section, {
+      PHOST: esc(ev.host || "our partner building"),
+      PMAILTO: `mailto:${esc(ev.partner || "")}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(mailBody)}`,
+      PEMAIL: esc(ev.partner || ""),
+      PCLOSEDLINE: `${esc(closedLine(ev, "RSVPs for this one"))}, and the host&rsquo;s team has set the list.`,
+    });
+    body = cut(body, "PARTNER", section);
+    return page(context, ev.title, body, me);
+  }
+  body = cut(body, "PARTNER", null);
+
   // Drop-in events still get their shareable page: the facts, a warm word, no forms.
   if (!type) {
     body = cut(cut(cut(cut(body, "ALSO", null), "SIGNIN", null), "EXISTING", null), "FORM", null);
