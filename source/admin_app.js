@@ -316,8 +316,9 @@
     $("#ed-address").style.display = on ? "" : "none";
   }
   $$("input[name=rt]").forEach(r => r.addEventListener("change", syncPartnerField));
-  // Leaving either time box applies the house spelling in place.
-  ["#f-start", "#f-end"].forEach(id =>
+  // Leaving any time box applies the house spelling in place: the event
+  // editor's Start and End, and the Spaces booking card's From and Until.
+  ["#f-start", "#f-end", "#bk-start", "#bk-end"].forEach(id =>
     $(id).addEventListener("change", () => { $(id).value = tidyTime($(id).value); }));
 
   // The form's field inputs, set from one place so the editor and the change
@@ -1707,7 +1708,7 @@
     if (!space || !date) { toast("A space and a date are needed.", "warn"); return; }
     try {
       const d = await api("/api/bookings/" + b.id, { method: "PATCH", body: JSON.stringify({
-        space, date, start: $("#bk-start").value.trim(), end: $("#bk-end").value.trim(),
+        space, date, start: tidyTime($("#bk-start").value), end: tidyTime($("#bk-end").value),
         note: $("#bk-note").value.trim(), event_name: $("#bk-event").value.trim(),
         host: $("#bk-host").value.trim(), guest_cap: $("#bk-cap").value ? Number($("#bk-cap").value) : null,
         reg_slug: $("#bk-slug").value.trim(), details: $("#bk-details").value.trim(),
@@ -1722,7 +1723,7 @@
   async function addBooking() {
     const body = {
       space: $("#bk-space").value.trim(), date: $("#bk-date").value,
-      start: $("#bk-start").value.trim(), end: $("#bk-end").value.trim(),
+      start: tidyTime($("#bk-start").value), end: tidyTime($("#bk-end").value),
       note: $("#bk-note").value.trim(),
       event_name: $("#bk-event").value.trim(), host: $("#bk-host").value.trim(),
       guest_cap: $("#bk-cap").value ? Number($("#bk-cap").value) : null,
