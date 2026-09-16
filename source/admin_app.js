@@ -148,6 +148,29 @@
   const fmtLong = iso => { if (!iso) return ""; const d = new Date(iso + "T12:00:00"); return `${["January","February","March","April","May","June","July","August","September","October","November","December"][d.getMonth()]} ${d.getDate()}, ${d.getFullYear()}`; };
   const slugify = s => s.toLowerCase().replace(/&amp;|&/g, "and").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
   const to24 = t => { const m = /(\d{1,2})(?::(\d{2}))?\s*(AM|PM)?/i.exec(String(t || "").trim()); if (!m || !m[1]) return "0000"; let h = +m[1]; if (m[3]) { h = h % 12; if (/pm/i.test(m[3])) h += 12; } if (h > 23) return "0000"; return String(h).padStart(2, "0") + (m[2] || "00"); };
+  // Times tidy themselves as the box loses focus: "5:30 p", "5.30pm", "530p",
+  // "17:30", and "6" all become the one house spelling, "5:30 PM", so every
+  // record reads the same and the next person opening the form never guesses.
+  // A bare 1-6 reads PM and 7-11 reads AM (the building's rhythm; the result
+  // is on screen to correct); 13-23 is a 24-hour clock; noon is PM, 0 and 12 AM
+  // are midnight. Anything unreadable stays as typed for a human to fix.
+  function prettyTime(raw) {
+    const s = String(raw || "").trim().toLowerCase().replace(/[. ]/g, "").replace(/\s+/g, "");
+    if (!s) return "";
+    const m = /^(\d{1,2})(?::?(\d{2}))?(a|p)?m?$/.exec(s);
+    if (!m || !m[1]) return null;
+    let h = +m[1], mark = m[3];
+    const min = m[2] || "00";
+    if (+min > 59 || h > 23) return null;
+    if (mark) { if (h < 1 || h > 12) return null; }
+    else if (h >= 13 && h <= 23) { mark = "p"; h -= 12; }
+    else if (h === 12) mark = "p";
+    else if (h === 0) { mark = "a"; h = 12; }
+    else if (h >= 7) mark = "a";
+    else mark = "p";
+    return `${h}:${min} ${mark === "p" ? "PM" : "AM"}`;
+  }
+  const tidyTime = v => { const p = prettyTime(v); return p === null ? String(v || "").trim() : p; };
   const stem = e => `${e.Date}_${e.Slug || slugify(e.Title || "")}`;
   const cls = s => (s || "Draft").toLowerCase();
 
@@ -293,6 +316,9 @@
     $("#ed-address").style.display = on ? "" : "none";
   }
   $$("input[name=rt]").forEach(r => r.addEventListener("change", syncPartnerField));
+  // Leaving either time box applies the house spelling in place.
+  ["#f-start", "#f-end"].forEach(id =>
+    $(id).addEventListener("change", () => { $(id).value = tidyTime($(id).value); }));
 
   // The form's field inputs, set from one place so the editor and the change
   // history's "Load this version" fill them identically.
@@ -432,8 +458,8 @@
     const pick = (name, list) => { const i = $$(`input[name=${name}]`).findIndex(r => r.checked); return i < 0 ? list[0] : list[i]; };
     const title = $("#f-title").value.trim();
     const f = {
-      Title: title, Date: $("#f-date").value, Start: $("#f-start").value.trim(), End: $("#f-end").value.trim(),
-      Start24: to24($("#f-start").value), Location: $("#f-loc").value.trim(), Host: $("#f-host").value.trim() || "Resident Experiences",
+      Title: title, Date: $("#f-date").value, Start: tidyTime($("#f-start").value), End: tidyTime($("#f-end").value),
+      Start24: to24(tidyTime($("#f-start").value)), Location: $("#f-loc").value.trim(), Host: $("#f-host").value.trim() || "Resident Experiences",
       Category: pick("cat", CATS), RSVP: pick("rt", RSVPS),
       Capacity: $("#f-cap").value ? Number($("#f-cap").value) : null, Price: $("#f-price").value.trim(),
       Series: $("#f-series").value.trim(), Cutoff: $("#f-cutoff").value.trim(), Description: $("#f-desc").value.trim(),
