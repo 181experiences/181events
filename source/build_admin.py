@@ -415,6 +415,16 @@ HTML = f'''<!DOCTYPE html>
   #dlg-f input{{width:100%;border:1px solid var(--line);border-radius:var(--radius);background:var(--paper-2);
     padding:10px 12px;font-size:15px;font-family:inherit;color:var(--ink)}}
   #dlg-b{{display:flex;flex-direction:column;gap:8px;margin-top:16px}}
+  /* the booking form: fields sized to what they hold, folded until called for */
+  .bkgrid{{display:grid;gap:12px 16px;grid-template-columns:repeat(6,1fr)}}
+  .bkgrid .sp1{{grid-column:span 1}}
+  .bkgrid .sp3{{grid-column:span 3}}
+  .bkgrid .sp6{{grid-column:span 6}}
+  @media(max-width:700px){{
+    .bkgrid{{grid-template-columns:repeat(2,1fr)}}
+    .bkgrid .sp3,.bkgrid .sp6{{grid-column:span 2}}
+    .bkgrid .sp1{{grid-column:span 1}}
+  }}
   /* dashboard rsvp rows: the chevron says open or closed at a glance */
   .rchev{{flex:0 0 14px;color:var(--stone);font-size:19px;line-height:1;transition:transform .15s;display:inline-block}}
   .rchev.open{{transform:rotate(90deg)}}
@@ -805,35 +815,27 @@ HTML = f'''<!DOCTYPE html>
 
 <!-- ================= SPACES ================= -->
 <section class="screen" id="scr-spaces"><div class="wrap">
-  <div class="phead"><h1>Spaces</h1></div>
+  <div class="phead" style="display:flex;align-items:center;gap:10px"><h1>Spaces</h1>{info("Residents see only &ldquo;Reserved&rdquo;: the public Spaces page shows the room, the date, and the hours, nothing else, so a private reservation stays private; the staff note is for this admin alone. A reservation can also be a private event with outside guests: give it an event name and open its registration, an unguessable link the host sends to invitees. Arrivals are checked off in its guest panel, the printed list is what security runs from, and guests buzz in from the street by giving the event name.")}</div>
   <div class="psub" id="bkcount">Loading&hellip;</div>
-  <div class="callout" style="margin:0 0 18px">
-    <strong>Residents see only &ldquo;Reserved.&rdquo;</strong> The public Spaces page shows the room, the date, and
-    the hours, and nothing else, so a private reservation stays private. The note field below is for this
-    admin alone: who booked it, what for, whatever the desk needs to remember.
-    <br><br><strong>A reservation can also be a private event with outside guests.</strong> Give it an event
-    name and open its registration: an unguessable link the host sends to invitees, who put their name and a
-    plus one on the list. Arrivals are checked off right here, the printed list is what security runs from,
-    and guests buzz in from the street by giving the event name.
-  </div>
-  <div class="card" style="margin-bottom:18px">
+  <div style="margin:0 0 16px"><button class="btn" id="bk-open" data-bkopen>Reserve a Space</button></div>
+  <div class="card" id="bk-card" style="display:none;margin-bottom:18px">
     <div id="bk-formhead" style="display:none;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--red);font-weight:600;margin-bottom:12px"></div>
-    <div style="display:grid;gap:12px 16px;grid-template-columns:repeat(auto-fit,minmax(150px,1fr))">
-      <div class="field"><label class="fl" for="bk-space">Space</label><input class="inp" id="bk-space" list="spaces" autocapitalize="words" placeholder="Conference Room"><datalist id="spaces"><option value="Conference Room"><option value="Dining Room"><option value="Residents’ Club"><option value="Level 7 Terrace"></datalist></div>
-      <div class="field"><label class="fl" for="bk-date">Date</label><input class="inp" id="bk-date" type="date"></div>
-      <div class="field"><label class="fl" for="bk-start">From</label><input class="inp" id="bk-start" placeholder="2:00 PM"></div>
-      <div class="field"><label class="fl" for="bk-end">Until</label><input class="inp" id="bk-end" placeholder="5:00 PM"></div>
-      <div class="field"><label class="fl" for="bk-note">Note, staff only</label><input class="inp" id="bk-note" placeholder="Who and what, never shown to residents"></div>
-      <div class="field"><label class="fl" for="bk-event">Event name, for private events</label><input class="inp" id="bk-event" autocapitalize="words" placeholder="What guests give at the door"></div>
-      <div class="field"><label class="fl" for="bk-host">Hosted by</label><input class="inp" id="bk-host" autocapitalize="words" placeholder="The resident hosting"></div>
-      <div class="field"><label class="fl" for="bk-cap">Guest cap</label><input class="inp" id="bk-cap" type="number" inputmode="numeric" placeholder="Blank for none"></div>
-      <div class="field"><label class="fl" for="bk-slug">Custom address, optional</label><input class="inp" id="bk-slug" autocapitalize="none" placeholder="summit-reception"><div class="hint">Reads as 181residents.com/register/summit-reception. A written address can be guessed from the event name; add a number if that matters.</div></div>
-      <div class="field f-full"><div class="flrow"><label class="fl" for="bk-details">Details, shown on the registration page</label>{info("What invitees read under the facts: the evening&rsquo;s shape, a schedule one line per return, parking, whatever guests should know. A blank line starts a new paragraph. Leave it empty and the page keeps just the facts.")}</div><textarea class="inp" id="bk-details" rows="5" placeholder="The schedule, parking, and anything guests should know. A return is a new line; a blank line starts a paragraph."></textarea></div>
+    <div class="bkgrid">
+      <div class="field sp3"><label class="fl" for="bk-space">Space</label><input class="inp" id="bk-space" list="spaces" autocapitalize="words" placeholder="Conference Room"><datalist id="spaces"><option value="Conference Room"><option value="Dining Room"><option value="Residents’ Club"><option value="Level 7 Terrace"></datalist></div>
+      <div class="field sp1"><label class="fl" for="bk-date">Date</label><input class="inp" id="bk-date" type="date"></div>
+      <div class="field sp1"><label class="fl" for="bk-start">From</label><input class="inp" id="bk-start" placeholder="2:00 PM"></div>
+      <div class="field sp1"><label class="fl" for="bk-end">Until</label><input class="inp" id="bk-end" placeholder="5:00 PM"></div>
+      <div class="field sp3"><label class="fl" for="bk-event">Event name, for private events</label><input class="inp" id="bk-event" autocapitalize="words" placeholder="What guests give at the door"></div>
+      <div class="field sp3"><label class="fl" for="bk-host">Hosted by</label><input class="inp" id="bk-host" autocapitalize="words" placeholder="The resident hosting"></div>
+      <div class="field sp1"><label class="fl" for="bk-cap">Guest cap</label><input class="inp" id="bk-cap" type="number" inputmode="numeric" placeholder="None"></div>
+      <div class="field sp3"><div class="flrow"><label class="fl" for="bk-slug">Custom address, optional</label>{info("Reads as 181residents.com/register/summit-reception. A written address can be guessed from the event name; add a number if that matters. Left blank, the link stays the unguessable token.")}</div><input class="inp" id="bk-slug" autocapitalize="none" placeholder="summit-reception"></div>
+      <div class="field sp6"><label class="fl" for="bk-note">Note, staff only</label><textarea class="inp" id="bk-note" rows="2" placeholder="Who booked it and what for; never shown to residents"></textarea></div>
+      <div class="field sp6"><div class="flrow"><label class="fl" for="bk-details">Details, shown on the registration page</label>{info("What invitees read under the facts: the evening&rsquo;s shape, a schedule one line per return, parking, whatever guests should know. A blank line starts a new paragraph. Leave it empty and the page keeps just the facts.")}</div><textarea class="inp" id="bk-details" rows="4" placeholder="The schedule, parking, and anything guests should know. A return is a new line; a blank line starts a paragraph."></textarea></div>
     </div>
     <div style="margin-top:14px;display:flex;gap:12px;align-items:center;flex-wrap:wrap">
       <button class="btn" data-addbooking>Reserve the Space</button>
       <button class="btn" data-savebk style="display:none">Save Changes</button>
-      <button class="mini ghost" data-cancelbk style="display:none">Close</button>
+      <button class="mini ghost" data-cancelbk>Close</button>
       <span class="hint" id="bk-addhint" style="margin:0">Registration starts closed; open it from the reservation&rsquo;s guest panel below.</span>
     </div>
   </div>

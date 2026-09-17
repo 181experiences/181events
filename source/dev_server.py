@@ -1550,8 +1550,21 @@ class H(SimpleHTTPRequestHandler):
             gid = p.path.rsplit("/", 1)[1]; body = self._body_json()
             guests = load_store("guests", [])
             for g in guests:
-                if str(g["id"]) == gid and "arrived" in body:
-                    g["arrived"] = now_iso() if body["arrived"] else None
+                if str(g["id"]) == gid:
+                    # Mirrors functions/api/guests/[id].js: arrived plus the
+                    # desk's corrections to name, plus one, and email.
+                    if not any(k in body for k in ("arrived", "name", "plus_one", "email")):
+                        return self._json({"error": "Nothing to change"}, 400)
+                    if "arrived" in body:
+                        g["arrived"] = now_iso() if body["arrived"] else None
+                    if "name" in body:
+                        name = str(body["name"] or "").strip()[:80]
+                        if not name: return self._json({"error": "A name is needed."}, 400)
+                        g["name"] = name
+                    if "plus_one" in body:
+                        g["plus_one"] = str(body["plus_one"] or "").strip()[:80] or None
+                    if "email" in body:
+                        g["email"] = str(body["email"] or "").strip()[:120] or None
                     save_store("guests", guests)
                     return self._json({"guest": g})
             return self._json({"error": "No such registration"}, 404)

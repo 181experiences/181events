@@ -1318,8 +1318,9 @@ Add their name as your plus one, and you&rsquo;re both on the list.</p></div>
 <button class="btn" type="submit">Register</button>
 </form><!--/FORM-->
 <!--CLOSED--><div class="fullnote">{{CLOSEDMSG}}</div><!--/CLOSED-->
-<p class="note">On the day: come to the 181 Fremont lobby and give the event name. Questions go to your host,
-or to the front desk at 181 Fremont.</p></div>'''
+<p class="note">On the day: come to the 181 Fremont lobby and give the event name. Plans changed after you
+signed up? Write to the front desk at concierge@181sf.com and we&rsquo;ll set the list right. Other questions
+go to your host.</p></div>'''
 
 T_DONE = '''<div class="msgsent">
 <!--ICON--><div class="check2"><svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 12.8l5 5 10-11"/></svg></div><!--/ICON-->

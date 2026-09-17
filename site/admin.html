@@ -407,6 +407,16 @@
   #dlg-f input{width:100%;border:1px solid var(--line);border-radius:var(--radius);background:var(--paper-2);
     padding:10px 12px;font-size:15px;font-family:inherit;color:var(--ink)}
   #dlg-b{display:flex;flex-direction:column;gap:8px;margin-top:16px}
+  /* the booking form: fields sized to what they hold, folded until called for */
+  .bkgrid{display:grid;gap:12px 16px;grid-template-columns:repeat(6,1fr)}
+  .bkgrid .sp1{grid-column:span 1}
+  .bkgrid .sp3{grid-column:span 3}
+  .bkgrid .sp6{grid-column:span 6}
+  @media(max-width:700px){
+    .bkgrid{grid-template-columns:repeat(2,1fr)}
+    .bkgrid .sp3,.bkgrid .sp6{grid-column:span 2}
+    .bkgrid .sp1{grid-column:span 1}
+  }
   /* dashboard rsvp rows: the chevron says open or closed at a glance */
   .rchev{flex:0 0 14px;color:var(--stone);font-size:19px;line-height:1;transition:transform .15s;display:inline-block}
   .rchev.open{transform:rotate(90deg)}
@@ -807,35 +817,27 @@
 
 <!-- ================= SPACES ================= -->
 <section class="screen" id="scr-spaces"><div class="wrap">
-  <div class="phead"><h1>Spaces</h1></div>
+  <div class="phead" style="display:flex;align-items:center;gap:10px"><h1>Spaces</h1><span class="iwrap"><button type="button" class="ib" aria-label="What this does">i</button><span class="ipop">Residents see only &ldquo;Reserved&rdquo;: the public Spaces page shows the room, the date, and the hours, nothing else, so a private reservation stays private; the staff note is for this admin alone. A reservation can also be a private event with outside guests: give it an event name and open its registration, an unguessable link the host sends to invitees. Arrivals are checked off in its guest panel, the printed list is what security runs from, and guests buzz in from the street by giving the event name.</span></span></div>
   <div class="psub" id="bkcount">Loading&hellip;</div>
-  <div class="callout" style="margin:0 0 18px">
-    <strong>Residents see only &ldquo;Reserved.&rdquo;</strong> The public Spaces page shows the room, the date, and
-    the hours, and nothing else, so a private reservation stays private. The note field below is for this
-    admin alone: who booked it, what for, whatever the desk needs to remember.
-    <br><br><strong>A reservation can also be a private event with outside guests.</strong> Give it an event
-    name and open its registration: an unguessable link the host sends to invitees, who put their name and a
-    plus one on the list. Arrivals are checked off right here, the printed list is what security runs from,
-    and guests buzz in from the street by giving the event name.
-  </div>
-  <div class="card" style="margin-bottom:18px">
+  <div style="margin:0 0 16px"><button class="btn" id="bk-open" data-bkopen>Reserve a Space</button></div>
+  <div class="card" id="bk-card" style="display:none;margin-bottom:18px">
     <div id="bk-formhead" style="display:none;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--red);font-weight:600;margin-bottom:12px"></div>
-    <div style="display:grid;gap:12px 16px;grid-template-columns:repeat(auto-fit,minmax(150px,1fr))">
-      <div class="field"><label class="fl" for="bk-space">Space</label><input class="inp" id="bk-space" list="spaces" autocapitalize="words" placeholder="Conference Room"><datalist id="spaces"><option value="Conference Room"><option value="Dining Room"><option value="Residents’ Club"><option value="Level 7 Terrace"></datalist></div>
-      <div class="field"><label class="fl" for="bk-date">Date</label><input class="inp" id="bk-date" type="date"></div>
-      <div class="field"><label class="fl" for="bk-start">From</label><input class="inp" id="bk-start" placeholder="2:00 PM"></div>
-      <div class="field"><label class="fl" for="bk-end">Until</label><input class="inp" id="bk-end" placeholder="5:00 PM"></div>
-      <div class="field"><label class="fl" for="bk-note">Note, staff only</label><input class="inp" id="bk-note" placeholder="Who and what, never shown to residents"></div>
-      <div class="field"><label class="fl" for="bk-event">Event name, for private events</label><input class="inp" id="bk-event" autocapitalize="words" placeholder="What guests give at the door"></div>
-      <div class="field"><label class="fl" for="bk-host">Hosted by</label><input class="inp" id="bk-host" autocapitalize="words" placeholder="The resident hosting"></div>
-      <div class="field"><label class="fl" for="bk-cap">Guest cap</label><input class="inp" id="bk-cap" type="number" inputmode="numeric" placeholder="Blank for none"></div>
-      <div class="field"><label class="fl" for="bk-slug">Custom address, optional</label><input class="inp" id="bk-slug" autocapitalize="none" placeholder="summit-reception"><div class="hint">Reads as 181residents.com/register/summit-reception. A written address can be guessed from the event name; add a number if that matters.</div></div>
-      <div class="field f-full"><div class="flrow"><label class="fl" for="bk-details">Details, shown on the registration page</label><span class="iwrap"><button type="button" class="ib" aria-label="What this does">i</button><span class="ipop">What invitees read under the facts: the evening&rsquo;s shape, a schedule one line per return, parking, whatever guests should know. A blank line starts a new paragraph. Leave it empty and the page keeps just the facts.</span></span></div><textarea class="inp" id="bk-details" rows="5" placeholder="The schedule, parking, and anything guests should know. A return is a new line; a blank line starts a paragraph."></textarea></div>
+    <div class="bkgrid">
+      <div class="field sp3"><label class="fl" for="bk-space">Space</label><input class="inp" id="bk-space" list="spaces" autocapitalize="words" placeholder="Conference Room"><datalist id="spaces"><option value="Conference Room"><option value="Dining Room"><option value="Residents’ Club"><option value="Level 7 Terrace"></datalist></div>
+      <div class="field sp1"><label class="fl" for="bk-date">Date</label><input class="inp" id="bk-date" type="date"></div>
+      <div class="field sp1"><label class="fl" for="bk-start">From</label><input class="inp" id="bk-start" placeholder="2:00 PM"></div>
+      <div class="field sp1"><label class="fl" for="bk-end">Until</label><input class="inp" id="bk-end" placeholder="5:00 PM"></div>
+      <div class="field sp3"><label class="fl" for="bk-event">Event name, for private events</label><input class="inp" id="bk-event" autocapitalize="words" placeholder="What guests give at the door"></div>
+      <div class="field sp3"><label class="fl" for="bk-host">Hosted by</label><input class="inp" id="bk-host" autocapitalize="words" placeholder="The resident hosting"></div>
+      <div class="field sp1"><label class="fl" for="bk-cap">Guest cap</label><input class="inp" id="bk-cap" type="number" inputmode="numeric" placeholder="None"></div>
+      <div class="field sp3"><div class="flrow"><label class="fl" for="bk-slug">Custom address, optional</label><span class="iwrap"><button type="button" class="ib" aria-label="What this does">i</button><span class="ipop">Reads as 181residents.com/register/summit-reception. A written address can be guessed from the event name; add a number if that matters. Left blank, the link stays the unguessable token.</span></span></div><input class="inp" id="bk-slug" autocapitalize="none" placeholder="summit-reception"></div>
+      <div class="field sp6"><label class="fl" for="bk-note">Note, staff only</label><textarea class="inp" id="bk-note" rows="2" placeholder="Who booked it and what for; never shown to residents"></textarea></div>
+      <div class="field sp6"><div class="flrow"><label class="fl" for="bk-details">Details, shown on the registration page</label><span class="iwrap"><button type="button" class="ib" aria-label="What this does">i</button><span class="ipop">What invitees read under the facts: the evening&rsquo;s shape, a schedule one line per return, parking, whatever guests should know. A blank line starts a new paragraph. Leave it empty and the page keeps just the facts.</span></span></div><textarea class="inp" id="bk-details" rows="4" placeholder="The schedule, parking, and anything guests should know. A return is a new line; a blank line starts a paragraph."></textarea></div>
     </div>
     <div style="margin-top:14px;display:flex;gap:12px;align-items:center;flex-wrap:wrap">
       <button class="btn" data-addbooking>Reserve the Space</button>
       <button class="btn" data-savebk style="display:none">Save Changes</button>
-      <button class="mini ghost" data-cancelbk style="display:none">Close</button>
+      <button class="mini ghost" data-cancelbk>Close</button>
       <span class="hint" id="bk-addhint" style="margin:0">Registration starts closed; open it from the reservation&rsquo;s guest panel below.</span>
     </div>
   </div>
@@ -2887,6 +2889,8 @@
           <span class="sgrow" style="font-size:12px;color:var(--stone)">${r.email ? esc(r.email) + " · " : ""}${esc((r.created || "").slice(0, 10))}${r.arrived ? ` · in at ${new Date(r.arrived).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })}` : ""}</span>
           <span class="eact">
             <button class="mini${r.arrived ? "" : " ghost"}" data-garrive="${r.id}|${b.id}">${r.arrived ? "Arrived ✓" : "Arrived"}</button>
+            ${r.email ? `<button class="mini ghost" data-gmail="${r.id}|${b.id}" title="A ready-written email to the address they registered with">Email</button>` : ""}
+            <button class="mini ghost" data-gedit="${r.id}|${b.id}" title="Fix the name, the plus one, or the email">Edit</button>
             <button class="mini ghost" data-gdel="${r.id}|${b.id}" title="Remove this registration">Remove</button>
           </span></div>`).join("");
     const confirmed = (g || []).filter(r => r.status !== "Waitlist");
@@ -3007,6 +3011,8 @@
   let editingBkId = null;
   function enterBkEdit(b) {
     editingBkId = b.id;
+    $("#bk-card").style.display = "";
+    $("#bk-open").style.display = "none";
     $("#bk-space").value = b.space || ""; $("#bk-date").value = b.date || "";
     $("#bk-start").value = b.start || ""; $("#bk-end").value = b.end_time || "";
     $("#bk-note").value = b.note || ""; $("#bk-event").value = b.event_name || "";
@@ -3026,10 +3032,12 @@
     ["#bk-space", "#bk-date", "#bk-start", "#bk-end", "#bk-note", "#bk-event", "#bk-host", "#bk-cap", "#bk-slug", "#bk-details"]
       .forEach(s => { $(s).value = ""; });
     $("#bk-formhead").style.display = "none";
+    // The form folds away when it is not in hand; Reserve a Space brings it back.
+    $("#bk-card").style.display = "none";
+    $("#bk-open").style.display = "";
     document.querySelector("[data-addbooking]").style.display = "";
     $("#bk-addhint").style.display = "";
     document.querySelector("[data-savebk]").style.display = "none";
-    document.querySelector("[data-cancelbk]").style.display = "none";
   }
   async function saveBkEdit() {
     const b = bookings.find(x => x.id === editingBkId); if (!b) { exitBkEdit(); return; }
@@ -3049,6 +3057,29 @@
     } catch (e) { toast(e.message, "warn"); }
   }
 
+  // The desk's corrections to a registration, in one small dialog: a fixed
+  // spelling, a plus one added or dropped, a right email for the updates.
+  async function editGuestFlow(gid, bid) {
+    const g = (guestsByBooking[bid] || []).find(x => String(x.id) === gid);
+    if (!g) return;
+    const res = await dialog(`Edit ${g.name}'s registration`,
+      "Fix a spelling, add or drop the plus one, or correct the email.",
+      [{ label: "Save the changes", kind: "primary", value: "save" }, { label: "Never mind", kind: "quiet", value: null }],
+      [{ id: "name", label: "Name", value: g.name || "" },
+       { id: "plus", label: "Plus one, blank for none", value: g.plus_one || "" },
+       { id: "email", label: "Email", value: g.email || "" }]);
+    if (!res || !res.value) return;
+    const name = res.fields.name.trim();
+    if (!name) { toast("A name is needed.", "warn"); return; }
+    try {
+      const d = await api("/api/guests/" + gid, { method: "PATCH", body: JSON.stringify({
+        name, plus_one: res.fields.plus.trim(), email: res.fields.email.trim() }) });
+      Object.assign(g, { name: d.guest.name, plus_one: d.guest.plus_one, email: d.guest.email });
+      renderBookings();
+      toast("Saved.");
+    } catch (e) { toast(e.message, "warn"); }
+  }
+
   async function addBooking() {
     const body = {
       space: $("#bk-space").value.trim(), date: $("#bk-date").value,
@@ -3062,7 +3093,7 @@
     try {
       const d = await api("/api/bookings", { method: "POST", body: JSON.stringify(body) });
       bookings.push(d.booking); renderBookings();
-      ["#bk-space", "#bk-date", "#bk-start", "#bk-end", "#bk-note", "#bk-event", "#bk-host", "#bk-cap", "#bk-slug", "#bk-details"].forEach(s => $(s).value = "");
+      exitBkEdit();
       toast(body.event_name
         ? "Reserved. Open its Guests panel to switch on registration and copy the link for the host."
         : "Reserved. It shows on the Spaces page immediately.");
@@ -3348,7 +3379,7 @@
   }
 
   document.addEventListener("click", ev => {
-    const r = ev.target.closest("[data-mailcode],[data-printone],[data-rotate],[data-ends],[data-toggle],[data-rdelete],[data-resedit],[data-saveres],[data-cancelres],[data-edittoggle],[data-editdelete],[data-addres],[data-addbulk],[data-printcards],[data-mreplied],[data-marchive],[data-wconfirm],[data-redit],[data-rcancel],[data-rarrive],[data-pastchev],[data-pastmail],[data-notedel],[data-rsvpprint],[data-addrsvp],[data-savearsvp],[data-closearsvp],[data-copylink],[data-aupload],[data-acanva],[data-adelete],[data-rsvpkey],[data-addbooking],[data-unbook],[data-bkchev],[data-bkreg],[data-bkcopy],[data-bkprint],[data-gadd],[data-garrive],[data-gdel],[data-bkedit],[data-savebk],[data-cancelbk]");
+    const r = ev.target.closest("[data-mailcode],[data-printone],[data-rotate],[data-ends],[data-toggle],[data-rdelete],[data-resedit],[data-saveres],[data-cancelres],[data-edittoggle],[data-editdelete],[data-addres],[data-addbulk],[data-printcards],[data-mreplied],[data-marchive],[data-wconfirm],[data-redit],[data-rcancel],[data-rarrive],[data-pastchev],[data-pastmail],[data-notedel],[data-rsvpprint],[data-addrsvp],[data-savearsvp],[data-closearsvp],[data-copylink],[data-aupload],[data-acanva],[data-adelete],[data-rsvpkey],[data-addbooking],[data-unbook],[data-bkchev],[data-bkreg],[data-bkcopy],[data-bkprint],[data-gadd],[data-garrive],[data-gdel],[data-gmail],[data-gedit],[data-bkedit],[data-savebk],[data-cancelbk],[data-bkopen]");
     if (r) {
       if (r.dataset.bkedit) {
         const b = bookings.find(x => String(x.id) === r.dataset.bkedit);
@@ -3357,13 +3388,40 @@
       }
       if (r.dataset.savebk !== undefined) { saveBkEdit(); return; }
       if (r.dataset.cancelbk !== undefined) { exitBkEdit(); return; }
+      if (r.dataset.bkopen !== undefined) {
+        exitBkEdit();
+        $("#bk-card").style.display = "";
+        $("#bk-open").style.display = "none";
+        $("#bk-space").focus();
+        return;
+      }
+      if (r.dataset.gmail) {
+        const [gid, bid] = r.dataset.gmail.split("|");
+        const b2 = bookings.find(x => String(x.id) === bid);
+        const g = (guestsByBooking[bid] || []).find(x => String(x.id) === gid);
+        if (g && g.email) openMail({
+          to: g.email,
+          subject: `${b2 && b2.event_name ? b2.event_name : "Your registration"} at 181 Fremont`,
+          body: `Hello ${g.name},\n\nAbout your registration for ${b2 && b2.event_name ? b2.event_name : "the event"}${b2 && b2.date ? ` on ${fmt(b2.date)}` : ""}:\n\n\nWarmly,\nResident Experiences\n181 Fremont`,
+          title: `Email ${g.name}?`,
+          text: `To ${esc(g.email)}, the address they registered with, from your own mailbox.`,
+        });
+        return;
+      }
+      if (r.dataset.gedit) {
+        const [gid, bid] = r.dataset.gedit.split("|");
+        editGuestFlow(gid, bid);
+        return;
+      }
       if (r.dataset.bkchev) {
         const id = Number(r.dataset.bkchev);
         if (openGuestPanels.has(id)) openGuestPanels.delete(id);
         else {
           openGuestPanels.add(id);
+          // Refetch on every open: another machine may have taken a
+          // registration since this panel last looked.
           const b = bookings.find(x => x.id === id);
-          if (b && b.event_name && !guestsByBooking[id]) loadGuests(id);
+          if (b && b.event_name) loadGuests(id);
         }
         renderBookings();
         return;

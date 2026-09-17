@@ -1676,6 +1676,8 @@
           <span class="sgrow" style="font-size:12px;color:var(--stone)">${r.email ? esc(r.email) + " · " : ""}${esc((r.created || "").slice(0, 10))}${r.arrived ? ` · in at ${new Date(r.arrived).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })}` : ""}</span>
           <span class="eact">
             <button class="mini${r.arrived ? "" : " ghost"}" data-garrive="${r.id}|${b.id}">${r.arrived ? "Arrived ✓" : "Arrived"}</button>
+            ${r.email ? `<button class="mini ghost" data-gmail="${r.id}|${b.id}" title="A ready-written email to the address they registered with">Email</button>` : ""}
+            <button class="mini ghost" data-gedit="${r.id}|${b.id}" title="Fix the name, the plus one, or the email">Edit</button>
             <button class="mini ghost" data-gdel="${r.id}|${b.id}" title="Remove this registration">Remove</button>
           </span></div>`).join("");
     const confirmed = (g || []).filter(r => r.status !== "Waitlist");
@@ -1796,6 +1798,8 @@
   let editingBkId = null;
   function enterBkEdit(b) {
     editingBkId = b.id;
+    $("#bk-card").style.display = "";
+    $("#bk-open").style.display = "none";
     $("#bk-space").value = b.space || ""; $("#bk-date").value = b.date || "";
     $("#bk-start").value = b.start || ""; $("#bk-end").value = b.end_time || "";
     $("#bk-note").value = b.note || ""; $("#bk-event").value = b.event_name || "";
@@ -1815,10 +1819,12 @@
     ["#bk-space", "#bk-date", "#bk-start", "#bk-end", "#bk-note", "#bk-event", "#bk-host", "#bk-cap", "#bk-slug", "#bk-details"]
       .forEach(s => { $(s).value = ""; });
     $("#bk-formhead").style.display = "none";
+    // The form folds away when it is not in hand; Reserve a Space brings it back.
+    $("#bk-card").style.display = "none";
+    $("#bk-open").style.display = "";
     document.querySelector("[data-addbooking]").style.display = "";
     $("#bk-addhint").style.display = "";
     document.querySelector("[data-savebk]").style.display = "none";
-    document.querySelector("[data-cancelbk]").style.display = "none";
   }
   async function saveBkEdit() {
     const b = bookings.find(x => x.id === editingBkId); if (!b) { exitBkEdit(); return; }
@@ -1838,6 +1844,29 @@
     } catch (e) { toast(e.message, "warn"); }
   }
 
+  // The desk's corrections to a registration, in one small dialog: a fixed
+  // spelling, a plus one added or dropped, a right email for the updates.
+  async function editGuestFlow(gid, bid) {
+    const g = (guestsByBooking[bid] || []).find(x => String(x.id) === gid);
+    if (!g) return;
+    const res = await dialog(`Edit ${g.name}'s registration`,
+      "Fix a spelling, add or drop the plus one, or correct the email.",
+      [{ label: "Save the changes", kind: "primary", value: "save" }, { label: "Never mind", kind: "quiet", value: null }],
+      [{ id: "name", label: "Name", value: g.name || "" },
+       { id: "plus", label: "Plus one, blank for none", value: g.plus_one || "" },
+       { id: "email", label: "Email", value: g.email || "" }]);
+    if (!res || !res.value) return;
+    const name = res.fields.name.trim();
+    if (!name) { toast("A name is needed.", "warn"); return; }
+    try {
+      const d = await api("/api/guests/" + gid, { method: "PATCH", body: JSON.stringify({
+        name, plus_one: res.fields.plus.trim(), email: res.fields.email.trim() }) });
+      Object.assign(g, { name: d.guest.name, plus_one: d.guest.plus_one, email: d.guest.email });
+      renderBookings();
+      toast("Saved.");
+    } catch (e) { toast(e.message, "warn"); }
+  }
+
   async function addBooking() {
     const body = {
       space: $("#bk-space").value.trim(), date: $("#bk-date").value,
@@ -1851,7 +1880,7 @@
     try {
       const d = await api("/api/bookings", { method: "POST", body: JSON.stringify(body) });
       bookings.push(d.booking); renderBookings();
-      ["#bk-space", "#bk-date", "#bk-start", "#bk-end", "#bk-note", "#bk-event", "#bk-host", "#bk-cap", "#bk-slug", "#bk-details"].forEach(s => $(s).value = "");
+      exitBkEdit();
       toast(body.event_name
         ? "Reserved. Open its Guests panel to switch on registration and copy the link for the host."
         : "Reserved. It shows on the Spaces page immediately.");
@@ -2137,7 +2166,7 @@
   }
 
   document.addEventListener("click", ev => {
-    const r = ev.target.closest("[data-mailcode],[data-printone],[data-rotate],[data-ends],[data-toggle],[data-rdelete],[data-resedit],[data-saveres],[data-cancelres],[data-edittoggle],[data-editdelete],[data-addres],[data-addbulk],[data-printcards],[data-mreplied],[data-marchive],[data-wconfirm],[data-redit],[data-rcancel],[data-rarrive],[data-pastchev],[data-pastmail],[data-notedel],[data-rsvpprint],[data-addrsvp],[data-savearsvp],[data-closearsvp],[data-copylink],[data-aupload],[data-acanva],[data-adelete],[data-rsvpkey],[data-addbooking],[data-unbook],[data-bkchev],[data-bkreg],[data-bkcopy],[data-bkprint],[data-gadd],[data-garrive],[data-gdel],[data-bkedit],[data-savebk],[data-cancelbk]");
+    const r = ev.target.closest("[data-mailcode],[data-printone],[data-rotate],[data-ends],[data-toggle],[data-rdelete],[data-resedit],[data-saveres],[data-cancelres],[data-edittoggle],[data-editdelete],[data-addres],[data-addbulk],[data-printcards],[data-mreplied],[data-marchive],[data-wconfirm],[data-redit],[data-rcancel],[data-rarrive],[data-pastchev],[data-pastmail],[data-notedel],[data-rsvpprint],[data-addrsvp],[data-savearsvp],[data-closearsvp],[data-copylink],[data-aupload],[data-acanva],[data-adelete],[data-rsvpkey],[data-addbooking],[data-unbook],[data-bkchev],[data-bkreg],[data-bkcopy],[data-bkprint],[data-gadd],[data-garrive],[data-gdel],[data-gmail],[data-gedit],[data-bkedit],[data-savebk],[data-cancelbk],[data-bkopen]");
     if (r) {
       if (r.dataset.bkedit) {
         const b = bookings.find(x => String(x.id) === r.dataset.bkedit);
@@ -2146,13 +2175,40 @@
       }
       if (r.dataset.savebk !== undefined) { saveBkEdit(); return; }
       if (r.dataset.cancelbk !== undefined) { exitBkEdit(); return; }
+      if (r.dataset.bkopen !== undefined) {
+        exitBkEdit();
+        $("#bk-card").style.display = "";
+        $("#bk-open").style.display = "none";
+        $("#bk-space").focus();
+        return;
+      }
+      if (r.dataset.gmail) {
+        const [gid, bid] = r.dataset.gmail.split("|");
+        const b2 = bookings.find(x => String(x.id) === bid);
+        const g = (guestsByBooking[bid] || []).find(x => String(x.id) === gid);
+        if (g && g.email) openMail({
+          to: g.email,
+          subject: `${b2 && b2.event_name ? b2.event_name : "Your registration"} at 181 Fremont`,
+          body: `Hello ${g.name},\n\nAbout your registration for ${b2 && b2.event_name ? b2.event_name : "the event"}${b2 && b2.date ? ` on ${fmt(b2.date)}` : ""}:\n\n\nWarmly,\nResident Experiences\n181 Fremont`,
+          title: `Email ${g.name}?`,
+          text: `To ${esc(g.email)}, the address they registered with, from your own mailbox.`,
+        });
+        return;
+      }
+      if (r.dataset.gedit) {
+        const [gid, bid] = r.dataset.gedit.split("|");
+        editGuestFlow(gid, bid);
+        return;
+      }
       if (r.dataset.bkchev) {
         const id = Number(r.dataset.bkchev);
         if (openGuestPanels.has(id)) openGuestPanels.delete(id);
         else {
           openGuestPanels.add(id);
+          // Refetch on every open: another machine may have taken a
+          // registration since this panel last looked.
           const b = bookings.find(x => x.id === id);
-          if (b && b.event_name && !guestsByBooking[id]) loadGuests(id);
+          if (b && b.event_name) loadGuests(id);
         }
         renderBookings();
         return;
