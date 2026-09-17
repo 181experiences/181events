@@ -1358,8 +1358,7 @@
     try {
       const d = await api("/api/residents", { method: "POST", body: JSON.stringify(body) });
       residents.push(...d.residents); renderResidents();
-      ["#r-unit", "#r-name", "#r-email", "#r-ends", "#r-tenure"].forEach(s => $(s).value = "");
-      $("#r-role").checked = false;
+      exitResEdit();
       toast(`Added ${d.residents[0].label}. Their code: ${d.residents[0].code}`);
     } catch (e) { toast(e.message, "warn"); }
   }
@@ -1378,6 +1377,7 @@
       }
       renderResidents();
       $("#r-bulk").value = "";
+      exitResEdit();
       const bits = [];
       bits.push(d.residents.length ? `Added ${d.residents.length} new ${d.residents.length === 1 ? "person" : "people"}; codes are in the list.` : "Nobody new to add.");
       if (d.skipped) bits.push(`Skipped ${d.skipped} already listed; their codes are untouched.`);
@@ -1408,8 +1408,18 @@
   // buttons swap, and the rarely-used levers (disable, delete) live here,
   // one deliberate step off the row.
   let editingResId = null;
+  // Both cards fold away until called for: Add a Person and the bulk paste
+  // each open from their own button, and Edit on a row opens the person card
+  // filled, the same shape the Spaces screen keeps.
+  function showResCard() {
+    $("#res-card").style.display = "";
+    $("#res-open").style.display = "none";
+    $("#res-bulkopen").style.display = "none";
+    $("#res-bulk").style.display = "none";
+  }
   function enterResEdit(p) {
     editingResId = p.id;
+    showResCard();
     $("#r-unit").value = p.unit || ""; $("#r-name").value = p.name || "";
     $("#r-email").value = p.email || ""; $("#r-ends").value = p.ends || "";
     $("#r-tenure").value = p.tenure || "";
@@ -1417,9 +1427,7 @@
     $("#res-formhead").textContent = `Editing ${p.label} · added ${(p.created || "").slice(0, 10)}`;
     document.querySelector("[data-addres]").style.display = "none";
     $("#res-rolecheck").style.display = "none";
-    $("#res-bulk").style.display = "none";
     document.querySelector("[data-saveres]").style.display = "";
-    document.querySelector("[data-cancelres]").style.display = "";
     const t = document.querySelector("[data-edittoggle]");
     t.style.display = ""; t.textContent = p.status === "Active" ? "Disable" : "Restore";
     document.querySelector("[data-editdelete]").style.display = "";
@@ -1428,11 +1436,15 @@
   function exitResEdit() {
     editingResId = null;
     ["r-unit", "r-name", "r-email", "r-ends", "r-tenure"].forEach(id => { $("#" + id).value = ""; });
+    $("#r-role").checked = false;
     $("#res-formhead").style.display = "none";
     document.querySelector("[data-addres]").style.display = "";
     $("#res-rolecheck").style.display = "";
-    $("#res-bulk").style.display = "";
-    ["[data-saveres]", "[data-cancelres]", "[data-edittoggle]", "[data-editdelete]"]
+    $("#res-card").style.display = "none";
+    $("#res-bulk").style.display = "none";
+    $("#res-open").style.display = "";
+    $("#res-bulkopen").style.display = "";
+    ["[data-saveres]", "[data-edittoggle]", "[data-editdelete]"]
       .forEach(s => { document.querySelector(s).style.display = "none"; });
   }
   async function saveResEdit() {
@@ -2219,7 +2231,7 @@
   }
 
   document.addEventListener("click", ev => {
-    const r = ev.target.closest("[data-mailcode],[data-printone],[data-rotate],[data-ends],[data-toggle],[data-rdelete],[data-resedit],[data-saveres],[data-cancelres],[data-edittoggle],[data-editdelete],[data-addres],[data-addbulk],[data-printcards],[data-mreplied],[data-marchive],[data-wconfirm],[data-redit],[data-rcancel],[data-rarrive],[data-pastchev],[data-pastmail],[data-notedel],[data-noterestore],[data-nbpast],[data-rsvpprint],[data-addrsvp],[data-savearsvp],[data-closearsvp],[data-copylink],[data-aupload],[data-acanva],[data-adelete],[data-rsvpkey],[data-addbooking],[data-unbook],[data-bkchev],[data-bkreg],[data-bkcopy],[data-bkprint],[data-gadd],[data-garrive],[data-gdel],[data-gmail],[data-gedit],[data-bkedit],[data-savebk],[data-cancelbk],[data-bkopen]");
+    const r = ev.target.closest("[data-mailcode],[data-printone],[data-rotate],[data-ends],[data-toggle],[data-rdelete],[data-resedit],[data-saveres],[data-cancelres],[data-edittoggle],[data-editdelete],[data-addres],[data-resopen],[data-bulkopen],[data-bulkclose],[data-addbulk],[data-printcards],[data-mreplied],[data-marchive],[data-wconfirm],[data-redit],[data-rcancel],[data-rarrive],[data-pastchev],[data-pastmail],[data-notedel],[data-noterestore],[data-nbpast],[data-rsvpprint],[data-addrsvp],[data-savearsvp],[data-closearsvp],[data-copylink],[data-aupload],[data-acanva],[data-adelete],[data-rsvpkey],[data-addbooking],[data-unbook],[data-bkchev],[data-bkreg],[data-bkcopy],[data-bkprint],[data-gadd],[data-garrive],[data-gdel],[data-gmail],[data-gedit],[data-bkedit],[data-savebk],[data-cancelbk],[data-bkopen]");
     if (r) {
       if (r.dataset.bkedit) {
         const b = bookings.find(x => String(x.id) === r.dataset.bkedit);
@@ -2394,6 +2406,19 @@
             .catch(e => toast(e.message, "warn"));
         }
       } else if (r.dataset.addres !== undefined) addResident();
+      else if (r.dataset.resopen !== undefined) {
+        exitResEdit();
+        showResCard();
+        $("#r-unit").focus();
+      }
+      else if (r.dataset.bulkopen !== undefined) {
+        exitResEdit();
+        $("#res-bulk").style.display = "";
+        $("#res-open").style.display = "none";
+        $("#res-bulkopen").style.display = "none";
+        $("#r-bulk").focus();
+      }
+      else if (r.dataset.bulkclose !== undefined) exitResEdit();
       else if (r.dataset.addbulk !== undefined) addBulk();
       else if (r.dataset.printone) {
         const p = residents.find(x => String(x.id) === r.dataset.printone);

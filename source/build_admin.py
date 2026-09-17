@@ -781,17 +781,13 @@ HTML = f'''<!DOCTYPE html>
 
 <!-- ================= RESIDENTS ================= -->
 <section class="screen" id="scr-res"><div class="wrap">
-  <div class="phead"><h1>Residents</h1><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="mini" data-printcards title="A printable sheet of code cards, one per person">Print code cards</button></div></div>
+  <div class="phead"><div style="display:flex;align-items:center;gap:10px"><h1>Residents</h1>{info("One code per person, grouped by unit; couples each get their own. A renter or a visiting family member gets their own row with an end date, and the code simply stops working after it; mark them a tenant and a yellow pill says so. The everyday rescue is Email code, a written draft to the address on file; Print makes one fresh card; Rotate kills a code everywhere at once and is for a card that may be in the wrong hands. Edit on any row fixes spelling, emails, end dates, and standing.")}</div><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="mini" data-printcards title="A printable sheet of code cards, one per person">Print code cards</button></div></div>
   <div class="psub" id="rescount">Loading&hellip;</div>
-  <div class="callout" style="margin:0 0 18px">
-    <strong>One code per person, grouped by unit.</strong> Couples each get their own. A renter or a visiting
-    family member gets their own row with an <strong>end date</strong>, and the code simply stops working after it;
-    mark them a <strong>tenant</strong> and a yellow pill says so at a glance. Rotate a code and the old one dies
-    everywhere at once; that is the whole late-night rescue: look the person up, rotate, read the new code over the
-    phone or email it from your own mailbox. <strong>Edit</strong> on any row fixes spelling, emails, end dates,
-    and standing.
+  <div style="margin:0 0 16px;display:flex;gap:10px;flex-wrap:wrap">
+    <button class="btn" id="res-open" data-resopen>Add a Person</button>
+    <button class="mini ghost" id="res-bulkopen" data-bulkopen style="align-self:center">Add several at once</button>
   </div>
-  <div class="card" style="margin-bottom:18px">
+  <div class="card" id="res-card" style="display:none;margin-bottom:18px">
     <div id="res-formhead" style="display:none;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--red);font-weight:600;margin-bottom:12px"></div>
     <div style="display:grid;gap:12px 16px;grid-template-columns:repeat(auto-fit,minmax(150px,1fr))">
       <div class="field"><label class="fl" for="r-unit">Unit</label><input class="inp" id="r-unit" autocapitalize="characters" placeholder="12A"></div>
@@ -804,16 +800,15 @@ HTML = f'''<!DOCTYPE html>
       <button class="btn" data-addres>Add Person</button>
       <label class="check" id="res-rolecheck" style="font-size:13.5px"><input type="checkbox" id="r-role"> Role account, no unit (front desk, building services)</label>
       <button class="btn" data-saveres style="display:none">Save Changes</button>
-      <button class="mini ghost" data-cancelres style="display:none">Close</button>
+      <button class="mini ghost" data-cancelres>Close</button>
       <button class="mini ghost" data-edittoggle style="display:none"></button>
       <button class="mini ghost" data-editdelete style="display:none" title="Remove entirely, for typos and test rows. Someone who moved out should be Disabled instead, which keeps their history.">Delete</button>
     </div>
-    <div class="sec" id="res-bulk" style="margin-top:18px">
-      <label class="fl" for="r-bulk" style="display:block;font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--stone);margin-bottom:5px;font-weight:600">Add several at once</label>
-      <textarea class="inp" id="r-bulk" rows="3" placeholder="One person per line: unit, name, email, owner or tenant&#10;12A, Margaret, margaret@example.com, owner&#10;7C, Elena, , tenant"></textarea>
-      <div style="margin-top:10px"><button class="mini" data-addbulk>Add Everyone Listed</button></div>
-      <div class="hint" style="margin-top:8px">Safe to paste the whole directory: anyone already listed under the same unit and name is skipped, and their code is not touched. Only new names get rows and codes; a blank email or owner-or-tenant standing is filled in from the paste. Someone who moved out stays as you left them; someone who moved units appears as a new row, and you Disable the old one.</div>
-    </div>
+  </div>
+  <div class="card" id="res-bulk" style="display:none;margin-bottom:18px">
+    <div class="flrow"><label class="fl" for="r-bulk" style="font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--stone);font-weight:600">Add several at once</label>{info("Safe to paste the whole directory: anyone already listed under the same unit and name is skipped, and their code is not touched. Only new names get rows and codes; a blank email or owner-or-tenant standing is filled in from the paste, never overwritten. Someone who moved out stays as you left them; someone who moved units appears as a new row, and you Disable the old one.")}</div>
+      <textarea class="inp" id="r-bulk" rows="3" style="margin-top:6px" placeholder="One person per line: unit, name, email, owner or tenant&#10;12A, Margaret, margaret@example.com, owner&#10;7C, Elena, , tenant"></textarea>
+      <div style="margin-top:10px;display:flex;gap:10px;align-items:center"><button class="mini" data-addbulk>Add Everyone Listed</button><button class="mini ghost" data-bulkclose>Close</button></div>
   </div>
   <div style="margin:0 0 14px;max-width:360px">
     <input class="inp" id="r-find" placeholder="Find a person, unit, or email" autocapitalize="none" autocomplete="off">
