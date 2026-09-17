@@ -1135,16 +1135,37 @@
       .then(u => { row.arrived = u.arrived; row.arrived_at = u.arrived_at; row.door_note = u.door_note; rsvpCache = null; renderRsvps(); })
       .catch(e => toast(e.message, "warn"));
   }
+  // A resident-hosted private event (a Spaces booking with a guest list) rides
+  // the same chronological door list as the house events, wearing a quiet
+  // Resident hosted chip so the two never read as one program. Its detail is
+  // the full guest toolset, the same panel Spaces shows.
+  function hostedRow(b) {
+    const k = "bk:" + b.id;
+    const openNow = openRsvpDetails.has(k);
+    return `<div class="srow" style="cursor:pointer" data-rsvpkey="${k}"><span class="rchev${openNow ? " open" : ""}">&rsaquo;</span><span class="slab">${esc(fmt(b.date))}</span>
+      <span class="sgrow" style="font-size:15px;color:var(--ink)">${esc(b.event_name)} <span class="badge2 ext">Resident hosted</span></span>
+      <span class="sval">${b.guest_parties || 0} ${(b.guest_parties || 0) === 1 ? "party" : "parties"} &middot; ${b.guest_arrived || 0} in</span></div>
+      <div class="card" data-rsvpdetail="${k}" style="${openNow ? "" : "display:none;"}margin:4px 0 10px">
+      <div style="font-size:13px;color:var(--ink-soft)">${esc(b.space)}${b.host ? " &middot; hosted by " + esc(b.host) : ""} &middot; outside guests, kept apart from resident figures</div>
+      ${guestSection(b)}
+      </div>`;
+  }
   function renderRsvps() {
     const box = $("#rsvplist"); if (!box) return;
     const { upcoming: sums, past } = rsvpSummaries();
-    if (!sums.length && !past.length) {
+    const t2 = today();
+    const hosted = bookings.filter(b => b.event_name && b.date >= t2);
+    if (!sums.length && !past.length && !hosted.length) {
       box.innerHTML = '<div class="nodata">Nothing yet. Figures begin with the first RSVP made on the site.</div>';
       return;
     }
     const ev = key => events.find(e => stem(e) === key);
-    let html = sums.length ? "" : '<div class="nodata">Nothing ahead. Figures begin with the next RSVP made on the site.</div>';
-    html += sums.map(s => {
+    let html = sums.length || hosted.length ? "" : '<div class="nodata">Nothing ahead. Figures begin with the next RSVP made on the site.</div>';
+    const items = [];
+    for (const b of hosted) items.push({ date: b.date, html: hostedRow(b) });
+    for (const s of sums) items.push({ date: s.date, html: null, s });
+    items.sort((a, b) => a.date.localeCompare(b.date));
+    html += items.map(it => it.html !== null ? it.html : (s => {
       const e = ev(s.key);
       const cap = e && e.Capacity ? ` of ${e.Capacity}` : "";
       const what = s.type === "guest" ? `${s.heads} outside guests` : `${s.heads}${cap} ${s.type === "paid" ? "seats" : "going"}${s.roleHeads ? ` &middot; incl. ${s.roleHeads} staff` : ""}`;
@@ -1166,7 +1187,7 @@
           <button class="mini ghost" data-rcancel="${r.id}" title="Take them off the list; you choose whether a note goes">Cancel</button>
           </span></div>`).join("")}
         </div>`;
-    }).join("");
+    })(it.s)).join("");
     // Passed events keep their lists, folded at the foot: who held seats is the
     // survey and thank-you audience, and Email guests opens the BCC draft.
     if (past.length) {
@@ -1732,6 +1753,9 @@
         </div></div>
       </div>`;
     }).join("");
+    // The dashboard's Resident hosted rows read the same stores, so any guest
+    // or booking change repaints both surfaces. renderRsvps never calls back.
+    renderRsvps();
   }
 
   async function loadGuests(bookingId) {
@@ -2454,7 +2478,15 @@
         const k = r.dataset.rsvpkey;
         const wasOpen = openRsvpDetails.has(k);
         openRsvpDetails.clear();
-        if (!wasOpen) openRsvpDetails.add(k);
+        if (!wasOpen) {
+          openRsvpDetails.add(k);
+          // A resident-hosted row fetches its guest list on open, same as the
+          // Spaces panel; loadGuests re-renders both surfaces when it lands.
+          if (k.startsWith("bk:")) {
+            const b = bookings.find(x => String(x.id) === k.slice(3));
+            if (b && b.event_name) loadGuests(b.id);
+          }
+        }
         renderRsvps();
       } else if (r.dataset.addbooking !== undefined) addBooking();
       else if (r.dataset.unbook) {

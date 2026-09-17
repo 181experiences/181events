@@ -415,6 +415,14 @@ HTML = f'''<!DOCTYPE html>
   #dlg-f input{{width:100%;border:1px solid var(--line);border-radius:var(--radius);background:var(--paper-2);
     padding:10px 12px;font-size:15px;font-family:inherit;color:var(--ink)}}
   #dlg-b{{display:flex;flex-direction:column;gap:8px;margin-top:16px}}
+  /* the event editor runs back-of-house: tighter rows, labels that whisper,
+     more form and less air, per the desk's word. Scoped so the resident-facing
+     doctrine (big targets, big type) stays untouched elsewhere. */
+  #scr-editor .form{{gap:10px 14px}}
+  #scr-editor .inp{{padding:7px 10px;font-size:13.5px}}
+  #scr-editor .fl{{font-size:10px}}
+  #scr-editor .hint{{font-size:11.5px}}
+  #scr-editor .picks{{gap:6px}}
   /* the booking form: fields sized to what they hold, folded until called for */
   .bkgrid{{display:grid;gap:12px 16px;grid-template-columns:repeat(6,1fr)}}
   .bkgrid .sp1{{grid-column:span 1}}
