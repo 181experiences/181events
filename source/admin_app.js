@@ -804,9 +804,73 @@
     return [...set];
   }
 
-  function openBccDraft(subject, body, emails) {
-    window.location.href = "mailto:?bcc=" + encodeURIComponent(emails.join(","))
-      + "&subject=" + encodeURIComponent(subject) + "&body=" + encodeURIComponent(body);
+  // ------------------------------------------------------------ dialogs & mail
+  // In-app dialogs with verb buttons, replacing the browser's anonymous
+  // OK/Cancel for the flows the desk lives in. Resolves the chosen value,
+  // or null when dismissed.
+  function dialog(title, text, buttons) {
+    return new Promise(resolve => {
+      $("#dlg-t").textContent = title;
+      $("#dlg-p").innerHTML = text;
+      $("#dlg-b").innerHTML = buttons.map((b, i) =>
+        `<button class="dlgbtn ${b.kind || ""}" data-dlgi="${i}">${esc(b.label)}</button>`).join("");
+      const wrap = $("#dlg-wrap");
+      wrap.style.display = "flex";
+      const done = v => { wrap.style.display = "none"; wrap.onclick = null; resolve(v); };
+      wrap.onclick = ev => {
+        const b = ev.target.closest("[data-dlgi]");
+        if (b) done(buttons[Number(b.dataset.dlgi)].value);
+        else if (ev.target === wrap) done(null);
+      };
+    });
+  }
+
+  // The desk machines have no desktop Outlook (browser mail only, per the
+  // building's licensing), so a bare mailto: goes nowhere there. Every draft
+  // now offers Outlook on the web, the desktop mail app, or a copy of the
+  // message, and each machine remembers which it uses. Nothing ever sends
+  // by itself; the site has no mail service by design.
+  async function openMail(opts) {
+    let pref = null; try { pref = localStorage.getItem("mailmode"); } catch (e) {}
+    const open = [
+      { label: "Open in Outlook on the web", value: "owa" },
+      { label: "Open in the desktop mail app", value: "app" },
+    ];
+    if (pref === "app") open.reverse();
+    open[0].kind = "primary";
+    const picked = await dialog(opts.title || "The note is ready",
+      (opts.text || "") + " It opens written and addressed; <strong>nothing sends until you press Send</strong>.",
+      [...open, { label: "Copy the message instead", value: "copy" },
+        { label: opts.noneLabel || "Not now", kind: "quiet", value: null }]);
+    if (!picked) return false;
+    const enc = encodeURIComponent;
+    if (picked === "owa" || picked === "app") { try { localStorage.setItem("mailmode", picked); } catch (e) {} }
+    if (picked === "owa") {
+      const q = [];
+      if (opts.to) q.push("to=" + enc(opts.to));
+      if (opts.bcc) q.push("bcc=" + enc(opts.bcc));
+      q.push("subject=" + enc(opts.subject || ""), "body=" + enc(opts.body || ""));
+      window.open("https://outlook.office.com/mail/deeplink/compose?" + q.join("&"), "_blank");
+    } else if (picked === "app") {
+      const q = [];
+      if (opts.bcc) q.push("bcc=" + enc(opts.bcc));
+      q.push("subject=" + enc(opts.subject || ""), "body=" + enc(opts.body || ""));
+      window.location.href = "mailto:" + (opts.to || "") + "?" + q.join("&");
+    } else {
+      const out = `To: ${opts.to || ""}${opts.bcc ? "\nBcc: " + opts.bcc : ""}\nSubject: ${opts.subject || ""}\n\n${opts.body || ""}`;
+      try { await navigator.clipboard.writeText(out); toast("Copied. Paste it into a new email."); }
+      catch (e) { toast("Could not copy on this browser; use one of the Open buttons.", "warn"); }
+    }
+    return true;
+  }
+
+  function openBccDraft(subject, body, emails, ctx) {
+    return openMail({
+      bcc: emails.join(","), subject, body,
+      title: (ctx && ctx.title) || "A note to everyone signed up",
+      text: `One email, ${emails.length} address${emails.length === 1 ? "" : "es"} on BCC so nobody sees the list.`,
+      noneLabel: (ctx && ctx.noneLabel) || "Not now",
+    });
   }
 
   function notifyEventChange(changed) {
@@ -840,27 +904,29 @@
     openBccDraft(`Update: ${first.Title}`, body, emails);
   }
 
-  function cancelEvent() {
+  async function cancelEvent() {
     const row = editing && editing.row; if (!row) return;
     const st = stem(row);
-    if (!confirm(`Cancel "${row.Title}" on ${fmt(row.Date)}? It leaves the calendar and its RSVPs stay held.`)) return;
+    const ok = await dialog(`Cancel ${row.Title}?`,
+      `${esc(fmt(row.Date))}. The date leaves the calendar, its RSVPs stay held, and nothing is sent unless you open the note offered next.`,
+      [{ label: "Cancel this date", kind: "primary", value: true }, { label: "Keep it on", kind: "quiet", value: null }]);
+    if (!ok) return;
     api("/api/events/" + encodeURIComponent(row.id), { method: "PATCH", body: JSON.stringify({ Status: "Unpublished" }) })
-      .then(upd => {
+      .then(async upd => {
         Object.assign(row, upd);
         renderAll();
         if (status.publish) api("/api/publish", { method: "POST" }).catch(() => {});
         // The note is offered, never forced: nothing sends itself anywhere,
         // and a quiet re-timing deserves the choice of saying nothing yet.
         const emails = rsvperEmails(new Set([st]));
-        if (emails.length
-            && confirm(`Open a cancellation note to everyone signed up? ${emails.length} ${emails.length === 1 ? "address" : "addresses"}; it opens in your own mailbox and nothing sends until you send it.`)) {
+        if (emails.length) {
           const body = `Hello,\n\nWith our apologies, ${row.Title} on ${fmt(row.Date)} is cancelled.\n\n`
             + `If you added it to your calendar, kindly remove that entry. If you subscribe to the calendar, it disappears on its own.\n\n`
             + `Warmly,\nResident Experiences\n181 Fremont`;
-          openBccDraft(`Cancelled: ${row.Title}, ${fmt(row.Date)}`, body, emails);
-          toast("Cancelled. The note is opening; send it and nobody shows up to an empty room.");
-        } else if (emails.length) {
-          toast("Cancelled and pulled from the calendar. Nobody has been told; to offer the note again, publish the date back and cancel once more.");
+          const sent = await openBccDraft(`Cancelled: ${row.Title}, ${fmt(row.Date)}`, body, emails,
+            { title: "Tell everyone signed up?", noneLabel: "No note" });
+          toast(sent ? "Cancelled. Send the note and nobody shows up to an empty room."
+            : "Cancelled and pulled from the calendar. Nobody has been told; to offer the note again, publish the date back and cancel once more.");
         } else {
           toast("Cancelled and pulled from the calendar. Those signed up have no email on file; a call closes the loop.");
         }
@@ -886,10 +952,16 @@
     else if (kind === "confirm") line = `Good news: room opened up for ${r.event_title} on ${when}, and your spot is confirmed, ${what}.`;
     else if (kind === "moved") line = `As requested, your RSVP has moved: it now stands for ${r.event_title} on ${when}, ${what}${r.status === "Waitlist" ? ", currently on the waitlist" : ""}. It was for ${extra}.`;
     else line = `As requested, your RSVP for ${r.event_title} on ${when} is updated: ${what}${r.status === "Waitlist" ? ", currently on the waitlist" : ""}.`;
-    const href = "mailto:" + encodeURIComponent(r.email)
-      + "?subject=" + encodeURIComponent(`Your RSVP for ${r.event_title}, ${when}`)
-      + "&body=" + encodeURIComponent(`Hello ${r.name},\n\n${line}\n\nWarmly,\nResident Experiences\n181 Fremont`);
-    window.location.href = href;
+    const kindWord = kind === "cancel" ? "cancellation" : kind === "confirm" ? "confirmation"
+      : kind === "moved" ? "move" : "change";
+    return openMail({
+      to: r.email,
+      subject: `Your RSVP for ${r.event_title}, ${when}`,
+      body: `Hello ${r.name},\n\n${line}\n\nWarmly,\nResident Experiences\n181 Fremont`,
+      title: `Tell ${r.name} about the ${kindWord}?`,
+      text: `An email to their address on file (${esc(r.email)}), from your own mailbox. The site never messages residents in the app; email is the only channel.`,
+      noneLabel: "No note",
+    });
   }
 
   function patchRsvp(id, body, after) {
@@ -981,8 +1053,7 @@
       toast(d.rsvp.status === "Waitlist"
         ? `Moved. ${d.rsvp.name} is on the new event's waitlist: it is full or others are ahead in line.`
         : `Moved. ${d.rsvp.name} is confirmed on the new event.`);
-      if (d.rsvp.email && confirm(`Open a note to ${d.rsvp.name} about the move? It sends from your own mailbox.`))
-        notifyRsvp(d.rsvp, "moved", oldWhat);
+      if (d.rsvp.email) notifyRsvp(d.rsvp, "moved", oldWhat);
     } catch (e) { toast(e.message, "warn"); }
   }
 
@@ -1160,16 +1231,13 @@
       : p.expired ? '<span class="pill unpublished">Ended</span>'
       : p.ends ? `<span class="pill draft">Ends ${esc(p.ends)}</span>`
       : '<span class="pill live">Active</span>';
-    const mailHref = p => "mailto:" + encodeURIComponent(p.email)
-      + "?subject=" + encodeURIComponent("Your 181 Fremont resident code")
-      + "&body=" + encodeURIComponent(`Hello ${p.name},\n\nYour personal code for 181residents.com is:\n\n    ${p.code}\n\nTap RSVP on any event, enter the code once, and you stay signed in for a month on that device. Your RSVPs and notes to us save under your name.\n\nWarmly,\nResident Experiences\n181 Fremont`);
     // Three buttons, no more: the two the desk reaches for at 10 pm, and Edit,
     // which opens everything else (end dates, standing, disable, delete) in the
     // card above, one deliberate step away from the row.
     // Every row carries the same three controls, so the columns line up whether
     // or not an email is on file: an empty mailbox just shades its button.
     const mailBtn = p => p.email && p.status === "Active"
-      ? `<a class="mini" href="${mailHref(p)}" title="Opens your own mail app with the code written out">Email code</a>`
+      ? `<button class="mini" data-mailcode="${p.id}" title="A ready-written email with the code, from your own mailbox">Email code</button>`
       : `<span class="mini off" title="${p.status !== "Active" || p.expired ? "Available once the code is active again" : "No email on file. Edit adds one."}">Email code</span>`;
     const row = p => `<div class="rrow${p.status !== "Active" || p.expired ? " off" : ""}">
       <span class="rname">${esc(p.name)}${p.email ? `<em>${esc(p.email)}</em>` : ""}</span>
@@ -2026,7 +2094,7 @@
   }
 
   document.addEventListener("click", ev => {
-    const r = ev.target.closest("[data-rotate],[data-ends],[data-toggle],[data-rdelete],[data-resedit],[data-saveres],[data-cancelres],[data-edittoggle],[data-editdelete],[data-addres],[data-addbulk],[data-printcards],[data-mreplied],[data-marchive],[data-wconfirm],[data-redit],[data-rcancel],[data-rarrive],[data-pastchev],[data-pastmail],[data-notedel],[data-rsvpprint],[data-addrsvp],[data-savearsvp],[data-closearsvp],[data-copylink],[data-aupload],[data-acanva],[data-adelete],[data-rsvpkey],[data-addbooking],[data-unbook],[data-bkchev],[data-bkreg],[data-bkcopy],[data-bkprint],[data-gadd],[data-garrive],[data-gdel],[data-bkedit],[data-savebk],[data-cancelbk]");
+    const r = ev.target.closest("[data-mailcode],[data-rotate],[data-ends],[data-toggle],[data-rdelete],[data-resedit],[data-saveres],[data-cancelres],[data-edittoggle],[data-editdelete],[data-addres],[data-addbulk],[data-printcards],[data-mreplied],[data-marchive],[data-wconfirm],[data-redit],[data-rcancel],[data-rarrive],[data-pastchev],[data-pastmail],[data-notedel],[data-rsvpprint],[data-addrsvp],[data-savearsvp],[data-closearsvp],[data-copylink],[data-aupload],[data-acanva],[data-adelete],[data-rsvpkey],[data-addbooking],[data-unbook],[data-bkchev],[data-bkreg],[data-bkcopy],[data-bkprint],[data-gadd],[data-garrive],[data-gdel],[data-bkedit],[data-savebk],[data-cancelbk]");
     if (r) {
       if (r.dataset.bkedit) {
         const b = bookings.find(x => String(x.id) === r.dataset.bkedit);
@@ -2110,6 +2178,17 @@
           }).catch(e => toast(e.message, "warn"));
         return;
       }
+      if (r.dataset.mailcode) {
+        const p = residents.find(x => String(x.id) === r.dataset.mailcode);
+        if (p && p.email) openMail({
+          to: p.email,
+          subject: "Your 181 Fremont resident code",
+          body: `Hello ${p.name},\n\nYour personal code for 181residents.com is:\n\n    ${p.code}\n\nTap RSVP on any event, enter the code once, and you stay signed in for a month on that device. Your RSVPs and notes to us save under your name.\n\nWarmly,\nResident Experiences\n181 Fremont`,
+          title: `Email ${p.name} their code?`,
+          text: `To ${esc(p.email)}, their address on file, from your own mailbox.`,
+        });
+        return;
+      }
       if (r.dataset.rotate) {
         const p = residents.find(x => String(x.id) === r.dataset.rotate);
         if (p && confirm(`Rotate ${p.label}'s code? The old one stops working everywhere, on every device, right away.`))
@@ -2184,20 +2263,21 @@
       } else if (r.dataset.rcancel) {
         const row = rsvps.find(x => String(x.id) === r.dataset.rcancel);
         if (!row) return;
-        if (!confirm(`Cancel ${row.name}'s RSVP for ${row.event_title}?`)) return;
-        patchRsvp(r.dataset.rcancel, { status: "Cancelled" }, () => {
-          rsvps = rsvps.filter(x => String(x.id) !== r.dataset.rcancel);
-          rsvpCache = null;
-          renderDash(); renderEvents();
-          toast("Cancelled. Their seats are free for the waitlist; use Confirm seats to hand them on.");
-          // The note is offered, never assumed: sometimes the resident is
-          // standing right there, and sometimes they asked for no fuss.
-          if (row.email) {
-            if (confirm(`Open a note to ${row.name} about the cancellation? It sends from your own mailbox.`))
-              notifyRsvp(row, "cancel");
-          } else {
-            toast(`No email on file for ${row.name}; a call or a word at the desk closes the loop.`);
-          }
+        dialog(`Cancel ${row.name}'s RSVP?`,
+          `${esc(row.event_title)}, ${esc(fmt(row.event_date))} &middot; ${row.count === 1 ? "party of 1" : "party of " + row.count}. Their seats free up for the waitlist, and nothing is sent unless you open the note offered next.`,
+          [{ label: "Cancel the RSVP", kind: "primary", value: true }, { label: "Keep it", kind: "quiet", value: null }]
+        ).then(ok => {
+          if (!ok) return;
+          patchRsvp(r.dataset.rcancel, { status: "Cancelled" }, () => {
+            rsvps = rsvps.filter(x => String(x.id) !== r.dataset.rcancel);
+            rsvpCache = null;
+            renderDash(); renderEvents();
+            toast("Cancelled. Their seats are free for the waitlist; use Confirm seats to hand them on.");
+            // The note is offered, never assumed: sometimes the resident is
+            // standing right there, and sometimes they asked for no fuss.
+            if (row.email) notifyRsvp(row, "cancel");
+            else toast(`No email on file for ${row.name}; a call or a word at the desk closes the loop.`);
+          });
         });
       } else if (r.dataset.aupload) {
         const [st, slug] = r.dataset.aupload.split("|");

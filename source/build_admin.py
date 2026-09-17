@@ -403,6 +403,20 @@ HTML = f'''<!DOCTYPE html>
   .sw .chip2{{height:56px;border-radius:var(--radius);border:1px solid rgba(0,0,0,.08)}}
   .sw .nm{{font-size:12px;color:var(--ink);margin-top:7px}}
   .sw .hx{{font-size:11px;color:var(--stone);font-family:ui-monospace,Menlo,monospace}}
+  /* ---------- dialogs: clear verbs instead of the browser's OK/Cancel ---------- */
+  #dlg-wrap{{position:fixed;inset:0;background:rgba(22,22,26,.45);z-index:950;display:none;
+    align-items:flex-start;justify-content:center;padding:12vh 16px 16px}}
+  #dlg{{background:var(--paper-2);border:1px solid var(--line);border-radius:8px;max-width:440px;width:100%;
+    padding:20px 22px;box-shadow:0 18px 50px rgba(0,0,0,.28)}}
+  #dlg-t{{font-family:var(--fd);font-weight:600;font-size:19px;color:var(--ink);line-height:1.25}}
+  #dlg-p{{font-size:14px;color:var(--ink-soft);line-height:1.5;margin-top:8px}}
+  #dlg-b{{display:flex;flex-direction:column;gap:8px;margin-top:16px}}
+  .dlgbtn{{border:1px solid var(--line);border-radius:var(--radius);background:var(--paper-2);color:var(--ink);
+    padding:12px 14px;font-size:13.5px;font-weight:600;letter-spacing:.04em;cursor:pointer;font-family:inherit;text-align:center;min-height:44px}}
+  .dlgbtn.primary{{background:var(--red);border-color:var(--red);color:#fff}}
+  .dlgbtn.quiet{{border-color:transparent;color:var(--stone);font-weight:500}}
+  .dlgbtn:hover{{border-color:var(--ink)}}
+  .dlgbtn.primary:hover{{border-color:var(--red);opacity:.92}}
   .toast{{position:fixed;left:50%;bottom:28px;transform:translateX(-50%) translateY(20px);background:var(--ink);color:#f2efe9;
     padding:14px 22px;border-radius:var(--radius);font-size:15px;opacity:0;pointer-events:none;transition:.25s;z-index:90;max-width:92vw}}
   .toast.show{{opacity:1;transform:translateX(-50%)}}
@@ -1183,6 +1197,7 @@ HTML = f'''<!DOCTYPE html>
 
 </div>
 <input type="file" id="afile" style="display:none">
+<div id="dlg-wrap"><div id="dlg"><div id="dlg-t"></div><div id="dlg-p"></div><div id="dlg-b"></div></div></div>
 <div class="toast" id="toast"></div>
 <script>
 {APP_JS}
