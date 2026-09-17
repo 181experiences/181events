@@ -543,7 +543,7 @@ HTML = f'''<!DOCTYPE html>
       <h2>RSVPs</h2>
       <button class="mini" data-addrsvp title="For the resident who phones the desk or asks in passing">Add an RSVP for someone</button>
     </div>
-    <div class="sd">Confirmed parties and heads for upcoming dates, with waitlists. Open an event to see who, by unit; a unit appearing twice for one event is worth a glance, since a household can double-count itself. Edit or cancel any RSVP from the list, and a note to the resident opens ready to send from your own mailbox. On the day, Arrived beside each party marks who came: one tap for the whole party, a second tap to adjust the number. Passed events keep their lists under Past events at the foot, with the arrival tally and an Email guests draft for the thank-you or the survey.</div>
+    <div class="sd">Confirmed parties and heads for upcoming dates, with waitlists. Open an event to see who, by unit; a unit appearing twice for one event is worth a glance, since a household can double-count itself. Edit or cancel any RSVP from the list, and a note to the resident opens ready to send from your own mailbox, in Outlook on the web or the desktop app, whichever this machine uses. On the day, Check in beside each party works the door: the whole party in one tap, a typed number when fewer came, and a door note for the row ("two here, the third is parking"). Resident-hosted private events ride this same list with their guest panels. Passed events keep their lists under Past events at the foot, with the arrival tally and an Email guests draft for the thank-you or the survey.</div>
     <div class="card" id="ar-card" style="display:none;margin-bottom:10px">
       <div id="ar-head" style="display:none;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--red);font-weight:600;margin-bottom:12px"></div>
       <div style="display:grid;gap:12px 16px;grid-template-columns:repeat(auto-fit,minmax(190px,1fr))">
@@ -927,7 +927,7 @@ HTML = f'''<!DOCTYPE html>
     <li><strong>Build the asset kit.</strong> Six pieces, same six every time. See <em>Brand &amp; Canva templates</em> for sizes.</li>
     <li><strong>Publish.</strong> The <em>Publish</em> button puts it on the calendar; the same button reads <em>Unpublish</em> once it is out. An event whose details are still settling can go out early with the <em>Coming soon</em> box ticked: the date and title show, RSVP and calendars wait.</li>
     <li><strong>Promote, in this order:</strong> Mailchimp campaign, then the Nixplay playlist, then the printed signs. All three point at the same event page.</li>
-    <li><strong>After it happens:</strong> attendance is whatever the door marked with <em>Arrived</em>; tidy stragglers under Past events on the Dashboard. The Archive files passed events on its own; <em>Archive</em> by hand only from Unpublished.</li>
+    <li><strong>After it happens:</strong> attendance is whatever the door marked with <em>Check in</em>; tidy stragglers under Past events on the Dashboard. The Archive files passed events on its own; <em>Archive</em> by hand only from Unpublished.</li>
   </ol>
 
   <div class="callout"><strong>The Calendar tab</strong> is the staff view of the month: what is live for residents plus
@@ -1006,10 +1006,10 @@ HTML = f'''<!DOCTYPE html>
   <p>Every RSVP row also carries its trail: the date of its last change and who made it, staff by name and residents
   as <em>resident</em>, so a cancelled seat or a changed party is never a mystery. With each desk and porter signing
   in under their own email, the trail names the person.</p>
-  <p>On the day of an event, <strong>Arrived</strong> beside each party marks attendance at the door: one tap marks the
-  whole party in, a second tap asks for the true number when fewer came, and 0 clears the mark. The RSVP itself is never
-  touched, so the pair of numbers survives the evening; the export carries an Attendance table of RSVPed beside came,
-  which is the honest pair for the Board.</p>
+  <p>On the day of an event, <strong>Check in</strong> beside each party works the door: one tap seats the whole party,
+  a typed number covers the party that arrives short, a door note rides the row ("two here, the third is parking"), and
+  the mark reads plainly, 2 of 4 in. The RSVP itself is never touched, so the pair of numbers survives the evening; the
+  export carries an Attendance table of RSVPed beside came, which is the honest pair for the Board.</p>
   <p>Passed events keep their lists under <strong>Past events</strong> at the foot of the RSVP list, with who came, by unit,
   the arrival tally, and each party&rsquo;s email. <em>Email guests</em> there opens one BCC draft to everyone who held
   seats, made for the thank-you note and the survey.</p>

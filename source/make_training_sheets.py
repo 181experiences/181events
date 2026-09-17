@@ -205,8 +205,8 @@ DESK_COL1 = [
     ("b", "**Stay signed in** on the desk computer; there is no need to sign out between shifts, and each fresh sign-in costs another emailed code."),
     ("h", "2 · The lost code, any hour"),
     ("b", "**Residents** tab. Type a name or unit in the **find box**; the household card opens with the person in it."),
-    ("b", "**Rotate** issues a fresh code. The old one stops working everywhere, on every device, right away."),
-    ("b", "Read the new code over the phone, or press **Email code**: a draft opens in Outlook with the code written out, ready to send."),
+    ("b", "**Email code** first: a written draft opens in Outlook on the web or the desktop app (the machine remembers which), addressed to the email on file, ready to send."),
+    ("b", "In person? **Print** on the row makes one fresh code card at the lobby printer. A lost card that could be found: **Rotate** first, which stops the old code everywhere, then email or print the new one."),
     ("b", "One code per person; couples each have their own. Never share a code between people."),
     ("h", "3 · Temporary stays"),
     ("b", "A renter or a visiting family member gets their own row: unit, name, email, and an **Access ends** date. The code simply stops working after it."),
@@ -221,13 +221,14 @@ DESK_COL2 = [
     ("h", "5 · Changes and cancellations"),
     ("b", "**Edit** on any RSVP row opens the full card: party size, names, or a **move to another event**. **Cancel** asks first, then asks whether a note should go."),
     ("b", "**Confirm seats** appears on a waitlist row once seats free up. Freed seats are never handed out on their own; pressing it gives them to that party."),
-    ("b", "After any change, an email to the resident opens prefilled, ready to send. No email on file? The screen says so; a call closes the loop."),
-    ("b", "On event day it is the door list: press **Arrived** as each party comes in; tap again to adjust the number."),
+    ("b", "After any change, a note to the resident is offered: it opens written and addressed from your own mailbox, web or desktop Outlook. No email on file? A call closes the loop."),
+    ("b", "On event day it is the door list: **Check in** seats a whole party in one tap, takes a number when fewer came, and holds a short door note on the row."),
     ("h", "6 · Private-party nights"),
     ("b", "Guests arrive announcing the **event name**. The list: **Spaces** tab, the reservation’s **Guests** panel, or the printed sheet."),
-    ("b", "Press **Arrived** beside each name; plus-ones have their own lines. A name not listed: check with the host, then **Add**."),
+    ("b", "Press **Arrived** beside each name; plus-ones have their own lines. A name not listed: check with the host, then **Add**. **Email** and **Edit** sit on every line."),
     ("h", "7 · What the desk view leaves alone"),
     ("b", "Events, publishing, and Assets belong to Resident Experiences. Message text is private to Leo; you see who wrote and when, never the words."),
+    ("b", "A neighbor note that must come down at 2 AM can: **Remove** on the Messages tab, named under **Past notes**; **Restore** puts it back."),
     ("b", "The grey bar at the top stays quiet when all is well. If something looks wrong: reload; still wrong, call Leo and read him what the bar says."),
 ]
 
@@ -256,16 +257,16 @@ LEAD_COL1 = [
 
 LEAD_COL2 = [
     ("h", "6 · Telling residents"),
-    ("b", "Change a Live event\u2019s date, time, or place while people are signed up, and one BCC email opens in Outlook to all of them, old and new spelled out. Read it, send it."),
+    ("b", "Change a Live event\u2019s date, time, or place while people are signed up, and one BCC email opens to all of them, old and new spelled out, web or desktop Outlook. Read it, send it."),
     ("b", "**Cancel this date** pulls the event, holds the RSVPs, then asks whether the note opens; nothing sends itself."),
     ("b", "**Link** on any row copies that date’s page. The standing short address **/e/the-slug** always lands on the next upcoming date, made for print."),
     ("b", "Calendar subscribers update on their own; anyone who used **Add to My Calendar** re-taps it after a change. The drafts say so."),
     ("h", "7 · RSVPs from the Dashboard"),
     ("b", "**Edit** on a row changes the party or **moves the RSVP to another event**, under the new event’s own rules. **Cancel** asks first, then asks whether a note goes."),
-    ("b", "On the day, **Arrived** beside each party marks the door: one tap for the whole party, tap again to adjust. RSVPed and came stay two numbers, side by side in the CSV."),
+    ("b", "On the day, **Check in** works the door: a whole party in one tap, a number when fewer came, a note on the row. RSVPed and came stay two numbers in the CSV."),
     ("b", "**Past events**, at the foot of the RSVP list, keep who came with the arrival tally and emails in view; **Email guests** opens one BCC draft for the thank-you or the survey."),
     ("h", "8 · Private events"),
-    ("b", "A **Spaces** reservation can carry a private event: outside guests register on one page, the host sends the link, the desk runs the printed list. Full walkthrough under Settings."),
+    ("b", "A **Spaces** reservation can carry a private event: guests register on one page, the host sends the link, the desk runs the printed list; it rides the Dashboard RSVP list marked **Resident hosted**. Walkthrough under Settings."),
     ("h", "9 · Asset kits"),
     ("b", "One **master kit** per event or series, under **Assets**; every date inherits it. **Override this date** in the editor gives one date its own file; **Back to series kit** hands it back."),
     ("h", "10 · The Archive"),
@@ -274,6 +275,7 @@ LEAD_COL2 = [
     ("b", "7, 30, or 90 days; **Download CSV** opens in Excel. Counts stand beside percentages; read swings as noise until three months agree. Events hosted by others are listed, not counted."),
     ("b", "Residents fold into unit cards with a find box; **Edit** on a row holds emails, end dates, tenant standing, and Disable."),
     ("b", "The inbox shows who wrote, when, and whether it has been answered. The words themselves are for Leo; residents write to a person, not a department."),
+    ("b", "The notes board keeps its own account: any tier may take one down, named under **Past notes**; **Restore** honors the original fade date."),
 ]
 
 # ================================================================ residents
@@ -348,7 +350,7 @@ dense_sheet("desk-cheat-sheet",
             "181residents.com/admin  ·  sign in as concierge@181sf.com  ·  keep beside the desk phone",
             DESK_COL1, DESK_COL2,
             "181 Fremont Residences  ·  Resident Experiences  ·  September 2026",
-            body_size=42, leading=55, head_size=62, top=680)
+            body_size=40, leading=52, head_size=60, top=640)
 
 dense_sheet("leadership-cheat-sheet",
             "LEADERSHIP · RESIDENT EVENTS ADMIN",
@@ -356,6 +358,6 @@ dense_sheet("leadership-cheat-sheet",
             "181residents.com/admin  ·  sign in with your own email  ·  the full guides live under Settings",
             LEAD_COL1, LEAD_COL2,
             "181 Fremont Residences  ·  Resident Experiences  ·  September 2026",
-            body_size=33, leading=45, head_size=48)
+            body_size=32, leading=43, head_size=47, top=606)
 
 resident_sheet()
