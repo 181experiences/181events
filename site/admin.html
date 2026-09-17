@@ -678,6 +678,7 @@
     <button class="mini ghost" id="ed-discard" data-eddiscard style="display:none">Discard draft</button>
     <button class="btn ghost" id="ed-archivebtn" data-edarchive disabled title="For safety, an event is archived from Unpublished, never straight off the calendar">Archive</button>
     <button class="btn ghost" id="ed-cancel" style="border-color:var(--red);color:var(--red)" disabled>Cancel this date</button>
+    <button class="btn ghost" id="ed-delete" data-eddelete style="display:none;border-color:var(--red);color:var(--red)" title="Drafts only: residents never saw this date, so nothing is lost">Delete this date</button>
   </div>
   <div class="hint" id="ed-actions-note" style="margin-top:10px"></div>
   <div class="hint" id="ed-cancel-note" style="margin-top:4px"></div>
@@ -1468,7 +1469,8 @@
           <span class="pill ${cls(r.Status)}">${esc(r.Status || "Draft")}</span>
           ${r.Moved ? '<span class="badge2">moved</span>' : ""}
           <button class="mini ghost" data-copylink="${esc(stem(r))}" title="Copies this date's page address">Link</button>
-          <button class="mini" data-editrow="${esc(g.key)}|${esc(r.id)}">Edit this date</button></div>`).join("")}${g.upcoming.length && g.rows.length > g.upcoming.length ? `
+          <button class="mini" data-editrow="${esc(g.key)}|${esc(r.id)}">Edit this date</button>
+          ${(r.Status || "Draft") === "Draft" ? `<button class="mini ghost" data-rowdelete="${esc(g.key)}|${esc(r.id)}" title="Drafts only: removes just this date; the rest of the series stays">Delete this date</button>` : ""}</div>`).join("")}${g.upcoming.length && g.rows.length > g.upcoming.length ? `
         <div class="edrow" style="color:var(--stone)">${g.rows.length - g.upcoming.length} passed date${g.rows.length - g.upcoming.length === 1 ? "" : "s"} ride with the listing, in reporting and later in the Archive.</div>` : ""}
       </div>
       <div class="qv" data-qview-for="${esc(g.key)}" style="display:none">${qvHtml(g)}</div>`;
@@ -1544,6 +1546,12 @@
     $("#ed-publish").textContent = live ? (draft ? "Publish changes" : "Unpublish") : "Publish";
     $("#ed-discard").style.display = draft ? "" : "none";
     $("#ed-archivebtn").disabled = !(row && row.Status === "Unpublished");
+    // Delete lives here only for a Draft date opened on its own; a whole-series
+    // edit points at the list's Delete draft, which takes the group at once.
+    const series = !!(editing && editing.group && editing.group.series);
+    const wholeSeries = series && $("#ed-occ").style.display !== "none" && $("#f-occ").value === "__all";
+    $("#ed-delete").style.display = row && (row.Status || "Draft") === "Draft" && !wholeSeries ? "" : "none";
+    $("#ed-delete").textContent = series ? "Delete this date" : "Delete draft";
     $("#ed-draftnote").style.display = draft ? "" : "none";
     if (draft) $("#ed-draftnote").innerHTML =
       "<strong>A saved draft is loaded below, and it is not on the resident site.</strong> " +
@@ -2948,6 +2956,23 @@
     else toast(n === 1 ? "Draft deleted." : `Deleted all ${n} dates of the draft.`);
   }
 
+  // One date of a draft series can leave without the rest: the calendar-app
+  // gesture ("delete only this event") for drafts. Server-side the DELETE is
+  // Draft-only, so a published date can never fall through this door.
+  async function deleteDraftRow(key, id) {
+    const g = groups().find(x => x.key === key); if (!g) return;
+    const r = g.rows.find(x => String(x.id) === String(id)); if (!r) return;
+    const others = g.rows.length - 1;
+    const tail = others === 0 ? "" : others === 1 ? " The other date stays." : ` The other ${others} dates stay.`;
+    if (!confirm(`Delete ${fmt(r.Date)} from "${r.Title}"? Residents never saw it.${tail}`)) return;
+    try { await api("/api/events/" + encodeURIComponent(r.id), { method: "DELETE" }); }
+    catch (e) { toast(e.message, "warn"); return; }
+    events = events.filter(e => e.id !== r.id);
+    if (editing && editing.row && editing.row.id === r.id) { editing = null; go("events"); }
+    renderAll();
+    toast(others ? `${fmt(r.Date)} deleted; the series keeps its other date${others === 1 ? "" : "s"}.` : "Draft deleted.");
+  }
+
   // ---------------------------------------------------------------- staff calendar
   // The month grid for staff eyes: every event in every state, including what
   // residents cannot see yet, each day opening straight into the editor.
@@ -3421,9 +3446,14 @@
       }
       return;
     }
-    const b = ev.target.closest("[data-edit],[data-archive],[data-new],[data-edpublish],[data-edsavedraft],[data-eddiscard],[data-edarchive],[data-histload],[data-savewindow],[data-addloc],[data-addhost],[data-delloc],[data-delhost],[data-period],[data-publish],[data-fmt],[data-dates],[data-editrow],[data-export],[data-evdelete],[data-acal],[data-acev],[data-acalqv],[data-dashfold],[data-qview]");
+    const b = ev.target.closest("[data-edit],[data-archive],[data-new],[data-edpublish],[data-edsavedraft],[data-eddiscard],[data-edarchive],[data-eddelete],[data-histload],[data-savewindow],[data-addloc],[data-addhost],[data-delloc],[data-delhost],[data-period],[data-publish],[data-fmt],[data-dates],[data-editrow],[data-rowdelete],[data-export],[data-evdelete],[data-acal],[data-acev],[data-acalqv],[data-dashfold],[data-qview]");
     if (!b) return;
     if (b.dataset.evdelete) { deleteDraftGroup(b.dataset.evdelete); return; }
+    if (b.dataset.rowdelete) { const [k, id] = b.dataset.rowdelete.split("|"); deleteDraftRow(k, id); return; }
+    if (b.dataset.eddelete !== undefined) {
+      if (editing && editing.group && editing.row) deleteDraftRow(editing.group.key, editing.row.id);
+      return;
+    }
     if (b.dataset.dashfold !== undefined) { applyDashFold(true); return; }
     if (b.dataset.qview) {
       const d = document.querySelector(`[data-qview-for="${CSS.escape(b.dataset.qview)}"]`);

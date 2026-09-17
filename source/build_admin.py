@@ -676,6 +676,7 @@ HTML = f'''<!DOCTYPE html>
     <button class="mini ghost" id="ed-discard" data-eddiscard style="display:none">Discard draft</button>
     <button class="btn ghost" id="ed-archivebtn" data-edarchive disabled title="For safety, an event is archived from Unpublished, never straight off the calendar">Archive</button>
     <button class="btn ghost" id="ed-cancel" style="border-color:var(--red);color:var(--red)" disabled>Cancel this date</button>
+    <button class="btn ghost" id="ed-delete" data-eddelete style="display:none;border-color:var(--red);color:var(--red)" title="Drafts only: residents never saw this date, so nothing is lost">Delete this date</button>
   </div>
   <div class="hint" id="ed-actions-note" style="margin-top:10px"></div>
   <div class="hint" id="ed-cancel-note" style="margin-top:4px"></div>
