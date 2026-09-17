@@ -402,7 +402,14 @@
     padding:20px 22px;box-shadow:0 18px 50px rgba(0,0,0,.28)}
   #dlg-t{font-family:var(--fd);font-weight:600;font-size:19px;color:var(--ink);line-height:1.25}
   #dlg-p{font-size:14px;color:var(--ink-soft);line-height:1.5;margin-top:8px}
+  #dlg-f{display:grid;gap:10px;margin-top:14px}
+  #dlg-f label{display:block;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--stone);font-weight:600;margin-bottom:4px}
+  #dlg-f input{width:100%;border:1px solid var(--line);border-radius:var(--radius);background:var(--paper-2);
+    padding:10px 12px;font-size:15px;font-family:inherit;color:var(--ink)}
   #dlg-b{display:flex;flex-direction:column;gap:8px;margin-top:16px}
+  /* dashboard rsvp rows: the chevron says open or closed at a glance */
+  .rchev{flex:0 0 14px;color:var(--stone);font-size:19px;line-height:1;transition:transform .15s;display:inline-block}
+  .rchev.open{transform:rotate(90deg)}
   .dlgbtn{border:1px solid var(--line);border-radius:var(--radius);background:var(--paper-2);color:var(--ink);
     padding:12px 14px;font-size:13.5px;font-weight:600;letter-spacing:.04em;cursor:pointer;font-family:inherit;text-align:center;min-height:44px}
   .dlgbtn.primary{background:var(--red);border-color:var(--red);color:#fff}
@@ -1199,7 +1206,7 @@
 
 </div>
 <input type="file" id="afile" style="display:none">
-<div id="dlg-wrap"><div id="dlg"><div id="dlg-t"></div><div id="dlg-p"></div><div id="dlg-b"></div></div></div>
+<div id="dlg-wrap"><div id="dlg"><div id="dlg-t"></div><div id="dlg-p"></div><div id="dlg-f"></div><div id="dlg-b"></div></div></div>
 <div class="toast" id="toast"></div>
 <script>
 /* 181 Fremont admin. Talks to /api/* (Cloudflare Pages Functions, or dev_server.py locally).
@@ -2012,15 +2019,23 @@
   // In-app dialogs with verb buttons, replacing the browser's anonymous
   // OK/Cancel for the flows the desk lives in. Resolves the chosen value,
   // or null when dismissed.
-  function dialog(title, text, buttons) {
+  function dialog(title, text, buttons, fields) {
     return new Promise(resolve => {
       $("#dlg-t").textContent = title;
       $("#dlg-p").innerHTML = text;
+      $("#dlg-f").innerHTML = (fields || []).map(f =>
+        `<div><label for="dlgf-${f.id}">${esc(f.label)}</label>
+         <input id="dlgf-${f.id}" type="${f.type || "text"}" value="${esc(f.value || "")}" placeholder="${esc(f.placeholder || "")}"${f.type === "number" ? ' inputmode="numeric" min="0" max="6"' : ""}></div>`).join("");
       $("#dlg-b").innerHTML = buttons.map((b, i) =>
         `<button class="dlgbtn ${b.kind || ""}" data-dlgi="${i}">${esc(b.label)}</button>`).join("");
       const wrap = $("#dlg-wrap");
       wrap.style.display = "flex";
-      const done = v => { wrap.style.display = "none"; wrap.onclick = null; resolve(v); };
+      const done = v => {
+        const f = {};
+        for (const fl of fields || []) f[fl.id] = $("#dlgf-" + fl.id).value;
+        wrap.style.display = "none"; wrap.onclick = null;
+        resolve(fields ? { value: v, fields: f } : v);
+      };
       wrap.onclick = ev => {
         const b = ev.target.closest("[data-dlgi]");
         if (b) done(buttons[Number(b.dataset.dlgi)].value);
@@ -2300,8 +2315,37 @@
   // so they carry no button.
   const arriveBtn = r => r.status === "Waitlist" ? "" :
     `<button class="mini${r.arrived == null ? " ghost" : ""}" data-rarrive="${r.id}"
-      title="${r.arrived == null ? "One tap marks the whole party in; tap again to adjust" : "Tap to adjust the number; 0 clears the mark"}">${
-      r.arrived == null ? "Arrived" : `Arrived &#10003; ${r.arrived}`}</button>`;
+      title="${r.arrived == null ? "Check the party in at the door; a partial count is fine" : "Tap to adjust the count or the door note"}">${
+      r.arrived == null ? "Check in" : `&#10003; ${r.arrived} of ${r.count} in`}</button>`;
+
+  // The door dialog: whole party in one tap, a partial count when only some
+  // arrived, and a margin note for the row ("third is parking the car").
+  async function checkInFlow(row) {
+    const res = await dialog(`Check in ${row.name}`,
+      `${esc(row.event_title)} &middot; ${row.count === 1 ? "party of 1" : `party of ${row.count}`}. A partial count is fine; come back and adjust as the rest arrive.`,
+      [
+        { label: row.count === 1 ? `${row.name.split(" ")[0]} is here` : `All ${row.count} are here`, kind: "primary", value: "all" },
+        { label: "Save the number below", value: "save" },
+        ...(row.arrived != null ? [{ label: "Clear the check-in", value: "clear" }] : []),
+        { label: "Not now", kind: "quiet", value: null },
+      ],
+      [
+        { id: "n", label: "How many are in", value: String(row.arrived == null ? row.count : row.arrived), type: "number" },
+        { id: "note", label: "Door note, optional", value: row.door_note || "", placeholder: "Two of three here; the third is parking" },
+      ]);
+    if (!res || !res.value) return;
+    const body = { door_note: String(res.fields.note || "").trim() };
+    if (res.value === "all") body.arrived = row.count;
+    else if (res.value === "clear") body.arrived = null;
+    else {
+      const n = Math.round(Number(res.fields.n));
+      if (!Number.isFinite(n) || n < 0 || n > 6) { toast("A number from 0 to 6.", "warn"); return; }
+      body.arrived = n === 0 ? null : n;
+    }
+    api("/api/rsvps/" + row.id, { method: "PATCH", body: JSON.stringify(body) })
+      .then(u => { row.arrived = u.arrived; row.arrived_at = u.arrived_at; row.door_note = u.door_note; rsvpCache = null; renderRsvps(); })
+      .catch(e => toast(e.message, "warn"));
+  }
   function renderRsvps() {
     const box = $("#rsvplist"); if (!box) return;
     const { upcoming: sums, past } = rsvpSummaries();
@@ -2318,13 +2362,13 @@
       const wait = s.waitHeads ? ` &middot; ${s.waitHeads} waitlisted` : "";
       const units = new Set(s.rows.map(r => r.unit).filter(Boolean));
       const dupUnit = units.size < s.rows.filter(r => r.unit).length;
-      return `<div class="srow" style="cursor:pointer" data-rsvpkey="${esc(s.key)}"><span class="slab">${esc(fmt(s.date))}</span>
+      return `<div class="srow" style="cursor:pointer" data-rsvpkey="${esc(s.key)}"><span class="rchev${openRsvpDetails.has(s.key) ? " open" : ""}">&rsaquo;</span><span class="slab">${esc(fmt(s.date))}</span>
         <span class="sgrow" style="font-size:15px;color:var(--ink)">${esc(s.title)}${dupUnit ? ' <span class="flagmany" title="One unit holds more than one RSVP for this event">unit twice</span>' : ""}</span>
         <span class="sval">${what}${wait}</span></div>
         <div class="card" data-rsvpdetail="${esc(s.key)}" style="${openRsvpDetails.has(s.key) ? "" : "display:none;"}margin:4px 0 10px">
         <div style="display:flex;justify-content:flex-end;margin-bottom:6px"><button class="mini ghost" data-rsvpprint="${esc(s.key)}" title="The check-in sheet: names, parties, tick boxes">Print check-in list</button></div>
         ${s.rows.map(r => `<div class="srow"><span class="slab">${esc(r.unit || "Role")} &middot; ${esc(r.name)}</span>
-          <span class="sgrow" style="font-size:14px;color:var(--ink-soft)">${r.status === "Waitlist" ? "Waitlist" : (s.type === "guest" ? `${r.count} guest${r.count === 1 ? "" : "s"}` : `party of ${r.count}`)}${r.names ? ` &middot; ${esc(r.names)}` : ""}</span>
+          <span class="sgrow" style="font-size:14px;color:var(--ink-soft)">${r.status === "Waitlist" ? "Waitlist" : (s.type === "guest" ? `${r.count} guest${r.count === 1 ? "" : "s"}` : `party of ${r.count}`)}${r.names ? ` &middot; ${esc(r.names)}` : ""}${r.door_note ? ` &middot; <em>${esc(r.door_note)}</em>` : ""}</span>
           <span class="sval" style="font-size:12px;color:var(--stone)" title="Created ${esc((r.created || "").slice(0, 10))}${r.updated_by ? `; last change by ${esc(r.updated_by)}` : ""}">${esc(((r.updated || r.created) || "").slice(0, 10))}${r.updated_by ? ` &middot; ${esc(r.updated_by === "resident" ? "resident" : r.updated_by.split("@")[0])}` : ""}</span>
           <span class="eact">
           ${arriveBtn(r)}
@@ -2348,7 +2392,7 @@
           const wait = s.waitParties ? ` &middot; ${s.waitParties} stayed waitlisted` : "";
           const mails = new Set(s.rows.filter(r => r.status !== "Waitlist" && r.email).map(r => r.email.toLowerCase()));
           const dark = s.rows.filter(r => r.status !== "Waitlist" && !r.email).length;
-          return `<div class="srow" style="cursor:pointer" data-rsvpkey="${esc(s.key)}"><span class="slab">${esc(fmt(s.date))}</span>
+          return `<div class="srow" style="cursor:pointer" data-rsvpkey="${esc(s.key)}"><span class="rchev${openRsvpDetails.has(s.key) ? " open" : ""}">&rsaquo;</span><span class="slab">${esc(fmt(s.date))}</span>
             <span class="sgrow" style="font-size:15px;color:var(--ink)">${esc(s.title)}</span>
             <span class="sval">${went}${wait}</span></div>
             <div class="card" data-rsvpdetail="${esc(s.key)}" style="${openRsvpDetails.has(s.key) ? "" : "display:none;"}margin:4px 0 10px">
@@ -2357,7 +2401,7 @@
               ${dark ? `<span class="hint" style="margin:0">${dark} ${dark === 1 ? "party has" : "parties have"} no email on file.</span>` : ""}
             </div>
             ${s.rows.map(r => `<div class="srow"><span class="slab">${esc(r.unit || "Role")} &middot; ${esc(r.name)}</span>
-              <span class="sgrow" style="font-size:14px;color:var(--ink-soft)">${r.status === "Waitlist" ? "Waitlisted" : (s.type === "guest" ? `${r.count} guest${r.count === 1 ? "" : "s"}` : `party of ${r.count}`)}${r.names ? ` &middot; ${esc(r.names)}` : ""}</span>
+              <span class="sgrow" style="font-size:14px;color:var(--ink-soft)">${r.status === "Waitlist" ? "Waitlisted" : (s.type === "guest" ? `${r.count} guest${r.count === 1 ? "" : "s"}` : `party of ${r.count}`)}${r.names ? ` &middot; ${esc(r.names)}` : ""}${r.door_note ? ` &middot; <em>${esc(r.door_note)}</em>` : ""}</span>
               <span class="sval" style="font-size:12px;color:var(--stone)" title="${r.updated_by ? `Last change by ${esc(r.updated_by)}, ${esc((r.updated || "").slice(0, 10))}` : ""}">${esc(r.email || "no email")}${r.updated_by ? ` &middot; ${esc(r.updated_by === "resident" ? "resident" : r.updated_by.split("@")[0])}` : ""}</span>
               <span class="eact">${arriveBtn(r)}</span></div>`).join("")}
             </div>`;
@@ -2435,20 +2479,24 @@
       : p.expired ? '<span class="pill unpublished">Ended</span>'
       : p.ends ? `<span class="pill draft">Ends ${esc(p.ends)}</span>`
       : '<span class="pill live">Active</span>';
-    // Three buttons, no more: the two the desk reaches for at 10 pm, and Edit,
-    // which opens everything else (end dates, standing, disable, delete) in the
-    // card above, one deliberate step away from the row.
-    // Every row carries the same three controls, so the columns line up whether
-    // or not an email is on file: an empty mailbox just shades its button.
+    // Four buttons, no more: the ones the desk reaches for at 10 pm (code by
+    // email or on paper, a rotate), and Edit, which opens everything else
+    // (end dates, standing, disable, delete) in the card above, one deliberate
+    // step away from the row. Every row carries the same four controls, so the
+    // columns line up; an unusable one just shades itself.
     const mailBtn = p => p.email && p.status === "Active"
       ? `<button class="mini" data-mailcode="${p.id}" title="A ready-written email with the code, from your own mailbox">Email code</button>`
       : `<span class="mini off" title="${p.status !== "Active" || p.expired ? "Available once the code is active again" : "No email on file. Edit adds one."}">Email code</span>`;
+    const printBtn = p => p.status === "Active" && !p.expired
+      ? `<button class="mini ghost" data-printone="${p.id}" title="Prints just this card, for the lobby printer">Print</button>`
+      : `<span class="mini off" title="Available once the code is active again">Print</span>`;
     const row = p => `<div class="rrow${p.status !== "Active" || p.expired ? " off" : ""}">
       <span class="rname">${esc(p.name)}${p.email ? `<em>${esc(p.email)}</em>` : ""}</span>
       <span><span class="rcode">${esc(p.code)}</span></span>
       <span class="rpills">${pill(p)}${p.tenure === "tenant" ? '<span class="pill tenant">Tenant</span>' : ""}</span>
       <span class="eact">
         ${mailBtn(p)}
+        ${printBtn(p)}
         <button class="mini" data-rotate="${p.id}" title="A fresh code; the old one stops working everywhere">Rotate</button>
         <button class="mini ghost" data-resedit="${p.id}" title="Name, email, unit, tenant, end date, disable, delete">Edit</button>
       </span></div>`;
@@ -2598,8 +2646,10 @@
     } catch (e) { toast(e.message, "warn"); }
   }
 
-  function printCards() {
-    const list = residents.filter(p => p.status === "Active" && !p.expired);
+  // With no argument, every active card at once; with one person, just their
+  // card, for the lobby printer when the original walked off the desk.
+  function printCards(only) {
+    const list = only ? [only] : residents.filter(p => p.status === "Active" && !p.expired);
     if (!list.length) { toast("Nobody to print for yet.", "warn"); return; }
     const card = p => `<div class="pc"><div class="pc-h">181 Fremont<span>Resident Events</span></div>
       <div class="pc-n">${esc(p.name)}${p.unit ? ` &middot; Unit ${esc(p.unit)}` : ""}</div>
@@ -3298,7 +3348,7 @@
   }
 
   document.addEventListener("click", ev => {
-    const r = ev.target.closest("[data-mailcode],[data-rotate],[data-ends],[data-toggle],[data-rdelete],[data-resedit],[data-saveres],[data-cancelres],[data-edittoggle],[data-editdelete],[data-addres],[data-addbulk],[data-printcards],[data-mreplied],[data-marchive],[data-wconfirm],[data-redit],[data-rcancel],[data-rarrive],[data-pastchev],[data-pastmail],[data-notedel],[data-rsvpprint],[data-addrsvp],[data-savearsvp],[data-closearsvp],[data-copylink],[data-aupload],[data-acanva],[data-adelete],[data-rsvpkey],[data-addbooking],[data-unbook],[data-bkchev],[data-bkreg],[data-bkcopy],[data-bkprint],[data-gadd],[data-garrive],[data-gdel],[data-bkedit],[data-savebk],[data-cancelbk]");
+    const r = ev.target.closest("[data-mailcode],[data-printone],[data-rotate],[data-ends],[data-toggle],[data-rdelete],[data-resedit],[data-saveres],[data-cancelres],[data-edittoggle],[data-editdelete],[data-addres],[data-addbulk],[data-printcards],[data-mreplied],[data-marchive],[data-wconfirm],[data-redit],[data-rcancel],[data-rarrive],[data-pastchev],[data-pastmail],[data-notedel],[data-rsvpprint],[data-addrsvp],[data-savearsvp],[data-closearsvp],[data-copylink],[data-aupload],[data-acanva],[data-adelete],[data-rsvpkey],[data-addbooking],[data-unbook],[data-bkchev],[data-bkreg],[data-bkcopy],[data-bkprint],[data-gadd],[data-garrive],[data-gdel],[data-bkedit],[data-savebk],[data-cancelbk]");
     if (r) {
       if (r.dataset.bkedit) {
         const b = bookings.find(x => String(x.id) === r.dataset.bkedit);
@@ -3447,6 +3497,10 @@
         }
       } else if (r.dataset.addres !== undefined) addResident();
       else if (r.dataset.addbulk !== undefined) addBulk();
+      else if (r.dataset.printone) {
+        const p = residents.find(x => String(x.id) === r.dataset.printone);
+        if (p) printCards(p);
+      }
       else if (r.dataset.printcards !== undefined) printCards();
       else if (r.dataset.mreplied) {
         api("/api/messages/" + r.dataset.mreplied, { method: "PATCH", body: JSON.stringify({ state: "Replied" }) })
@@ -3516,26 +3570,16 @@
       else if (r.dataset.notedel) deleteNote(r.dataset.notedel);
       else if (r.dataset.rarrive) {
         const row = rsvps.find(x => String(x.id) === r.dataset.rarrive);
-        if (row) {
-          let val;
-          if (row.arrived == null) val = row.count;
-          else {
-            const ans = prompt(`How many of the ${row.count} arrived? 0 clears the mark.`, String(row.arrived));
-            if (ans === null) return;
-            const n = Math.round(Number(ans));
-            if (!Number.isFinite(n) || n < 0 || n > 6) { toast("A number from 0 to 6.", "warn"); return; }
-            val = n === 0 ? null : n;
-          }
-          api("/api/rsvps/" + row.id, { method: "PATCH", body: JSON.stringify({ arrived: val }) })
-            .then(res => { row.arrived = res.arrived; row.arrived_at = res.arrived_at; rsvpCache = null; renderRsvps(); })
-            .catch(e => toast(e.message, "warn"));
-        }
+        if (row) checkInFlow(row);
       }
       else if (r.dataset.rsvpkey) {
+        // One event open at a time: opening the next closes the last, so the
+        // list stays a list even on a night with fifty names.
         const k = r.dataset.rsvpkey;
-        if (openRsvpDetails.has(k)) openRsvpDetails.delete(k); else openRsvpDetails.add(k);
-        const d = document.querySelector(`[data-rsvpdetail="${CSS.escape(k)}"]`);
-        if (d) d.style.display = openRsvpDetails.has(k) ? "" : "none";
+        const wasOpen = openRsvpDetails.has(k);
+        openRsvpDetails.clear();
+        if (!wasOpen) openRsvpDetails.add(k);
+        renderRsvps();
       } else if (r.dataset.addbooking !== undefined) addBooking();
       else if (r.dataset.unbook) {
         const b2 = bookings.find(x => String(x.id) === r.dataset.unbook);

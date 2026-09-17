@@ -34,6 +34,11 @@ export async function onRequestPatch({ request, params, env }) {
       sets.push("arrived_at=?"); vals.push(new Date().toISOString());
     }
   }
+  if ("door_note" in body) {
+    // The door's own margin note ("third is parking the car"), shown on the
+    // dashboard row beside the check-in mark.
+    sets.push("door_note=?"); vals.push(String(body.door_note || "").trim().slice(0, 160));
+  }
   if (!sets.length) return json({ error: "Nothing to change" }, 400);
   sets.push("updated=?"); vals.push(new Date().toISOString());
   sets.push("updated_by=?"); vals.push((await accessEmail(request)) || env.DEV_ROLE || "staff");
@@ -42,5 +47,5 @@ export async function onRequestPatch({ request, params, env }) {
     `UPDATE rsvps SET ${sets.join(",")} WHERE id=? RETURNING *`).bind(...vals, id).first();
   if (!row) return json({ error: "No such RSVP" }, 404);
   return json({ id: row.id, status: row.status, count: row.count, names: row.names || "",
-                arrived: row.arrived ?? null, arrived_at: row.arrived_at || "" });
+                arrived: row.arrived ?? null, arrived_at: row.arrived_at || "", door_note: row.door_note || "" });
 }

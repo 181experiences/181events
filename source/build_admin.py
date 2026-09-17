@@ -410,7 +410,14 @@ HTML = f'''<!DOCTYPE html>
     padding:20px 22px;box-shadow:0 18px 50px rgba(0,0,0,.28)}}
   #dlg-t{{font-family:var(--fd);font-weight:600;font-size:19px;color:var(--ink);line-height:1.25}}
   #dlg-p{{font-size:14px;color:var(--ink-soft);line-height:1.5;margin-top:8px}}
+  #dlg-f{{display:grid;gap:10px;margin-top:14px}}
+  #dlg-f label{{display:block;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--stone);font-weight:600;margin-bottom:4px}}
+  #dlg-f input{{width:100%;border:1px solid var(--line);border-radius:var(--radius);background:var(--paper-2);
+    padding:10px 12px;font-size:15px;font-family:inherit;color:var(--ink)}}
   #dlg-b{{display:flex;flex-direction:column;gap:8px;margin-top:16px}}
+  /* dashboard rsvp rows: the chevron says open or closed at a glance */
+  .rchev{{flex:0 0 14px;color:var(--stone);font-size:19px;line-height:1;transition:transform .15s;display:inline-block}}
+  .rchev.open{{transform:rotate(90deg)}}
   .dlgbtn{{border:1px solid var(--line);border-radius:var(--radius);background:var(--paper-2);color:var(--ink);
     padding:12px 14px;font-size:13.5px;font-weight:600;letter-spacing:.04em;cursor:pointer;font-family:inherit;text-align:center;min-height:44px}}
   .dlgbtn.primary{{background:var(--red);border-color:var(--red);color:#fff}}
@@ -1197,7 +1204,7 @@ HTML = f'''<!DOCTYPE html>
 
 </div>
 <input type="file" id="afile" style="display:none">
-<div id="dlg-wrap"><div id="dlg"><div id="dlg-t"></div><div id="dlg-p"></div><div id="dlg-b"></div></div></div>
+<div id="dlg-wrap"><div id="dlg"><div id="dlg-t"></div><div id="dlg-p"></div><div id="dlg-f"></div><div id="dlg-b"></div></div></div>
 <div class="toast" id="toast"></div>
 <script>
 {APP_JS}
