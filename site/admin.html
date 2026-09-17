@@ -700,7 +700,7 @@
       <button class="mini ghost" data-acal="1" title="Next month">&rarr;</button>
       <button class="mini" data-acal="0">Today</button>
     </div></div>
-  <div class="psub" id="acal-sub">Everything, in every state: what residents see and what they don&rsquo;t yet. Open any event straight from its day.</div>
+  <div class="psub" id="acal-sub">What residents see, plus drafts still taking shape. Cancelled and archived listings keep their record in the Archive. Open any event straight from its day.</div>
   <div class="acal" id="acal"></div>
   <div id="acal-qv" style="display:none"></div>
   <div class="aleg">
@@ -901,8 +901,9 @@
     <li><strong>After it happens:</strong> attendance is whatever the door marked with <em>Arrived</em>; tidy stragglers under Past events on the Dashboard. The Archive files passed events on its own; <em>Archive</em> by hand only from Unpublished.</li>
   </ol>
 
-  <div class="callout"><strong>The Calendar tab</strong> is the staff view of the month: every event in every state,
-  including drafts and unpublished dates residents cannot see, each one opening straight into the editor. When a month
+  <div class="callout"><strong>The Calendar tab</strong> is the staff view of the month: what is live for residents plus
+  the drafts still taking shape, each one opening straight into the editor. Cancelled and archived listings leave the
+  grid so a cleared date reads as clear; their full record stays in the Archive, one click from Events. When a month
   feels off, look there first; it shows what is actually posted, and what only exists in here.</div>
 
   <div class="callout"><strong>Editing a series.</strong> Edit on a series row opens <em>the whole series</em>: one save
@@ -3000,6 +3001,10 @@
     const t = today();
     const by = new Map();
     for (const e of events) {
+      // Cancelled and archived listings keep their full record in the Archive;
+      // the working calendar carries only what is live or being drafted, so a
+      // cleared date reads as clear instead of haunting the grid.
+      if (e.Status === "Unpublished" || e.Status === "Archived") continue;
       if ((e.Date || "").slice(0, 7) !== acalYM) continue;
       if (!by.has(e.Date)) by.set(e.Date, []);
       by.get(e.Date).push(e);
@@ -3022,7 +3027,7 @@
     const qv = $("#acal-qv"); if (qv) { qv.style.display = "none"; qv.innerHTML = ""; }
     const sub2 = $("#acal-sub");
     if (sub2 && role === "desk")
-      sub2.textContent = "The month at a glance, every event in every state. Event changes are Resident Experiences’ side of the desk.";
+      sub2.textContent = "The month at a glance: what residents see, plus drafts still taking shape. Event changes are Resident Experiences’ side of the desk.";
   }
 
   // Info popovers: one open at a time, any other tap closes it.

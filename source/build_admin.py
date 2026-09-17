@@ -698,7 +698,7 @@ HTML = f'''<!DOCTYPE html>
       <button class="mini ghost" data-acal="1" title="Next month">&rarr;</button>
       <button class="mini" data-acal="0">Today</button>
     </div></div>
-  <div class="psub" id="acal-sub">Everything, in every state: what residents see and what they don&rsquo;t yet. Open any event straight from its day.</div>
+  <div class="psub" id="acal-sub">What residents see, plus drafts still taking shape. Cancelled and archived listings keep their record in the Archive. Open any event straight from its day.</div>
   <div class="acal" id="acal"></div>
   <div id="acal-qv" style="display:none"></div>
   <div class="aleg">
@@ -899,8 +899,9 @@ HTML = f'''<!DOCTYPE html>
     <li><strong>After it happens:</strong> attendance is whatever the door marked with <em>Arrived</em>; tidy stragglers under Past events on the Dashboard. The Archive files passed events on its own; <em>Archive</em> by hand only from Unpublished.</li>
   </ol>
 
-  <div class="callout"><strong>The Calendar tab</strong> is the staff view of the month: every event in every state,
-  including drafts and unpublished dates residents cannot see, each one opening straight into the editor. When a month
+  <div class="callout"><strong>The Calendar tab</strong> is the staff view of the month: what is live for residents plus
+  the drafts still taking shape, each one opening straight into the editor. Cancelled and archived listings leave the
+  grid so a cleared date reads as clear; their full record stays in the Archive, one click from Events. When a month
   feels off, look there first; it shows what is actually posted, and what only exists in here.</div>
 
   <div class="callout"><strong>Editing a series.</strong> Edit on a series row opens <em>the whole series</em>: one save

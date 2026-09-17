@@ -1812,6 +1812,10 @@
     const t = today();
     const by = new Map();
     for (const e of events) {
+      // Cancelled and archived listings keep their full record in the Archive;
+      // the working calendar carries only what is live or being drafted, so a
+      // cleared date reads as clear instead of haunting the grid.
+      if (e.Status === "Unpublished" || e.Status === "Archived") continue;
       if ((e.Date || "").slice(0, 7) !== acalYM) continue;
       if (!by.has(e.Date)) by.set(e.Date, []);
       by.get(e.Date).push(e);
@@ -1834,7 +1838,7 @@
     const qv = $("#acal-qv"); if (qv) { qv.style.display = "none"; qv.innerHTML = ""; }
     const sub2 = $("#acal-sub");
     if (sub2 && role === "desk")
-      sub2.textContent = "The month at a glance, every event in every state. Event changes are Resident Experiences’ side of the desk.";
+      sub2.textContent = "The month at a glance: what residents see, plus drafts still taking shape. Event changes are Resident Experiences’ side of the desk.";
   }
 
   // Info popovers: one open at a time, any other tap closes it.
