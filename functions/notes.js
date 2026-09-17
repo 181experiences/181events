@@ -19,12 +19,11 @@ function cutoffIso() {
   return new Date(Date.now() - KEEP_DAYS * 86400000).toISOString();
 }
 
-async function sweep(env) {
-  const c = cutoffIso();
-  await env.DB.prepare(
-    "DELETE FROM note_hands WHERE note_id IN (SELECT id FROM notes WHERE created < ?)").bind(c).run();
-  await env.DB.prepare("DELETE FROM notes WHERE created < ?").bind(c).run();
-}
+// Nothing is deleted any more: a note leaves the board by fading past the
+// cutoff or by carrying a deleted_at stamp, and its record (hands included)
+// stays for the admin's Past notes archive. The queries below simply look
+// away from what has left.
+function activeNote(n) { return !n.deleted_at; }
 
 function age(created) {
   const days = Math.floor((Date.now() - Date.parse(created)) / 86400000);
@@ -52,10 +51,10 @@ async function boardPage(context, me) {
   }
   body = cut(body, "CLOSED", null);
 
-  await sweep(env);
   const { results: notes } = await env.DB.prepare(
     `SELECT n.*, res.name, res.unit FROM notes n JOIN residents res ON res.id = n.resident_id
-     ORDER BY n.created DESC`).all();
+     WHERE n.created >= ? AND n.deleted_at IS NULL
+     ORDER BY n.created DESC`).bind(cutoffIso()).all();
   const { results: hands } = await env.DB.prepare(
     `SELECT h.note_id, h.resident_id, res.name, res.unit
      FROM note_hands h JOIN residents res ON res.id = h.resident_id ORDER BY h.id`).all();
@@ -113,7 +112,6 @@ export async function onRequestPost(context) {
   const me = await currentResident(context);
   if (!me) return seeOther("/notes");
   if (!(await notesOpen(env))) return seeOther("/notes");
-  await sweep(env);
 
   const form = await request.formData();
   const kind = String(form.get("kind") || "");
@@ -126,7 +124,8 @@ export async function onRequestPost(context) {
         "Notes keep to plain words, no links, so the board stays what it is. Say it in a sentence and pin it again.");
     }
     const { c } = await env.DB.prepare(
-      "SELECT COUNT(*) AS c FROM notes WHERE resident_id=?").bind(me.id).first();
+      "SELECT COUNT(*) AS c FROM notes WHERE resident_id=? AND created >= ? AND deleted_at IS NULL")
+      .bind(me.id, cutoffIso()).first();
     if (c >= 2) {
       return donePage(context, me, "Two notes at a time",
         "The board keeps to two notes per person, so everyone&rsquo;s fits. Take one of yours down and pin the new one.");
@@ -141,15 +140,18 @@ export async function onRequestPost(context) {
   const note = await env.DB.prepare("SELECT * FROM notes WHERE id=?").bind(noteId).first();
   if (!note) return seeOther("/notes");
 
-  if (kind === "hand" && note.resident_id !== me.id && (note.asks == null || note.asks)) {
+  if (kind === "hand" && note.resident_id !== me.id && (note.asks == null || note.asks)
+      && activeNote(note) && note.created >= cutoffIso()) {
     await env.DB.prepare(
       "INSERT INTO note_hands (note_id, resident_id, created) VALUES (?, ?, ?) ON CONFLICT(note_id, resident_id) DO NOTHING")
       .bind(noteId, me.id, new Date().toISOString()).run();
   } else if (kind === "unhand") {
     await env.DB.prepare("DELETE FROM note_hands WHERE note_id=? AND resident_id=?").bind(noteId, me.id).run();
   } else if (kind === "remove" && note.resident_id === me.id) {
-    await env.DB.prepare("DELETE FROM note_hands WHERE note_id=?").bind(noteId).run();
-    await env.DB.prepare("DELETE FROM notes WHERE id=?").bind(noteId).run();
+    // A take-down, not a deletion: the record and its hands stay for the
+    // admin's Past notes, marked as the author's own doing.
+    await env.DB.prepare("UPDATE notes SET deleted_at=?, deleted_by='resident' WHERE id=?")
+      .bind(new Date().toISOString(), noteId).run();
   }
   return seeOther("/notes");
 }

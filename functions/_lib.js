@@ -284,6 +284,12 @@ export async function ensureResidentTables(env) {
   for (const col of ["email TEXT", "status TEXT"]) {
     try { await env.DB.prepare(`ALTER TABLE guests ADD COLUMN ${col}`).run(); } catch (e) {}
   }
+  // Notes archive: nothing is hard-deleted any more. A note leaves the board
+  // by fading (three days) or being taken down (by its author or by staff,
+  // named), and either way its record stays for the oversight card.
+  for (const col of ["deleted_at TEXT", "deleted_by TEXT", "restored_at TEXT", "restored_by TEXT"]) {
+    try { await env.DB.prepare(`ALTER TABLE notes ADD COLUMN ${col}`).run(); } catch (e) {}
+  }
   tablesEnsured = true;
 }
 

@@ -3336,10 +3336,13 @@
   }
 
   // ---------------------------------------------------------------- neighbor notes
-  // The oversight card: every active note, its raised hands, a Remove that asks
-  // no questions, and the board's standing open switch (staff and owner only;
-  // the desk looks without touching).
+  // The oversight card: every active note with its raised hands, a Remove for
+  // EVERY tier (the desk holds the third shift, and the archive holds everyone
+  // to account), the board's standing open switch (staff and owner only), and
+  // Past notes: the full record of what faded or came down, by whom, when,
+  // with Restore for anything taken down before its natural fade.
   let nbOpen = true;
+  let nbPastOpen = false;
   async function loadNotes() {
     const box = $("#nblist"); if (!box) return;
     let d;
@@ -3347,26 +3350,52 @@
     nbOpen = d.open !== false;
     const wrap = $("#nb-openwrap");
     if (wrap && role !== "desk") { wrap.style.display = ""; $("#nb-open").checked = nbOpen; }
+    const whenOf = t => new Date(t).toLocaleString([], { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" });
+    const byName = v => v === "resident" ? "its author" : esc(String(v || "staff").split("@")[0]);
+    let html = "";
     if (!nbOpen) {
-      box.innerHTML = '<div class="nodata">The board is resting. Residents see a quiet note saying so; tick the switch to reopen.</div>';
-      return;
-    }
-    if (!d.notes.length) {
-      box.innerHTML = '<div class="nodata">Nothing pinned right now. Notes fade on their own after three days.</div>';
-      return;
-    }
-    box.innerHTML = d.notes.map(n => {
-      const when = new Date(n.created).toLocaleString([], { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" });
-      return `<div class="srow"><span class="slab" style="white-space:nowrap">${esc(n.who)}</span>
+      html = '<div class="nodata">The board is resting. Residents see a quiet note saying so; tick the switch to reopen.</div>';
+    } else if (!d.notes.length) {
+      html = '<div class="nodata">Nothing pinned right now. Notes fade on their own after three days.</div>';
+    } else {
+      html = d.notes.map(n => `<div class="srow"><span class="slab" style="white-space:nowrap">${esc(n.who)}</span>
         <span class="sgrow" style="color:var(--ink)">${esc(n.body)}${n.hands.length ? `<br><span style="font-size:12.5px;color:var(--ink-soft)">Joining: ${esc(n.hands.join(", "))}</span>` : ""}</span>
-        <span class="sval" style="font-size:12px;color:var(--stone);white-space:nowrap">${esc(when)}</span>
-        ${role !== "desk" ? `<span class="eact"><button class="mini ghost" data-notedel="${n.id}" title="Comes down at once; nothing is said to anyone">Remove</button></span>` : ""}</div>`;
-    }).join("");
+        <span class="sval" style="font-size:12px;color:var(--stone);white-space:nowrap">${esc(whenOf(n.created))}</span>
+        <span class="eact"><button class="mini ghost" data-notedel="${n.id}" title="Comes down at once and keeps its record under Past notes, marked with your name">Remove</button></span></div>`).join("");
+    }
+    const past = d.past || [];
+    if (past.length) {
+      html += `<div class="srow" style="cursor:pointer" data-nbpast>
+        <span class="sgrow" style="color:var(--stone)">Past notes &middot; ${past.length}</span>
+        <span class="sval" style="color:var(--stone)">${nbPastOpen ? "Hide" : "Show"}</span></div>`;
+      if (nbPastOpen) html += past.map(n => {
+        const fadeMs = Date.parse(n.created) + 3 * 86400000;
+        const state = n.deleted_at ? '<span class="pill unpublished">Taken down</span>' : '<span class="pill archived">Faded</span>';
+        const bits = [`posted ${whenOf(n.created)}`];
+        if (n.deleted_at) bits.push(`taken down ${whenOf(n.deleted_at)} by ${byName(n.deleted_by)}`);
+        else bits.push(`faded ${whenOf(fadeMs)}`);
+        if (n.restored_at) bits.push(`restored ${whenOf(n.restored_at)} by ${byName(n.restored_by)}`);
+        if (n.hands.length) bits.push(`joining: ${esc(n.hands.join(", "))}`);
+        const restorable = n.deleted_at && fadeMs > Date.now();
+        return `<div class="srow" style="opacity:.85"><span class="slab" style="white-space:nowrap">${esc(n.who)}</span>
+          <span class="sgrow" style="color:var(--ink-soft)">${esc(n.body)}<br><span style="font-size:12px;color:var(--stone)">${bits.join(" &middot; ")}</span></span>
+          <span class="eact">${state}${restorable ? `<button class="mini ghost" data-noterestore="${n.id}" title="Back on the board with its original fade date">Restore</button>` : ""}</span></div>`;
+      }).join("");
+    }
+    box.innerHTML = html;
   }
 
   async function deleteNote(id) {
-    if (!confirm("Take this note down? It comes down at once, and nothing is said to anyone.")) return;
-    try { await api("/api/notes/" + encodeURIComponent(id), { method: "DELETE" }); loadNotes(); toast("Note removed."); }
+    const ok = await dialog("Take this note down?",
+      "It leaves the board at once and nothing is said to anyone. Its record stays under Past notes, marked with your name, and it can be restored any time before its natural fade date.",
+      [{ label: "Take it down", kind: "primary", value: true }, { label: "Leave it", kind: "quiet", value: null }]);
+    if (!ok) return;
+    try { await api("/api/notes/" + encodeURIComponent(id), { method: "DELETE" }); loadNotes(); toast("Down, with its record kept under Past notes."); }
+    catch (e) { toast(e.message, "warn"); }
+  }
+
+  async function restoreNote(id) {
+    try { await api("/api/notes/" + encodeURIComponent(id), { method: "PATCH", body: JSON.stringify({ restore: true }) }); loadNotes(); toast("Back on the board, fading on its original date."); }
     catch (e) { toast(e.message, "warn"); }
   }
 
@@ -3379,7 +3408,7 @@
   }
 
   document.addEventListener("click", ev => {
-    const r = ev.target.closest("[data-mailcode],[data-printone],[data-rotate],[data-ends],[data-toggle],[data-rdelete],[data-resedit],[data-saveres],[data-cancelres],[data-edittoggle],[data-editdelete],[data-addres],[data-addbulk],[data-printcards],[data-mreplied],[data-marchive],[data-wconfirm],[data-redit],[data-rcancel],[data-rarrive],[data-pastchev],[data-pastmail],[data-notedel],[data-rsvpprint],[data-addrsvp],[data-savearsvp],[data-closearsvp],[data-copylink],[data-aupload],[data-acanva],[data-adelete],[data-rsvpkey],[data-addbooking],[data-unbook],[data-bkchev],[data-bkreg],[data-bkcopy],[data-bkprint],[data-gadd],[data-garrive],[data-gdel],[data-gmail],[data-gedit],[data-bkedit],[data-savebk],[data-cancelbk],[data-bkopen]");
+    const r = ev.target.closest("[data-mailcode],[data-printone],[data-rotate],[data-ends],[data-toggle],[data-rdelete],[data-resedit],[data-saveres],[data-cancelres],[data-edittoggle],[data-editdelete],[data-addres],[data-addbulk],[data-printcards],[data-mreplied],[data-marchive],[data-wconfirm],[data-redit],[data-rcancel],[data-rarrive],[data-pastchev],[data-pastmail],[data-notedel],[data-noterestore],[data-nbpast],[data-rsvpprint],[data-addrsvp],[data-savearsvp],[data-closearsvp],[data-copylink],[data-aupload],[data-acanva],[data-adelete],[data-rsvpkey],[data-addbooking],[data-unbook],[data-bkchev],[data-bkreg],[data-bkcopy],[data-bkprint],[data-gadd],[data-garrive],[data-gdel],[data-gmail],[data-gedit],[data-bkedit],[data-savebk],[data-cancelbk],[data-bkopen]");
     if (r) {
       if (r.dataset.bkedit) {
         const b = bookings.find(x => String(x.id) === r.dataset.bkedit);
@@ -3626,6 +3655,8 @@
       else if (r.dataset.pastmail) emailPastGuests(r.dataset.pastmail);
       else if (r.dataset.rsvpprint) printRsvpList(r.dataset.rsvpprint);
       else if (r.dataset.notedel) deleteNote(r.dataset.notedel);
+      else if (r.dataset.noterestore) restoreNote(r.dataset.noterestore);
+      else if (r.dataset.nbpast !== undefined) { nbPastOpen = !nbPastOpen; loadNotes(); }
       else if (r.dataset.rarrive) {
         const row = rsvps.find(x => String(x.id) === r.dataset.rarrive);
         if (row) checkInFlow(row);

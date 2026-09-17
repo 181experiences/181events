@@ -8,17 +8,23 @@ export async function onRequestGet({ request, env }) {
   if (!(await adminRole(request, env))) return forbidden();
   await ensureResidentTables(env);
   const cutoff = new Date(Date.now() - 3 * 86400000).toISOString();
-  const { results: notes } = await env.DB.prepare(
+  const { results: all } = await env.DB.prepare(
     `SELECT n.*, res.name, res.unit FROM notes n JOIN residents res ON res.id = n.resident_id
-     WHERE n.created >= ? ORDER BY n.created DESC`).bind(cutoff).all();
+     ORDER BY n.created DESC LIMIT 200`).all();
   const { results: hands } = await env.DB.prepare(
     `SELECT h.note_id, res.name, res.unit
      FROM note_hands h JOIN residents res ON res.id = h.resident_id ORDER BY h.id`).all();
+  const shape = n => ({
+    id: n.id, body: n.body, created: n.created, who: labelOf(n),
+    hands: hands.filter(h => h.note_id === n.id).map(labelOf),
+    deleted_at: n.deleted_at || null, deleted_by: n.deleted_by || null,
+    restored_at: n.restored_at || null, restored_by: n.restored_by || null,
+  });
   return json({
     open: await notesOpen(env),
-    notes: notes.map(n => ({
-      id: n.id, body: n.body, created: n.created, who: labelOf(n),
-      hands: hands.filter(h => h.note_id === n.id).map(labelOf),
-    })),
+    notes: all.filter(n => n.created >= cutoff && !n.deleted_at).map(shape),
+    // The archive: faded and taken-down notes with their full account of
+    // when each posted, left, came back, and who was joining.
+    past: all.filter(n => n.created < cutoff || n.deleted_at).map(shape),
   });
 }

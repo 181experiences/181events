@@ -421,14 +421,17 @@ def notes_board_open():
     except Exception:
         return True
 
+def notes_cutoff():
+    return (datetime.datetime.now(datetime.timezone.utc)
+            - datetime.timedelta(days=NOTES_KEEP_DAYS)).isoformat()
+
 def sweep_notes():
-    cutoff = (datetime.datetime.now(datetime.timezone.utc)
-              - datetime.timedelta(days=NOTES_KEEP_DAYS)).isoformat()
-    notes = [n for n in load_store("notes", []) if n["created"] >= cutoff]
-    keep = {n["id"] for n in notes}
-    save_store("notes", notes)
-    save_store("hands", [h for h in load_store("hands", []) if h["note_id"] in keep])
-    return notes
+    # Nothing is deleted any more (mirrors functions/notes.js): a note leaves
+    # the board by fading or by a deleted_at stamp, and its record stays for
+    # the admin's Past notes archive.
+    cutoff = notes_cutoff()
+    return [n for n in load_store("notes", [])
+            if n["created"] >= cutoff and not n.get("deleted_at")]
 
 def note_age(created):
     days = (datetime.datetime.now(datetime.timezone.utc)
@@ -794,12 +797,21 @@ class H(SimpleHTTPRequestHandler):
         if p.path == "/api/notes":
             residents = {r["id"]: r for r in load_store("residents", [])}
             hands = load_store("hands", [])
-            notes = sorted(sweep_notes(), key=lambda n: n["created"], reverse=True)
-            return self._json({"open": notes_board_open(), "notes": [dict(
-                id=n["id"], body=n["body"], created=n["created"],
-                who=label_of(residents.get(n["resident_id"], dict(name="?", unit=""))),
-                hands=[label_of(residents.get(h["resident_id"], dict(name="?", unit="")))
-                       for h in hands if h["note_id"] == n["id"]]) for n in notes]})
+            everything = sorted(load_store("notes", []), key=lambda n: n["created"], reverse=True)
+            cutoff = notes_cutoff()
+            def note_shape(n):
+                return dict(
+                    id=n["id"], body=n["body"], created=n["created"],
+                    who=label_of(residents.get(n["resident_id"], dict(name="?", unit=""))),
+                    hands=[label_of(residents.get(h["resident_id"], dict(name="?", unit="")))
+                           for h in hands if h["note_id"] == n["id"]],
+                    deleted_at=n.get("deleted_at"), deleted_by=n.get("deleted_by"),
+                    restored_at=n.get("restored_at"), restored_by=n.get("restored_by"))
+            return self._json({"open": notes_board_open(),
+                "notes": [note_shape(n) for n in everything
+                          if n["created"] >= cutoff and not n.get("deleted_at")],
+                "past": [note_shape(n) for n in everything
+                         if n["created"] < cutoff or n.get("deleted_at")]})
         if p.path == "/api/analytics":
             days = max(1, min(90, int((q.get("days") or ["30"])[0])))
             return self._json(sample_analytics(days))
@@ -1216,7 +1228,9 @@ class H(SimpleHTTPRequestHandler):
                         "Notes keep to plain words, no links, so the board stays what it is. Say it in a sentence and pin it again.",
                         "/notes", "Back to the board"))
                 notes = load_store("notes", [])
-                if sum(1 for n in notes if n["resident_id"] == me["id"]) >= 2:
+                _cut = notes_cutoff()
+                if sum(1 for n in notes if n["resident_id"] == me["id"]
+                       and n["created"] >= _cut and not n.get("deleted_at")) >= 2:
                     return self._html(done_page(me, "Two notes at a time",
                         "The board keeps to two notes per person, so everyone&rsquo;s fits. Take one of yours down and pin the new one.",
                         "/notes", "Back to the board"))
@@ -1231,7 +1245,8 @@ class H(SimpleHTTPRequestHandler):
             note = next((n for n in notes if n["id"] == nid), None)
             if not note: return self._redirect("/notes")
             hands = load_store("hands", [])
-            if kind == "hand" and note["resident_id"] != me["id"] and note.get("asks", True):
+            if kind == "hand" and note["resident_id"] != me["id"] and note.get("asks", True) \
+                    and not note.get("deleted_at") and note["created"] >= notes_cutoff():
                 if not any(h["note_id"] == nid and h["resident_id"] == me["id"] for h in hands):
                     hands.append(dict(id=max([h["id"] for h in hands] or [0]) + 1,
                                       note_id=nid, resident_id=me["id"], created=now_iso()))
@@ -1239,8 +1254,8 @@ class H(SimpleHTTPRequestHandler):
             elif kind == "unhand":
                 save_store("hands", [h for h in hands if not (h["note_id"] == nid and h["resident_id"] == me["id"])])
             elif kind == "remove" and note["resident_id"] == me["id"]:
-                save_store("notes", [n for n in notes if n["id"] != nid])
-                save_store("hands", [h for h in hands if h["note_id"] != nid])
+                note["deleted_at"] = now_iso(); note["deleted_by"] = "resident"
+                save_store("notes", notes)
             return self._redirect("/notes")
         if p.path == "/message":
             form = self._body_form()
@@ -1546,6 +1561,18 @@ class H(SimpleHTTPRequestHandler):
                     save_store("bookings", bookings)
                     return self._json({"booking": b})
             return self._json({"error": "No such reservation"}, 404)
+        if p.path.startswith("/api/notes/"):
+            # Restore a taken-down note; it keeps its original fade date.
+            nid = p.path.rsplit("/", 1)[1]; body = self._body_json()
+            if not body.get("restore"): return self._json({"error": "Nothing to change"}, 400)
+            notes = load_store("notes", [])
+            for n in notes:
+                if str(n["id"]) == nid and n.get("deleted_at"):
+                    n["deleted_at"] = None; n["deleted_by"] = None
+                    n["restored_at"] = now_iso(); n["restored_by"] = f"{self._role()}@local.dev"
+                    save_store("notes", notes)
+                    return self._json({"ok": True})
+            return self._json({"error": "No such note, or it is not down."}, 404)
         if p.path.startswith("/api/guests/"):
             gid = p.path.rsplit("/", 1)[1]; body = self._body_json()
             guests = load_store("guests", [])
@@ -1598,11 +1625,15 @@ class H(SimpleHTTPRequestHandler):
             save_store("assets", rows)
             return self._json({"asset": row})
         if p.path.startswith("/api/notes/"):
-            if self._role() == "desk": return self._json({"error": "forbidden"}, 403)
+            # Any tier takes a note down, the desk included; the record stays.
             nid = p.path.rsplit("/", 1)[1]
-            save_store("notes", [n for n in load_store("notes", []) if str(n["id"]) != nid])
-            save_store("hands", [h for h in load_store("hands", []) if str(h["note_id"]) != nid])
-            return self._json({"ok": True})
+            notes = load_store("notes", [])
+            for n in notes:
+                if str(n["id"]) == nid and not n.get("deleted_at"):
+                    n["deleted_at"] = now_iso(); n["deleted_by"] = f"{self._role()}@local.dev"
+                    save_store("notes", notes)
+                    return self._json({"ok": True})
+            return self._json({"error": "No such note, or it is already down."}, 404)
         if p.path.startswith("/api/events/"):
             # Drafts only, mirroring functions/api/events/[id].js: nothing ever
             # published deletes; that road is Unpublish then Archive.
