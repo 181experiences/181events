@@ -542,10 +542,9 @@
 
   <div class="sec">
     <div style="display:flex;align-items:baseline;justify-content:space-between;gap:12px;flex-wrap:wrap">
-      <h2>RSVPs</h2>
+      <div style="display:flex;align-items:center;gap:8px"><h2>RSVPs</h2><span class="iwrap"><button type="button" class="ib" aria-label="What this does">i</button><span class="ipop">Confirmed parties and heads for upcoming dates, with waitlists. Open an event to see who, by unit; a unit appearing twice for one event is worth a glance, since a household can double-count itself. Edit or cancel any RSVP from the list, and a note to the resident opens ready to send from your own mailbox, web or desktop Outlook. On the day, Check in beside each party works the door: the whole party in one tap, a typed number when fewer came, and a door note for the row. Resident-hosted private events ride this same list with their guest panels. Passed events keep their lists under Past events at the foot, with the arrival tally and an Email guests draft for the thank-you or the survey.</span></span></div>
       <button class="mini" data-addrsvp title="For the resident who phones the desk or asks in passing">Add an RSVP for someone</button>
     </div>
-    <div class="sd">Confirmed parties and heads for upcoming dates, with waitlists. Open an event to see who, by unit; a unit appearing twice for one event is worth a glance, since a household can double-count itself. Edit or cancel any RSVP from the list, and a note to the resident opens ready to send from your own mailbox, in Outlook on the web or the desktop app, whichever this machine uses. On the day, Check in beside each party works the door: the whole party in one tap, a typed number when fewer came, and a door note for the row ("two here, the third is parking"). Resident-hosted private events ride this same list with their guest panels. Passed events keep their lists under Past events at the foot, with the arrival tally and an Email guests draft for the thank-you or the survey.</div>
     <div class="card" id="ar-card" style="display:none;margin-bottom:10px">
       <div id="ar-head" style="display:none;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--red);font-weight:600;margin-bottom:12px"></div>
       <div style="display:grid;gap:12px 16px;grid-template-columns:repeat(auto-fit,minmax(190px,1fr))">
@@ -1461,6 +1460,7 @@
       + cell("Counted", yes(h.Counted))
       + cell("RSVPs", counts.heads ? `${counts.heads} heads${counts.wait ? " &middot; " + counts.wait + " waitlisted" : ""}` : "&mdash;")
       + cell("Series line", dash(h.Series))
+      + cell("Short link", `181residents.com/e/${esc(h.Slug || slugify(h.Title || ""))}`)
       + cell("File stem", esc(stem(h)))
       + `<div class="qfull"><span class="ql">Description</span><span class="qd">${h.Description ? esc(h.Description) : "&mdash;"}</span></div>`;
   }
@@ -1490,7 +1490,7 @@
         <div class="ecell"><span class="pill ${cls(g.status)}">${esc(g.mixed ? "Mixed" : g.status)}</span></div>
         <div class="ecell"><span class="lbl">RSVPs</span>${rsvp}</div>
         <div class="ecell"><span class="lbl">Asset kit</span>${kits} of 6</div>
-        <div class="ecell eact">${g.series ? `<button class="mini ghost" data-dates="${esc(g.key)}">${(g.upcoming.length || g.rows.length)} dates</button>` : ""}<button class="mini ghost" data-copylink="${esc(stem(h))}" title="Copies this date's page address, for emails and reminders">Link</button><button class="mini" data-edit="${esc(g.key)}">Edit</button>${g.status === "Unpublished" ? `<button class="mini ghost" data-archive="${esc(g.key)}" title="Filed away, kept for reporting">Archive</button>` : ""}${g.rows.every(r => (r.Status || "Draft") === "Draft") ? `<button class="mini ghost" data-evdelete="${esc(g.key)}" title="Drafts only: residents never saw it, so nothing is lost">Delete draft</button>` : ""}</div>
+        <div class="ecell eact">${g.series ? `<button class="mini ghost" data-dates="${esc(g.key)}">${(g.upcoming.length || g.rows.length)} dates</button>` : ""}<button class="mini ghost" data-copylink="${esc(stem(h))}" title="Copies this date's page address, for emails and reminders">Link</button><button class="mini ghost" data-copyshort="${esc(h.Slug || slugify(h.Title || ""))}" title="The standing address: always lands on the next upcoming date of this event, so QR codes, stills, and print never go stale">Short link</button><button class="mini" data-edit="${esc(g.key)}">Edit</button>${g.status === "Unpublished" ? `<button class="mini ghost" data-archive="${esc(g.key)}" title="Filed away, kept for reporting">Archive</button>` : ""}${g.rows.every(r => (r.Status || "Draft") === "Draft") ? `<button class="mini ghost" data-evdelete="${esc(g.key)}" title="Drafts only: residents never saw it, so nothing is lost">Delete draft</button>` : ""}</div>
       </div>
       <div class="edates" data-dates-for="${esc(g.key)}" style="display:none">${(g.upcoming.length ? g.upcoming : g.rows).map(r => `
         <div class="edrow"><span class="edwhen">${esc(fmt(r.Date))} &middot; ${esc(r.Start)}</span>
@@ -3447,7 +3447,7 @@
   }
 
   document.addEventListener("click", ev => {
-    const r = ev.target.closest("[data-mailcode],[data-printone],[data-rotate],[data-ends],[data-toggle],[data-rdelete],[data-resedit],[data-saveres],[data-cancelres],[data-edittoggle],[data-editdelete],[data-addres],[data-resopen],[data-bulkopen],[data-bulkclose],[data-addbulk],[data-printcards],[data-mreplied],[data-marchive],[data-wconfirm],[data-redit],[data-rcancel],[data-rarrive],[data-pastchev],[data-pastmail],[data-notedel],[data-noterestore],[data-nbpast],[data-rsvpprint],[data-addrsvp],[data-savearsvp],[data-closearsvp],[data-copylink],[data-aupload],[data-acanva],[data-adelete],[data-rsvpkey],[data-addbooking],[data-unbook],[data-bkchev],[data-bkreg],[data-bkcopy],[data-bkprint],[data-gadd],[data-garrive],[data-gdel],[data-gmail],[data-gedit],[data-bkedit],[data-savebk],[data-cancelbk],[data-bkopen]");
+    const r = ev.target.closest("[data-mailcode],[data-printone],[data-rotate],[data-ends],[data-toggle],[data-rdelete],[data-resedit],[data-saveres],[data-cancelres],[data-edittoggle],[data-editdelete],[data-addres],[data-resopen],[data-bulkopen],[data-bulkclose],[data-addbulk],[data-printcards],[data-mreplied],[data-marchive],[data-wconfirm],[data-redit],[data-rcancel],[data-rarrive],[data-pastchev],[data-pastmail],[data-notedel],[data-noterestore],[data-nbpast],[data-rsvpprint],[data-addrsvp],[data-savearsvp],[data-closearsvp],[data-copylink],[data-copyshort],[data-aupload],[data-acanva],[data-adelete],[data-rsvpkey],[data-addbooking],[data-unbook],[data-bkchev],[data-bkreg],[data-bkcopy],[data-bkprint],[data-gadd],[data-garrive],[data-gdel],[data-gmail],[data-gedit],[data-bkedit],[data-savebk],[data-cancelbk],[data-bkopen]");
     if (r) {
       if (r.dataset.bkedit) {
         const b = bookings.find(x => String(x.id) === r.dataset.bkedit);
@@ -3700,6 +3700,11 @@
         navigator.clipboard.writeText(url)
           .then(() => toast("Copied: " + url))
           .catch(() => prompt("Copy the event link:", url));
+      } else if (r.dataset.copyshort) {
+        const url = "https://181residents.com/e/" + r.dataset.copyshort;
+        navigator.clipboard.writeText(url)
+          .then(() => toast("Copied: " + url + " — the standing address; it always lands on the next upcoming date."))
+          .catch(() => prompt("Copy the short link:", url));
       } else if (r.dataset.addrsvp !== undefined) openAddRsvp();
       else if (r.dataset.savearsvp !== undefined) { if (editingRsvp) saveRsvpEdit(); else saveAddRsvp(); }
       else if (r.dataset.closearsvp !== undefined) exitRsvpEdit();

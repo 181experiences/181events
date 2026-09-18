@@ -540,10 +540,9 @@ HTML = f'''<!DOCTYPE html>
 
   <div class="sec">
     <div style="display:flex;align-items:baseline;justify-content:space-between;gap:12px;flex-wrap:wrap">
-      <h2>RSVPs</h2>
+      <div style="display:flex;align-items:center;gap:8px"><h2>RSVPs</h2>{info("Confirmed parties and heads for upcoming dates, with waitlists. Open an event to see who, by unit; a unit appearing twice for one event is worth a glance, since a household can double-count itself. Edit or cancel any RSVP from the list, and a note to the resident opens ready to send from your own mailbox, web or desktop Outlook. On the day, Check in beside each party works the door: the whole party in one tap, a typed number when fewer came, and a door note for the row. Resident-hosted private events ride this same list with their guest panels. Passed events keep their lists under Past events at the foot, with the arrival tally and an Email guests draft for the thank-you or the survey.")}</div>
       <button class="mini" data-addrsvp title="For the resident who phones the desk or asks in passing">Add an RSVP for someone</button>
     </div>
-    <div class="sd">Confirmed parties and heads for upcoming dates, with waitlists. Open an event to see who, by unit; a unit appearing twice for one event is worth a glance, since a household can double-count itself. Edit or cancel any RSVP from the list, and a note to the resident opens ready to send from your own mailbox, in Outlook on the web or the desktop app, whichever this machine uses. On the day, Check in beside each party works the door: the whole party in one tap, a typed number when fewer came, and a door note for the row ("two here, the third is parking"). Resident-hosted private events ride this same list with their guest panels. Passed events keep their lists under Past events at the foot, with the arrival tally and an Email guests draft for the thank-you or the survey.</div>
     <div class="card" id="ar-card" style="display:none;margin-bottom:10px">
       <div id="ar-head" style="display:none;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--red);font-weight:600;margin-bottom:12px"></div>
       <div style="display:grid;gap:12px 16px;grid-template-columns:repeat(auto-fit,minmax(190px,1fr))">

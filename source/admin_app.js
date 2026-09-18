@@ -245,6 +245,7 @@
       + cell("Counted", yes(h.Counted))
       + cell("RSVPs", counts.heads ? `${counts.heads} heads${counts.wait ? " &middot; " + counts.wait + " waitlisted" : ""}` : "&mdash;")
       + cell("Series line", dash(h.Series))
+      + cell("Short link", `181residents.com/e/${esc(h.Slug || slugify(h.Title || ""))}`)
       + cell("File stem", esc(stem(h)))
       + `<div class="qfull"><span class="ql">Description</span><span class="qd">${h.Description ? esc(h.Description) : "&mdash;"}</span></div>`;
   }
@@ -274,7 +275,7 @@
         <div class="ecell"><span class="pill ${cls(g.status)}">${esc(g.mixed ? "Mixed" : g.status)}</span></div>
         <div class="ecell"><span class="lbl">RSVPs</span>${rsvp}</div>
         <div class="ecell"><span class="lbl">Asset kit</span>${kits} of 6</div>
-        <div class="ecell eact">${g.series ? `<button class="mini ghost" data-dates="${esc(g.key)}">${(g.upcoming.length || g.rows.length)} dates</button>` : ""}<button class="mini ghost" data-copylink="${esc(stem(h))}" title="Copies this date's page address, for emails and reminders">Link</button><button class="mini" data-edit="${esc(g.key)}">Edit</button>${g.status === "Unpublished" ? `<button class="mini ghost" data-archive="${esc(g.key)}" title="Filed away, kept for reporting">Archive</button>` : ""}${g.rows.every(r => (r.Status || "Draft") === "Draft") ? `<button class="mini ghost" data-evdelete="${esc(g.key)}" title="Drafts only: residents never saw it, so nothing is lost">Delete draft</button>` : ""}</div>
+        <div class="ecell eact">${g.series ? `<button class="mini ghost" data-dates="${esc(g.key)}">${(g.upcoming.length || g.rows.length)} dates</button>` : ""}<button class="mini ghost" data-copylink="${esc(stem(h))}" title="Copies this date's page address, for emails and reminders">Link</button><button class="mini ghost" data-copyshort="${esc(h.Slug || slugify(h.Title || ""))}" title="The standing address: always lands on the next upcoming date of this event, so QR codes, stills, and print never go stale">Short link</button><button class="mini" data-edit="${esc(g.key)}">Edit</button>${g.status === "Unpublished" ? `<button class="mini ghost" data-archive="${esc(g.key)}" title="Filed away, kept for reporting">Archive</button>` : ""}${g.rows.every(r => (r.Status || "Draft") === "Draft") ? `<button class="mini ghost" data-evdelete="${esc(g.key)}" title="Drafts only: residents never saw it, so nothing is lost">Delete draft</button>` : ""}</div>
       </div>
       <div class="edates" data-dates-for="${esc(g.key)}" style="display:none">${(g.upcoming.length ? g.upcoming : g.rows).map(r => `
         <div class="edrow"><span class="edwhen">${esc(fmt(r.Date))} &middot; ${esc(r.Start)}</span>
@@ -2231,7 +2232,7 @@
   }
 
   document.addEventListener("click", ev => {
-    const r = ev.target.closest("[data-mailcode],[data-printone],[data-rotate],[data-ends],[data-toggle],[data-rdelete],[data-resedit],[data-saveres],[data-cancelres],[data-edittoggle],[data-editdelete],[data-addres],[data-resopen],[data-bulkopen],[data-bulkclose],[data-addbulk],[data-printcards],[data-mreplied],[data-marchive],[data-wconfirm],[data-redit],[data-rcancel],[data-rarrive],[data-pastchev],[data-pastmail],[data-notedel],[data-noterestore],[data-nbpast],[data-rsvpprint],[data-addrsvp],[data-savearsvp],[data-closearsvp],[data-copylink],[data-aupload],[data-acanva],[data-adelete],[data-rsvpkey],[data-addbooking],[data-unbook],[data-bkchev],[data-bkreg],[data-bkcopy],[data-bkprint],[data-gadd],[data-garrive],[data-gdel],[data-gmail],[data-gedit],[data-bkedit],[data-savebk],[data-cancelbk],[data-bkopen]");
+    const r = ev.target.closest("[data-mailcode],[data-printone],[data-rotate],[data-ends],[data-toggle],[data-rdelete],[data-resedit],[data-saveres],[data-cancelres],[data-edittoggle],[data-editdelete],[data-addres],[data-resopen],[data-bulkopen],[data-bulkclose],[data-addbulk],[data-printcards],[data-mreplied],[data-marchive],[data-wconfirm],[data-redit],[data-rcancel],[data-rarrive],[data-pastchev],[data-pastmail],[data-notedel],[data-noterestore],[data-nbpast],[data-rsvpprint],[data-addrsvp],[data-savearsvp],[data-closearsvp],[data-copylink],[data-copyshort],[data-aupload],[data-acanva],[data-adelete],[data-rsvpkey],[data-addbooking],[data-unbook],[data-bkchev],[data-bkreg],[data-bkcopy],[data-bkprint],[data-gadd],[data-garrive],[data-gdel],[data-gmail],[data-gedit],[data-bkedit],[data-savebk],[data-cancelbk],[data-bkopen]");
     if (r) {
       if (r.dataset.bkedit) {
         const b = bookings.find(x => String(x.id) === r.dataset.bkedit);
@@ -2484,6 +2485,11 @@
         navigator.clipboard.writeText(url)
           .then(() => toast("Copied: " + url))
           .catch(() => prompt("Copy the event link:", url));
+      } else if (r.dataset.copyshort) {
+        const url = "https://181residents.com/e/" + r.dataset.copyshort;
+        navigator.clipboard.writeText(url)
+          .then(() => toast("Copied: " + url + " — the standing address; it always lands on the next upcoming date."))
+          .catch(() => prompt("Copy the short link:", url));
       } else if (r.dataset.addrsvp !== undefined) openAddRsvp();
       else if (r.dataset.savearsvp !== undefined) { if (editingRsvp) saveRsvpEdit(); else saveAddRsvp(); }
       else if (r.dataset.closearsvp !== undefined) exitRsvpEdit();
