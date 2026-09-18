@@ -423,6 +423,16 @@ HTML = f'''<!DOCTYPE html>
   #scr-editor .fl{{font-size:10px}}
   #scr-editor .hint{{font-size:11.5px}}
   #scr-editor .picks{{gap:6px}}
+  /* combo fields: the arrow opens the standing list from Settings; typing stays free */
+  .combo{{position:relative}}
+  .combo .inp{{padding-right:34px}}
+  .combo-btn{{position:absolute;right:1px;top:1px;bottom:1px;width:32px;border:0;background:transparent;color:var(--stone);cursor:pointer;font-size:13px}}
+  .combo-btn:hover{{color:var(--ink)}}
+  .combo-menu{{position:absolute;top:calc(100% + 4px);left:0;right:0;background:var(--paper-2);border:1px solid var(--line);
+    border-radius:var(--radius);box-shadow:0 12px 30px rgba(0,0,0,.14);z-index:80;max-height:250px;overflow:auto;display:none}}
+  .combo-menu.open{{display:block}}
+  .combo-menu button{{display:block;width:100%;text-align:left;padding:9px 12px;border:0;background:none;font:inherit;font-size:13.5px;color:var(--ink);cursor:pointer}}
+  .combo-menu button:hover{{background:var(--paper)}}
   /* the booking form: fields sized to what they hold, folded until called for */
   .bkgrid{{display:grid;gap:12px 16px;grid-template-columns:repeat(6,1fr)}}
   .bkgrid .sp1{{grid-column:span 1}}
@@ -618,8 +628,8 @@ HTML = f'''<!DOCTYPE html>
       <div><label class="fl" for="f-end">End time</label><input class="inp" id="f-end" placeholder="7:30 PM"></div>
     </div>
     <div class="hint f-full" id="ed-date2note" style="margin:-6px 0 0"></div>
-    <div class="field"><label class="fl" for="f-loc">Location</label><input class="inp" id="f-loc" list="locs"><datalist id="locs"><option value="Level 39, Residents’ Club"><option value="Level 7 Terrace"><option value="Lobby"><option value="Fitness Center"></datalist></div>
-    <div class="field"><div class="flrow"><label class="fl" for="f-host">Hosted by</label>{info("Shown on the event page so residents know who to ask. The list is kept under Settings.")}</div><input class="inp" id="f-host" list="hosts" autocapitalize="words"><datalist id="hosts"><option value="Resident Experiences"><option value="Leigh Anne"><option value="Front desk"></datalist></div>
+    <div class="field"><label class="fl" for="f-loc">Location</label><div class="combo"><input class="inp" id="f-loc" list="locs"><button type="button" class="combo-btn" data-combo="f-loc|locations" title="Pick from the Locations list, kept under Settings">&#9662;</button><div class="combo-menu" data-combo-menu="f-loc"></div></div><datalist id="locs"><option value="Level 39, Residents’ Club"><option value="Level 7 Terrace"><option value="Lobby"><option value="Fitness Center"></datalist></div>
+    <div class="field"><div class="flrow"><label class="fl" for="f-host">Hosted by</label>{info("Shown on the event page so residents know who to ask. The list is kept under Settings.")}</div><div class="combo"><input class="inp" id="f-host" list="hosts" autocapitalize="words"><button type="button" class="combo-btn" data-combo="f-host|hosts" title="Pick from the Hosts list, kept under Settings">&#9662;</button><div class="combo-menu" data-combo-menu="f-host"></div></div><datalist id="hosts"><option value="Resident Experiences"><option value="Leigh Anne"><option value="Front desk"></datalist></div>
     <div class="field"><div class="flrow"><label class="fl">Count in engagement reporting</label>{info("Choose List only whenever the host is not Resident Experiences, so nothing credits you with someone else&rsquo;s attendance. The calendar carries everything happening in the building either way.")}</div><div class="picks">{picks("co", ["Count it", "List only, don’t count"])}</div></div>
     <div class="field f-full" id="rp-builder"><div class="flrow"><label class="fl">Repeats</label>{info("For the standing rhythm: every Tuesday, the last Friday of the month. Each date becomes its own entry. A run of consecutive days is not a repeat; give it an end date above instead.")}</div>
       <div class="picks" id="rp-picks">
@@ -823,7 +833,7 @@ HTML = f'''<!DOCTYPE html>
   <div class="card" id="bk-card" style="display:none;margin-bottom:18px">
     <div id="bk-formhead" style="display:none;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--red);font-weight:600;margin-bottom:12px"></div>
     <div class="bkgrid">
-      <div class="field sp3"><label class="fl" for="bk-space">Space</label><input class="inp" id="bk-space" list="spaces" autocapitalize="words" placeholder="Conference Room"><datalist id="spaces"><option value="Conference Room"><option value="Dining Room"><option value="Residents’ Club"><option value="Level 7 Terrace"></datalist></div>
+      <div class="field sp3"><label class="fl" for="bk-space">Location</label><div class="combo"><input class="inp" id="bk-space" list="locs" autocapitalize="words" placeholder="Conference Room"><button type="button" class="combo-btn" data-combo="bk-space|locations" title="Pick from the Locations list, kept under Settings">&#9662;</button><div class="combo-menu" data-combo-menu="bk-space"></div></div></div>
       <div class="field sp1"><label class="fl" for="bk-date">Date</label><input class="inp" id="bk-date" type="date"></div>
       <div class="field sp1"><label class="fl" for="bk-start">From</label><input class="inp" id="bk-start" placeholder="2:00 PM"></div>
       <div class="field sp1"><label class="fl" for="bk-end">Until</label><input class="inp" id="bk-end" placeholder="5:00 PM"></div>

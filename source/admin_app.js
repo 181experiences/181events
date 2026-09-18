@@ -1913,7 +1913,7 @@
       guest_cap: $("#bk-cap").value ? Number($("#bk-cap").value) : null,
       reg_slug: $("#bk-slug").value.trim(), details: $("#bk-details").value.trim(),
     };
-    if (!body.space || !body.date) { toast("A space and a date are needed.", "warn"); return; }
+    if (!body.space || !body.date) { toast("A location and a date are needed.", "warn"); return; }
     try {
       const d = await api("/api/bookings", { method: "POST", body: JSON.stringify(body) });
       bookings.push(d.booking); renderBookings();
@@ -2017,6 +2017,33 @@
     if (sub2 && role === "desk")
       sub2.textContent = "The month at a glance: what residents see, plus drafts still taking shape. Event changes are Resident Experiences’ side of the desk.";
   }
+
+  // Combo fields: the arrow opens the standing list (Locations and Hosts, kept
+  // under Settings); typing stays free, so a one-off place never has to join
+  // the list. Any tap elsewhere closes an open menu.
+  document.addEventListener("click", ev => {
+    const pick = ev.target.closest("[data-combopick]");
+    if (pick) {
+      const menu = pick.closest(".combo-menu");
+      const input = document.getElementById(menu.dataset.comboMenu);
+      input.value = pick.dataset.combopick;
+      menu.classList.remove("open");
+      input.dispatchEvent(new Event("change"));
+      return;
+    }
+    const cb = ev.target.closest(".combo-btn");
+    $$(".combo-menu.open").forEach(m => {
+      if (!cb || m.dataset.comboMenu !== cb.dataset.combo.split("|")[0]) m.classList.remove("open");
+    });
+    if (!cb) return;
+    const [inputId, listName] = cb.dataset.combo.split("|");
+    const menu = document.querySelector(`[data-combo-menu="${CSS.escape(inputId)}"]`);
+    const opts = listName === "hosts" ? listSettings.hosts : listSettings.locations;
+    menu.innerHTML = opts.length
+      ? opts.map(o => `<button type="button" data-combopick="${esc(o)}">${esc(o)}</button>`).join("")
+      : '<button type="button" disabled style="color:var(--stone);cursor:default">Nothing listed yet; add options under Settings</button>';
+    menu.classList.toggle("open");
+  });
 
   // Info popovers: one open at a time, any other tap closes it.
   document.addEventListener("click", ev => {
