@@ -4,8 +4,33 @@
 // POST the same address -> put a name (and a plus one) on the list the front
 // desk and security run from.
 
-import { esc, ensureResidentTables, todayPacific } from "../_lib.js";
-import { template, fill, cut, inner, page, seeOther, MONTHS_S, DOW } from "../_resident.js";
+import { esc, ensureResidentTables, todayPacific, notifyStaff } from "../_lib.js";
+import { template, fill, cut, inner, page, seeOther, MONTHS_S, DOW, hmac } from "../_resident.js";
+
+// A registration leaves a signed cookie behind, so coming back to the page
+// months of worry later answers the question Veronica asked: am I on the
+// list, and did I include my husband? The cookie is the guest's own device
+// remembering; the list itself lives with the desk as ever.
+const REG_COOKIE = "r181g";
+
+async function regCookie(env, b, guestId) {
+  const body = `${b.id}.${guestId}`;
+  return `${REG_COOKIE}=${body}.${await hmac(env.SESSION_SECRET, "reg." + body)}; Max-Age=${120 * 86400}; Path=/register; HttpOnly; Secure; SameSite=Lax`;
+}
+
+async function myRegistration(context, b) {
+  const { env, request } = context;
+  if (!env.SESSION_SECRET) return null;
+  const m = /(?:^|;\s*)r181g=([^;]+)/.exec(request.headers.get("cookie") || "");
+  if (!m) return null;
+  const parts = m[1].split(".");
+  if (parts.length !== 3) return null;
+  const [bid, gid, sig] = parts;
+  if (Number(bid) !== b.id) return null;
+  if (await hmac(env.SESSION_SECRET, `reg.${bid}.${gid}`) !== sig) return null;
+  return await env.DB.prepare(
+    "SELECT * FROM guests WHERE id=? AND booking_id=?").bind(Number(gid), b.id).first();
+}
 
 function whenOf(b) {
   const d = new Date(b.date + "T12:00:00");
@@ -63,6 +88,7 @@ async function heroStem(env, b) {
 
 async function regPage(context, b, state, waitlisting) {
   const { env } = context;
+  const mine = await myRegistration(context, b);
   const tpl = await template(context, "register");
   let body = fill(tpl, {
     EYEBROW: "By invitation",
@@ -78,7 +104,17 @@ async function regPage(context, b, state, waitlisting) {
     ? fill(inner(tpl, "HOST"), { HOST: esc(b.host) }) : null);
   body = cut(body, "ICS", b.date >= todayPacific()
     ? fill(inner(tpl, "ICS"), { ICSKEY: esc(b.reg_slug || b.reg_token) }) : null);
-  body = cut(body, "WAITNOTE", waitlisting ? inner(tpl, "WAITNOTE") : null);
+  body = cut(body, "WAITNOTE", waitlisting && !mine ? inner(tpl, "WAITNOTE") : null);
+  // The returning guest's own confirmation, first thing on the page.
+  body = cut(body, "MINE", mine
+    ? fill(inner(tpl, "MINE"), {
+        MINENAME: esc(mine.name) + (mine.plus_one ? " and " + esc(mine.plus_one) : ""),
+        MINESTATE: mine.status === "Waitlist"
+          ? `on the waitlist; if seats open, you&rsquo;ll hear at ${esc(mine.email || "your email")}`
+          : `on the list${mine.plus_one ? ", party of two" : ""}`,
+        MINEWHEN: esc((mine.created || "").slice(0, 10)),
+      })
+    : null);
   if (state) {
     body = cut(body, "FORM", null);
     body = cut(body, "CLOSED", fill(inner(tpl, "CLOSED"), { CLOSEDMSG: state }));
@@ -156,22 +192,36 @@ export async function onRequestPost(context) {
   const heads = await headsOf(env, b.id);
   const wanting = plus ? 2 : 1;
   const waitlisted = !!(b.guest_cap && heads.heads + wanting > b.guest_cap);
+  let row = null;
   if (!trap) {
-    await env.DB.prepare(
-      "INSERT INTO guests (booking_id, name, plus_one, created, email, status) VALUES (?, ?, ?, ?, ?, ?)")
-      .bind(b.id, name, plus || null, new Date().toISOString(), email, waitlisted ? "Waitlist" : null).run();
+    row = await env.DB.prepare(
+      "INSERT INTO guests (booking_id, name, plus_one, created, email, status) VALUES (?, ?, ?, ?, ?, ?) RETURNING *")
+      .bind(b.id, name, plus || null, new Date().toISOString(), email, waitlisted ? "Waitlist" : null).first();
+    notifyStaff(context, `Guest registration · ${name}${plus ? " +1" : ""} · ${b.event_name || "private event"}`, [
+      `${name}${plus ? " and " + plus : ""} registered for ${b.event_name || "a private event"}, ${b.date}.`,
+      `Email: ${email}`,
+      waitlisted ? "Standing: WAITLIST (the list is at its cap)." : "Standing: confirmed.",
+      `Guest list: https://181residents.com/admin (Spaces, or the Dashboard's Resident hosted row)`,
+    ]);
   }
+  // The written confirmation, kept two ways with no mail service in the
+  // stack: this page can be emailed to yourself in one tap, and the signed
+  // cookie makes any later visit to the invitation page show the same box.
+  const selfBody = `${name}${plus ? " and " + plus : ""}, ${waitlisted ? "on the waitlist" : "registered"} for ${b.event_name || "a private event"} on ${b.date}.\n\nOn the day, come to the 181 Fremont lobby and give the event name.\n\nPlans changed? Write to the front desk at concierge@181sf.com.`;
+  const selfLink = `<br><br><a href="mailto:${esc(email)}?subject=${encodeURIComponent(`Your registration: ${b.event_name || "private event"}`)}&body=${encodeURIComponent(selfBody)}" style="font-weight:600">Email yourself this confirmation</a>, and coming back to the invitation page any time will show it too.`;
   const done = await template(context, "done");
   const body = fill(cut(done, "LINK", null), waitlisted
     ? {
         HEAD: "You&rsquo;re on the waitlist",
         SUB: `${esc(name)}${plus ? " and " + esc(plus) : ""}, on the waitlist for ${esc(b.event_name || "the event")}. `
-          + `The list is full at the moment; if seats open, you&rsquo;ll hear at ${esc(email)}.`,
+          + `The list is full at the moment; if seats open, you&rsquo;ll hear at ${esc(email)}.` + selfLink,
       }
     : {
         HEAD: "You&rsquo;re on the list",
         SUB: `${esc(name)}${plus ? " and " + esc(plus) : ""}, registered for ${esc(b.event_name || "the event")}. `
-          + `On the day, come to the 181 Fremont lobby and give the event name; the front desk will be expecting you.`,
+          + `On the day, come to the 181 Fremont lobby and give the event name; the front desk will be expecting you.` + selfLink,
       });
-  return page(context, waitlisted ? "On the waitlist" : "Registered", body, null);
+  const res = await page(context, waitlisted ? "On the waitlist" : "Registered", body, null);
+  if (row && env.SESSION_SECRET) res.headers.append("set-cookie", await regCookie(env, b, row.id));
+  return res;
 }

@@ -1,11 +1,12 @@
-import { json, noDb, adminRole, forbidden, ensureResidentTables, accessEmail } from "../../_lib.js";
+import { json, noDb, adminRole, forbidden, ensureResidentTables, accessEmail, notifyStaff } from "../../_lib.js";
 
 // PATCH /api/rsvps/:id {status?, count?, names?} -> staff changes to an RSVP:
 // promote a waitlisted party, adjust a party size for someone who asked in
 // passing, or cancel outright. Every tier may do this; the desk fields these
 // requests all day. The admin opens a pre-written note to the resident after,
 // so the person always hears about a change made on their behalf.
-export async function onRequestPatch({ request, params, env }) {
+export async function onRequestPatch(context) {
+  const { request, params, env } = context;
   const err = noDb(env); if (err) return err;
   if (!(await adminRole(request, env))) return forbidden();
   await ensureResidentTables(env);
@@ -46,6 +47,17 @@ export async function onRequestPatch({ request, params, env }) {
   const row = await env.DB.prepare(
     `UPDATE rsvps SET ${sets.join(",")} WHERE id=? RETURNING *`).bind(...vals, id).first();
   if (!row) return json({ error: "No such RSVP" }, 404);
+  // Door work (check-ins, door notes) stays quiet; a real change to the
+  // booking (standing, party, names) earns Leo an email.
+  if ("status" in body || "count" in body || "names" in body) {
+    const who = (await accessEmail(request)) || env.DEV_ROLE || "staff";
+    const res = await env.DB.prepare("SELECT name, unit FROM residents WHERE id=?").bind(row.resident_id).first();
+    const label = res ? `${res.name}${res.unit ? " · " + res.unit : ""}` : "a resident";
+    notifyStaff(context, `RSVP ${row.status === "Cancelled" ? "cancelled" : "changed"} (staff) · ${label} · ${row.event_title}`, [
+      `${who} ${row.status === "Cancelled" ? "cancelled" : "changed"} ${label}'s RSVP: ${row.event_title}, ${row.event_date}.`,
+      `Now: party of ${row.count} · standing ${row.status}.`,
+    ]);
+  }
   return json({ id: row.id, status: row.status, count: row.count, names: row.names || "",
                 arrived: row.arrived ?? null, arrived_at: row.arrived_at || "", door_note: row.door_note || "" });
 }

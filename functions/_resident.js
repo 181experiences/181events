@@ -19,7 +19,7 @@ export const DOW_S = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
 const enc = new TextEncoder();
 
-async function hmac(secret, msg) {
+export async function hmac(secret, msg) {
   const key = await crypto.subtle.importKey("raw", enc.encode(secret),
     { name: "HMAC", hash: "SHA-256" }, false, ["sign"]);
   const sig = await crypto.subtle.sign("HMAC", key, enc.encode(msg));

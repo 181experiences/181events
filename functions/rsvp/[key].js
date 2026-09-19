@@ -8,7 +8,7 @@
 // inline and returns here afterwards. Plain forms throughout; no JavaScript needed.
 
 import { esc, ensureResidentTables, ensureEventTables, todayPacific,
-         getWindow, detailEnd } from "../_lib.js";
+         getWindow, detailEnd, notifyStaff } from "../_lib.js";
 import {
   currentResident, liveEvent, seatsTaken, myRsvp, unitMates, othersWaiting, confirmedHeads,
   template, fill, cut, inner, page, seeOther, notReady, slideSession,
@@ -271,6 +271,10 @@ export async function onRequestPost(context) {
     await env.DB.prepare(
       "UPDATE rsvps SET status='Cancelled', updated=?, updated_by='resident' WHERE resident_id=? AND event_key=?")
       .bind(now, me.id, key).run();
+    notifyStaff(context, `RSVP cancelled · ${me.name}${me.unit ? " · " + me.unit : ""} · ${ev.title}`, [
+      `${me.name}${me.unit ? " · " + me.unit : ""} cancelled their RSVP for ${ev.title}, ${ev.date}, on the site.`,
+      "Their seats are free for the waitlist; Confirm seats on the Dashboard hands them on.",
+    ]);
     return donePage(context, me, "Cancelled",
       "You&rsquo;re off the list for this one, and always welcome to change your mind while there&rsquo;s room.",
       "/my", "My RSVPs");
@@ -345,6 +349,12 @@ export async function onRequestPost(context) {
       status = "Waitlist";
     }
   }
+
+  notifyStaff(context, `RSVP · ${me.name}${me.unit ? " · " + me.unit : ""} · ${ev.title}`, [
+    `${me.name}${me.unit ? " · " + me.unit : ""} ${mine && mine.status !== "Cancelled" ? "changed their RSVP" : "RSVPed"} on the site: ${ev.title}, ${ev.date}.`,
+    type === "guest" ? `Outside guests: ${count}.` : `Party of ${count}${names ? ` (${names})` : ""}.`,
+    `Standing: ${status}${closed ? " (after the close date; it went in as a request)" : ""}.`,
+  ]);
 
   if (status === "Waitlist") {
     if (closed) {

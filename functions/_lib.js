@@ -256,6 +256,22 @@ export async function adminRole(request, env) {
   if (emailList(env.DESK_EMAILS).includes(email)) return "desk";
   return "staff";
 }
+// Staff notifications ride a tiny Worker holding an Email Routing send
+// binding, reached through the NOTIFY service binding (see DEPLOY.md).
+// Without the binding (local dev, or before it is wired) every call is a
+// quiet no-op, and a failure never blocks the visitor's own request.
+export function notifyStaff(context, subject, lines) {
+  try {
+    if (!context.env.NOTIFY) return;
+    const body = Array.isArray(lines) ? lines.filter(Boolean).join("\n") : String(lines || "");
+    context.waitUntil(context.env.NOTIFY.fetch("https://notify/send", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ subject: String(subject || "RSVP update"), body }),
+    }).catch(() => {}));
+  } catch (e) {}
+}
+
 export function forbidden() {
   return json({ error: "This part of the admin is not available to this account." }, 403);
 }

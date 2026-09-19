@@ -1,4 +1,4 @@
-import { json, noDb, adminRole, forbidden, ensureResidentTables, labelOf, accessEmail } from "../_lib.js";
+import { json, noDb, adminRole, forbidden, ensureResidentTables, labelOf, accessEmail, notifyStaff } from "../_lib.js";
 import { liveEvent, seatsTaken, othersWaiting } from "../_resident.js";
 
 const ROW_SQL = `SELECT r.id, r.resident_id, r.event_key, r.event_date, r.event_title, r.rsvp_type, r.count,
@@ -22,7 +22,8 @@ export async function onRequestGet({ request, env }) {
 // staff, for the resident who asked in passing or phoned the desk. Capacity and
 // the waitlist apply exactly as on the site, so one queue stays one queue; if
 // the person already had an RSVP for that event, this updates it.
-export async function onRequestPost({ request, env }) {
+export async function onRequestPost(context) {
+  const { request, env } = context;
   const err = noDb(env); if (err) return err;
   if (!(await adminRole(request, env))) return forbidden();
   await ensureResidentTables(env);
@@ -68,5 +69,9 @@ export async function onRequestPost({ request, env }) {
 
   const row = await env.DB.prepare(
     `${ROW_SQL} WHERE r.resident_id=? AND r.event_key=?`).bind(resident.id, key).first();
+  notifyStaff(context, `RSVP (staff) · ${labelOf(resident)} · ${ev.title}`, [
+    `${who} entered an RSVP for ${labelOf(resident)}: ${ev.title}, ${ev.date}.`,
+    `Party of ${count}${names ? ` (${names})` : ""} · standing ${status}.`,
+  ]);
   return json({ rsvp: row }, 201);
 }

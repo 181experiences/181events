@@ -496,6 +496,12 @@ def board_page(me):
         body = cut(cut(tpl, "ROWS", None), "EMPTY", inner(tpl, "EMPTY"))
     return shell_page("Board Meetings", body, me)
 
+def dev_notify(subject, lines):
+    # Mirrors _lib.notifyStaff: in dev the "email" is a line in the server log,
+    # so the whole pipeline is visible without any mail machinery.
+    body = " | ".join(l for l in (lines if isinstance(lines, list) else [lines]) if l)
+    print(f"[notify] {subject} :: {body}", flush=True)
+
 # The private-event registration page, mirroring functions/register/[token].js.
 def guest_heads(bid):
     rows = [g for g in load_store("guests", [])
@@ -529,7 +535,7 @@ def reg_hero_stem(b):
                 if a["stem"] == stem and a["kind"] == "web-hero" and a.get("filename")), None)
     return stem if row and os.path.exists(os.path.join(ASSET_DIR, f"{stem}__web-hero")) else None
 
-def register_page(b):
+def register_page(b, mine=None):
     tpl = template("register")
     d = datetime.date.fromisoformat(b["date"])
     when = f"{DOW[(d.weekday() + 1) % 7]}, {MONTHS_S[d.month - 1]} {d.day}"
@@ -545,7 +551,15 @@ def register_page(b):
     body = cut(body, "HOST", fill(inner(tpl, "HOST"), dict(HOST=esc(b["host"]))) if b.get("host") else None)
     body = cut(body, "ICS", fill(inner(tpl, "ICS"), dict(ICSKEY=esc(b.get("reg_slug") or b["reg_token"])))
                if b["date"] >= today() else None)
-    body = cut(body, "WAITNOTE", inner(tpl, "WAITNOTE") if not reg_state(b) and reg_full(b) else None)
+    body = cut(body, "WAITNOTE", inner(tpl, "WAITNOTE") if not reg_state(b) and reg_full(b) and not mine else None)
+    mine_html = None
+    if mine:
+        state = ("on the waitlist; if seats open, you&rsquo;ll hear at " + esc(mine.get("email") or "your email")) \
+            if mine.get("status") == "Waitlist" else ("on the list" + (", party of two" if mine.get("plus_one") else ""))
+        mine_html = fill(inner(tpl, "MINE"), dict(
+            MINENAME=esc(mine["name"]) + (" and " + esc(mine["plus_one"]) if mine.get("plus_one") else ""),
+            MINESTATE=state, MINEWHEN=esc((mine.get("created") or "")[:10])))
+    body = cut(body, "MINE", mine_html)
     state = reg_state(b)
     if state:
         body = cut(cut(body, "FORM", None), "CLOSED", fill(inner(tpl, "CLOSED"), dict(CLOSEDMSG=state)))
@@ -877,6 +891,14 @@ class H(SimpleHTTPRequestHandler):
             token = p.path[len("/register/"):].lower()
             b = next((x for x in load_store("bookings", [])
                       if x.get("reg_token") == token or x.get("reg_slug") == token), None)
+            if b:
+                # The returning guest's own confirmation, from the dev cookie.
+                m = re.search(r"(?:^|;\s*)r181g=(\d+)\.(\d+)\.dev", self.headers.get("Cookie") or "")
+                mine_g = None
+                if m and int(m.group(1)) == b["id"]:
+                    mine_g = next((g for g in load_store("guests", [])
+                                   if g["id"] == int(m.group(2)) and g["booking_id"] == b["id"]), None)
+                return self._html(register_page(b, mine_g))
             if not b:
                 tpl = template("done")
                 body = fill(cut(cut(tpl, "LINK", inner(tpl, "LINK")), "ICON", None), dict(
@@ -884,7 +906,6 @@ class H(SimpleHTTPRequestHandler):
                     SUB="The address may have been mistyped, or the invitation withdrawn. Kindly check with whoever sent it.",
                     LINKHREF="/", LINKTEXT="181 Fremont"))
                 return self._html(shell_page("Not found", body, None, 404))
-            return self._html(register_page(b))
         if p.path.startswith("/hero/"):
             # The public window into the asset shelf, mirroring functions/hero/[stem].js:
             # exactly one kind serves here, the picture the event's page wears.
@@ -1129,6 +1150,9 @@ class H(SimpleHTTPRequestHandler):
                            created=now_iso(), updated=now_iso(), updated_by=f"{self._role()}@local.dev")
                 rsvps.append(row)
             save_store("rsvps", rsvps)
+            dev_notify(f"RSVP (staff) · {label_of(resident)} · {e['Title']}",
+                       [f"{self._role()}@local.dev entered an RSVP: {e['Title']}, {e['Date']}.",
+                        f"Party of {count} · standing {status}."])
             return self._json({"rsvp": dict(row, name=resident["name"], unit=resident.get("unit") or "",
                                             email=resident.get("email") or "")}, 201)
         if p.path == "/api/bookings":
@@ -1182,24 +1206,38 @@ class H(SimpleHTTPRequestHandler):
                 return self._redirect(f"/register/{token}")
             wanting = 2 if plus else 1
             waitlisted = bool(b.get("guest_cap") and guest_heads(b["id"]) + wanting > int(b["guest_cap"]))
+            cookie = None
             if not (form.get("website") or "").strip():   # the honeypot stays empty for people
                 guests = load_store("guests", [])
-                guests.append(dict(id=max([g["id"] for g in guests] or [0]) + 1, booking_id=b["id"],
+                gid = max([g["id"] for g in guests] or [0]) + 1
+                guests.append(dict(id=gid, booking_id=b["id"],
                                    name=name, plus_one=plus or None, created=now_iso(), arrived=None,
                                    email=email, status="Waitlist" if waitlisted else None))
                 save_store("guests", guests)
+                cookie = f"r181g={b['id']}.{gid}.dev; Max-Age=10368000; Path=/register; HttpOnly; SameSite=Lax"
+                dev_notify(f"Guest registration · {name}{' +1' if plus else ''} · {b.get('event_name') or 'private event'}",
+                           [f"{name}{' and ' + plus if plus else ''} registered, {b['date']}.", f"Email: {email}",
+                            "Standing: WAITLIST." if waitlisted else "Standing: confirmed."])
+            from urllib.parse import quote as _q
+            self_body = (f"{name}{' and ' + plus if plus else ''}, {'on the waitlist' if waitlisted else 'registered'} "
+                         f"for {b.get('event_name') or 'a private event'} on {b['date']}.\n\nOn the day, come to the 181 Fremont "
+                         "lobby and give the event name.\n\nPlans changed? Write to the front desk at concierge@181sf.com.")
+            self_link = (f'<br><br><a href="mailto:{esc(email)}?subject='
+                         f'{_q("Your registration: " + (b.get("event_name") or "private event"))}&body={_q(self_body)}"'
+                         ' style="font-weight:600">Email yourself this confirmation</a>, and coming back to the'
+                         " invitation page any time will show it too.")
             tpl = template("done")
             if waitlisted:
                 body = fill(cut(tpl, "LINK", None), dict(
                     HEAD="You&rsquo;re on the waitlist",
                     SUB=f"{esc(name)}{' and ' + esc(plus) if plus else ''}, on the waitlist for {esc(b.get('event_name') or 'the event')}. "
-                        f"The list is full at the moment; if seats open, you&rsquo;ll hear at {esc(email)}."))
-                return self._html(shell_page("On the waitlist", body, None))
+                        f"The list is full at the moment; if seats open, you&rsquo;ll hear at {esc(email)}." + self_link))
+                return self._html(shell_page("On the waitlist", body, None), cookie=cookie)
             body = fill(cut(tpl, "LINK", None), dict(
                 HEAD="You&rsquo;re on the list",
                 SUB=f"{esc(name)}{' and ' + esc(plus) if plus else ''}, registered for {esc(b.get('event_name') or 'the event')}. "
-                    "On the day, come to the 181 Fremont lobby and give the event name; the front desk will be expecting you."))
-            return self._html(shell_page("Registered", body, None))
+                    "On the day, come to the 181 Fremont lobby and give the event name; the front desk will be expecting you." + self_link))
+            return self._html(shell_page("Registered", body, None), cookie=cookie)
 
         # ---- resident forms
         if p.path == "/signin":
@@ -1303,7 +1341,10 @@ class H(SimpleHTTPRequestHandler):
             rsvps = load_store("rsvps", [])
             mine = next((r for r in rsvps if r["resident_id"] == me["id"] and r["event_key"] == key), None)
             if form.get("action") == "cancel":
-                if mine: mine["status"] = "Cancelled"; mine["updated"] = now_iso(); mine["updated_by"] = "resident"; save_store("rsvps", rsvps)
+                if mine:
+                    mine["status"] = "Cancelled"; mine["updated"] = now_iso(); mine["updated_by"] = "resident"; save_store("rsvps", rsvps)
+                    dev_notify(f"RSVP cancelled · {label_of(me)} · {e['Title']}",
+                               [f"{label_of(me)} cancelled on the site: {e['Title']}, {e['Date']}."])
                 return self._html(done_page(me, "Cancelled",
                     "You&rsquo;re off the list for this one, and always welcome to change your mind while there&rsquo;s room.",
                     "/my", "My RSVPs"))
@@ -1363,6 +1404,10 @@ class H(SimpleHTTPRequestHandler):
                     row = mine or rsvps[-1]
                     row["status"] = status = "Waitlist"
             save_store("rsvps", rsvps)
+            dev_notify(f"RSVP · {label_of(me)} · {e['Title']}",
+                       [f"{label_of(me)} RSVPed on the site: {e['Title']}, {e['Date']}.",
+                        f"Party of {count}." if rsvp_type != "guest" else f"Outside guests: {count}.",
+                        f"Standing: {status}."])
             if status == "Waitlist":
                 if closed:
                     return self._html(done_page(me, "Your request is in",
@@ -1522,6 +1567,11 @@ class H(SimpleHTTPRequestHandler):
                     r["updated"] = now_iso()
                     r["updated_by"] = f"{self._role()}@local.dev"
                     save_store("rsvps", rsvps)
+                    # Door work stays quiet; real changes to the booking notify.
+                    if any(k in body for k in ("status", "count", "names")):
+                        dev_notify(f"RSVP {'cancelled' if r['status'] == 'Cancelled' else 'changed'} (staff) · {r['event_title']}",
+                                   [f"{self._role()}@local.dev changed the RSVP: {r['event_title']}, {r['event_date']}.",
+                                    f"Now: party of {r['count']} · standing {r['status']}."])
                     return self._json({"id": r["id"], "status": r["status"], "count": r["count"],
                                        "names": r.get("names") or "",
                                        "arrived": r.get("arrived"), "arrived_at": r.get("arrived_at") or "",
