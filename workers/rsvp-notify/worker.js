@@ -15,7 +15,7 @@ const FROM = "rsvps@181residents.com";
 // by the building's Microsoft filtering (tenant allowlist ask is with IT);
 // the gmail copy is the one Leo reads until that lands. Drop the gmail line
 // once IT allows the sender, if one copy is enough.
-const TO_LIST = ["leonardo@181sf.com", "181sf.leo@gmail.com"];
+const TO_LIST = ["leonardo@181sf.com", "181sf.leo@gmail.com", "lramirez@actionlife.com"];
 
 export default {
   async fetch(request, env) {
