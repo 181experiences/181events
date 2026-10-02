@@ -1187,10 +1187,16 @@ class H(SimpleHTTPRequestHandler):
             bid = int(b.get("booking_id") or 0)
             if not name or not bid: return self._json({"error": "A booking and a name are needed."}, 400)
             guests = load_store("guests", [])
+            who = f"{self._role()}@local.dev"
             row = dict(id=max([g["id"] for g in guests] or [0]) + 1, booking_id=bid, name=name,
                        plus_one=(b.get("plus_one") or "").strip()[:80] or None,
-                       created=now_iso(), arrived=None)
+                       created=now_iso(), arrived=None, updated=now_iso(), updated_by=who)
             guests.append(row); save_store("guests", guests)
+            bk = next((x for x in load_store("bookings", []) if x["id"] == bid), None)
+            ev_name = (bk or {}).get("event_name") or "private event"
+            dev_notify(f"Guest added (staff) · {name}{' +1' if row['plus_one'] else ''} · {ev_name}",
+                       [f"{who} added a guest at the desk: {ev_name}, {(bk or {}).get('date') or ''}.",
+                        f"{name}{' and ' + row['plus_one'] if row['plus_one'] else ''}."])
             return self._json({"guest": row}, 201)
         if p.path.startswith("/api/"):
             return self._json({"error": "not found"}, 404)
@@ -1213,7 +1219,8 @@ class H(SimpleHTTPRequestHandler):
                 gid = max([g["id"] for g in guests] or [0]) + 1
                 guests.append(dict(id=gid, booking_id=b["id"],
                                    name=name, plus_one=plus or None, created=now_iso(), arrived=None,
-                                   email=email, status="Waitlist" if waitlisted else None))
+                                   email=email, status="Waitlist" if waitlisted else None,
+                                   updated=now_iso(), updated_by="guest"))
                 save_store("guests", guests)
                 cookie = f"r181g={b['id']}.{gid}.dev; Max-Age=10368000; Path=/register; HttpOnly; SameSite=Lax"
                 dev_notify(f"Guest registration · {name}{' +1' if plus else ''} · {b.get('event_name') or 'private event'}",
@@ -1651,7 +1658,17 @@ class H(SimpleHTTPRequestHandler):
                         g["plus_one"] = str(body["plus_one"] or "").strip()[:80] or None
                     if "email" in body:
                         g["email"] = str(body["email"] or "").strip()[:120] or None
+                    g["updated"] = now_iso()
+                    g["updated_by"] = f"{self._role()}@local.dev"
                     save_store("guests", guests)
+                    # Door work stays quiet; corrections to the registration notify.
+                    if any(k in body for k in ("name", "plus_one", "email")):
+                        bk = next((x for x in load_store("bookings", []) if x["id"] == g["booking_id"]), None)
+                        ev_name = (bk or {}).get("event_name") or "private event"
+                        dev_notify(f"Guest changed (staff) · {g['name']} · {ev_name}",
+                                   [f"{g['updated_by']} changed a registration: {ev_name}, {(bk or {}).get('date') or ''}.",
+                                    f"Now: {g['name']}{' and ' + g['plus_one'] if g.get('plus_one') else ', no plus one'}"
+                                    f"{' · ' + g['email'] if g.get('email') else ''}."])
                     return self._json({"guest": g})
             return self._json({"error": "No such registration"}, 404)
         if p.path.startswith("/api/messages/"):
@@ -1726,9 +1743,15 @@ class H(SimpleHTTPRequestHandler):
         if p.path.startswith("/api/guests/"):
             gid = p.path.rsplit("/", 1)[1]
             guests = load_store("guests", [])
-            kept = [g for g in guests if str(g["id"]) != gid]
-            if len(kept) == len(guests): return self._json({"error": "No such registration"}, 404)
-            save_store("guests", kept)
+            gone = next((g for g in guests if str(g["id"]) == gid), None)
+            if not gone: return self._json({"error": "No such registration"}, 404)
+            save_store("guests", [g for g in guests if str(g["id"]) != gid])
+            bk = next((x for x in load_store("bookings", []) if x["id"] == gone["booking_id"]), None)
+            ev_name = (bk or {}).get("event_name") or "private event"
+            dev_notify(f"Guest removed (staff) · {gone['name']} · {ev_name}",
+                       [f"{self._role()}@local.dev removed a registration: {ev_name}, {(bk or {}).get('date') or ''}.",
+                        f"Removed: {gone['name']}{' and ' + gone['plus_one'] if gone.get('plus_one') else ''}"
+                        f"{' · ' + gone['email'] if gone.get('email') else ''}."])
             return self._json({"ok": True})
         return self._json({"error": "not found"}, 404)
 

@@ -194,9 +194,10 @@ export async function onRequestPost(context) {
   const waitlisted = !!(b.guest_cap && heads.heads + wanting > b.guest_cap);
   let row = null;
   if (!trap) {
+    const regNow = new Date().toISOString();
     row = await env.DB.prepare(
-      "INSERT INTO guests (booking_id, name, plus_one, created, email, status) VALUES (?, ?, ?, ?, ?, ?) RETURNING *")
-      .bind(b.id, name, plus || null, new Date().toISOString(), email, waitlisted ? "Waitlist" : null).first();
+      "INSERT INTO guests (booking_id, name, plus_one, created, email, status, updated, updated_by) VALUES (?, ?, ?, ?, ?, ?, ?, ?) RETURNING *")
+      .bind(b.id, name, plus || null, regNow, email, waitlisted ? "Waitlist" : null, regNow, "guest").first();
     notifyStaff(context, `Guest registration · ${name}${plus ? " +1" : ""} · ${b.event_name || "private event"}`, [
       `${name}${plus ? " and " + plus : ""} registered for ${b.event_name || "a private event"}, ${b.date}.`,
       `Email: ${email}`,

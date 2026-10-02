@@ -298,7 +298,9 @@ export async function ensureResidentTables(env) {
   }
   // Outside guests carry an email for updates, and a standing once a guest
   // cap fills: past it, registration keeps taking names onto a waitlist.
-  for (const col of ["email TEXT", "status TEXT"]) {
+  // updated/updated_by mirror the rsvps trail: every write says who and when
+  // ('guest' for self-registration, the staff email for desk work).
+  for (const col of ["email TEXT", "status TEXT", "updated TEXT", "updated_by TEXT"]) {
     try { await env.DB.prepare(`ALTER TABLE guests ADD COLUMN ${col}`).run(); } catch (e) {}
   }
   // Notes archive: nothing is hard-deleted any more. A note leaves the board

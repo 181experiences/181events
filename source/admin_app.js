@@ -1776,7 +1776,7 @@
       : !g.length ? '<div class="nodata" style="padding:12px">Nobody registered yet. Copy the link and the host sends it to the invitees.</div>'
       : g.map(r => `<div class="srow">
           <span class="slab">${esc(r.name)}${r.plus_one ? ` <span style="color:var(--stone)">+ ${esc(r.plus_one)}</span>` : ""}${r.status === "Waitlist" ? ' <span class="pill draft">Waitlist</span>' : ""}</span>
-          <span class="sgrow" style="font-size:12px;color:var(--stone)">${r.email ? esc(r.email) + " · " : ""}${esc((r.created || "").slice(0, 10))}${r.arrived ? ` · in at ${new Date(r.arrived).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })}` : ""}</span>
+          <span class="sgrow" style="font-size:12px;color:var(--stone)" title="${r.updated_by ? `Last change by ${esc(r.updated_by)}, ${esc((r.updated || r.created || "").slice(0, 10))}` : ""}">${r.email ? esc(r.email) + " · " : ""}${esc((r.created || "").slice(0, 10))}${r.updated_by ? ` · ${esc(r.updated_by === "guest" ? "self-registered" : r.updated_by.split("@")[0])}` : ""}${r.arrived ? ` · in at ${new Date(r.arrived).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })}` : ""}</span>
           <span class="eact">
             <button class="mini${r.arrived ? "" : " ghost"}" data-garrive="${r.id}|${b.id}">${r.arrived ? "Arrived ✓" : "Arrived"}</button>
             ${r.email ? `<button class="mini ghost" data-gmail="${r.id}|${b.id}" title="A ready-written email to the address they registered with">Email</button>` : ""}
