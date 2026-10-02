@@ -11,11 +11,10 @@
 import { EmailMessage } from "cloudflare:email";
 
 const FROM = "rsvps@181residents.com";
-// Both verified destinations get every note. The 181sf.com copy is held up
-// by the building's Microsoft filtering (tenant allowlist ask is with IT);
-// the gmail copy is the one Leo reads until that lands. Drop the gmail line
-// once IT allows the sender, if one copy is enough.
-const TO_LIST = ["leonardo@181sf.com", "181sf.leo@gmail.com", "lramirez@actionlife.com"];
+// Every verified destination listed here gets its own copy of every note.
+// leonardo@ is the work record; the gmail copy is the backstop that caught
+// the mail-filtering gap once already.
+const TO_LIST = ["leonardo@181sf.com", "181sf.leo@gmail.com"];
 
 export default {
   async fetch(request, env) {
