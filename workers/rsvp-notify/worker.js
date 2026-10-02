@@ -11,7 +11,11 @@
 import { EmailMessage } from "cloudflare:email";
 
 const FROM = "rsvps@181residents.com";
-const TO = "leonardo@181sf.com";
+// Both verified destinations get every note. The 181sf.com copy is held up
+// by the building's Microsoft filtering (tenant allowlist ask is with IT);
+// the gmail copy is the one Leo reads until that lands. Drop the gmail line
+// once IT allows the sender, if one copy is enough.
+const TO_LIST = ["leonardo@181sf.com", "181sf.leo@gmail.com"];
 
 export default {
   async fetch(request, env) {
@@ -22,25 +26,28 @@ export default {
       subject = String(d.subject || subject).replace(/[\r\n]+/g, " ").slice(0, 180);
       body = String(d.body || "");
     } catch (e) { return new Response("bad request", { status: 400 }); }
-    const mime = [
-      `From: 181 Fremont RSVPs <${FROM}>`,
-      `To: <${TO}>`,
-      `Subject: ${subject}`,
-      `Date: ${new Date().toUTCString()}`,
-      `Message-ID: <${crypto.randomUUID()}@181residents.com>`,
-      "MIME-Version: 1.0",
-      "Content-Type: text/plain; charset=utf-8",
-      "",
-      body,
-      "",
-      "-- ",
-      "181residents.com admin: https://181residents.com/admin",
-    ].join("\r\n");
-    try {
-      await env.SEND.send(new EmailMessage(FROM, TO, mime));
-      return new Response("sent");
-    } catch (e) {
-      return new Response("send failed: " + (e && e.message), { status: 500 });
+    let sent = 0, lastErr = null;
+    for (const to of TO_LIST) {
+      const mime = [
+        `From: 181 Fremont RSVPs <${FROM}>`,
+        `To: <${to}>`,
+        `Subject: ${subject}`,
+        `Date: ${new Date().toUTCString()}`,
+        `Message-ID: <${crypto.randomUUID()}@181residents.com>`,
+        "MIME-Version: 1.0",
+        "Content-Type: text/plain; charset=utf-8",
+        "",
+        body,
+        "",
+        "-- ",
+        "181residents.com admin: https://181residents.com/admin",
+      ].join("\r\n");
+      try {
+        await env.SEND.send(new EmailMessage(FROM, to, mime));
+        sent++;
+      } catch (e) { lastErr = e; }
     }
+    if (sent) return new Response(`sent to ${sent} of ${TO_LIST.length}`);
+    return new Response("send failed: " + (lastErr && lastErr.message), { status: 500 });
   },
 };
