@@ -1177,7 +1177,8 @@ class H(SimpleHTTPRequestHandler):
                        host=(b.get("host") or "").strip() or None,
                        details=(b.get("details") or "").strip()[:4000] or None,
                        reg_token="".join(secrets.choice("abcdefghjkmnpqrstuvwxyz23456789") for _ in range(20)),
-                       reg_open=0, guest_cap=cap, reg_slug=slug or None)
+                       reg_open=0, guest_cap=cap, reg_slug=slug or None,
+                       event_key=(b.get("event_key") or "").strip() or None)
             bookings.append(row); save_store("bookings", bookings)
             return self._json({"booking": dict(row, guest_parties=0, guest_heads=0, guest_arrived=0)}, 201)
         if p.path == "/api/guests":
@@ -1498,6 +1499,14 @@ class H(SimpleHTTPRequestHandler):
                             if r["event_key"] == old_key:
                                 r.update(event_key=new_key, event_date=e["Date"], event_title=e["Title"])
                         save_store("rsvps", rsvps)
+                        # A tied Spaces reservation follows the move, as the
+                        # functions runtime does, so its guest list stays true.
+                        bks = load_store("bookings", [])
+                        moved_bk = False
+                        for b in bks:
+                            if b.get("event_key") == old_key:
+                                b["event_key"] = new_key; b["date"] = e["Date"]; moved_bk = True
+                        if moved_bk: save_store("bookings", bks)
                     ch = field_changes(before, e)
                     if ch:
                         action = (f"Status: {before.get('Status') or 'Draft'} → {e.get('Status')}"
@@ -1596,7 +1605,7 @@ class H(SimpleHTTPRequestHandler):
                         b["start"] = v; b["start24"] = to24(v)
                     if "end" in body: b["end_time"] = (str(body["end"] or "")).strip()
                     if "reg_open" in body: b["reg_open"] = 1 if body["reg_open"] else 0
-                    for f in ("event_name", "host", "note", "details"):
+                    for f in ("event_name", "host", "note", "details", "event_key"):
                         if f in body: b[f] = (str(body[f] or "")).strip() or None
                     if "guest_cap" in body:
                         try: b["guest_cap"] = max(1, min(1000, int(body["guest_cap"]))) if body["guest_cap"] else None

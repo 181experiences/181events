@@ -703,6 +703,12 @@ HTML = f'''<!DOCTYPE html>
     <div class="field f-full"><label class="check"><input type="checkbox" id="f-teaser"> Coming soon: publish the date and title, hold the details</label>
       <div class="hint">For an event still taking shape. It appears on the calendar with a Coming soon note; RSVP and
       Add to My Calendar stay closed until this is unticked, so plans can still change without anyone rebooking.</div></div>
+    <div class="field f-full" id="ed-guests"><label class="check"><input type="checkbox" id="f-guests"> Also take outside guests</label>
+      <div class="hint" id="ed-guests-hint">For an occasion with two doors, like a reading or a reception: residents RSVP here as usual,
+      and saving also reserves the room under Spaces with its own registration page for invitees from outside the building.
+      The Dashboard reads both lists under this one event. Set the guest cap and copy the registration link from the
+      reservation&rsquo;s guest panel on Spaces. One date at a time; a series date is tied from its own save.</div>
+      <div class="hint" id="ed-guests-note" style="display:none"></div></div>
     <div class="field f-full"><label class="check"><input type="checkbox" id="f-announce"> Announce ahead of the calendar window</label>
       <div class="hint">Steps this one event out of the window: full page, RSVP, and Add to My Calendar wherever its
       date falls, while every other event keeps to the dials. For the holiday party and anything else worth announcing
@@ -841,6 +847,7 @@ HTML = f'''<!DOCTYPE html>
       <div class="field sp3"><label class="fl" for="bk-host">Hosted by</label><input class="inp" id="bk-host" autocapitalize="words" placeholder="The resident hosting"></div>
       <div class="field sp1"><label class="fl" for="bk-cap">Guest cap</label><input class="inp" id="bk-cap" type="number" inputmode="numeric" placeholder="None"></div>
       <div class="field sp3"><div class="flrow"><label class="fl" for="bk-slug">Custom address, optional</label>{info("Reads as 181residents.com/register/summit-reception. A written address can be guessed from the event name; add a number if that matters. Left blank, the link stays the unguessable token.")}</div><input class="inp" id="bk-slug" autocapitalize="none" placeholder="summit-reception"></div>
+      <div class="field sp3"><div class="flrow"><label class="fl" for="bk-link">Tied to calendar event, optional</label>{info("For an occasion with two doors: residents RSVP through the calendar event while outside guests register here. Tied, the Dashboard reads both lists under the one event, and if the event&rsquo;s date moves this reservation moves with it. Leave it as Not tied for a purely private reservation.")}</div><select class="inp" id="bk-link"><option value="">Not tied</option></select></div>
       <div class="field sp6"><label class="fl" for="bk-note">Note, staff only</label><textarea class="inp" id="bk-note" rows="2" placeholder="Who booked it and what for; never shown to residents"></textarea></div>
       <div class="field sp6"><div class="flrow"><label class="fl" for="bk-details">Details, shown on the registration page</label>{info("What invitees read under the facts: the evening&rsquo;s shape, a schedule one line per return, parking, whatever guests should know. A blank line starts a new paragraph. Leave it empty and the page keeps just the facts.")}</div><textarea class="inp" id="bk-details" rows="4" placeholder="The schedule, parking, and anything guests should know. A return is a new line; a blank line starts a paragraph."></textarea></div>
     </div>
@@ -1071,6 +1078,15 @@ HTML = f'''<!DOCTYPE html>
   names whenever the host wants the list settled.</p>
   <p>Editing the reservation, its room, date, or hours, never changes the registration link. Removing the reservation
   removes its guest list with it.</p>
+
+  <h2>One occasion, two doors</h2>
+  <p>Some evenings take residents and outside guests at once: residents RSVP through the calendar event, invitees
+  register through a reservation&rsquo;s page. Tie the two together and the Dashboard reads both lists under the one
+  event, residents on top and outside guests beneath, each with its own print.</p>
+  <p>Two ways to tie. From the event editor, tick <strong>Also take outside guests</strong> and saving also reserves
+  the room under Spaces, named and dated from the event, with registration closed until you open it. Or on the Spaces
+  card, pick the event under <strong>Tied to calendar event</strong>. Either way the counts stay honest: outside
+  guests never enter resident figures, and if the event&rsquo;s date moves, the tied reservation moves with it.</p>
 </div></section>
 
 <section class="screen" id="scr-inst-brand"><div class="wrap prose">

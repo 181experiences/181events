@@ -2,14 +2,14 @@ BEGIN:VCALENDAR
 VERSION:2.0
 PRODID:-//181 Fremont//Resident Experiences//EN
 BEGIN:VEVENT
-UID:181fremont-book-club-20261021@181residents.com
+UID:181fremont-book-club-20261118@181residents.com
 DTSTAMP:20261002T032719Z
 SEQUENCE:274
 LAST-MODIFIED:20261002T032719Z
-DTSTART:20261021T163000
-DTEND:20261021T180000
+DTSTART:20261118T163000
+DTEND:20261118T180000
 SUMMARY:Book Club
 LOCATION:181 Fremont - Level 39, Residents’ Club
-DESCRIPTION:Moved a week early this month. The Spooky Speakeasy has Level 39 on the 28th, and we return to the last Wednesday in November.
+DESCRIPTION:Moved a week early. The last Wednesday of November falls on Thanksgiving eve.
 END:VEVENT
 END:VCALENDAR

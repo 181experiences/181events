@@ -705,6 +705,12 @@
     <div class="field f-full"><label class="check"><input type="checkbox" id="f-teaser"> Coming soon: publish the date and title, hold the details</label>
       <div class="hint">For an event still taking shape. It appears on the calendar with a Coming soon note; RSVP and
       Add to My Calendar stay closed until this is unticked, so plans can still change without anyone rebooking.</div></div>
+    <div class="field f-full" id="ed-guests"><label class="check"><input type="checkbox" id="f-guests"> Also take outside guests</label>
+      <div class="hint" id="ed-guests-hint">For an occasion with two doors, like a reading or a reception: residents RSVP here as usual,
+      and saving also reserves the room under Spaces with its own registration page for invitees from outside the building.
+      The Dashboard reads both lists under this one event. Set the guest cap and copy the registration link from the
+      reservation&rsquo;s guest panel on Spaces. One date at a time; a series date is tied from its own save.</div>
+      <div class="hint" id="ed-guests-note" style="display:none"></div></div>
     <div class="field f-full"><label class="check"><input type="checkbox" id="f-announce"> Announce ahead of the calendar window</label>
       <div class="hint">Steps this one event out of the window: full page, RSVP, and Add to My Calendar wherever its
       date falls, while every other event keeps to the dials. For the holiday party and anything else worth announcing
@@ -843,6 +849,7 @@
       <div class="field sp3"><label class="fl" for="bk-host">Hosted by</label><input class="inp" id="bk-host" autocapitalize="words" placeholder="The resident hosting"></div>
       <div class="field sp1"><label class="fl" for="bk-cap">Guest cap</label><input class="inp" id="bk-cap" type="number" inputmode="numeric" placeholder="None"></div>
       <div class="field sp3"><div class="flrow"><label class="fl" for="bk-slug">Custom address, optional</label><span class="iwrap"><button type="button" class="ib" aria-label="What this does">i</button><span class="ipop">Reads as 181residents.com/register/summit-reception. A written address can be guessed from the event name; add a number if that matters. Left blank, the link stays the unguessable token.</span></span></div><input class="inp" id="bk-slug" autocapitalize="none" placeholder="summit-reception"></div>
+      <div class="field sp3"><div class="flrow"><label class="fl" for="bk-link">Tied to calendar event, optional</label><span class="iwrap"><button type="button" class="ib" aria-label="What this does">i</button><span class="ipop">For an occasion with two doors: residents RSVP through the calendar event while outside guests register here. Tied, the Dashboard reads both lists under the one event, and if the event&rsquo;s date moves this reservation moves with it. Leave it as Not tied for a purely private reservation.</span></span></div><select class="inp" id="bk-link"><option value="">Not tied</option></select></div>
       <div class="field sp6"><label class="fl" for="bk-note">Note, staff only</label><textarea class="inp" id="bk-note" rows="2" placeholder="Who booked it and what for; never shown to residents"></textarea></div>
       <div class="field sp6"><div class="flrow"><label class="fl" for="bk-details">Details, shown on the registration page</label><span class="iwrap"><button type="button" class="ib" aria-label="What this does">i</button><span class="ipop">What invitees read under the facts: the evening&rsquo;s shape, a schedule one line per return, parking, whatever guests should know. A blank line starts a new paragraph. Leave it empty and the page keeps just the facts.</span></span></div><textarea class="inp" id="bk-details" rows="4" placeholder="The schedule, parking, and anything guests should know. A return is a new line; a blank line starts a paragraph."></textarea></div>
     </div>
@@ -1073,6 +1080,15 @@
   names whenever the host wants the list settled.</p>
   <p>Editing the reservation, its room, date, or hours, never changes the registration link. Removing the reservation
   removes its guest list with it.</p>
+
+  <h2>One occasion, two doors</h2>
+  <p>Some evenings take residents and outside guests at once: residents RSVP through the calendar event, invitees
+  register through a reservation&rsquo;s page. Tie the two together and the Dashboard reads both lists under the one
+  event, residents on top and outside guests beneath, each with its own print.</p>
+  <p>Two ways to tie. From the event editor, tick <strong>Also take outside guests</strong> and saving also reserves
+  the room under Spaces, named and dated from the event, with registration closed until you open it. Or on the Spaces
+  card, pick the event under <strong>Tied to calendar event</strong>. Either way the counts stay honest: outside
+  guests never enter resident figures, and if the event&rsquo;s date moves, the tied reservation moves with it.</p>
 </div></section>
 
 <section class="screen" id="scr-inst-brand"><div class="wrap prose">
@@ -1613,6 +1629,26 @@
       : "";
   }
 
+  // The outside-guest door. The box offers to reserve the room under Spaces
+  // alongside this event; once a tied reservation exists, the box steps aside
+  // for a note saying where the guest list lives. One date at a time: the
+  // whole-series view hides it, and each date ties from its own save.
+  function syncGuestDoor() {
+    const box = $("#ed-guests"); if (!box) return;
+    const row = editing && editing.row;
+    const wholeSeries = !!(editing && editing.group && editing.group.series)
+      && $("#ed-occ").style.display !== "none" && $("#f-occ").value === "__all";
+    $("#f-guests").checked = false;
+    if (wholeSeries) { box.style.display = "none"; return; }
+    box.style.display = "";
+    const tied = row ? bookings.find(b => b.event_key === stem(row)) : null;
+    $("#f-guests").closest("label").style.display = tied ? "none" : "";
+    $("#ed-guests-hint").style.display = tied ? "none" : "";
+    const n = $("#ed-guests-note");
+    n.style.display = tied ? "" : "none";
+    if (tied) n.innerHTML = `<strong>Outside guests ride with this event.</strong> Their reservation and guest list live under Spaces as ${esc(tied.event_name || tied.space)}, and the Dashboard reads both lists under this one entry.`;
+  }
+
   function openEditor(key, rowId) {
     const g = key ? groups().find(x => x.key === key) : null;
     const row = g ? (rowId ? g.rows.find(r => r.id === rowId) : g.head) : null;
@@ -1651,6 +1687,7 @@
     if (!row) { rp = { mode: "none", days: new Set(), ord: "Last", wd: 0, end: "cal", times: 6, until: "" }; rpRefresh(); }
     applyFields(e);
     refreshEdActions();
+    syncGuestDoor();
     loadHistory(row);
     renderEditorKit();
     go("editor");
@@ -1730,6 +1767,12 @@
     const f = readForm();
     f.Status = status;
     const err = validate(f); if (err) { toast(err, "warn"); return; }
+    // The outside-guest box is an action, not a field: read it now, act once
+    // the event row exists, and only for a single date.
+    const guestBox = $("#f-guests");
+    const wantGuests = !!(guestBox && guestBox.checked && $("#ed-guests").style.display !== "none"
+      && guestBox.closest("label").style.display !== "none");
+    let manyDates = false;
     let told = false;
     const wasLive = editing.row && editing.row.Status === "Live";
     const touchesSite = wasLive || f.Status === "Live";
@@ -1738,6 +1781,7 @@
       if (editing.row) {
         const applyAll = editing.group && editing.group.series && $("#f-scope").checked;
         const targets = applyAll ? editing.group.upcoming : [editing.row];
+        if (targets.length > 1) manyDates = true;
         const priors = targets.map(r => ({ Date: r.Date, Start: r.Start, End: r.End, Location: r.Location, Title: r.Title, Slug: r.Slug, Status: r.Status }));
         let done = 0, failed = 0, firstErr = "";
         for (const r of targets) {
@@ -1761,6 +1805,7 @@
         // series line so the calendar reads it as one thing.
         const dates = rangeDates(f.Date, $("#f-date2").value);
         if (!f.Series) f.Series = rangeLabel(f.Date, $("#f-date2").value);
+        manyDates = true;
         let made = 0;
         for (const d of dates) {
           const created = await api("/api/events", { method: "POST", body: JSON.stringify({ ...f, Date: d }) });
@@ -1772,6 +1817,7 @@
         const dates = ruleDates(f.Date);
         if (!dates.length) { toast("The repeat rule produces no dates. Check the start date.", "warn"); return; }
         if (dates.length > 12 && !confirm(`This makes ${dates.length} entries, ${fmt(dates[0])} through ${fmt(dates[dates.length - 1])}, one per date. Create them all?`)) return;
+        manyDates = true;
         let made = 0;
         for (const d of dates) {
           const created = await api("/api/events", { method: "POST", body: JSON.stringify({ ...f, Date: d }) });
@@ -1783,6 +1829,10 @@
         const created = await api("/api/events", { method: "POST", body: JSON.stringify(f) });
         events.push(created); editing.row = created;
       }
+      if (wantGuests) {
+        if (manyDates) { toast("Outside guests tie to one date at a time. Open the date itself and tick the box there.", "warn"); told = true; }
+        else if (await ensureTiedBooking()) told = true;
+      }
       renderAll();
       if (touchesSite && status.publish) {
         if (!told) toast("Saved. Publishing the calendar, live in a couple of minutes.");
@@ -1793,6 +1843,31 @@
       go("events");
     } catch (e) { toast(e.message, "warn"); }
     finally { btns.forEach(b => b.disabled = false); refreshEdActions(); }
+  }
+
+  // The outside-guest door, made real: one Spaces reservation tied to the
+  // event just saved, carrying its name, date, hours, and host. Registration
+  // starts closed as every reservation does; the cap and the link live in its
+  // guest panel on Spaces. Returns true when a reservation was made.
+  async function ensureTiedBooking() {
+    const row = editing && editing.row; if (!row) return false;
+    const key = stem(row);
+    if (bookings.some(b => b.event_key === key)) return false;
+    try {
+      const d = await api("/api/bookings", { method: "POST", body: JSON.stringify({
+        space: row.Location || "Level 39, Residents’ Club", date: row.Date,
+        start: row.Start || "", end: row.End || "",
+        event_name: row.Title, host: row.Host || "",
+        note: "The outside-guest door for this calendar event, made from the event editor.",
+        event_key: key,
+      }) });
+      bookings.push(d.booking);
+      toast("Saved, and the room is reserved under Spaces for outside guests. Open its guest panel there to set the cap, open registration, and copy the invitation link.");
+      return true;
+    } catch (e) {
+      toast("The event saved, but the outside-guest reservation could not be made: " + e.message, "warn");
+      return true;
+    }
   }
 
   // A published event's edits live in a working copy: residents keep seeing
@@ -2380,7 +2455,14 @@
     const box = $("#rsvplist"); if (!box) return;
     const { upcoming: sums, past } = rsvpSummaries();
     const t2 = today();
-    const hosted = bookings.filter(b => b.event_name && b.date >= t2);
+    // A booking tied to a calendar event folds into that event's row: one
+    // occasion, one entry, residents on top and outside guests beneath. The
+    // standalone Resident hosted row remains for untied reservations, and for
+    // a tied one whose event has no RSVPs yet to merge into.
+    const tiedByKey = new Map();
+    for (const b of bookings) if (b.event_key) tiedByKey.set(b.event_key, b);
+    const sumKeys = new Set(sums.map(s => s.key));
+    const hosted = bookings.filter(b => b.event_name && b.date >= t2 && !(b.event_key && sumKeys.has(b.event_key)));
     if (!sums.length && !past.length && !hosted.length) {
       box.innerHTML = '<div class="nodata">Nothing yet. Figures begin with the first RSVP made on the site.</div>';
       return;
@@ -2395,12 +2477,14 @@
       const e = ev(s.key);
       const cap = e && e.Capacity ? ` of ${e.Capacity}` : "";
       const what = s.type === "guest" ? `${s.heads} outside guests` : `${s.heads}${cap} ${s.type === "paid" ? "seats" : "going"}${s.roleHeads ? ` &middot; incl. ${s.roleHeads} staff` : ""}`;
+      const bk = tiedByKey.get(s.key);
+      const guestTail = bk ? ` &middot; ${bk.guest_heads || 0} outside guest${(bk.guest_heads || 0) === 1 ? "" : "s"}` : "";
       const wait = s.waitHeads ? ` &middot; ${s.waitHeads} waitlisted` : "";
       const units = new Set(s.rows.map(r => r.unit).filter(Boolean));
       const dupUnit = units.size < s.rows.filter(r => r.unit).length;
       return `<div class="srow" style="cursor:pointer" data-rsvpkey="${esc(s.key)}"><span class="rchev${openRsvpDetails.has(s.key) ? " open" : ""}">&rsaquo;</span><span class="slab">${esc(fmt(s.date))}</span>
         <span class="sgrow" style="font-size:15px;color:var(--ink)">${esc(s.title)}${dupUnit ? ' <span class="flagmany" title="One unit holds more than one RSVP for this event">unit twice</span>' : ""}</span>
-        <span class="sval">${what}${wait}</span></div>
+        <span class="sval">${what}${wait}${guestTail}</span></div>
         <div class="card" data-rsvpdetail="${esc(s.key)}" style="${openRsvpDetails.has(s.key) ? "" : "display:none;"}margin:4px 0 10px">
         <div style="display:flex;justify-content:flex-end;margin-bottom:6px"><button class="mini ghost" data-rsvpprint="${esc(s.key)}" title="The check-in sheet: names, parties, tick boxes">Print check-in list</button></div>
         ${s.rows.map(r => `<div class="srow"><span class="slab">${esc(r.unit || "Role")} &middot; ${esc(r.name)}</span>
@@ -2412,6 +2496,7 @@
           <button class="mini ghost" data-redit="${r.id}" title="Change the party, the names, or move it to another event">Edit</button>
           <button class="mini ghost" data-rcancel="${r.id}" title="Take them off the list; you choose whether a note goes">Cancel</button>
           </span></div>`).join("")}
+        ${bk ? `<div style="font-size:13px;color:var(--ink-soft);margin-top:16px"><strong>Outside guests</strong> &middot; ${esc(bk.space)} &middot; registered by invitation, kept apart from resident figures</div>${guestSection(bk)}` : ""}
         </div>`;
     })(it.s)).join("");
     // Passed events keep their lists, folded at the foot: who held seats is the
@@ -3055,6 +3140,23 @@
     renderBookings();
   }
 
+  // The tie to a calendar event: one occasion, two doors. The picker offers
+  // the upcoming dates; a tie the picker no longer lists (a passed date, an
+  // archived event) stays selectable so an edit never silently drops it.
+  function fillBkLink(selected) {
+    const sel = $("#bk-link"); if (!sel) return;
+    const t = today();
+    const opts = events
+      .filter(e => e.Date >= t && (e.Status === "Live" || (e.Status || "Draft") === "Draft"))
+      .sort((a, b2) => a.Date.localeCompare(b2.Date))
+      .map(e => ({ v: stem(e), label: `${fmt(e.Date)} · ${e.Title}${(e.Status || "Draft") === "Draft" ? " · draft" : ""}` }));
+    if (selected && !opts.some(o => o.v === selected))
+      opts.unshift({ v: selected, label: `${selected} · (current tie)` });
+    sel.innerHTML = '<option value="">Not tied</option>'
+      + opts.map(o => `<option value="${esc(o.v)}"${o.v === selected ? " selected" : ""}>${esc(o.label)}</option>`).join("");
+    sel.value = selected || "";
+  }
+
   // The reservation card doubles as the editor, same as the residents card:
   // Edit fills it, the buttons swap, and the registration link never changes.
   let editingBkId = null;
@@ -3068,6 +3170,7 @@
     $("#bk-host").value = b.host || ""; $("#bk-cap").value = b.guest_cap || "";
     $("#bk-slug").value = b.reg_slug || "";
     $("#bk-details").value = b.details || "";
+    fillBkLink(b.event_key || "");
     $("#bk-formhead").style.display = "";
     $("#bk-formhead").textContent = `Editing ${b.event_name || b.space} · ${fmt(b.date)}`;
     document.querySelector("[data-addbooking]").style.display = "none";
@@ -3080,6 +3183,7 @@
     editingBkId = null;
     ["#bk-space", "#bk-date", "#bk-start", "#bk-end", "#bk-note", "#bk-event", "#bk-host", "#bk-cap", "#bk-slug", "#bk-details"]
       .forEach(s => { $(s).value = ""; });
+    if ($("#bk-link")) $("#bk-link").value = "";
     $("#bk-formhead").style.display = "none";
     // The form folds away when it is not in hand; Reserve a Space brings it back.
     $("#bk-card").style.display = "none";
@@ -3098,6 +3202,7 @@
         note: $("#bk-note").value.trim(), event_name: $("#bk-event").value.trim(),
         host: $("#bk-host").value.trim(), guest_cap: $("#bk-cap").value ? Number($("#bk-cap").value) : null,
         reg_slug: $("#bk-slug").value.trim(), details: $("#bk-details").value.trim(),
+        event_key: $("#bk-link").value,
       }) });
       Object.assign(b, d.booking);
       renderBookings();
@@ -3137,6 +3242,7 @@
       event_name: $("#bk-event").value.trim(), host: $("#bk-host").value.trim(),
       guest_cap: $("#bk-cap").value ? Number($("#bk-cap").value) : null,
       reg_slug: $("#bk-slug").value.trim(), details: $("#bk-details").value.trim(),
+      event_key: $("#bk-link").value,
     };
     if (!body.space || !body.date) { toast("A location and a date are needed.", "warn"); return; }
     try {
@@ -3495,6 +3601,7 @@
       if (r.dataset.cancelbk !== undefined) { exitBkEdit(); return; }
       if (r.dataset.bkopen !== undefined) {
         exitBkEdit();
+        fillBkLink("");
         $("#bk-card").style.display = "";
         $("#bk-open").style.display = "none";
         $("#bk-space").focus();
@@ -3765,9 +3872,14 @@
           openRsvpDetails.add(k);
           // A resident-hosted row fetches its guest list on open, same as the
           // Spaces panel; loadGuests re-renders both surfaces when it lands.
+          // A merged row (an event with a tied reservation) fetches it too, so
+          // its outside-guest half is as fresh as its resident half.
           if (k.startsWith("bk:")) {
             const b = bookings.find(x => String(x.id) === k.slice(3));
             if (b && b.event_name) loadGuests(b.id);
+          } else {
+            const tb = bookings.find(x => x.event_key === k);
+            if (tb) loadGuests(tb.id);
           }
         }
         renderRsvps();

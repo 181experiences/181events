@@ -44,6 +44,12 @@ export async function onRequestPatch({ request, params, env }) {
     await env.DB.prepare(
       "UPDATE rsvps SET event_key=?, event_date=?, event_title=? WHERE event_key=?")
       .bind(newKey, row.date, row.title, oldKey).run();
+    // A Spaces reservation tied to this event follows the same move, so its
+    // outside-guest list never drifts away from the date it serves.
+    try {
+      await env.DB.prepare("UPDATE bookings SET event_key=?, date=? WHERE event_key=?")
+        .bind(newKey, row.date, oldKey).run();
+    } catch (e) {}
   }
   const changes = fieldDiff(before, row);
   if (Object.keys(changes).length) {
