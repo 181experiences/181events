@@ -1570,12 +1570,12 @@
       body{font-family:'Hanken Grotesk',-apple-system,sans-serif;color:#16161a}
       .sheet{position:relative;width:8.5in;height:11in;overflow:hidden;page-break-after:always}
       .sheet:last-child{page-break-after:auto}
-      .pc{position:absolute;width:3.5in;height:2in;box-sizing:border-box;padding:0.16in 0.24in;overflow:hidden}
-      .pc-h{font-size:12px;letter-spacing:.18em;text-transform:uppercase;white-space:nowrap}
-      .pc-h span{display:block;font-size:7.5px;letter-spacing:.24em;color:#7a7266;margin-top:2px}
-      .pc-n{font-size:12.5px;font-weight:600;margin-top:8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-      .pc-c{font-family:ui-monospace,Menlo,monospace;font-size:21px;letter-spacing:.08em;margin:5px 0 6px;color:#c41f26;white-space:nowrap}
-      .pc-s{font-size:8.5px;color:#55555f;line-height:1.45}
+      .pc{position:absolute;width:3.5in;height:2in;box-sizing:border-box;padding:0.13in 0.22in;overflow:hidden}
+      .pc-h{font-size:14px;letter-spacing:.16em;text-transform:uppercase;white-space:nowrap}
+      .pc-h span{display:block;font-size:9px;letter-spacing:.22em;color:#7a7266;margin-top:2px}
+      .pc-n{font-size:17.5px;font-weight:600;margin-top:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+      .pc-c{font-family:ui-monospace,Menlo,monospace;font-size:33px;letter-spacing:.05em;margin:3px 0 4px;color:#c41f26;white-space:nowrap}
+      .pc-s{font-size:11px;color:#55555f;line-height:1.38}
       @media screen{body{background:#eee}.sheet{margin:10px auto;background:#fff;box-shadow:0 1px 6px rgba(0,0,0,.2)}.pc{outline:1px dashed #b9afa1}}
     </style></head><body>${sheets.join("")}
     <script>window.print()<\/script></body></html>`);
