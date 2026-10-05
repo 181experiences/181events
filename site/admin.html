@@ -2781,26 +2781,44 @@
 
   // With no argument, every active card at once; with one person, just their
   // card, for the lobby printer when the original walked off the desk.
+  // Code cards print onto Avery 5371 stock (letter sheet, ten 3.5 x 2 inch
+  // business cards, two columns by five rows: columns at 0.75in and 4.25in,
+  // rows every 2in from 0.5in). Every cell is placed at Avery's own position
+  // on a zero-margin page, so the print lands on the die-cut cards; no drawn
+  // borders, since the cut edge is the border. Print at 100% ("Actual size",
+  // margins None) or the geometry shifts. On screen the cells show a dashed
+  // outline for a sanity look that never prints.
   function printCards(only) {
     const list = only ? [only] : residents.filter(p => p.status === "Active" && !p.expired);
     if (!list.length) { toast("Nobody to print for yet.", "warn"); return; }
-    const card = p => `<div class="pc"><div class="pc-h">181 Fremont<span>Resident Events</span></div>
-      <div class="pc-n">${esc(p.name)}${p.unit ? ` &middot; Unit ${esc(p.unit)}` : ""}</div>
-      <div class="pc-c">${esc(p.code)}</div>
-      <div class="pc-s">181residents.com &middot; tap RSVP on any event and enter this code once.<br>
-      It stays signed in for a month on your device. Lost it? The front desk has a fresh one.</div></div>`;
+    const card = (p, i) => {
+      const col = i % 2, row = Math.floor(i / 2) % 5;
+      return `<div class="pc" style="left:${col ? "4.25" : "0.75"}in;top:${(0.5 + row * 2).toFixed(1)}in">
+        <div class="pc-h">181 Fremont<span>Resident Events</span></div>
+        <div class="pc-n">${esc(p.name)}${p.unit ? ` &middot; Unit ${esc(p.unit)}` : ""}</div>
+        <div class="pc-c">${esc(p.code)}</div>
+        <div class="pc-s">181residents.com &middot; enter this code once at RSVP.<br>Lost? The front desk has a fresh one.</div>
+      </div>`;
+    };
+    const sheets = [];
+    for (let s = 0; s < list.length; s += 10) {
+      sheets.push(`<div class="sheet">${list.slice(s, s + 10).map((p, i) => card(p, i)).join("")}</div>`);
+    }
     const w = window.open("", "_blank");
-    w.document.write(`<!DOCTYPE html><html><head><title>181 Fremont resident code cards</title><style>
-      body{font-family:'Hanken Grotesk',-apple-system,sans-serif;margin:24px;color:#16161a}
-      .grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px}
-      .pc{border:1px solid #b9afa1;border-radius:6px;padding:20px 22px;page-break-inside:avoid}
-      .pc-h{font-size:15px;letter-spacing:.18em;text-transform:uppercase}
-      .pc-h span{display:block;font-size:9px;letter-spacing:.24em;color:#7a7266;margin-top:3px}
-      .pc-n{font-size:16px;font-weight:600;margin-top:14px}
-      .pc-c{font-family:ui-monospace,Menlo,monospace;font-size:26px;letter-spacing:.08em;margin:10px 0;color:#c41f26}
-      .pc-s{font-size:11px;color:#55555f;line-height:1.5}
-      @media print{body{margin:8mm}}
-    </style></head><body><div class="grid">${list.map(card).join("")}</div>
+    w.document.write(`<!DOCTYPE html><html><head><title>181 Fremont resident code cards &middot; Avery 5371</title><style>
+      @page{size:letter;margin:0}
+      html,body{margin:0;padding:0}
+      body{font-family:'Hanken Grotesk',-apple-system,sans-serif;color:#16161a}
+      .sheet{position:relative;width:8.5in;height:11in;overflow:hidden;page-break-after:always}
+      .sheet:last-child{page-break-after:auto}
+      .pc{position:absolute;width:3.5in;height:2in;box-sizing:border-box;padding:0.16in 0.24in;overflow:hidden}
+      .pc-h{font-size:12px;letter-spacing:.18em;text-transform:uppercase;white-space:nowrap}
+      .pc-h span{display:block;font-size:7.5px;letter-spacing:.24em;color:#7a7266;margin-top:2px}
+      .pc-n{font-size:12.5px;font-weight:600;margin-top:8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+      .pc-c{font-family:ui-monospace,Menlo,monospace;font-size:21px;letter-spacing:.08em;margin:5px 0 6px;color:#c41f26;white-space:nowrap}
+      .pc-s{font-size:8.5px;color:#55555f;line-height:1.45}
+      @media screen{body{background:#eee}.sheet{margin:10px auto;background:#fff;box-shadow:0 1px 6px rgba(0,0,0,.2)}.pc{outline:1px dashed #b9afa1}}
+    </style></head><body>${sheets.join("")}
     <script>window.print()<\/script></body></html>`);
     w.document.close();
   }
