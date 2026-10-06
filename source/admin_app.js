@@ -522,9 +522,13 @@
   // Which field changes ripple across a series when "apply to every upcoming occurrence" is ticked.
   const SERIES_FIELDS = ["Title", "Start", "End", "Start24", "Location", "Host", "Category", "RSVP", "Capacity", "Price", "Series", "Cutoff", "Description", "Counted", "Image", "Status", "Teaser", "Closed", "Announce", "Party", "Partner", "Address"];
 
-  async function save(status) {
+  // The parameter is named newStatus with intent: a `status` parameter once
+  // shadowed the module's /api/status capability object, so the publish check
+  // below read a property off a string and never fired — every live edit
+  // silently waited for the Publish calendar button or the next cron build.
+  async function save(newStatus) {
     const f = readForm();
-    f.Status = status;
+    f.Status = newStatus;
     const err = validate(f); if (err) { toast(err, "warn"); return; }
     // The outside-guest box is an action, not a field: read it now, act once
     // the event row exists, and only for a single date.
