@@ -472,6 +472,9 @@ HTML = f'''<!DOCTYPE html>
   .edwhen{{font-size:15px;color:var(--ink);flex:0 0 220px}}
   .fmtbar{{display:flex;gap:6px;margin-bottom:8px}}
   .fmtbar .mini{{min-width:44px;justify-content:center;background:var(--paper-2)}}
+  .desced{{min-height:150px;line-height:1.55;white-space:pre-wrap;overflow-y:auto;cursor:text}}
+  .desced:empty::before{{content:attr(data-ph);color:var(--stone);pointer-events:none}}
+  .desced strong{{font-weight:700}} .desced em{{font-style:italic}} .desced u{{text-decoration:underline}}
   .chart{{width:100%;height:auto;display:block}}
   .chart .bar{{fill:#cfc6b8}} .chart .bar.hot{{fill:var(--ink)}}
   .chart .tick{{font-size:11px;fill:var(--stone);font-family:var(--fb)}}
@@ -691,14 +694,14 @@ HTML = f'''<!DOCTYPE html>
     <div class="field"><label class="fl" for="f-price">Price per person</label><input class="inp" id="f-price" placeholder="$75"></div>
     <div class="field"><div class="flrow"><label class="fl" for="f-cutoff">RSVP closes</label>{info("End of that day, Pacific. From the next morning the button reads Join the Waitlist and requests come to you for a yes or a no; Confirm seats is the yes. Blank keeps RSVPs open. Workshops close the Monday of the event week, so materials are ordered against a firm count.")}</div><input class="inp" type="date" id="f-cutoff">
       <div class="flrow" style="margin:10px 0 0"><label class="check"><input type="checkbox" id="f-closed"> Close RSVPs now</label>{info("The by-hand switch, for a sudden max or a change of plans: the button turns to Join the Waitlist the moment this publishes. Capacity and the close date already do this on their own schedule; untick to reopen.")}</div></div>
-    <div class="field f-full"><label class="fl" for="f-desc">Description</label>
+    <div class="field f-full"><div class="flrow"><label class="fl" for="f-desc">Description</label>{info("The first paragraph is the one that travels: residents who tap Add to My Calendar carry paragraph one into their phone&rsquo;s own calendar, and nothing after it. Lead with the line you want them to keep; menus, schedules, and the rest read beautifully from paragraph two on.")}</div>
       <div class="fmtbar">
         <button type="button" class="mini" data-fmt="strong" title="Bold the selected text"><strong>B</strong></button>
         <button type="button" class="mini" data-fmt="em" title="Italicise the selected text"><em>I</em></button>
         <button type="button" class="mini" data-fmt="u" title="Underline the selected text"><u>U</u></button>
       </div>
-      <textarea class="inp" id="f-desc" rows="7" placeholder="Write it as if the reader knows nothing about the event. It shows exactly as typed: a return starts a new line, a blank line starts a new paragraph."></textarea>
-      <div class="hint">Select some text, then B, I, or U. Titles of books and films take italics. Line breaks show exactly as typed: a return is a new line (menus read one item per line), a blank line is a new paragraph. Sizes are set by the calendar itself.</div></div>
+      <div class="inp desced" id="f-desc" contenteditable="true" data-ph="Write it as if the reader knows nothing about the event. It shows exactly as typed: a return starts a new line, a blank line starts a new paragraph."></div>
+      <div class="hint">Select some text, then B, I, or U; it shows here exactly as residents will see it. Titles of books and films take italics. A return is a new line (menus read one item per line), a blank line is a new paragraph. Sizes are set by the calendar itself.</div></div>
     <div class="field f-full"><div class="flrow"><label class="check"><input type="checkbox" id="f-marquee"> Marquee: feature this event on the calendar</label>{info("The featured event: its row on the calendar&rsquo;s list view wears a quiet red highlight so it stands out among the rest. One at a time reads best. The home screen&rsquo;s Next Event tile picks itself and is not affected. The bronze offsite treatment is different: it comes from the Partner email RSVP type, never from this box or the category, and on a partner event the bronze stays.")}</div></div>
     <div class="field f-full"><label class="check"><input type="checkbox" id="f-teaser"> Coming soon: publish the date and title, hold the details</label>
       <div class="hint">For an event still taking shape. It appears on the calendar with a Coming soon note; RSVP and

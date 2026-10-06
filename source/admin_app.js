@@ -325,11 +325,40 @@
 
   // The form's field inputs, set from one place so the editor and the change
   // history's "Load this version" fill them identically.
+  // The description box edits rich: what the builder sees is what residents
+  // see, no tags on screen. The STORED format is unchanged, the same plain
+  // text with <strong>/<em>/<u> and meaningful newlines the site has always
+  // rendered — descSet lays that string into the editable box, and descGet
+  // walks the box back out to exactly that shape (b->strong, i->em, blocks
+  // and <br> back to newlines, anything else stripped to its text).
+  function descSet(v) {
+    let s = String(v == null ? "" : v).replace(/\r/g, "");
+    // Everything is text except the three tags the fmtbar has ever written.
+    s = s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    s = s.replace(/&lt;(\/?)(strong|em|u)&gt;/gi, "<$1$2>");
+    $("#f-desc").innerHTML = s.split("\n").join("<br>");
+  }
+  function descGet() {
+    const walk = n => {
+      if (n.nodeType === 3) return n.nodeValue.replace(/ /g, " ");
+      if (n.nodeType !== 1) return "";
+      if (n.tagName === "BR") return "\n";
+      const inner = [...n.childNodes].map(walk).join("");
+      if (n.tagName === "STRONG" || n.tagName === "B") return inner.trim() ? `<strong>${inner}</strong>` : inner;
+      if (n.tagName === "EM" || n.tagName === "I") return inner.trim() ? `<em>${inner}</em>` : inner;
+      if (n.tagName === "U") return inner.trim() ? `<u>${inner}</u>` : inner;
+      if (n.tagName === "DIV" || n.tagName === "P") return "\n" + (inner === "\n" ? "" : inner);
+      return inner;
+    };
+    return [...$("#f-desc").childNodes].map(walk).join("")
+      .replace(/^\n/, "").replace(/[ \t]+\n/g, "\n").trimEnd();
+  }
+
   function applyFields(e) {
     const set = (id, v) => { $(id).value = v == null ? "" : v; };
     set("#f-title", e.Title); set("#f-date", e.Date); set("#f-start", e.Start); set("#f-end", e.End);
     set("#f-loc", e.Location); set("#f-host", e.Host); set("#f-series", e.Series); set("#f-cap", e.Capacity);
-    set("#f-price", e.Price); set("#f-cutoff", cutoffIso(e.Cutoff, e.Date)); set("#f-desc", e.Description); set("#f-slug", e.Slug || "");
+    set("#f-price", e.Price); set("#f-cutoff", cutoffIso(e.Cutoff, e.Date)); descSet(e.Description); set("#f-slug", e.Slug || "");
     $("#f-marquee").checked = e.Marquee === true || e.Marquee === "True";
     $("#f-teaser").checked = e.Teaser === true || e.Teaser === "True";
     $("#f-closed").checked = e.Closed === true || e.Closed === "True";
@@ -492,7 +521,7 @@
       Start24: to24(tidyTime($("#f-start").value)), Location: $("#f-loc").value.trim(), Host: $("#f-host").value.trim() || "Resident Experiences",
       Category: pick("cat", CATS), RSVP: pick("rt", RSVPS),
       Capacity: $("#f-cap").value ? Number($("#f-cap").value) : null, Price: $("#f-price").value.trim(),
-      Series: $("#f-series").value.trim(), Cutoff: $("#f-cutoff").value.trim(), Description: $("#f-desc").value.trim(),
+      Series: $("#f-series").value.trim(), Cutoff: $("#f-cutoff").value.trim(), Description: descGet().trim(),
       Marquee: $("#f-marquee").checked, Teaser: $("#f-teaser").checked, Closed: $("#f-closed").checked,
       Announce: $("#f-announce").checked,
       Counted: $("#co-0").checked, Moved: editing.row ? !!editing.row.Moved : false,
@@ -2719,9 +2748,10 @@
       return;
     }
     if (b.dataset.fmt) {
-      const ta = $("#f-desc"), t = b.dataset.fmt, a = ta.selectionStart, z = ta.selectionEnd;
-      ta.value = ta.value.slice(0, a) + `<${t}>` + ta.value.slice(a, z) + `</${t}>` + ta.value.slice(z);
-      ta.focus(); ta.setSelectionRange(a + t.length + 2, z + t.length + 2);
+      // The box is contenteditable: formatting applies live to the selection,
+      // shown as residents will see it. descGet maps b/i back to strong/em.
+      $("#f-desc").focus();
+      document.execCommand({ strong: "bold", em: "italic", u: "underline" }[b.dataset.fmt]);
       return;
     }
     if (b.dataset.edit) openEditor(b.dataset.edit);
@@ -2790,6 +2820,16 @@
     const head = ev.target.closest("[data-chev]");
     if (!head || ev.target.closest("button,a,.mini")) return;
     head.closest(".acard").classList.toggle("open");
+  });
+
+  // Paste into the description arrives as plain text, so a paragraph from
+  // Word or an email never smuggles its fonts and markup into the record;
+  // bold and italics are applied here, with the fmtbar.
+  const descBox = $("#f-desc");
+  if (descBox) descBox.addEventListener("paste", ev => {
+    ev.preventDefault();
+    const t = (ev.clipboardData || window.clipboardData).getData("text/plain");
+    if (t) document.execCommand("insertText", false, t);
   });
 
   // Sign out must clear BOTH Access sessions: this site's cookie, and the one
