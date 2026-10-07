@@ -6,3 +6,4 @@ source/assets_live.json
 source/dev_*.json
 source/dev_assets/
 .DS_Store
+source/pages_live.json
