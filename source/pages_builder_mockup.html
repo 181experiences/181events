@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MOCKUP · Pages in the 181 admin</title>
+<style>
+  :root{
+    --ink:#16161a; --ink-soft:#55555f; --paper:#f7f4ef; --paper-2:#fffdfa;
+    --line:#ddd6cb; --red:#c41f26; --stone:#7a7266; --radius:4px;
+    --fb:'Hanken Grotesk',-apple-system,'Segoe UI',sans-serif;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--fb);font-size:14px;line-height:1.5}
+  .mocknote{background:#1b3a6b;color:#fff;text-align:center;font-size:12px;letter-spacing:.14em;
+    text-transform:uppercase;padding:7px}
+  .topbar{background:var(--ink);color:#fff;padding:14px 26px;display:flex;align-items:baseline;gap:18px}
+  .topbar .brand{font-family:Georgia,serif;letter-spacing:.14em;font-size:16px}
+  .topbar .sub{font-size:10px;letter-spacing:.22em;color:#b9afa1;text-transform:uppercase}
+  .navbar{background:var(--ink);padding:0 26px 12px;display:flex;gap:22px;font-size:12.5px;
+    letter-spacing:.1em;text-transform:uppercase}
+  .navbar span{color:#b9afa1;padding-bottom:4px;cursor:default}
+  .navbar .on{color:#fff;border-bottom:2px solid var(--red)}
+  .wrap{max-width:900px;margin:0 auto;padding:30px 26px 80px}
+  h1{font-family:Georgia,serif;font-weight:400;font-size:28px;margin:0 0 4px}
+  .psub{color:var(--ink-soft);margin:0 0 22px;max-width:46em}
+  .btn{display:inline-block;background:var(--red);color:#fff;border:none;border-radius:var(--radius);
+    padding:10px 18px;font-family:var(--fb);font-size:13.5px;font-weight:600;cursor:pointer}
+  .mini{display:inline-block;background:var(--ink);color:#fff;border:none;border-radius:var(--radius);
+    padding:6px 12px;font-size:12px;font-weight:600;cursor:pointer}
+  .mini.ghost{background:transparent;color:var(--ink);border:1px solid var(--line)}
+  .mini.danger{background:transparent;color:var(--red);border:1px solid var(--red)}
+  .pill{display:inline-block;font-size:10.5px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;
+    border-radius:20px;padding:3px 10px}
+  .pill.live{background:#e7f0e4;color:#2e6b2e}
+  .pill.draft{background:#efe9dd;color:#7a6a3a;border:1px dashed #c3b48f}
+  .pill.arch{background:#e8e4de;color:var(--stone)}
+  .screen{display:none}
+  .screen.on{display:block}
+  .switch{margin:0 0 26px;display:flex;gap:10px}
+  .switch button{background:var(--paper-2);border:1px solid var(--line);border-radius:var(--radius);
+    padding:8px 16px;font-family:var(--fb);font-size:13px;cursor:pointer}
+  .switch button.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+
+  /* ---------------- list screen ---------------- */
+  .prow{background:var(--paper-2);border:1px solid var(--line);border-radius:var(--radius);
+    padding:14px 18px;margin-bottom:10px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+  .prow .t{font-family:Georgia,serif;font-size:17px}
+  .prow .addr{font-family:ui-monospace,Menlo,monospace;font-size:12.5px;color:var(--red)}
+  .prow .meta{font-size:12px;color:var(--stone)}
+  .prow .grow{flex:1;min-width:200px}
+  .prow .acts{display:flex;gap:8px;flex-wrap:wrap}
+  .archhead{margin:30px 0 10px;font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--stone)}
+  .hint{font-size:12.5px;color:var(--stone)}
+
+  /* ---------------- builder screen ---------------- */
+  .bgrid{display:grid;grid-template-columns:1fr 330px;gap:26px;align-items:start}
+  @media(max-width:860px){.bgrid{grid-template-columns:1fr}}
+  .card{background:var(--paper-2);border:1px solid var(--line);border-radius:var(--radius);padding:16px 18px;margin-bottom:14px}
+  .fl{display:block;font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--stone);
+    font-weight:600;margin:0 0 5px}
+  .inp{width:100%;padding:8px 11px;font-family:var(--fb);font-size:13.5px;color:var(--ink);
+    background:#fff;border:1px solid var(--line);border-radius:var(--radius)}
+  textarea.inp{min-height:70px;line-height:1.5;resize:vertical}
+  .blk{background:var(--paper-2);border:1px solid var(--line);border-radius:var(--radius);margin-bottom:12px}
+  .blkhead{display:flex;align-items:center;gap:10px;padding:9px 14px;border-bottom:1px solid var(--line);background:var(--paper)}
+  .blkhead .k{font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;font-weight:700;color:var(--ink)}
+  .blkhead .drag{color:var(--stone);cursor:grab;font-size:15px}
+  .blkhead .sp{flex:1}
+  .blkhead button{background:none;border:none;color:var(--stone);cursor:pointer;font-size:14px;padding:2px 6px}
+  .blkbody{padding:12px 14px}
+  .blkbody .row2{display:flex;gap:10px}
+  .blkbody .row2>*{flex:1}
+  .addbar{display:flex;gap:8px;flex-wrap:wrap;margin:16px 0 0;padding:14px;border:1.5px dashed var(--line);
+    border-radius:var(--radius);align-items:center}
+  .addbar .lab{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--stone);font-weight:700;margin-right:4px}
+  .side .card{position:sticky;top:14px}
+  .side .verb{display:flex;gap:10px;flex-wrap:wrap;margin-top:6px}
+  .prevpane{border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;background:var(--paper)}
+  .prevhead{font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--stone);
+    font-weight:700;padding:8px 12px;border-bottom:1px solid var(--line);background:var(--paper-2)}
+  .prev{padding:18px 16px;font-size:12px}
+  .prev .pv-eyebrow{font-size:8.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--stone);font-weight:600}
+  .prev .pv-h1{font-family:Georgia,serif;font-size:21px;margin:2px 0 4px}
+  .prev .pv-tick{width:38px;height:3px;background:var(--red);margin:6px 0 10px}
+  .prev .pv-hero{background:var(--paper-2);border:1px solid var(--line);border-left:3px solid var(--red);
+    border-radius:3px;padding:10px 12px;margin:8px 0}
+  .prev .pv-hero b{font-family:Georgia,serif;font-weight:400;font-size:14px;display:block}
+  .prev .pv-when{color:var(--red);font-size:9px;letter-spacing:.08em;text-transform:uppercase;font-weight:700;margin:2px 0 5px}
+  .prev .pv-fold{background:var(--paper-2);border:1px solid var(--line);border-radius:3px;padding:7px 10px;
+    margin:6px 0;font-family:Georgia,serif;font-size:12px;display:flex;justify-content:space-between}
+  .prev .pv-fold span{color:var(--stone)}
+  .prev ul{margin:6px 0;padding-left:16px}
+  .footnote{margin-top:40px;border-top:1px solid var(--line);padding-top:14px;font-size:12.5px;color:var(--stone);max-width:60em}
+</style>
+</head>
+<body>
+
+<div class="mocknote">Mockup &middot; the Pages screen, nothing here works or saves</div>
+<div class="topbar"><span class="brand">181 FREMONT</span><span class="sub">Resident Experiences &middot; Admin</span></div>
+<div class="navbar"><span>Dashboard</span><span>Events</span><span>Calendar</span><span class="on">Pages</span><span>Assets</span><span>Residents</span><span>Spaces</span><span>Messages</span><span>Settings</span></div>
+
+<div class="wrap">
+
+<div class="switch">
+  <button class="on" onclick="go('list',this)">Screen 1 &middot; The Pages list</button>
+  <button onclick="go('builder',this)">Screen 2 &middot; The builder</button>
+</div>
+
+<!-- ================= SCREEN 1: LIST ================= -->
+<div class="screen on" id="scr-list">
+  <h1>Pages</h1>
+  <p class="psub">Standalone pages for the occasions bigger than one event: a festival week, a holiday
+  guide, a renovation notice. Residents reach them by link from an event, the email, or a QR; nothing
+  here appears on the calendar by itself.</p>
+
+  <div style="margin:0 0 18px"><button class="btn">New Page</button></div>
+
+  <div class="prow">
+    <div class="grow">
+      <div class="t">Fleet Week 2026</div>
+      <div class="addr">181residents.com/fleetweek</div>
+      <div class="meta">Published &middot; updated Oct 6 by leo &middot; linked from 3 events</div>
+    </div>
+    <span class="pill live">Published</span>
+    <div class="acts">
+      <button class="mini ghost">Edit</button>
+      <button class="mini ghost">Copy link</button>
+      <button class="mini ghost">View</button>
+      <button class="mini ghost">Unpublish</button>
+    </div>
+  </div>
+
+  <div class="prow">
+    <div class="grow">
+      <div class="t">Holiday Party: Getting There</div>
+      <div class="addr">181residents.com/holiday-party &middot; not live yet</div>
+      <div class="meta">Draft &middot; updated Oct 5 by carley-ann</div>
+    </div>
+    <span class="pill draft">Draft</span>
+    <div class="acts">
+      <button class="mini ghost">Edit</button>
+      <button class="mini">Publish</button>
+      <button class="mini danger">Delete draft</button>
+    </div>
+  </div>
+
+  <div class="prow">
+    <div class="grow">
+      <div class="t">Lobby Renovation Notes</div>
+      <div class="addr">181residents.com/lobby-work &middot; off the air</div>
+      <div class="meta">Unpublished Oct 1 by leo &middot; the link answers with the calendar until republished</div>
+    </div>
+    <span class="pill arch">Unpublished</span>
+    <div class="acts">
+      <button class="mini ghost">Edit</button>
+      <button class="mini">Publish</button>
+      <button class="mini ghost">Archive</button>
+    </div>
+  </div>
+
+  <div class="archhead">Archive &middot; 2</div>
+  <div class="prow" style="opacity:.75">
+    <div class="grow">
+      <div class="t">Summer Rooftop Series 2026</div>
+      <div class="meta">Archived Sept 2 &middot; kept as a record and a template; Open to restore or copy</div>
+    </div>
+    <span class="pill arch">Archived</span>
+    <div class="acts"><button class="mini ghost">Open</button><button class="mini ghost">Make a copy</button></div>
+  </div>
+
+  <p class="hint" style="margin-top:22px">The doctrine mirrors Events: <b>Publish</b> is the only road
+  onto the site, <b>Unpublish</b> takes a page off the air with its content held, <b>Archive</b> files
+  an unpublished page away, and <b>Delete</b> exists for drafts only, since residents never saw one.
+  Every change is stamped with who and when, and notifies, like everything else.</p>
+</div>
+
+<!-- ================= SCREEN 2: BUILDER ================= -->
+<div class="screen" id="scr-builder">
+  <h1>Edit page</h1>
+  <p class="psub">Fleet Week 2026 &middot; <span class="pill live" style="vertical-align:1px">Published</span>
+  &nbsp;<span class="hint">A published page edits as a working copy, same as a live event: residents keep
+  the published version until Publish changes.</span></p>
+
+  <div class="bgrid">
+  <div>
+    <div class="card">
+      <div class="row2" style="display:flex;gap:10px">
+        <div style="flex:2"><label class="fl">Page title</label><input class="inp" value="Fleet Week 2026"></div>
+        <div style="flex:1"><label class="fl">Address</label><input class="inp" value="fleetweek"></div>
+      </div>
+      <div style="margin-top:10px">
+        <label class="fl">Eyebrow, above the title</label>
+        <input class="inp" value="The Residents&rsquo; Club &middot; October 4 to 12">
+      </div>
+      <div style="margin-top:10px">
+        <label class="fl">Opening line</label>
+        <textarea class="inp">The fleet is in, the bands are out, and the Blue Angels are back over the Bay. Here is our plan for the show, and a resident&rsquo;s cheat sheet to the whole week.</textarea>
+      </div>
+    </div>
+
+    <div class="blk">
+      <div class="blkhead"><span class="drag">&#8942;&#8942;</span><span class="k">Feature card</span><span class="sp"></span>
+        <button title="Move up">&uarr;</button><button title="Move down">&darr;</button><button title="Remove">&times;</button></div>
+      <div class="blkbody">
+        <label class="fl">Heading</label>
+        <input class="inp" value="Watch the air show from the Terrace">
+        <div class="row2" style="margin-top:10px">
+          <div><label class="fl">The red line (when)</label><input class="inp" value="Friday, October 9 to Sunday, October 11 &middot; Noon to 4:00 PM"></div>
+        </div>
+        <div style="margin-top:10px"><label class="fl">Body</label>
+        <textarea class="inp">The air show flies over the Bay from noon to 4:00 each day, and the Terrace looks right at it&hellip;</textarea></div>
+      </div>
+    </div>
+
+    <div class="blk">
+      <div class="blkhead"><span class="drag">&#8942;&#8942;</span><span class="k">Section heading</span><span class="sp"></span>
+        <button>&uarr;</button><button>&darr;</button><button>&times;</button></div>
+      <div class="blkbody">
+        <div class="row2">
+          <div><label class="fl">Heading</label><input class="inp" value="Your Fleet Week cheat sheet"></div>
+          <div><label class="fl">Small line under it</label><input class="inp" value="Tap a day to open it."></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="blk">
+      <div class="blkhead"><span class="drag">&#8942;&#8942;</span><span class="k">Fold &middot; opens and closes</span><span class="sp"></span>
+        <button>&uarr;</button><button>&darr;</button><button>&times;</button></div>
+      <div class="blkbody">
+        <label class="fl">Fold title</label>
+        <input class="inp" value="Friday, October 9">
+        <div style="margin-top:10px"><label class="fl">Lines inside &middot; one per row, time &middot; what</label>
+        <textarea class="inp">11:00 AM &middot; Parade of Ships along the waterfront
+12:00 PM &middot; Air show over the Bay until 4:00; the Blue Angels close the show</textarea></div>
+        <div style="margin-top:8px" class="hint">&#9745; Lead with the Residents&rsquo; Club line (our red-dot row)</div>
+      </div>
+    </div>
+
+    <div class="blk">
+      <div class="blkhead"><span class="drag">&#8942;&#8942;</span><span class="k">Bullet list</span><span class="sp"></span>
+        <button>&uarr;</button><button>&darr;</button><button>&times;</button></div>
+      <div class="blkbody">
+        <label class="fl">One bullet per line</label>
+        <textarea class="inp">San Francisco has hosted Fleet Week since 1981&hellip;
+Watching from Marina Green is free&hellip;</textarea>
+      </div>
+    </div>
+
+    <div class="addbar">
+      <span class="lab">Add</span>
+      <button class="mini ghost">Text</button>
+      <button class="mini ghost">Feature card</button>
+      <button class="mini ghost">Section heading</button>
+      <button class="mini ghost">Fold</button>
+      <button class="mini ghost">Bullet list</button>
+      <button class="mini ghost">Link row</button>
+      <button class="mini ghost">Picture from the kit</button>
+    </div>
+  </div>
+
+  <div class="side">
+    <div class="card">
+      <div class="verb">
+        <button class="btn">Publish changes</button>
+        <button class="mini ghost">Save draft</button>
+        <button class="mini ghost">Unpublish</button>
+      </div>
+      <p class="hint" style="margin:12px 0 16px">Publishing rebuilds the site; the page is live at its
+      address in a couple of minutes. Fonts, sizes, and colors are the house&rsquo;s own; the builder
+      decides only words and order.</p>
+      <div class="prevpane">
+        <div class="prevhead">Live preview</div>
+        <div class="prev">
+          <div class="pv-eyebrow">The Residents&rsquo; Club &middot; October 4 to 12</div>
+          <div class="pv-h1">Fleet Week 2026</div>
+          <div class="pv-tick"></div>
+          <div class="pv-hero">
+            <b>Watch the air show from the Terrace</b>
+            <div class="pv-when">Fri Oct 9 to Sun Oct 11 &middot; Noon to 4:00</div>
+            The air show flies over the Bay from noon to 4:00 each day&hellip;
+          </div>
+          <div class="pv-fold">Friday, October 9 <span>&rsaquo;</span></div>
+          <div class="pv-fold">Saturday, October 10 <span>&rsaquo;</span></div>
+          <ul><li>Hosted since 1981&hellip;</li><li>Marina Green is free&hellip;</li></ul>
+        </div>
+      </div>
+    </div>
+  </div>
+  </div>
+</div>
+
+<div class="footnote"><b>What the real build is, in one breath:</b> a pages table in the database
+(title, address, status, blocks, who and when), the same API verbs as events, this screen in the
+admin, and the publisher renders blocks into the exact house template Fleet Week uses today. Pages
+ride the same pipeline as everything else: publish rebuilds the site, every change notifies and is
+stamped, drafts delete, published pages unpublish then archive. Nothing on the resident side changes;
+the pages simply stop needing a programmer.</div>
+
+</div>
+
+<script>
+function go(which, btn){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('on'));
+  document.getElementById('scr-'+which).classList.add('on');
+  document.querySelectorAll('.switch button').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+  window.scrollTo(0,0);
+}
+</script>
+</body>
+</html>
