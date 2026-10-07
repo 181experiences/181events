@@ -67,6 +67,21 @@ try:
 except Exception as ex:
     print(f"calendar window settings not read ({ex}); building with what stands")
 
+# Published standalone pages (the Pages builder). Unreadable here means the
+# last pages_live.json stands, so a hiccup never drops a page mid-week; an
+# empty-but-readable table writes an empty list, which correctly takes
+# unpublished pages off the air at this build.
+try:
+    req = urllib.request.Request(url, method="POST",
+        data=json.dumps({"sql": "SELECT * FROM pages WHERE status='Published' ORDER BY id"}).encode(),
+        headers={"Authorization": f"Bearer {token}", "content-type": "application/json"})
+    with urllib.request.urlopen(req) as r:
+        prows = json.load(r)["result"][0]["results"]
+    json.dump(prows, open(os.path.join(HERE, "pages_live.json"), "w", encoding="utf-8"), indent=1, ensure_ascii=False)
+    print(f"standalone pages published: {len(prows)}")
+except Exception as ex:
+    print(f"pages not read ({ex}); building with what stands")
+
 # Which events have an uploaded web hero: the build dresses those pages with
 # the kit's picture. Unreadable here just means typographic cards this build.
 try:

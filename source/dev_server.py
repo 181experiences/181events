@@ -682,11 +682,40 @@ def rebuild():
     events = load_events()
     live = [dict(e, _id=e["id"]) for e in events]
     json.dump(live, open(os.path.join(HERE, "events_live.json"), "w", encoding="utf-8"), indent=1, ensure_ascii=False)
+    # Published builder pages travel with the build, mirroring publish.py.
+    pages = [p for p in load_store("pages", []) if p.get("status") == "Published"]
+    json.dump(pages, open(os.path.join(HERE, "pages_live.json"), "w", encoding="utf-8"), indent=1, ensure_ascii=False)
     # The hero shelf travels with the build, mirroring publish.py.
     stems = sorted({a["stem"] for a in load_store("assets", [])
                     if a.get("kind") == "web-hero" and a.get("filename")})
     json.dump(stems, open(os.path.join(HERE, "assets_live.json"), "w", encoding="utf-8"))
     subprocess.run([sys.executable, os.path.join(HERE, "build_site.py")], check=True)
+
+# Mirrors functions/api/pages: slug hygiene and the addresses a page may not take.
+RESERVED_SLUGS = {"admin", "api", "rsvp", "register", "signin", "signout", "my", "message",
+                  "board", "spaces", "notes", "calendar", "ics", "fonts", "hero", "e", "q",
+                  "fleetweek", "index.html", "manifest.webmanifest", "admin.webmanifest",
+                  "_templates", "cdn-cgi", "pages"}
+
+def clean_slug(v):
+    return re.sub(r"^-+|-+$", "", re.sub(r"[^a-z0-9]+", "-", str(v or "").lower().strip()))[:60]
+
+def clean_blocks(v):
+    lst = v
+    if isinstance(lst, str):
+        try: lst = json.loads(lst)
+        except ValueError: lst = []
+    if not isinstance(lst, list): lst = []
+    out = []
+    for b in lst[:40]:
+        if not isinstance(b, dict) or not isinstance(b.get("kind"), str):
+            continue
+        keep = {"kind": b["kind"][:20]}
+        for k in ("heading", "when", "body", "sub", "title", "lines", "ours", "label", "url", "stem"):
+            if k in b:
+                keep[k] = str(b[k] if b[k] is not None else "")[:4000]
+        out.append(keep)
+    return json.dumps(out)
 
 def sample_analytics(days):
     rnd = random.Random(181)
@@ -866,6 +895,10 @@ class H(SimpleHTTPRequestHandler):
         if p.path == "/api/guests":
             bid = int((q.get("booking") or ["0"])[0] or 0)
             return self._json({"guests": [g for g in load_store("guests", []) if g["booking_id"] == bid]})
+        if p.path == "/api/pages":
+            rows = load_store("pages", [])
+            rows = sorted(rows, key=lambda r: (r.get("updated") or "", r.get("id") or 0), reverse=True)
+            return self._json({"pages": rows})
         if p.path.startswith("/e/"):
             slug = p.path[len("/e/"):].lower()
             live = [e for e in load_events() if e.get("Status") == "Live" and e.get("Slug") == slug]
@@ -1181,6 +1214,25 @@ class H(SimpleHTTPRequestHandler):
                        event_key=(b.get("event_key") or "").strip() or None)
             bookings.append(row); save_store("bookings", bookings)
             return self._json({"booking": dict(row, guest_parties=0, guest_heads=0, guest_arrived=0)}, 201)
+        if p.path == "/api/pages":
+            if self._role() == "desk": return self._json({"error": "forbidden"}, 403)
+            b = self._body_json()
+            title = (str(b.get("title") or "")).strip()[:120]
+            slug = clean_slug(b.get("slug") or title)
+            if not title: return self._json({"error": "Give the page a title."}, 400)
+            if len(slug) < 3: return self._json({"error": "The address needs at least three characters."}, 400)
+            if slug in RESERVED_SLUGS:
+                return self._json({"error": f"/{slug} already belongs to the site itself; pick another address."}, 400)
+            pages = load_store("pages", [])
+            if any(x.get("slug") == slug for x in pages):
+                return self._json({"error": f"The address /{slug} is already taken by another page."}, 400)
+            row = dict(id=max([x["id"] for x in pages] or [0]) + 1, title=title, slug=slug,
+                       eyebrow=(str(b.get("eyebrow") or "")).strip()[:160] or None,
+                       lede=(str(b.get("lede") or "")).strip()[:600] or None,
+                       blocks=clean_blocks(b.get("blocks")), status="Draft", draft_json=None,
+                       created=now_iso(), updated=now_iso(), updated_by=f"{self._role()}@local.dev")
+            pages.append(row); save_store("pages", pages)
+            return self._json({"page": row}, 201)
         if p.path == "/api/guests":
             b = self._body_json()
             name = (b.get("name") or "").strip()[:80]
@@ -1593,6 +1645,41 @@ class H(SimpleHTTPRequestHandler):
                                        "arrived": r.get("arrived"), "arrived_at": r.get("arrived_at") or "",
                                        "door_note": r.get("door_note") or ""})
             return self._json({"error": "No such RSVP"}, 404)
+        if p.path.startswith("/api/pages/"):
+            if self._role() == "desk": return self._json({"error": "forbidden"}, 403)
+            pid = p.path.rsplit("/", 1)[1]; body = self._body_json()
+            pages = load_store("pages", [])
+            for pg in pages:
+                if str(pg["id"]) == pid:
+                    if "__draft" in body:
+                        pg["draft_json"] = json.dumps(body["__draft"])[:60000] if body["__draft"] else None
+                        pg["updated"] = now_iso(); pg["updated_by"] = f"{self._role()}@local.dev"
+                        save_store("pages", pages)
+                        return self._json({"page": pg})
+                    if "title" in body:
+                        t = (str(body["title"] or "")).strip()[:120]
+                        if not t: return self._json({"error": "Give the page a title."}, 400)
+                        pg["title"] = t
+                    if "slug" in body:
+                        slug = clean_slug(body["slug"])
+                        if len(slug) < 3: return self._json({"error": "The address needs at least three characters."}, 400)
+                        if slug in RESERVED_SLUGS:
+                            return self._json({"error": f"/{slug} already belongs to the site itself; pick another address."}, 400)
+                        if any(x.get("slug") == slug and x["id"] != pg["id"] for x in pages):
+                            return self._json({"error": f"The address /{slug} is already taken by another page."}, 400)
+                        pg["slug"] = slug
+                    if "eyebrow" in body: pg["eyebrow"] = (str(body["eyebrow"] or "")).strip()[:160] or None
+                    if "lede" in body: pg["lede"] = (str(body["lede"] or "")).strip()[:600] or None
+                    if "blocks" in body: pg["blocks"] = clean_blocks(body["blocks"])
+                    if "status" in body:
+                        if body["status"] not in ("Draft", "Published", "Unpublished", "Archived"):
+                            return self._json({"error": "Bad status"}, 400)
+                        pg["status"] = body["status"]
+                    pg["draft_json"] = None
+                    pg["updated"] = now_iso(); pg["updated_by"] = f"{self._role()}@local.dev"
+                    save_store("pages", pages)
+                    return self._json({"page": pg})
+            return self._json({"error": "No such page"}, 404)
         if p.path.startswith("/api/bookings/"):
             bid = p.path.rsplit("/", 1)[1]; body = self._body_json()
             bookings = load_store("bookings", [])
@@ -1739,6 +1826,16 @@ class H(SimpleHTTPRequestHandler):
             if len(kept) == len(bookings): return self._json({"error": "No such reservation"}, 404)
             save_store("bookings", kept)
             save_store("guests", [g for g in load_store("guests", []) if str(g["booking_id"]) != bid])
+            return self._json({"ok": True})
+        if p.path.startswith("/api/pages/"):
+            if self._role() == "desk": return self._json({"error": "forbidden"}, 403)
+            pid = p.path.rsplit("/", 1)[1]
+            pages = load_store("pages", [])
+            gone = next((x for x in pages if str(x["id"]) == pid), None)
+            if not gone: return self._json({"error": "No such page"}, 404)
+            if (gone.get("status") or "Draft") != "Draft":
+                return self._json({"error": "Only drafts delete. A published page is unpublished first, then archived, so its record stays."}, 400)
+            save_store("pages", [x for x in pages if str(x["id"]) != pid])
             return self._json({"ok": True})
         if p.path.startswith("/api/guests/"):
             gid = p.path.rsplit("/", 1)[1]

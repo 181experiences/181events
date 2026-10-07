@@ -150,7 +150,24 @@ export const RESIDENT_TABLES = [
     canva TEXT, filename TEXT, size INTEGER, type TEXT, uploaded TEXT
   )`,
   `CREATE UNIQUE INDEX IF NOT EXISTS assets_one_per_kind ON assets(stem, kind)`,
+  `CREATE TABLE IF NOT EXISTS pages (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    title TEXT NOT NULL, slug TEXT NOT NULL UNIQUE,
+    eyebrow TEXT, lede TEXT, blocks TEXT,
+    status TEXT NOT NULL DEFAULT 'Draft',
+    draft_json TEXT,
+    created TEXT NOT NULL, updated TEXT, updated_by TEXT
+  )`,
 ];
+
+// Standalone pages publish at the site root (181residents.com/{slug}), so a
+// slug may never shadow a real route or file the site already answers for.
+export const RESERVED_SLUGS = new Set([
+  "admin", "api", "rsvp", "register", "signin", "signout", "my", "message",
+  "board", "spaces", "notes", "calendar", "ics", "fonts", "hero", "e", "q",
+  "fleetweek", "index.html", "manifest.webmanifest", "admin.webmanifest",
+  "_templates", "cdn-cgi", "pages",
+]);
 
 // The six pieces of an event's kit, by slug. The file itself lives in R2 (the
 // KIT binding); the row carries what staff need to know about it, plus the
