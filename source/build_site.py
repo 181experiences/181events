@@ -206,10 +206,29 @@ if os.path.exists(_manifest_path):
         _old_slugs = json.load(open(_manifest_path, encoding="utf-8"))
     except ValueError:
         _old_slugs = []
+def _rm_page_dir(path):
+    # OneDrive and read-only bits can hold a folder for a moment locally; a
+    # failed removal must never kill a build. The folder gets overwritten or
+    # retried at the next build either way.
+    import stat, time
+    def _onerr(fn, p, exc):
+        try:
+            os.chmod(p, stat.S_IWRITE); fn(p)
+        except OSError:
+            pass
+    for _try in range(3):
+        try:
+            shutil.rmtree(path, onerror=_onerr)
+            return True
+        except OSError:
+            time.sleep(0.4)
+    print(f"note: could not remove {path}; it will be retried or overwritten next build")
+    return False
+
 for _s in _old_slugs:
     _s = _re.sub(r"[^a-z0-9-]", "", str(_s))
     if _s and os.path.isdir(f"{SITE}/{_s}"):
-        shutil.rmtree(f"{SITE}/{_s}")
+        _rm_page_dir(f"{SITE}/{_s}")
 _pages_live = os.path.join(HERE, "pages_live.json")
 _pages = []
 if os.path.exists(_pages_live):

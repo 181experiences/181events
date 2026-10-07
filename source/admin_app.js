@@ -1615,6 +1615,255 @@
     w.document.close();
   }
 
+  // ---------------------------------------------------------------- pages
+  // Standalone pages from the Pages builder. The builder decides words and
+  // order; the publisher pours blocks into the fixed house template. The
+  // lifecycle mirrors events exactly: Publish is the only road onto the site,
+  // Unpublish holds content with the link falling back to the calendar,
+  // Archive files an unpublished page away, Delete is for drafts alone, and a
+  // published page edits as a working copy until Publish changes applies it.
+  let pages = [], pgEditing = null, pgBlocks = [];
+
+  const PG_KINDS = {
+    text: "Text",
+    feature: "Feature card",
+    heading: "Section heading",
+    fold: "Fold · opens and closes",
+    bullets: "Bullet list",
+    links: "Link rows",
+    image: "Picture from the kit",
+  };
+
+  async function loadPages() {
+    try { pages = (await api("/api/pages")).pages || []; } catch (e) { pages = []; }
+    renderPages();
+  }
+
+  function pgUrl(p) { return `https://181residents.com/${p.slug}`; }
+
+  function renderPages() {
+    const box = $("#pglist"); if (!box) return;
+    const act = pages.filter(p => p.status !== "Archived");
+    const arch = pages.filter(p => p.status === "Archived");
+    $("#pgcount").textContent = act.length
+      ? `${act.length} page${act.length === 1 ? "" : "s"}. Residents reach a page by its link; publish puts it on the site at its address within a couple of minutes.`
+      : "Nothing yet. A page is for the occasions bigger than one event; New Page starts one.";
+    const pill = s => s === "Published" ? '<span class="pill live">Published</span>'
+      : s === "Unpublished" ? '<span class="pill unpublished">Unpublished</span>'
+      : s === "Archived" ? '<span class="pill archived">Archived</span>'
+      : '<span class="pill draft">Draft</span>';
+    const row = p => `<div class="erow pgrow" style="display:flex;align-items:center;gap:14px;flex-wrap:wrap">
+      <div style="flex:1;min-width:220px">
+        <div style="font-size:15.5px;color:var(--ink);font-weight:600">${esc(p.title)}${p.draft_json ? ' <span class="pill draft">draft pending</span>' : ""}</div>
+        <div class="addr">181residents.com/${esc(p.slug)}${p.status !== "Published" ? " · not on the air" : ""}</div>
+        <div style="font-size:12px;color:var(--stone)">${esc((p.updated || p.created || "").slice(0, 10))}${p.updated_by ? ` · ${esc(String(p.updated_by).split("@")[0])}` : ""}</div>
+      </div>
+      ${pill(p.status || "Draft")}
+      <span class="eact">
+        <button class="mini ghost" data-pgedit="${p.id}">${p.status === "Archived" ? "Open" : "Edit"}</button>
+        <button class="mini ghost" data-pgcopylink="${p.id}" title="The page's address, for an event description or the email">Copy link</button>
+        ${p.status === "Published" ? `<a class="mini ghost" href="/${esc(p.slug)}" target="_blank" rel="noopener">View</a>` : ""}
+      </span></div>`;
+    let html = act.map(row).join("") || "";
+    if (arch.length) {
+      html += `<div style="margin:26px 0 8px;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--stone)">Archive · ${arch.length}</div>`
+        + arch.map(row).join("");
+    }
+    box.innerHTML = html || '<div class="nodata">Nothing yet.</div>';
+  }
+
+  // One form card per block; typing updates the array in place (no re-render,
+  // so focus never jumps), structural changes re-render the stack.
+  function pgBlockForm(b, i) {
+    const inp = (k, label, ph) => `<div class="field" style="margin:0 0 10px"><label class="fl">${label}</label>
+      <input class="inp" data-pb="${i}|${k}" value="${esc(b[k] || "")}" placeholder="${ph || ""}"></div>`;
+    const ta = (k, label, ph, rows) => `<div class="field" style="margin:0 0 10px"><label class="fl">${label}</label>
+      <textarea class="inp" data-pb="${i}|${k}" rows="${rows || 3}" placeholder="${ph || ""}">${esc(b[k] || "")}</textarea></div>`;
+    let fields = "";
+    if (b.kind === "text") fields = ta("body", "Text", "Paragraphs show as written; a blank line starts a new one.", 4);
+    else if (b.kind === "feature") fields = inp("heading", "Heading", "Watch the air show from the Terrace")
+      + inp("when", "The red line, when", "Friday, October 9 · Noon to 4:00 PM")
+      + ta("body", "Body", "What we are doing, in a paragraph or two.", 4);
+    else if (b.kind === "heading") fields = inp("heading", "Heading", "Your Fleet Week cheat sheet")
+      + inp("sub", "Small line under it, optional", "Tap a day to open it.");
+    else if (b.kind === "fold") fields = inp("title", "Fold title", "Friday, October 9")
+      + inp("ours", "Our red-dot line at the top, optional", "The Residents' Club · lemonade on the Terrace · noon to 4")
+      + ta("lines", "Lines inside, one per row: time : what", "11:00 AM : Parade of Ships along the waterfront\n12:00 PM : Air show over the Bay until 4:00", 4);
+    else if (b.kind === "bullets") fields = ta("lines", "One bullet per line", "San Francisco has hosted Fleet Week since 1981.", 3);
+    else if (b.kind === "links") fields = ta("lines", "One per line: Title : https://link : small line (the link is optional)", "Marina Green : Free general admission\nOfficial site : https://fleetweeksf.org : Maps and tickets", 3);
+    else if (b.kind === "image") {
+      const stems = [...new Set(assets.filter(a => a.kind === "web-hero" && a.filename).map(a => a.stem))].sort();
+      fields = `<div class="field" style="margin:0"><label class="fl">Which kit picture (web heroes with an uploaded file)</label>
+        <select class="inp" data-pb="${i}|stem"><option value="">Pick one</option>
+        ${stems.map(s => `<option value="${esc(s)}"${b.stem === s ? " selected" : ""}>${esc(s)}</option>`).join("")}</select></div>`;
+    }
+    return `<div class="pgblk">
+      <div class="bh"><span class="k">${PG_KINDS[b.kind] || b.kind}</span><span class="sp"></span>
+        <button data-pbmove="${i}|-1" title="Move up">&uarr;</button>
+        <button data-pbmove="${i}|1" title="Move down">&darr;</button>
+        <button data-pbdel="${i}" title="Remove this block">&times;</button></div>
+      <div class="bb">${fields}</div></div>`;
+  }
+
+  function renderPgBlocks() {
+    const box = $("#pgblocks"); if (!box) return;
+    box.innerHTML = pgBlocks.map((b, i) => pgBlockForm(b, i)).join("")
+      || '<div class="nodata" style="margin-bottom:4px">No blocks yet. Add the first one below; the page shows them top to bottom.</div>';
+  }
+
+  function readPageForm() {
+    return {
+      title: $("#pg-title").value.trim(),
+      slug: $("#pg-slug").value.trim() || slugify($("#pg-title").value.trim()),
+      eyebrow: $("#pg-eyebrow").value.trim(),
+      lede: $("#pg-lede").value.trim(),
+      blocks: pgBlocks,
+    };
+  }
+
+  function pgRow() { return pages.find(p => p.id === pgEditing) || null; }
+
+  function refreshPgActions() {
+    const row = pgRow();
+    const st = row ? row.status || "Draft" : "Draft";
+    const hasDraft = !!(row && row.draft_json);
+    $("#pg-pill").className = "pill " + (st === "Published" ? "live" : st.toLowerCase());
+    $("#pg-pill").textContent = st + (hasDraft ? " · draft pending" : "");
+    $("#pg-publish").textContent = st === "Published" ? (hasDraft ? "Publish changes" : "Unpublish") : "Publish";
+    $("#pg-discard").style.display = hasDraft ? "" : "none";
+    $("#pg-archive").disabled = st !== "Unpublished";
+    $("#pg-delete").style.display = row && st === "Draft" ? "" : "none";
+    $("#pg-view").style.display = st === "Published" && row ? "" : "none";
+    if (row) $("#pg-view").href = "/" + row.slug;
+    $("#pg-copy").style.display = row ? "" : "none";
+    $("#pg-draftnote").style.display = hasDraft ? "" : "none";
+    if (hasDraft) $("#pg-draftnote").innerHTML =
+      "<strong>A saved draft is loaded below, and it is not on the resident site.</strong> "
+      + "Residents still see the published version. <strong>Publish changes</strong> applies what you see; "
+      + "<strong>Discard draft</strong> lets it go.";
+    $("#pg-actions-note").textContent = !row
+      ? "Publish puts it on the site at its address; Save draft keeps it here until it is ready."
+      : st === "Published"
+        ? (hasDraft ? "" : "Edits to a published page save as a draft first, then go out with Publish changes.")
+        : st === "Unpublished"
+          ? "Off the air with its content held; the link answers with the calendar. Publish puts it back; Archive files it away."
+          : st === "Archived"
+            ? "Filed away as a record. Publishing walks it back out."
+            : "";
+  }
+
+  function openPageEditor(id) {
+    pgEditing = id;
+    const row = pgRow();
+    // A page with a working copy opens showing the working copy; the page
+    // itself, what residents see, stays untouched underneath.
+    let src = row || { title: "", slug: "", eyebrow: "", lede: "", blocks: "[]" };
+    if (row && row.draft_json) { try { src = { ...row, ...JSON.parse(row.draft_json) }; } catch (e) {} }
+    $("#pg-title-h").textContent = row ? "Edit page" : "New page";
+    $("#pg-sub").textContent = row ? `181residents.com/${row.slug}` : "Fill in the essentials; the address can still change until the first link goes out.";
+    $("#pg-title").value = src.title || "";
+    $("#pg-slug").value = src.slug || "";
+    $("#pg-eyebrow").value = src.eyebrow || "";
+    $("#pg-lede").value = src.lede || "";
+    let blocks = src.blocks;
+    if (typeof blocks === "string") { try { blocks = JSON.parse(blocks); } catch (e) { blocks = []; } }
+    pgBlocks = Array.isArray(blocks) ? blocks.map(b => ({ ...b })) : [];
+    renderPgBlocks();
+    refreshPgActions();
+    go("pageedit");
+  }
+
+  // The rebuild that makes a lifecycle change real on the static site.
+  function pgRebuild(note) {
+    if (!status.publish) return;
+    api("/api/publish", { method: "POST" }).then(r => toast(note || r.note || "Publishing.")).catch(() => {});
+  }
+
+  async function pgSave(wantStatus) {
+    const f = readPageForm();
+    if (!f.title) { toast("Give the page a title.", "warn"); return; }
+    if ((f.slug || "").length < 3) { toast("The address needs at least three characters.", "warn"); return; }
+    const btns = $$("#pg-actions button"); btns.forEach(b => b.disabled = true);
+    try {
+      let row = pgRow();
+      if (!row) {
+        row = (await api("/api/pages", { method: "POST", body: JSON.stringify(f) })).page;
+        pages.unshift(row); pgEditing = row.id;
+      }
+      const touchedSite = row.status === "Published" || wantStatus === "Published" || wantStatus === "Unpublished";
+      const upd = (await api("/api/pages/" + row.id, { method: "PATCH",
+        body: JSON.stringify({ ...f, status: wantStatus || row.status || "Draft" }) })).page;
+      Object.assign(row, upd);
+      renderPages(); refreshPgActions();
+      $("#pg-sub").textContent = `181residents.com/${row.slug}`;
+      if (touchedSite) {
+        pgRebuild(wantStatus === "Unpublished"
+          ? "Off the air in a couple of minutes; the content is held here."
+          : "Saved. The page is live at its address in a couple of minutes.");
+      } else {
+        toast(upd.status === "Draft" ? "Saved as a draft. Nothing is on the resident site." : "Saved.");
+      }
+      if (wantStatus === "Archived") { toast("Archived. Publishing walks it back out."); go("pages"); }
+    } catch (e) { toast(e.message, "warn"); }
+    finally { btns.forEach(b => b.disabled = false); refreshPgActions(); }
+  }
+
+  async function pgSaveDraftClick() {
+    const row = pgRow();
+    if (row && row.status === "Published") {
+      // The working copy: residents keep the published page until Publish changes.
+      const f = readPageForm();
+      try {
+        const upd = (await api("/api/pages/" + row.id, { method: "PATCH", body: JSON.stringify({ __draft: f }) })).page;
+        Object.assign(row, upd);
+        toast("Draft saved. Residents see the published version until you publish the changes.");
+      } catch (e) { toast(e.message, "warn"); }
+      renderPages(); refreshPgActions();
+      return;
+    }
+    pgSave(row ? row.status || "Draft" : "Draft");
+  }
+
+  function pgPublishClick() {
+    const row = pgRow();
+    if (row && row.status === "Published" && !row.draft_json) {
+      dialog("Take this page off the air?",
+        `181residents.com/${esc(row.slug)} stops answering (the link falls back to the calendar); the content is held here, ready to republish.`,
+        [{ label: "Unpublish", kind: "primary", value: "yes" }, { label: "Keep it up", kind: "quiet", value: null }])
+        .then(v => { if (v) pgSave("Unpublished"); });
+      return;
+    }
+    pgSave("Published");
+  }
+
+  async function pgDiscardDraft() {
+    const row = pgRow(); if (!row || !row.draft_json) return;
+    const v = await dialog("Let the saved draft go?", "The editor returns to what residents see.",
+      [{ label: "Discard it", kind: "primary", value: "yes" }, { label: "Keep working", kind: "quiet", value: null }]);
+    if (!v) return;
+    try {
+      const upd = (await api("/api/pages/" + row.id, { method: "PATCH", body: JSON.stringify({ __draft: null }) })).page;
+      Object.assign(row, upd);
+      openPageEditor(row.id);
+      toast("Draft discarded. This is what residents see.");
+    } catch (e) { toast(e.message, "warn"); }
+  }
+
+  async function pgDelete() {
+    const row = pgRow(); if (!row || (row.status || "Draft") !== "Draft") return;
+    const v = await dialog(`Delete "${esc(row.title)}"?`, "Drafts only ever lived here; nothing residents saw is lost.",
+      [{ label: "Delete the draft", kind: "primary", value: "yes" }, { label: "Keep it", kind: "quiet", value: null }]);
+    if (!v) return;
+    try {
+      await api("/api/pages/" + row.id, { method: "DELETE" });
+      pages = pages.filter(p => p.id !== row.id);
+      pgEditing = null;
+      renderPages();
+      go("pages");
+      toast("Deleted.");
+    } catch (e) { toast(e.message, "warn"); }
+  }
+
   // ---------------------------------------------------------------- messages
   function renderMsgs() {
     const box = $("#msglist"); if (!box) return;
@@ -2301,6 +2550,7 @@
     try { rsvps = (await api("/api/rsvps")).rsvps; } catch (e) { rsvps = []; }
     rsvpCache = null;
     await loadAssets();
+    loadPages();
     renderAll();
     loadAnalytics();
     loadResidents();
@@ -2703,8 +2953,45 @@
       }
       return;
     }
-    const b = ev.target.closest("[data-edit],[data-archive],[data-new],[data-edpublish],[data-edsavedraft],[data-eddiscard],[data-edarchive],[data-eddelete],[data-histload],[data-savewindow],[data-addloc],[data-addhost],[data-delloc],[data-delhost],[data-period],[data-publish],[data-fmt],[data-dates],[data-editrow],[data-rowdelete],[data-export],[data-evdelete],[data-acal],[data-acev],[data-acalqv],[data-dashfold],[data-qview]");
+    const b = ev.target.closest("[data-edit],[data-archive],[data-new],[data-edpublish],[data-edsavedraft],[data-eddiscard],[data-edarchive],[data-eddelete],[data-histload],[data-savewindow],[data-addloc],[data-addhost],[data-delloc],[data-delhost],[data-period],[data-publish],[data-fmt],[data-dates],[data-editrow],[data-rowdelete],[data-export],[data-evdelete],[data-acal],[data-acev],[data-acalqv],[data-dashfold],[data-qview],[data-pgnew],[data-pgedit],[data-pgcopylink],[data-pbadd],[data-pbmove],[data-pbdel],[data-pgpublish],[data-pgsavedraft],[data-pgdiscard],[data-pgarchive],[data-pgdelete],[data-pgcopy]");
     if (!b) return;
+    if (b.dataset.pgnew !== undefined) { openPageEditor(null); return; }
+    if (b.dataset.pgedit) { openPageEditor(Number(b.dataset.pgedit)); return; }
+    if (b.dataset.pgcopylink) {
+      const p = pages.find(x => String(x.id) === b.dataset.pgcopylink);
+      if (p) navigator.clipboard.writeText(pgUrl(p)).then(
+        () => toast(`Copied. ${pgUrl(p)}${p.status === "Published" ? "" : " goes live when the page publishes."}`),
+        () => toast(pgUrl(p)));
+      return;
+    }
+    if (b.dataset.pbadd) {
+      pgBlocks.push({ kind: b.dataset.pbadd });
+      renderPgBlocks();
+      const last = $("#pgblocks").querySelector(".pgblk:last-child .inp");
+      if (last) last.focus();
+      return;
+    }
+    if (b.dataset.pbmove) {
+      const [i, d] = b.dataset.pbmove.split("|").map(Number);
+      const j = i + d;
+      if (j >= 0 && j < pgBlocks.length) { [pgBlocks[i], pgBlocks[j]] = [pgBlocks[j], pgBlocks[i]]; renderPgBlocks(); }
+      return;
+    }
+    if (b.dataset.pbdel !== undefined && b.dataset.pbdel !== "") {
+      pgBlocks.splice(Number(b.dataset.pbdel), 1);
+      renderPgBlocks();
+      return;
+    }
+    if (b.dataset.pgpublish !== undefined) { pgPublishClick(); return; }
+    if (b.dataset.pgsavedraft !== undefined) { pgSaveDraftClick(); return; }
+    if (b.dataset.pgdiscard !== undefined) { pgDiscardDraft(); return; }
+    if (b.dataset.pgarchive !== undefined) { pgSave("Archived"); return; }
+    if (b.dataset.pgdelete !== undefined) { pgDelete(); return; }
+    if (b.dataset.pgcopy !== undefined) {
+      const p = pgRow();
+      if (p) navigator.clipboard.writeText(pgUrl(p)).then(() => toast("Copied. " + pgUrl(p)), () => toast(pgUrl(p)));
+      return;
+    }
     if (b.dataset.evdelete) { deleteDraftGroup(b.dataset.evdelete); return; }
     if (b.dataset.rowdelete) { const [k, id] = b.dataset.rowdelete.split("|"); deleteDraftRow(k, id); return; }
     if (b.dataset.eddelete !== undefined) {
@@ -2820,6 +3107,20 @@
     const head = ev.target.closest("[data-chev]");
     if (!head || ev.target.closest("button,a,.mini")) return;
     head.closest(".acard").classList.toggle("open");
+  });
+
+  // Typing in a page block edits the array in place; the DOM is the form.
+  document.addEventListener("input", ev => {
+    const el = ev.target.closest("[data-pb]");
+    if (!el) return;
+    const [i, k] = el.dataset.pb.split("|");
+    if (pgBlocks[Number(i)]) pgBlocks[Number(i)][k] = el.value;
+  });
+  document.addEventListener("change", ev => {
+    const el = ev.target.closest("select[data-pb]");
+    if (!el) return;
+    const [i, k] = el.dataset.pb.split("|");
+    if (pgBlocks[Number(i)]) pgBlocks[Number(i)][k] = el.value;
   });
 
   // Paste into the description arrives as plain text, so a paragraph from

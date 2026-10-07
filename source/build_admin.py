@@ -11,14 +11,15 @@ CATEGORIES = ["Morning Offering", "Happy Hour", "Community Dinner", "Culinary Ex
 STATUSES = ["Draft", "Live", "Unpublished", "Archived"]
 RSVP_TYPES = ["None", "Guest count only", "Seat", "Paid seat", "Partner email"]
 
-SCREENS = ["dash", "events", "editor", "cal", "assets", "arch", "res", "spaces", "msgs", "inst",
+SCREENS = ["dash", "events", "editor", "cal", "pages", "pageedit", "assets", "arch", "res", "spaces", "msgs", "inst",
            "inst-events", "inst-brand", "inst-email", "inst-screens", "inst-private"]
-NAV_OF = {"dash": "dash", "events": "events", "editor": "events", "cal": "cal", "assets": "assets",
+NAV_OF = {"dash": "dash", "events": "events", "editor": "events", "cal": "cal",
+          "pages": "pages", "pageedit": "pages", "assets": "assets",
           "res": "res", "spaces": "spaces", "msgs": "msgs", "inst": "inst",
           "inst-events": "inst", "inst-brand": "inst", "inst-email": "inst",
           "inst-screens": "inst", "inst-private": "inst"}
-NAV = [("dash", "Dashboard"), ("events", "Events"), ("cal", "Calendar"), ("assets", "Assets"),
-       ("res", "Residents"), ("spaces", "Spaces"), ("msgs", "Messages"), ("inst", "Settings")]
+NAV = [("dash", "Dashboard"), ("events", "Events"), ("cal", "Calendar"), ("pages", "Pages"),
+       ("assets", "Assets"), ("res", "Residents"), ("spaces", "Spaces"), ("msgs", "Messages"), ("inst", "Settings")]
 
 rules = [f'#s-{s}:checked ~ .body #scr-{s}{{display:block}}' for s in SCREENS]
 for s, nav in NAV_OF.items():
@@ -324,8 +325,23 @@ HTML = f'''<!DOCTYPE html>
      Messages, and manages RSVPs; the calendar itself stays out of reach. The
      server enforces this on every endpoint; hiding tabs keeps the view honest. */
   body.role-desk .navbar label[for="s-events"],
+  body.role-desk .navbar label[for="s-pages"],
   body.role-desk .navbar label[for="s-assets"],
   body.role-desk .navbar label[for="s-inst"]{{display:none}}
+
+  /* ---------- pages builder ---------- */
+  .pgblk{{background:var(--paper-2);border:1px solid var(--line);border-radius:var(--radius);margin:0 0 12px}}
+  .pgblk .bh{{display:flex;align-items:center;gap:10px;padding:8px 14px;border-bottom:1px solid var(--line-2);background:var(--paper)}}
+  .pgblk .bh .k{{font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;font-weight:700;color:var(--ink)}}
+  .pgblk .bh .sp{{flex:1}}
+  .pgblk .bh button{{background:none;border:1px solid var(--line);border-radius:3px;color:var(--ink-soft);
+    cursor:pointer;font-size:13px;padding:2px 9px;line-height:1.4}}
+  .pgblk .bh button:hover{{color:var(--ink);border-color:var(--stone)}}
+  .pgblk .bb{{padding:12px 14px}}
+  .pgaddbar{{display:flex;gap:8px;flex-wrap:wrap;margin:16px 0 0;padding:14px;border:1.5px dashed var(--line);
+    border-radius:var(--radius);align-items:center}}
+  .pgaddbar .lab{{font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--stone);font-weight:700;margin-right:4px}}
+  .pgrow .addr{{font-family:ui-monospace,Menlo,monospace;font-size:12px;color:var(--red)}}
 
   /* ---------- residents ---------- */
   /* One card per unit: the header is a banner on its own ground, not a line
@@ -832,6 +848,61 @@ HTML = f'''<!DOCTYPE html>
     <input class="inp" id="r-find" placeholder="Find a person, unit, or email" autocapitalize="none" autocomplete="off">
   </div>
   <div id="reslist"></div>
+</div></section>
+
+<!-- ================= PAGES ================= -->
+<section class="screen" id="scr-pages"><div class="wrap">
+  <div class="phead" style="display:flex;align-items:center;gap:10px"><h1>Pages</h1>{info("Standalone pages for the occasions bigger than one event: a festival week, a holiday guide, a renovation notice. Residents reach a page by its link, from an event&rsquo;s description, the email, or a QR; nothing here appears on the calendar by itself. Publish is the only road onto the site, Unpublish takes a page off the air with its content held, Archive files an unpublished page away as a reusable record, and Delete exists for drafts alone.")}</div>
+  <div class="psub" id="pgcount">Loading&hellip;</div>
+  <div style="margin:0 0 16px"><button class="btn" data-pgnew>New Page</button></div>
+  <div id="pglist"></div>
+</div></section>
+
+<!-- ================= PAGE EDITOR ================= -->
+<section class="screen" id="scr-pageedit"><div class="wrap">
+  <label class="back" for="s-pages">&larr; Back to Pages</label>
+  <div class="phead" style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+    <h1 id="pg-title-h">Edit page</h1><span class="pill" id="pg-pill">Draft</span>
+  </div>
+  <div class="psub" id="pg-sub"></div>
+  <div class="callout" id="pg-draftnote" style="display:none;margin:0 0 16px"></div>
+
+  <div class="card" style="margin-bottom:16px">
+    <div style="display:flex;gap:12px;flex-wrap:wrap">
+      <div class="field" style="flex:2;min-width:220px;margin:0"><label class="fl" for="pg-title">Page title</label>
+        <input class="inp" id="pg-title" autocapitalize="words" placeholder="Fleet Week 2026"></div>
+      <div class="field" style="flex:1;min-width:160px;margin:0"><div class="flrow"><label class="fl" for="pg-slug">Address</label>{info("The page lives at 181residents.com/this. Lowercase words and hyphens; it can be changed before publishing, but once a link is in an email or on a printed card, changing it breaks that link.")}</div>
+        <input class="inp" id="pg-slug" autocapitalize="none" placeholder="fleetweek"></div>
+    </div>
+    <div class="field" style="margin:12px 0 0"><label class="fl" for="pg-eyebrow">Eyebrow, the small line above the title</label>
+      <input class="inp" id="pg-eyebrow" placeholder="The Residents&rsquo; Club &middot; October 4 to 12"></div>
+    <div class="field" style="margin:12px 0 0"><label class="fl" for="pg-lede">Opening line</label>
+      <textarea class="inp" id="pg-lede" rows="2" placeholder="One or two sentences under the title, setting the scene."></textarea></div>
+  </div>
+
+  <div id="pgblocks"></div>
+
+  <div class="pgaddbar">
+    <span class="lab">Add</span>
+    <button class="mini ghost" data-pbadd="text">Text</button>
+    <button class="mini ghost" data-pbadd="feature">Feature card</button>
+    <button class="mini ghost" data-pbadd="heading">Section heading</button>
+    <button class="mini ghost" data-pbadd="fold">Fold</button>
+    <button class="mini ghost" data-pbadd="bullets">Bullet list</button>
+    <button class="mini ghost" data-pbadd="links">Link rows</button>
+    <button class="mini ghost" data-pbadd="image">Picture from the kit</button>
+  </div>
+
+  <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:28px;align-items:center" id="pg-actions">
+    <button class="btn" id="pg-publish" data-pgpublish>Publish</button>
+    <button class="btn ghost" id="pg-savedraft" data-pgsavedraft>Save draft</button>
+    <button class="mini ghost" id="pg-discard" data-pgdiscard style="display:none">Discard draft</button>
+    <button class="btn ghost" id="pg-archive" data-pgarchive disabled title="For safety, a page archives from Unpublished, never straight off the site">Archive</button>
+    <button class="btn ghost" id="pg-delete" data-pgdelete style="display:none;border-color:var(--red);color:var(--red)" title="Drafts only: residents never saw this page">Delete draft</button>
+    <a class="mini ghost" id="pg-view" href="/" target="_blank" rel="noopener" style="display:none">View page</a>
+    <button class="mini ghost" data-pgcopy style="display:none" id="pg-copy">Copy link</button>
+  </div>
+  <div class="hint" id="pg-actions-note" style="margin-top:10px"></div>
 </div></section>
 
 <!-- ================= SPACES ================= -->
