@@ -186,6 +186,12 @@ for q in QR_PATHS:
     os.makedirs(f"{SITE}/q/{q}", exist_ok=True)
     open(f"{SITE}/q/{q}/index.html", "w", encoding="utf-8").write(html)
 
+# Special-occasion standalone pages, linked from event descriptions and emails.
+import fleetweek_page
+os.makedirs(f"{SITE}/fleetweek", exist_ok=True)
+open(f"{SITE}/fleetweek/index.html", "w", encoding="utf-8").write(fleetweek_page.page())
+print("fleet week page built")
+
 # ---------------------------------------------------------------- admin
 admin = open(os.path.join(HERE, "181fremont_admin_prototype.html"), encoding="utf-8").read()
 admin = admin.replace('<div class="mocknote">Admin prototype — sample data, nothing here saves</div>\n\n', "")
