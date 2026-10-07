@@ -267,8 +267,20 @@ _live = _os.path.join(_os.path.dirname(_os.path.abspath(__file__)), "events_live
 if _os.path.exists(_live) and not _os.environ.get("EVENTS_FROM_CODE"):
     from fields import from_record as _from_record
     _rows = _json.load(open(_live, encoding="utf-8"))
-    EVENTS = [_base(**_from_record(f, MONTH_KEYS)) for f in _rows if (f.get("Status") or "Draft") == "Live"]
-    EVENTS = [e for e in EVENTS if RANGE_START <= e["on"] <= RANGE_END]
+    def _in_range(f):
+        # Out-of-range rows step aside BEFORE the month mapping, which can only
+        # speak for months the calendar covers: a Live event dated past
+        # RANGE_END (next season, published ahead of the range moving) must
+        # wait its turn quietly, never take every build down with it
+        # (KeyError on a January date, Oct 6 2026). An unreadable date waits
+        # the same way.
+        try:
+            d = date.fromisoformat(str(f.get("Date") or ""))
+        except ValueError:
+            return False
+        return RANGE_START <= d <= RANGE_END
+    EVENTS = [_base(**_from_record(f, MONTH_KEYS))
+              for f in _rows if (f.get("Status") or "Draft") == "Live" and _in_range(f)]
     EVENTS.sort(key=lambda e: (e["on"], e["t24"]))
     for _i, e in enumerate(EVENTS, 1): e["id"] = _i
     EVENTS_SOURCE = "database"
