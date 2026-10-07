@@ -241,15 +241,8 @@ for _p in _pages:
 json.dump(_made, open(_manifest_path, "w", encoding="utf-8"))
 print(f"builder pages: {len(_made)}")
 
-# Fleet Week's hardcoded module is the safety net under /fleetweek until its
-# builder-page twin is published; the first publish hands the address over.
-# Once Leo has published the imported page, delete fleetweek_page.py and this
-# block, and the page lives entirely in the builder's lifecycle.
-if "fleetweek" not in _made:
-    import fleetweek_page
-    os.makedirs(f"{SITE}/fleetweek", exist_ok=True)
-    open(f"{SITE}/fleetweek/index.html", "w", encoding="utf-8").write(fleetweek_page.page())
-    print("fleet week page built (hardcoded fallback)")
+# Fleet Week lives entirely in the Pages builder now (migrated Oct 7); its
+# hardcoded module and the one-time import endpoint are gone with it.
 
 # ---------------------------------------------------------------- admin
 admin = open(os.path.join(HERE, "181fremont_admin_prototype.html"), encoding="utf-8").read()
