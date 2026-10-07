@@ -694,7 +694,7 @@ def rebuild():
 # Mirrors functions/api/pages: slug hygiene and the addresses a page may not take.
 RESERVED_SLUGS = {"admin", "api", "rsvp", "register", "signin", "signout", "my", "message",
                   "board", "spaces", "notes", "calendar", "ics", "fonts", "hero", "e", "q",
-                  "fleetweek", "index.html", "manifest.webmanifest", "admin.webmanifest",
+                  "index.html", "manifest.webmanifest", "admin.webmanifest",
                   "_templates", "cdn-cgi", "pages"}
 
 def clean_slug(v):

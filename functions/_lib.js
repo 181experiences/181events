@@ -165,7 +165,7 @@ export const RESIDENT_TABLES = [
 export const RESERVED_SLUGS = new Set([
   "admin", "api", "rsvp", "register", "signin", "signout", "my", "message",
   "board", "spaces", "notes", "calendar", "ics", "fonts", "hero", "e", "q",
-  "fleetweek", "index.html", "manifest.webmanifest", "admin.webmanifest",
+  "index.html", "manifest.webmanifest", "admin.webmanifest",
   "_templates", "cdn-cgi", "pages",
 ]);
 

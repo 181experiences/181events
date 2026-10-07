@@ -186,12 +186,6 @@ for q in QR_PATHS:
     os.makedirs(f"{SITE}/q/{q}", exist_ok=True)
     open(f"{SITE}/q/{q}/index.html", "w", encoding="utf-8").write(html)
 
-# Special-occasion standalone pages, linked from event descriptions and emails.
-import fleetweek_page
-os.makedirs(f"{SITE}/fleetweek", exist_ok=True)
-open(f"{SITE}/fleetweek/index.html", "w", encoding="utf-8").write(fleetweek_page.page())
-print("fleet week page built")
-
 # Pages from the admin's Pages builder: pages_live.json carries the Published
 # rows (publish.py from D1 on Cloudflare, the dev server's store locally). The
 # manifest remembers which folders this builder made, so an unpublished page's
@@ -239,13 +233,23 @@ if os.path.exists(_pages_live):
 _made = []
 for _p in _pages:
     _slug = _re.sub(r"[^a-z0-9-]", "", str(_p.get("slug") or ""))
-    if len(_slug) < 3 or _slug in ("fleetweek", "q", "ics", "fonts", "admin", "api"):
+    if len(_slug) < 3 or _slug in ("q", "ics", "fonts", "admin", "api"):
         continue
     os.makedirs(f"{SITE}/{_slug}", exist_ok=True)
     open(f"{SITE}/{_slug}/index.html", "w", encoding="utf-8").write(page_renderer.render(_p))
     _made.append(_slug)
 json.dump(_made, open(_manifest_path, "w", encoding="utf-8"))
 print(f"builder pages: {len(_made)}")
+
+# Fleet Week's hardcoded module is the safety net under /fleetweek until its
+# builder-page twin is published; the first publish hands the address over.
+# Once Leo has published the imported page, delete fleetweek_page.py and this
+# block, and the page lives entirely in the builder's lifecycle.
+if "fleetweek" not in _made:
+    import fleetweek_page
+    os.makedirs(f"{SITE}/fleetweek", exist_ok=True)
+    open(f"{SITE}/fleetweek/index.html", "w", encoding="utf-8").write(fleetweek_page.page())
+    print("fleet week page built (hardcoded fallback)")
 
 # ---------------------------------------------------------------- admin
 admin = open(os.path.join(HERE, "181fremont_admin_prototype.html"), encoding="utf-8").read()
