@@ -1620,9 +1620,24 @@
   // borders, since the cut edge is the border. Print at 100% ("Actual size",
   // margins None) or the geometry shifts. On screen the cells show a dashed
   // outline for a sanity look that never prints.
-  function printCards(only) {
-    const list = only ? [only] : residents.filter(p => p.status === "Active" && !p.expired);
+  async function printCards(only) {
+    let list = only ? [only] : residents.filter(p => p.status === "Active" && !p.expired);
     if (!list.length) { toast("Nobody to print for yet.", "warn"); return; }
+    // The developer's units (rows named for Jay Paul) hold codes like anyone
+    // else, but nobody collects their cards; printing all offers to leave
+    // them out, out loud rather than silently.
+    if (!only) {
+      const dev = list.filter(p => (p.name || "").toLowerCase().includes("jay paul"));
+      if (dev.length) {
+        const v = await dialog("Include the developer's units?",
+          `${dev.length} ${dev.length === 1 ? "row belongs" : "rows belong"} to Jay Paul Company. Their codes stay valid either way; this only decides whether cards are printed for them.`,
+          [{ label: `Print without them (${list.length - dev.length} cards)`, kind: "primary", value: "skip" },
+           { label: `Print all ${list.length}`, value: "all" },
+           { label: "Never mind", kind: "quiet", value: null }]);
+        if (!v) return;
+        if (v === "skip") list = list.filter(p => !dev.includes(p));
+      }
+    }
     const card = (p, i) => {
       const col = i % 2, row = Math.floor(i / 2) % 5;
       return `<div class="pc" style="left:${col ? "4.25" : "0.75"}in;top:${(0.5 + row * 2).toFixed(1)}in">
