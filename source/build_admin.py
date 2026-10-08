@@ -844,6 +844,7 @@ HTML = f'''<!DOCTYPE html>
       <textarea class="inp" id="r-bulk" rows="3" style="margin-top:6px" placeholder="One person per line: unit, name, email, owner or tenant&#10;12A, Margaret, margaret@example.com, owner&#10;7C, Elena, , tenant"></textarea>
       <div style="margin-top:10px;display:flex;gap:10px;align-items:center"><button class="mini" data-addbulk>Add Everyone Listed</button><button class="mini ghost" data-bulkclose>Close</button></div>
   </div>
+  <div class="card" id="bulk-report" style="display:none;margin-bottom:18px"></div>
   <div style="margin:0 0 14px;max-width:360px">
     <input class="inp" id="r-find" placeholder="Find a person, unit, or email" autocapitalize="none" autocomplete="off">
   </div>

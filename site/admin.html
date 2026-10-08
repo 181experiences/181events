@@ -849,6 +849,7 @@
       <textarea class="inp" id="r-bulk" rows="3" style="margin-top:6px" placeholder="One person per line: unit, name, email, owner or tenant&#10;12A, Margaret, margaret@example.com, owner&#10;7C, Elena, , tenant"></textarea>
       <div style="margin-top:10px;display:flex;gap:10px;align-items:center"><button class="mini" data-addbulk>Add Everyone Listed</button><button class="mini ghost" data-bulkclose>Close</button></div>
   </div>
+  <div class="card" id="bulk-report" style="display:none;margin-bottom:18px"></div>
   <div style="margin:0 0 14px;max-width:360px">
     <input class="inp" id="r-find" placeholder="Find a person, unit, or email" autocapitalize="none" autocomplete="off">
   </div>
@@ -1316,7 +1317,7 @@
 <div id="dlg-wrap"><div id="dlg"><div id="dlg-t"></div><div id="dlg-p"></div><div id="dlg-f"></div><div id="dlg-b"></div></div></div>
 <div class="toast" id="toast"></div>
 <script>
-/* 181 Fremont admin. Talks to /api/* (Cloudflare Pages Functions, or dev_server.py locally).
+﻿/* 181 Fremont admin. Talks to /api/* (Cloudflare Pages Functions, or dev_server.py locally).
    Staff only, so JavaScript is fine here. The resident site stays script-free. */
 (function () {
   "use strict";
@@ -2784,9 +2785,20 @@
     } catch (e) { toast(e.message, "warn"); }
   }
 
+  // One key per person, the same shape the server matches on: unit + name,
+  // case and whitespace ignored.
+  const resKey = (unit, name) => `${String(unit || "").trim().toUpperCase()}|${String(name || "").trim().toLowerCase().replace(/\s+/g, " ")}`;
+
   async function addBulk() {
     const bulk = $("#r-bulk").value;
     if (!bulk.trim()) { toast("Paste at least one line first: unit, name, email.", "warn"); return; }
+    // The paste, parsed the way the server parses it, so the report can say
+    // who in the system did NOT appear in it (departure candidates).
+    const pasteKeys = new Set();
+    for (const line of bulk.split("\n")) {
+      const parts = line.split(",");
+      if (parts.length >= 2 && parts[0].trim() && parts[1].trim()) pasteKeys.add(resKey(parts[0], parts[1]));
+    }
     try {
       const d = await api("/api/residents", { method: "POST", body: JSON.stringify({ bulk }) });
       residents.push(...d.residents);
@@ -2805,7 +2817,36 @@
       if ((d.updated || []).length) bits.push(`Filled blanks on ${d.updated.length} existing ${d.updated.length === 1 ? "row" : "rows"} from the paste.`);
       if (d.disabled) bits.push(`${d.disabled} of the skipped ${d.disabled === 1 ? "is" : "are"} disabled; Edit restores anyone who is back.`);
       toast(bits.join(" "));
+      renderBulkReport(d, pasteKeys);
     } catch (e) { toast(e.message, "warn"); }
+  }
+
+  // The reconciliation report after a bulk sync: who was added, whose blanks
+  // were filled, and who sits in the system but was absent from the paste.
+  // Nothing is ever removed automatically; the absent list is a shortlist for
+  // the human verbs, Disable (keeps history) or Delete (typos and test rows).
+  function renderBulkReport(d, pasteKeys) {
+    const box = $("#bulk-report"); if (!box) return;
+    const nameLine = p => `<div class="srow"><span class="slab">${esc(p.unit || "Role")} &middot; ${esc(p.name)}</span>
+      <span class="sgrow" style="font-size:13px;color:var(--ink-soft)">${esc(p.email || "no email")}</span></div>`;
+    const absent = pasteKeys.size
+      ? residents.filter(p => p.kind !== "role" && p.status === "Active" && !pasteKeys.has(resKey(p.unit, p.name)))
+      : [];
+    const disabledMatches = residents.filter(p => p.status === "Disabled" && pasteKeys.has(resKey(p.unit, p.name)));
+    const sec = (head, body) => body ? `<div style="margin-top:14px"><div style="font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--stone);font-weight:600;margin-bottom:6px">${head}</div>${body}</div>` : "";
+    box.innerHTML = `<div style="display:flex;align-items:baseline;gap:12px;flex-wrap:wrap">
+      <strong>The sync, reconciled</strong>
+      <span class="hint" style="margin:0">Codes of everyone already listed are untouched. Nobody is removed by a paste; the lists below are for your eyes and your verbs.</span>
+      <button class="mini ghost" data-bulkreportclose style="margin-left:auto">Close</button></div>`
+      + sec(`Added &middot; ${d.residents.length}`, d.residents.map(nameLine).join("") || "")
+      + sec(`Blanks filled from the paste &middot; ${(d.updated || []).length}`, (d.updated || []).map(nameLine).join("") || "")
+      + sec(`In the paste but disabled here &middot; ${disabledMatches.length}`,
+          disabledMatches.length ? disabledMatches.map(nameLine).join("") + '<div class="hint">Back in the building? Edit their row and Restore; their old code returns with them.</div>' : "")
+      + sec(`In the system but not in this paste &middot; ${absent.length}`,
+          absent.length ? absent.map(nameLine).join("") + '<div class="hint">Moved out? Disable from their row, which signs them out everywhere and keeps their history. Role accounts are never listed here.</div>'
+            : '<div class="hint">Everyone active matches the paste; nothing to review.</div>');
+    box.style.display = "";
+    box.scrollIntoView({ behavior: "smooth", block: "nearest" });
   }
 
   // Folding and finding. openUnits remembers which cards are open across
@@ -3968,7 +4009,7 @@
   }
 
   document.addEventListener("click", ev => {
-    const r = ev.target.closest("[data-mailcode],[data-printone],[data-rotate],[data-ends],[data-toggle],[data-rdelete],[data-resedit],[data-saveres],[data-cancelres],[data-edittoggle],[data-editdelete],[data-addres],[data-resopen],[data-bulkopen],[data-bulkclose],[data-addbulk],[data-printcards],[data-mreplied],[data-marchive],[data-wconfirm],[data-redit],[data-rcancel],[data-rarrive],[data-pastchev],[data-pastmail],[data-notedel],[data-noterestore],[data-nbpast],[data-rsvpprint],[data-addrsvp],[data-savearsvp],[data-closearsvp],[data-copylink],[data-copyshort],[data-aupload],[data-acanva],[data-adelete],[data-rsvpkey],[data-addbooking],[data-unbook],[data-bkchev],[data-bkreg],[data-bkcopy],[data-bkprint],[data-gadd],[data-garrive],[data-gdel],[data-gmail],[data-gedit],[data-bkedit],[data-savebk],[data-cancelbk],[data-bkopen]");
+    const r = ev.target.closest("[data-mailcode],[data-printone],[data-rotate],[data-ends],[data-toggle],[data-rdelete],[data-resedit],[data-saveres],[data-cancelres],[data-edittoggle],[data-editdelete],[data-addres],[data-resopen],[data-bulkopen],[data-bulkclose],[data-addbulk],[data-bulkreportclose],[data-printcards],[data-mreplied],[data-marchive],[data-wconfirm],[data-redit],[data-rcancel],[data-rarrive],[data-pastchev],[data-pastmail],[data-notedel],[data-noterestore],[data-nbpast],[data-rsvpprint],[data-addrsvp],[data-savearsvp],[data-closearsvp],[data-copylink],[data-copyshort],[data-aupload],[data-acanva],[data-adelete],[data-rsvpkey],[data-addbooking],[data-unbook],[data-bkchev],[data-bkreg],[data-bkcopy],[data-bkprint],[data-gadd],[data-garrive],[data-gdel],[data-gmail],[data-gedit],[data-bkedit],[data-savebk],[data-cancelbk],[data-bkopen]");
     if (r) {
       if (r.dataset.bkedit) {
         const b = bookings.find(x => String(x.id) === r.dataset.bkedit);
@@ -4163,6 +4204,7 @@
       }
       else if (r.dataset.bulkclose !== undefined) exitResEdit();
       else if (r.dataset.addbulk !== undefined) addBulk();
+      else if (r.dataset.bulkreportclose !== undefined) { $("#bulk-report").style.display = "none"; }
       else if (r.dataset.printone) {
         const p = residents.find(x => String(x.id) === r.dataset.printone);
         if (p) printCards(p);
