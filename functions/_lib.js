@@ -317,7 +317,9 @@ export async function ensureResidentTables(env) {
   // cap fills: past it, registration keeps taking names onto a waitlist.
   // updated/updated_by mirror the rsvps trail: every write says who and when
   // ('guest' for self-registration, the staff email for desk work).
-  for (const col of ["email TEXT", "status TEXT", "updated TEXT", "updated_by TEXT"]) {
+  // source = which building's invitation link brought them (?from= on the
+  // registration address); null for desk adds and untagged links.
+  for (const col of ["email TEXT", "status TEXT", "updated TEXT", "updated_by TEXT", "source TEXT"]) {
     try { await env.DB.prepare(`ALTER TABLE guests ADD COLUMN ${col}`).run(); } catch (e) {}
   }
   // Notes archive: nothing is hard-deleted any more. A note leaves the board

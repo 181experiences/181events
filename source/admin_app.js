@@ -2131,7 +2131,7 @@
       : !g.length ? '<div class="nodata" style="padding:12px">Nobody registered yet. Copy the link and the host sends it to the invitees.</div>'
       : g.map(r => `<div class="srow">
           <span class="slab">${esc(r.name)}${r.plus_one ? ` <span style="color:var(--stone)">+ ${esc(r.plus_one)}</span>` : ""}${r.status === "Waitlist" ? ' <span class="pill draft">Waitlist</span>' : ""}</span>
-          <span class="sgrow" style="font-size:12px;color:var(--stone)" title="${r.updated_by ? `Last change by ${esc(r.updated_by)}, ${esc((r.updated || r.created || "").slice(0, 10))}` : ""}">${r.email ? esc(r.email) + " · " : ""}${esc((r.created || "").slice(0, 10))}${r.updated_by ? ` · ${esc(r.updated_by === "guest" ? "self-registered" : r.updated_by.split("@")[0])}` : ""}${r.arrived ? ` · in at ${new Date(r.arrived).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })}` : ""}</span>
+          <span class="sgrow" style="font-size:12px;color:var(--stone)" title="${r.updated_by ? `Last change by ${esc(r.updated_by)}, ${esc((r.updated || r.created || "").slice(0, 10))}` : ""}">${r.email ? esc(r.email) + " · " : ""}${esc((r.created || "").slice(0, 10))}${r.updated_by ? ` · ${esc(r.updated_by === "guest" ? "self-registered" : r.updated_by.split("@")[0])}` : ""}${r.source ? ` · via ${esc(r.source)}` : ""}${r.arrived ? ` · in at ${new Date(r.arrived).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })}` : ""}</span>
           <span class="eact">
             <button class="mini${r.arrived ? "" : " ghost"}" data-garrive="${r.id}|${b.id}">${r.arrived ? "Arrived ✓" : "Arrived"}</button>
             ${r.email ? `<button class="mini ghost" data-gmail="${r.id}|${b.id}" title="A ready-written email to the address they registered with">Email</button>` : ""}
@@ -2150,7 +2150,12 @@
         <button class="mini ghost" data-bkprint="${b.id}" title="The list the desk and security run from">Print guest list</button>
         ${(() => { const st = b.reg_slug || b.reg_token; const up = assetOf(st, "web-hero");
           return `<button class="mini ghost" data-aupload="${esc(st)}|web-hero" title="A 1600 x 900 picture atop the registration page, the same size as any web hero">${up && up.uploaded ? "Replace page header" : "Upload page header"}</button>${up && up.uploaded ? `<button class="mini ghost" data-adelete="${esc(st)}|web-hero" title="The page returns to plain">Remove header</button>` : ""}`; })()}
-        <span class="hint" style="margin:0">${b.reg_open ? "Registration is open" : "Registration is closed"}${b.guest_cap ? ` · cap ${b.guest_cap}` : ""}${g ? ` · ${confirmed.length} ${confirmed.length === 1 ? "party" : "parties"}, ${total} guests${waitHeads ? `, ${waitHeads} waitlisted` : ""}, ${inCount} arrived` : ""}</span>
+        <span class="hint" style="margin:0">${b.reg_open ? "Registration is open" : "Registration is closed"}${b.guest_cap ? ` · cap ${b.guest_cap}` : ""}${g ? ` · ${confirmed.length} ${confirmed.length === 1 ? "party" : "parties"}, ${total} guests${waitHeads ? `, ${waitHeads} waitlisted` : ""}, ${inCount} arrived` : ""}${(() => {
+          const by = {};
+          for (const r of g || []) { if (r.source) by[r.source] = (by[r.source] || 0) + 1; }
+          const parts = Object.entries(by).sort((a, z) => z[1] - a[1]).map(([s, n]) => `${esc(s)} ${n}`);
+          return parts.length ? ` · by link: ${parts.join(", ")}` : "";
+        })()}</span>
       </div>
       <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;margin-bottom:6px">
         <div class="field" style="margin:0"><label class="fl" for="g-name-${b.id}">Add at the desk</label><input class="inp" id="g-name-${b.id}" autocapitalize="words" placeholder="Guest name"></div>
@@ -2209,7 +2214,7 @@
       const lines = [];
       let n = 0;
       for (const r of rows) {
-        n++; lines.push({ n, name: r.name, note: r.email || "" });
+        n++; lines.push({ n, name: r.name, note: (r.email || "") + (r.source ? ` · via ${r.source}` : "") });
         if (r.plus_one) { n++; lines.push({ n, name: r.plus_one, note: `guest of ${r.name}` }); }
       }
       return lines;

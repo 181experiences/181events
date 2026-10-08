@@ -86,6 +86,14 @@ async function heroStem(env, b) {
   return r ? stem : null;
 }
 
+// Which building's invitation brought them: a ?from= tag on the link each
+// building receives (one-steuart, mira, ...). The guest types nothing; the
+// link itself is the attribution, the same idea as the calendar's /q paths.
+function sourceOf(request) {
+  const v = new URL(request.url).searchParams.get("from") || "";
+  return v.toLowerCase().trim().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 40);
+}
+
 async function regPage(context, b, state, waitlisting) {
   const { env } = context;
   const mine = await myRegistration(context, b);
@@ -120,7 +128,7 @@ async function regPage(context, b, state, waitlisting) {
     body = cut(body, "CLOSED", fill(inner(tpl, "CLOSED"), { CLOSEDMSG: state }));
   } else {
     body = cut(body, "CLOSED", null);
-    body = cut(body, "FORM", fill(inner(tpl, "FORM"), { TOKEN: esc(b.reg_token) }));
+    body = cut(body, "FORM", fill(inner(tpl, "FORM"), { TOKEN: esc(b.reg_token), SRC: esc(sourceOf(context.request)) }));
   }
   return page(context, b.event_name || "Private event", body, null);
 }
@@ -185,6 +193,8 @@ export async function onRequestPost(context) {
   const name = String(form.get("name") || "").trim().slice(0, 80);
   const email = String(form.get("email") || "").trim().slice(0, 120);
   const plus = String(form.get("plus") || "").trim().slice(0, 80);
+  const source = String(form.get("from") || "").toLowerCase().trim()
+    .replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 40) || null;
   if (stateOf(b)) return seeOther(`/register/${b.reg_token}`);
   if (!name || !email || !/.+@.+\..+/.test(email)) return seeOther(`/register/${b.reg_token}`);
   // A full list waitlists the whole party rather than turning it away; a
@@ -196,11 +206,12 @@ export async function onRequestPost(context) {
   if (!trap) {
     const regNow = new Date().toISOString();
     row = await env.DB.prepare(
-      "INSERT INTO guests (booking_id, name, plus_one, created, email, status, updated, updated_by) VALUES (?, ?, ?, ?, ?, ?, ?, ?) RETURNING *")
-      .bind(b.id, name, plus || null, regNow, email, waitlisted ? "Waitlist" : null, regNow, "guest").first();
+      "INSERT INTO guests (booking_id, name, plus_one, created, email, status, updated, updated_by, source) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING *")
+      .bind(b.id, name, plus || null, regNow, email, waitlisted ? "Waitlist" : null, regNow, "guest", source).first();
     notifyStaff(context, `Guest registration · ${name}${plus ? " +1" : ""} · ${b.event_name || "private event"}`, [
       `${name}${plus ? " and " + plus : ""} registered for ${b.event_name || "a private event"}, ${b.date}.`,
       `Email: ${email}`,
+      source ? `Came through the ${source} link.` : "",
       waitlisted ? "Standing: WAITLIST (the list is at its cap)." : "Standing: confirmed.",
       `Guest list: https://181residents.com/admin (Spaces, or the Dashboard's Resident hosted row)`,
     ]);

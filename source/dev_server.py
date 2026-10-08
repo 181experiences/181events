@@ -535,7 +535,11 @@ def reg_hero_stem(b):
                 if a["stem"] == stem and a["kind"] == "web-hero" and a.get("filename")), None)
     return stem if row and os.path.exists(os.path.join(ASSET_DIR, f"{stem}__web-hero")) else None
 
-def register_page(b, mine=None):
+def clean_source(v):
+    # Mirrors functions/register: the ?from= building tag on invitation links.
+    return re.sub(r"^-+|-+$", "", re.sub(r"[^a-z0-9]+", "-", str(v or "").lower().strip()))[:40]
+
+def register_page(b, mine=None, src=""):
     tpl = template("register")
     d = datetime.date.fromisoformat(b["date"])
     when = f"{DOW[(d.weekday() + 1) % 7]}, {MONTHS_S[d.month - 1]} {d.day}"
@@ -564,7 +568,7 @@ def register_page(b, mine=None):
     if state:
         body = cut(cut(body, "FORM", None), "CLOSED", fill(inner(tpl, "CLOSED"), dict(CLOSEDMSG=state)))
     else:
-        body = cut(cut(body, "CLOSED", None), "FORM", fill(inner(tpl, "FORM"), dict(TOKEN=esc(b["reg_token"]))))
+        body = cut(cut(body, "CLOSED", None), "FORM", fill(inner(tpl, "FORM"), dict(TOKEN=esc(b["reg_token"]), SRC=esc(src))))
     return shell_page(b.get("event_name") or "Private event", body, None)
 
 def spaces_page(me):
@@ -931,7 +935,7 @@ class H(SimpleHTTPRequestHandler):
                 if m and int(m.group(1)) == b["id"]:
                     mine_g = next((g for g in load_store("guests", [])
                                    if g["id"] == int(m.group(2)) and g["booking_id"] == b["id"]), None)
-                return self._html(register_page(b, mine_g))
+                return self._html(register_page(b, mine_g, clean_source((q.get("from") or [""])[0])))
             if not b:
                 tpl = template("done")
                 body = fill(cut(cut(tpl, "LINK", inner(tpl, "LINK")), "ICON", None), dict(
@@ -1261,6 +1265,7 @@ class H(SimpleHTTPRequestHandler):
             name = (form.get("name") or "").strip()[:80]
             email = (form.get("email") or "").strip()[:120]
             plus = (form.get("plus") or "").strip()[:80]
+            source = clean_source(form.get("from")) or None
             if reg_state(b) or not name or not re.match(r".+@.+\..+", email):
                 return self._redirect(f"/register/{token}")
             wanting = 2 if plus else 1
@@ -1272,7 +1277,7 @@ class H(SimpleHTTPRequestHandler):
                 guests.append(dict(id=gid, booking_id=b["id"],
                                    name=name, plus_one=plus or None, created=now_iso(), arrived=None,
                                    email=email, status="Waitlist" if waitlisted else None,
-                                   updated=now_iso(), updated_by="guest"))
+                                   updated=now_iso(), updated_by="guest", source=source))
                 save_store("guests", guests)
                 cookie = f"r181g={b['id']}.{gid}.dev; Max-Age=10368000; Path=/register; HttpOnly; SameSite=Lax"
                 dev_notify(f"Guest registration · {name}{' +1' if plus else ''} · {b.get('event_name') or 'private event'}",
