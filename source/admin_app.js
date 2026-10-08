@@ -2725,9 +2725,14 @@
       }
       if (r.dataset.gadd) {
         const id = Number(r.dataset.gadd);
-        const name = $(`#g-name-${id}`).value.trim();
+        // The same guest panel renders on the Dashboard and on Spaces, so the
+        // inputs' ids exist twice; read the pair sitting beside the pressed
+        // button, never the first id in the document (which may be the other
+        // screen's empty twin).
+        const rowBox = r.parentElement;
+        const name = rowBox.querySelector(`[id="g-name-${id}"]`).value.trim();
         if (!name) { toast("A guest name is needed.", "warn"); return; }
-        api("/api/guests", { method: "POST", body: JSON.stringify({ booking_id: id, name, plus_one: $(`#g-plus-${id}`).value.trim() }) })
+        api("/api/guests", { method: "POST", body: JSON.stringify({ booking_id: id, name, plus_one: rowBox.querySelector(`[id="g-plus-${id}"]`).value.trim() }) })
           .then(d => {
             (guestsByBooking[id] = guestsByBooking[id] || []).push(d.guest);
             const b = bookings.find(x => x.id === id);
