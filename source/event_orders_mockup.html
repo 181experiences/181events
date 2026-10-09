@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MOCKUP · Event Orders in the 181 admin</title>
+<style>
+  :root{
+    --ink:#16161a; --ink-soft:#55555f; --paper:#f7f4ef; --paper-2:#fffdfa;
+    --line:#ddd6cb; --red:#c41f26; --stone:#7a7266; --radius:4px; --green:#2e6b2e;
+    --fb:'Hanken Grotesk',-apple-system,'Segoe UI',sans-serif;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--fb);font-size:14px;line-height:1.5}
+  .mocknote{background:#1b3a6b;color:#fff;text-align:center;font-size:12px;letter-spacing:.14em;
+    text-transform:uppercase;padding:7px}
+  .topbar{background:var(--ink);color:#fff;padding:14px 26px;display:flex;align-items:baseline;gap:18px}
+  .topbar .brand{font-family:Georgia,serif;letter-spacing:.14em;font-size:16px}
+  .topbar .sub{font-size:10px;letter-spacing:.22em;color:#b9afa1;text-transform:uppercase}
+  .navbar{background:var(--ink);padding:0 26px 12px;display:flex;gap:20px;font-size:12px;
+    letter-spacing:.1em;text-transform:uppercase;flex-wrap:wrap}
+  .navbar span{color:#b9afa1;padding-bottom:4px;cursor:default}
+  .navbar .on{color:#fff;border-bottom:2px solid var(--red)}
+  .wrap{max-width:1100px;margin:0 auto;padding:30px 26px 80px}
+  h1{font-family:Georgia,serif;font-weight:400;font-size:28px;margin:0 0 4px}
+  .psub{color:var(--ink-soft);margin:0 0 22px;max-width:54em}
+  .btn{display:inline-block;background:var(--red);color:#fff;border:none;border-radius:var(--radius);
+    padding:10px 18px;font-family:var(--fb);font-size:13.5px;font-weight:600;cursor:pointer}
+  .mini{display:inline-block;background:var(--ink);color:#fff;border:none;border-radius:var(--radius);
+    padding:6px 12px;font-size:12px;font-weight:600;cursor:pointer}
+  .mini.ghost{background:transparent;color:var(--ink);border:1px solid var(--line)}
+  .pill{display:inline-block;font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;
+    border-radius:20px;padding:3px 10px}
+  .pill.plan{background:#efe9dd;color:#7a6a3a;border:1px dashed #c3b48f}
+  .pill.conf{background:#e7f0e4;color:var(--green)}
+  .pill.settled{background:#e8e4de;color:var(--stone)}
+  .pill.dayof{background:var(--red);color:#fff}
+  .screen{display:none}
+  .screen.on{display:block}
+  .switch{margin:0 0 26px;display:flex;gap:10px;flex-wrap:wrap}
+  .switch button{background:var(--paper-2);border:1px solid var(--line);border-radius:var(--radius);
+    padding:8px 16px;font-family:var(--fb);font-size:13px;cursor:pointer}
+  .switch button.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+
+  /* ------------- screen 1: repository ------------- */
+  .eocard{background:var(--paper-2);border:1px solid var(--line);border-radius:var(--radius);
+    padding:16px 20px;margin-bottom:12px;display:flex;align-items:center;gap:18px;flex-wrap:wrap;cursor:pointer}
+  .eocard:hover{border-color:var(--stone)}
+  .eocard .dt{flex:none;width:86px;text-align:center;border-right:1px solid var(--line);padding-right:16px}
+  .eocard .dt .d{font-family:Georgia,serif;font-size:26px;line-height:1}
+  .eocard .dt .m{font-size:10.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--red);font-weight:700}
+  .eocard .dt .w{font-size:11px;color:var(--stone)}
+  .eocard .t{font-family:Georgia,serif;font-size:18px}
+  .eocard .meta{font-size:12.5px;color:var(--ink-soft)}
+  .eocard .grow{flex:1;min-width:230px}
+  .readybar{flex:none;width:170px}
+  .readybar .lab{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--stone);font-weight:700;margin-bottom:4px}
+  .readybar .track{height:7px;background:var(--paper);border:1px solid var(--line);border-radius:5px;overflow:hidden}
+  .readybar .fill{height:100%;background:var(--green)}
+  .eono{font-family:ui-monospace,Menlo,monospace;font-size:11.5px;color:var(--stone)}
+  .archhead{margin:30px 0 10px;font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--stone)}
+
+  /* ------------- screen 2: the working page ------------- */
+  .eohead{background:var(--paper-2);border:1px solid var(--line);border-left:4px solid var(--red);
+    border-radius:var(--radius);padding:18px 22px;margin-bottom:18px}
+  .eohead .toprow{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;margin-bottom:12px}
+  .eohead h2{font-family:Georgia,serif;font-weight:400;font-size:23px;margin:0}
+  .factgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px 22px}
+  @media(max-width:820px){.factgrid{grid-template-columns:repeat(2,1fr)}}
+  .fact .fl{font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--stone);font-weight:700}
+  .fact .fv{font-size:14px;color:var(--ink)}
+  .timeline{display:flex;gap:0;margin-top:16px;border-top:1px solid var(--line);padding-top:12px;flex-wrap:wrap}
+  .tl{flex:1;min-width:120px;border-left:1px solid var(--line);padding:0 12px}
+  .tl:first-child{border-left:none;padding-left:0}
+  .tl .tt{font-family:Georgia,serif;font-size:16px}
+  .tl .tn{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--stone);font-weight:700}
+
+  .cols{display:grid;grid-template-columns:1fr 330px;gap:20px;align-items:start}
+  @media(max-width:900px){.cols{grid-template-columns:1fr}}
+  .card{background:var(--paper-2);border:1px solid var(--line);border-radius:var(--radius);padding:16px 18px;margin-bottom:16px}
+  .card h3{font-family:Georgia,serif;font-weight:400;font-size:16px;color:var(--red);margin:0 0 4px;
+    border-bottom:1px solid var(--line);padding-bottom:5px}
+  .card h3 .tag{font-family:var(--fb);font-size:9px;font-weight:700;letter-spacing:.16em;color:var(--stone);margin-left:8px}
+  .kv{display:flex;gap:10px;padding:5px 0;font-size:13px;border-top:1px solid var(--paper)}
+  .kv:first-of-type{border-top:none}
+  .kv .k{flex:none;width:110px;color:var(--stone);font-size:11px;text-transform:uppercase;letter-spacing:.08em;font-weight:600;padding-top:1px}
+  .ros{display:flex;gap:12px;padding:6px 0;border-top:1px solid var(--paper);font-size:13px}
+  .ros .tm2{flex:none;width:70px;font-weight:700}
+
+  .doc{display:flex;align-items:center;gap:12px;padding:9px 0;border-top:1px solid var(--paper)}
+  .doc:first-of-type{border-top:none}
+  .doc .st{flex:none;width:20px;height:20px;border-radius:50%;text-align:center;line-height:20px;font-size:12px;font-weight:700}
+  .doc .st.ok{background:#e7f0e4;color:var(--green)}
+  .doc .st.wait{background:var(--paper);border:1.5px dashed var(--line);color:var(--stone)}
+  .doc .st.gen{background:#eef;color:#1b3a6b}
+  .doc .dn{flex:1;font-size:13.5px}
+  .doc .dn small{display:block;color:var(--stone);font-size:11px}
+  .dropzone{border:1.5px dashed var(--line);border-radius:var(--radius);text-align:center;color:var(--stone);
+    font-size:12px;padding:13px;margin-top:12px}
+
+  .lognote{border-top:1px solid var(--paper);padding:9px 0;font-size:13px}
+  .lognote:first-of-type{border-top:none}
+  .lognote .who{font-size:11px;color:var(--stone);margin-bottom:2px}
+  .lognote .who b{color:var(--ink)}
+  .addnote textarea{width:100%;border:1px solid var(--line);border-radius:var(--radius);padding:8px 10px;
+    font-family:var(--fb);font-size:13px;min-height:54px;background:#fff}
+  .eonotes textarea{width:100%;border:1px solid var(--line);border-radius:var(--radius);padding:10px 12px;
+    font-family:var(--fb);font-size:13.5px;min-height:110px;background:#fff}
+  .hint{font-size:12px;color:var(--stone)}
+  .signoff{display:grid;grid-template-columns:1fr 1fr;gap:10px 22px}
+  .signoff .slot{border-bottom:1px solid var(--ink);padding:16px 0 3px;font-size:11px;color:var(--stone);
+    text-transform:uppercase;letter-spacing:.1em}
+  .footnote{margin-top:40px;border-top:1px solid var(--line);padding-top:14px;font-size:12.5px;color:var(--stone);max-width:62em}
+</style>
+</head>
+<body>
+
+<div class="mocknote">Mockup &middot; the Event Orders repository, nothing here works or saves</div>
+<div class="topbar"><span class="brand">181 FREMONT</span><span class="sub">Resident Experiences &middot; Admin</span></div>
+<div class="navbar"><span>Dashboard</span><span>Events</span><span>Calendar</span><span>Pages</span><span class="on">Event Orders</span><span>Assets</span><span>Residents</span><span>Spaces</span><span>Messages</span><span>Settings</span></div>
+
+<div class="wrap">
+
+<div class="switch">
+  <button class="on" onclick="go('list',this)">Screen 1 &middot; The repository</button>
+  <button onclick="go('eo',this)">Screen 2 &middot; One event&rsquo;s working page</button>
+</div>
+
+<!-- ================= SCREEN 1 ================= -->
+<div class="screen on" id="scr-list">
+  <h1>Event Orders</h1>
+  <p class="psub">Every private resident event, one card each, newest date first. A card opens the
+  event&rsquo;s working page: the EO itself, the paperwork checklist, the running log, and the guest
+  list, all living on the same record as the Spaces reservation. No more wondering which drive the
+  folder is on; this is the folder.</p>
+
+  <div class="eocard" onclick="go('eo', document.querySelectorAll('.switch button')[1])">
+    <div class="dt"><div class="m">OCT</div><div class="d">10</div><div class="w">Saturday</div></div>
+    <div class="grow">
+      <div class="t">Clive McCarthy &middot; 70th Birthday Dinner</div>
+      <div class="meta">McCarthy &middot; 55C &middot; Residents&rsquo; Club &amp; Terrace &middot; 42 expected &middot; caterer + florist on site</div>
+      <div class="eono">EO-2026-014 &middot; prepared by leigh anne &middot; updated yesterday by leo</div>
+    </div>
+    <span class="pill dayof">This Saturday</span>
+    <div class="readybar"><div class="lab">Paperwork 5 of 7</div><div class="track"><div class="fill" style="width:71%"></div></div></div>
+  </div>
+
+  <div class="eocard">
+    <div class="dt"><div class="m">OCT</div><div class="d">21</div><div class="w">Wednesday</div></div>
+    <div class="grow">
+      <div class="t">Under the Same Moon &middot; Outside Guests</div>
+      <div class="meta">Resident Experiences &middot; The Residents&rsquo; Club &middot; 20 cap &middot; three buildings invited</div>
+      <div class="eono">EO-2026-015 &middot; prepared by leo &middot; updated today by carley-ann</div>
+    </div>
+    <span class="pill conf">Confirmed</span>
+    <div class="readybar"><div class="lab">Paperwork 3 of 5</div><div class="track"><div class="fill" style="width:60%"></div></div></div>
+  </div>
+
+  <div class="eocard">
+    <div class="dt"><div class="m">NOV</div><div class="d">14</div><div class="w">Saturday</div></div>
+    <div class="grow">
+      <div class="t">Tang Family &middot; 50th Anniversary Reception</div>
+      <div class="meta">Tang &middot; 50A &middot; East Lounge &middot; 30 expected &middot; walkthrough not yet scheduled</div>
+      <div class="eono">EO-2026-016 &middot; prepared by carley-ann</div>
+    </div>
+    <span class="pill plan">Planning</span>
+    <div class="readybar"><div class="lab">Paperwork 1 of 7</div><div class="track"><div class="fill" style="width:14%"></div></div></div>
+  </div>
+
+  <div class="archhead">Settled &middot; deposit released &middot; 2</div>
+  <div class="eocard" style="opacity:.72">
+    <div class="dt"><div class="m">SEP</div><div class="d">25</div><div class="w">Friday</div></div>
+    <div class="grow">
+      <div class="t">A Night in Mexico City &middot; Private Dinner</div>
+      <div class="meta">Veit &middot; 12A &middot; Residents&rsquo; Club &middot; settled Oct 2, deposit released</div>
+      <div class="eono">EO-2026-012</div>
+    </div>
+    <span class="pill settled">Settled</span>
+  </div>
+
+  <p class="hint" style="margin-top:20px">Cards are born from a Spaces reservation (one click: &ldquo;Open an
+  Event Order&rdquo; on the booking), inherit its date, resident, room, and guest list, and settle into the
+  archive once both inspections are signed and the deposit is released.</p>
+</div>
+
+<!-- ================= SCREEN 2 ================= -->
+<div class="screen" id="scr-eo">
+  <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:14px">
+    <h1 style="margin:0">EO-2026-014</h1>
+    <span class="pill dayof">This Saturday</span>
+    <span style="flex:1"></span>
+    <button class="btn">Print the EO</button>
+    <button class="mini ghost">Print with guest list</button>
+    <button class="mini ghost">Copy link</button>
+  </div>
+  <p class="psub" style="margin-bottom:16px">The printable Event Order carries everything below except the
+  running log; the log is the working memory, the EO is the night&rsquo;s paper. Internal use only.</p>
+
+  <div class="eohead">
+    <div class="toprow">
+      <h2>Clive McCarthy &middot; 70th Birthday Dinner</h2>
+      <span class="hint">Issued Oct 2 &middot; Rev 3 &middot; backed by the Spaces reservation (guest list is live)</span>
+    </div>
+    <div class="factgrid">
+      <div class="fact"><div class="fl">Resident of record</div><div class="fv">Clive McCarthy</div></div>
+      <div class="fact"><div class="fl">Unit</div><div class="fv">55C</div></div>
+      <div class="fact"><div class="fl">Date &middot; day</div><div class="fv">Oct 10 &middot; Saturday</div></div>
+      <div class="fact"><div class="fl">Status</div><div class="fv">Confirmed</div></div>
+      <div class="fact"><div class="fl">Venue / rooms</div><div class="fv">Residents&rsquo; Club &amp; Terrace</div></div>
+      <div class="fact"><div class="fl">Setup style</div><div class="fv">Long table, 42 covers</div></div>
+      <div class="fact"><div class="fl">Guests (pax)</div><div class="fv">42 expected</div></div>
+      <div class="fact"><div class="fl">Deposit held</div><div class="fv">$1,500</div></div>
+    </div>
+    <div class="timeline">
+      <div class="tl"><div class="tn">Vendors in</div><div class="tt">2:00 PM</div></div>
+      <div class="tl"><div class="tn">Pre-inspection</div><div class="tt">3:30 PM</div></div>
+      <div class="tl"><div class="tn">Guests arrive</div><div class="tt">6:00 PM</div></div>
+      <div class="tl"><div class="tn">Service ends</div><div class="tt">10:00 PM</div></div>
+      <div class="tl"><div class="tn">Vendors out / reset</div><div class="tt">11:30 PM</div></div>
+    </div>
+  </div>
+
+  <div class="cols">
+  <div>
+    <div class="card">
+      <h3>Run of show</h3>
+      <div class="ros"><span class="tm2">2:00 PM</span><span>Caterer load-in via service elevator; florist follows 2:30</span></div>
+      <div class="ros"><span class="tm2">3:30 PM</span><span>Pre-event inspection with resident; photos to the record</span></div>
+      <div class="ros"><span class="tm2">6:00 PM</span><span>Guests arrive; desk runs the printed list, names at the door</span></div>
+      <div class="ros"><span class="tm2">7:15 PM</span><span>Dinner service; toasts at 8:30 (son speaks first)</span></div>
+      <div class="ros"><span class="tm2">10:00 PM</span><span>Service ends; bar closes; cake boxed for 55C</span></div>
+    </div>
+
+    <div class="card">
+      <h3>Outside vendors <span class="tag">NO COI ON FILE, NO ACCESS</span></h3>
+      <div class="kv"><span class="k">Caterer</span><span>Marengo Catering &middot; Ana Flores &middot; (415) 555-0171 &middot; COI on file &#10003;</span></div>
+      <div class="kv"><span class="k">Florist</span><span>Bloom &amp; Vine &middot; COI <b style="color:var(--red)">missing</b>, requested Oct 6</span></div>
+      <div class="kv"><span class="k">Beverage</span><span>Residents&rsquo; Club bar &middot; two staff &middot; standing license</span></div>
+    </div>
+
+    <div class="card">
+      <h3>Contacts &amp; staff on site</h3>
+      <div class="kv"><span class="k">Resident</span><span>Clive McCarthy &middot; 55C &middot; (415) 555-0132</span></div>
+      <div class="kv"><span class="k">181 lead</span><span>Resident Experience Manager, Level 39</span></div>
+      <div class="kv"><span class="k">Desk / door</span><span>Anthony (PM) &middot; printed list at the desk by 5:30</span></div>
+      <div class="kv"><span class="k">Cleaning</span><span>Night crew briefed; reset check 11:30 PM</span></div>
+    </div>
+
+    <div class="card">
+      <h3>Room, service ware &amp; linen</h3>
+      <div class="kv"><span class="k">Linen</span><span>White full-length, 42 napkins, delivered with caterer</span></div>
+      <div class="kv"><span class="k">Service ware</span><span>Club china and glassware; caterer brings chafing</span></div>
+      <div class="kv"><span class="k">Notes</span><span>Terrace heaters on from 5:30; piano stays covered</span></div>
+    </div>
+
+    <div class="card eonotes">
+      <h3>Notes, risks &amp; exceptions <span class="tag">PRINTS ON THE EO</span></h3>
+      <textarea>Resident requests no photographs by staff. Fog likely after 9; move toasts indoors if the Terrace turns cold. Deposit conversation pending the florist COI.</textarea>
+      <div class="hint" style="margin-top:6px">What the night crew needs to know, in the EO&rsquo;s own words. Prints exactly as written.</div>
+    </div>
+
+    <div class="card">
+      <h3>Inspections, deposit &amp; sign-off <span class="tag">DEPOSIT HOLDS UNTIL BOTH ARE SIGNED</span></h3>
+      <div class="signoff">
+        <div class="slot">Pre-event inspection &middot; time &amp; resident signature</div>
+        <div class="slot">Post-event inspection &middot; time &amp; resident signature</div>
+        <div class="slot">Damage / loss noted &middot; Y / N</div>
+        <div class="slot">Deposit release recommended &middot; for 181 Fremont Residences</div>
+      </div>
+      <div class="hint" style="margin-top:10px">Signed on the printed EO; the signed copy is dropped back
+      into the paperwork below, and Settled closes the card into the archive.</div>
+    </div>
+  </div>
+
+  <div>
+    <div class="card">
+      <h3>The paperwork <span class="tag">5 OF 7</span></h3>
+      <div class="doc"><span class="st ok">&#10003;</span><div class="dn">Initial reservation request form<small>attached &middot; PDF &middot; Sep 28 &middot; leigh anne</small></div><button class="mini ghost">Open</button></div>
+      <div class="doc"><span class="st ok">&#10003;</span><div class="dn">Club license agreement<small>attached &middot; signed PDF &middot; Oct 1 &middot; leo</small></div><button class="mini ghost">Open</button></div>
+      <div class="doc"><span class="st ok">&#10003;</span><div class="dn">Event walkthrough checklist<small>attached &middot; Oct 3 &middot; carley-ann</small></div><button class="mini ghost">Open</button></div>
+      <div class="doc"><span class="st ok">&#10003;</span><div class="dn">COI &middot; Marengo Catering<small>attached &middot; expires Mar 2027</small></div><button class="mini ghost">Open</button></div>
+      <div class="doc"><span class="st wait">&middot;</span><div class="dn">COI &middot; Bloom &amp; Vine<small>awaiting &middot; requested Oct 6</small></div><button class="mini ghost">Upload</button></div>
+      <div class="doc"><span class="st gen">&equiv;</span><div class="dn">Guest list<small>lives here &middot; 38 names from the reservation &middot; prints with the EO</small></div><button class="mini ghost">View</button></div>
+      <div class="doc"><span class="st wait">&middot;</span><div class="dn">Signed EO &amp; inspections<small>drops in after the night</small></div><button class="mini ghost">Upload</button></div>
+      <div class="dropzone">Drop a PDF or photo here, or press Upload on its row.<br>Files live with the event, named and dated.</div>
+    </div>
+
+    <div class="card">
+      <h3>The running log <span class="tag">NEWEST FIRST &middot; EVERYONE CAN ADD</span></h3>
+      <div class="addnote"><textarea placeholder="Add to the log; it stamps your name and the time."></textarea>
+      <div style="margin-top:6px;text-align:right"><button class="mini">Add</button></div></div>
+      <div class="lognote"><div class="who"><b>leo</b> &middot; yesterday 4:12 PM</div>
+        Florist COI chased again; Ana confirms kitchen handoff at 2.</div>
+      <div class="lognote"><div class="who"><b>carley-ann</b> &middot; Oct 5 11:40 AM</div>
+        Walkthrough done with Mr. McCarthy; he wants the long table facing the bridge.</div>
+      <div class="lognote"><div class="who"><b>anthony</b> &middot; Oct 4 9:02 PM</div>
+        Resident asked the desk about valet options; told him street + Salesforce garage, noted here for the EO.</div>
+      <div class="lognote"><div class="who"><b>leigh anne</b> &middot; Sep 28 10:15 AM</div>
+        Reservation request received; deposit invoice sent.</div>
+      <div class="hint" style="margin-top:8px">The log never prints and never leaves the admin; it is the
+      event&rsquo;s memory between all of you.</div>
+    </div>
+  </div>
+  </div>
+</div>
+
+<div class="footnote"><b>What the real build is, in one breath:</b> an event_orders table riding the same
+record as the Spaces reservation (facts, timeline, sections, EO notes, status), an append-only log table
+stamped like everything else, attachments in the same R2 bucket the kits use (Access-gated, named and
+dated), the guest list read live from the reservation, and a print stylesheet so Print the EO produces
+the two-page paper your Word version defined, guest list as page 2. Cards settle to the archive when the
+signed EO is dropped back in. Same lifecycle grammar, same stamps, same house.</div>
+
+</div>
+
+<script>
+function go(which, btn){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('on'));
+  document.getElementById('scr-'+which).classList.add('on');
+  document.querySelectorAll('.switch button').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+  window.scrollTo(0,0);
+}
+</script>
+</body>
+</html>
