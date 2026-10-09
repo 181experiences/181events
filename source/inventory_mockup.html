@@ -269,10 +269,10 @@
     <div class="hint">The full walk is the default. Pick areas for a shorter count, like the Monday Nespresso check.</div>
     <div class="chips">
       <span class="chip on" onclick="pickAll(this)">Everything &middot; the full walk</span>
-      <span class="chip" onclick="pick(this)">Front Desk &amp; Lobby (L1)</span>
-      <span class="chip" onclick="pick(this)">Level 3</span>
-      <span class="chip" onclick="pick(this)">Level 4 Breakroom</span>
-      <span class="chip" onclick="pick(this)">Level 39 Credenza &amp; Kitchen</span>
+      <span class="chip" onclick="pick(this)">Front Desk &amp; Lobby (floor 1)</span>
+      <span class="chip" onclick="pick(this)">Floor 3</span>
+      <span class="chip" onclick="pick(this)">Floor 4 Breakroom</span>
+      <span class="chip" onclick="pick(this)">East Lounge Credenza &amp; Club Kitchen</span>
       <span class="chip" onclick="pick(this)">Nespresso Vertuo pods</span>
     </div>
     <div class="hint" style="margin-bottom:12px">A count is already open from Friday (64 of 88). Starting a new one leaves that card red until someone finishes or closes it.</div>
@@ -285,7 +285,7 @@
     <div class="grow">
       <div class="t">Full walk &middot; needs finishing</div>
       <div class="meta">Started 2:10 PM by <b>Anthony B.</b> &middot; handed off 3:05 PM (&ldquo;called to the desk&rdquo;) &middot;
-      L1, L3 and L4 done &middot; <b>L39 and Nespresso still to count</b> &middot; 6 items below minimum so far</div>
+      Floors 1, 3 and 4 done &middot; <b>The Residents&rsquo; Club still to count</b> &middot; 6 items below minimum so far</div>
     </div>
     <div class="prog"><div class="lab">64 of 88 counted</div><div class="track"><div class="fill part" style="width:73%"></div></div></div>
     <button class="btn" onclick="go('count', document.querySelectorAll('.switch button')[2])">Pick this up</button>
@@ -364,8 +364,8 @@
 
   <div class="footnote">
     <b>Rules the screen keeps.</b> Minimums come from the item list, never typed here. Items that live in two
-    places are two rows, one per place, so a counter never adds in their head. Pods: boxes and loose, the site
-    does the ten-to-a-box math. The area note is where machine faults, resident feedback and &ldquo;the closet was
+    places are two rows, one per place, so a counter never adds in their head. Pods are counted by the box only; anything opened or loose
+    at the station is in circulation and is not counted. The area note is where machine faults, resident feedback and &ldquo;the closet was
     locked&rdquo; go. Who typed each number is stamped, so a two-person count reads correctly on the report.
     <b>On an iPhone:</b> this screen is built for one hand; number boxes open the numeric keypad, every target is at least
     44 pixels, one area opens at a time so the thumb never travels far, and the sticky bar keeps Hand off and Submit in reach.
@@ -377,7 +377,7 @@
   <div class="dbox">
     <h4>Submit with 24 items not counted?</h4>
     <p>The report goes to the department heads now with what you have: 64 items, 6 below minimum. This count stays
-    red on the Inventory screen so someone can finish L39 and the Nespresso pods; their numbers go out in a second
+    red on the Inventory screen so someone can finish the Residents&rsquo; Club; their numbers go out in a second
     email when they do.</p>
     <div class="acts">
       <button class="btn" onclick="closeDlg();go('rep', document.querySelectorAll('.switch button')[3])">Submit what I have</button>
@@ -390,7 +390,7 @@
     <h4>Hand this count off?</h4>
     <p>Nothing is emailed. Your 64 numbers are saved, the card turns red on the Inventory screen, and the next
     person presses Pick this up. One line for them, optional:</p>
-    <input style="width:100%;min-height:44px;border:1px solid var(--line);border-radius:4px;padding:8px 10px;font-family:var(--fb);font-size:14px;margin-bottom:14px" placeholder="L39 credenza not started, kitchen key is at the desk">
+    <input style="width:100%;min-height:44px;border:1px solid var(--line);border-radius:4px;padding:8px 10px;font-family:var(--fb);font-size:14px;margin-bottom:14px" placeholder="Club not started, kitchen key is at the desk">
     <div class="acts">
       <button class="btn" onclick="closeDlg();go('inv', document.querySelectorAll('.switch button')[1])">Hand off</button>
       <button class="btn ghost" onclick="closeDlg()">Keep counting</button>
@@ -420,36 +420,36 @@
     <h5>Below minimum <span class="tag">ORDER THESE, OR DECIDE NOT TO</span></h5>
     <table class="g">
       <tr><th>Item</th><th>Where</th><th class="r">Minimum</th><th class="r">On hand</th><th>Ordered by</th></tr>
-      <tr><td>Altissio (Vertuo)</td><td>L39 Nespresso</td><td class="r">3 boxes</td><td class="r low">2 boxes + 6 loose</td><td>Resident Experiences</td></tr>
-      <tr><td>Melozio Decaffeinato (Vertuo)</td><td>L39 Nespresso</td><td class="r">3 boxes</td><td class="r low">3 boxes</td><td>Resident Experiences</td></tr>
-      <tr><td>Pressed Juices</td><td>L3 HOA Fridge</td><td class="r">15</td><td class="r low">9</td><td>HOA</td></tr>
+      <tr><td>Altissio (Vertuo)</td><td>Residents&rsquo; Club</td><td class="r">3 boxes</td><td class="r low">2 boxes</td><td>Resident Experiences</td></tr>
+      <tr><td>Melozio Decaffeinato (Vertuo)</td><td>Residents&rsquo; Club</td><td class="r">3 boxes</td><td class="r low">3 boxes</td><td>Resident Experiences</td></tr>
+      <tr><td>Pressed Juices</td><td>Floor 3 HOA Fridge</td><td class="r">15</td><td class="r low">9</td><td>HOA</td></tr>
       <tr><td>Clorox Wipes</td><td>Parcel Closet</td><td class="r">3</td><td class="r low">1</td><td>Front Desk</td></tr>
-      <tr><td>Coffee mate, oat</td><td>L39 Credenza</td><td class="r">1 box</td><td class="r low">0</td><td>Resident Experiences</td></tr>
+      <tr><td>Coffee mate, oat</td><td>East Lounge Credenza</td><td class="r">1 box</td><td class="r low">0</td><td>Resident Experiences</td></tr>
       <tr><td>Hand Sanitizer (32 oz)</td><td>Parcel Closet</td><td class="r">3</td><td class="r low">2</td><td>Front Desk</td></tr>
     </table>
 
     <h5>Notes from the walk</h5>
     <table class="g">
-      <tr><td style="width:150px;color:var(--stone)">L39 Nespresso</td><td>Machine normal. A resident in 44B asked whether Solelio is coming back.</td></tr>
-      <tr><td style="color:var(--stone)">L4 Breakroom</td><td>Dish liquid is the new brand, counted the same.</td></tr>
+      <tr><td style="width:150px;color:var(--stone)">Residents&rsquo; Club</td><td>Machine normal. A resident in 44B asked whether Solelio is coming back.</td></tr>
+      <tr><td style="color:var(--stone)">Floor 4 Breakroom</td><td>Dish liquid is the new brand, counted the same.</td></tr>
     </table>
 
     <h5>Everything counted <span class="tag">BY AREA, IN WALK ORDER</span></h5>
     <table class="g">
       <tr><th>Item</th><th class="r">Minimum</th><th class="r">On hand</th></tr>
-      <tr><td colspan="3" style="font-family:Georgia,serif;background:var(--paper);padding:6px 8px 6px 0">Front Desk Cabinet (L1)</td></tr>
+      <tr><td colspan="3" style="font-family:Georgia,serif;background:var(--paper);padding:6px 8px 6px 0">Front Desk Cabinet (floor 1)</td></tr>
       <tr><td>Jumbo Sharpies</td><td class="r">1 box</td><td class="r">2</td></tr>
       <tr><td>Badge Holders</td><td class="r">5 pc</td><td class="r">11</td></tr>
       <tr><td>Batteries AA</td><td class="r">1 pack</td><td class="r">2</td></tr>
       <tr><td colspan="3" style="color:var(--stone);font-style:italic;padding:8px 0">&hellip; the full list follows in the same shape, every area, every item &hellip;</td></tr>
-      <tr><td colspan="3" style="font-family:Georgia,serif;background:var(--paper);padding:6px 8px 6px 0">Nespresso Vertuo pods (L39)</td></tr>
-      <tr><td>Melozio</td><td class="r">3 boxes</td><td class="r">5 boxes + 3 loose</td></tr>
+      <tr><td colspan="3" style="font-family:Georgia,serif;background:var(--paper);padding:6px 8px 6px 0">Nespresso Vertuo pods (Residents&rsquo; Club, floor 39)</td></tr>
+      <tr><td>Melozio</td><td class="r">3 boxes</td><td class="r">5 boxes</td></tr>
       <tr><td>Half Caffeinato</td><td class="r">3 boxes</td><td class="r">4 boxes</td></tr>
-      <tr><td>Rotating: Intenso</td><td class="r">3 boxes</td><td class="r">4 boxes + 8 loose</td></tr>
+      <tr><td>Rotating: Intenso</td><td class="r">3 boxes</td><td class="r">4 boxes</td></tr>
     </table>
 
     <div class="note"><b>Counted on 181residents.com &middot; Operations &middot; Inventory.</b> The live record, with who counted what and when,
-    is at the same address. The Front Desk never places the order (SOP-RC-001).</div>
+    is at the same address. Orders are placed by management from this report.</div>
     <div class="ftr">Inventory count #0041 &middot; submitted Monday, October 6, 2026, 10:42 AM &middot; 181residents.com/admin</div>
   </div>
 
@@ -477,12 +477,12 @@
   count, never a past one. Staff and owner edit; the desk reads.</p>
 
   <div class="qs">
-    <b>Three things from your spreadsheet I need you to confirm</b> (I normalized them in this mock, flagged with &dagger;):
+    <b>Spreadsheet readings</b> (I normalized them in this mock, flagged with &dagger;):
     <ul>
       <li>Rows 72 to 82 (Splenda through the teas) had a drag-fill run: Floor 40, 41, 42 &hellip; 50 and &ldquo;Credenza on L40 &hellip; L50&rdquo;.
-      I read them all as <b>Level 39 Credenza</b>.</li>
-      <li>The six Harney &amp; Sons tea minimums ran 3, 4, 5, 6, 7, 8 boxes, the same fill artifact. I set every tea to
-      <b>1 box</b> until you give me the real par.</li>
+      Read as <b>East Lounge Credenza, floor 39</b> (your call Oct 9).</li>
+      <li>The six Harney &amp; Sons tea minimums ran 3, 4, 5, 6, 7, 8 boxes, the same fill artifact. Tea par is
+      <b>3 boxes</b> (your call Oct 9).</li>
       <li>Several minimums read &ldquo;&#65533; Box&rdquo; (a lost character). I read them as <b>&frac12; box</b>.</li>
     </ul>
     Also: the sheet has no &ldquo;ordered by&rdquo; column. I added one so the report can group below-minimum items by
@@ -495,7 +495,7 @@
     <h3>Inventory reports go to <span class="tag">LIVES IN SETTINGS</span><span class="ib">i</span></h3>
     <div class="hint">Every submitted count is emailed to these addresses. Each one is verified once in Cloudflare Email Routing.</div>
     <div class="chips">
-      <span class="chip">leonardo@181sf.com &middot; Resident Experience Manager</span>
+      <span class="chip">Resident Experience Manager</span>
       <span class="chip">General Manager</span>
       <span class="chip">Leigh Anne</span>
       <span class="chip">Carley-Ann</span>
@@ -507,7 +507,7 @@
   <div class="footnote">
     <b>Under the hood, if you say go.</b> Three D1 tables: <i>inv_items</i> (name, area, walk order, minimum, unit, ordered-by, active),
     <i>inv_counts</i> (started/finished by and when, scope, status Open / Submitted / Closed, notes), and <i>inv_lines</i>
-    (count, item, quantity, loose pods, who typed it, when). Autosave is a PATCH per keystroke-pause, so a hand-off
+    (count, item, quantity, who typed it, when). Autosave is a PATCH per keystroke-pause, so a hand-off
     loses nothing. The report is rendered once at submit, stored as HTML on the count row, and that same HTML is
     the email body and the printable page. Dev server mirrors every route. Two sessions, same playbook as Pages.
   </div>
@@ -552,44 +552,44 @@ function closeDlg(){ document.querySelectorAll('.dialog').forEach(d=>d.classList
 /* ---- the item catalog, in walk order, from "inventory counts.xlsx" + SOP-RC-001 ---- */
 /* [name, minimum(number or null), unit/label, ordered-by, counted value for the demo (null = not yet), sub] */
 const AREAS = [
-  ["Front Desk Cabinet", "L1", "Front Desk", [
+  ["Front Desk Cabinet", "Floor 1", "Front Desk", [
     ["Jumbo Sharpies", 1, "box", 2], ["Badge Holders", 5, "pc", 11], ["Batteries AA", 1, "pack", 2],
     ["Batteries AAA", 1, "pack", 2], ["Batteries 9V", 1, "pack", 2], ["Masks", 1, "box", 3], ["Packaging Tape", 1, "roll", 2]]],
-  ["Front Desk Drawer", "L1", "Front Desk", [
+  ["Front Desk Drawer", "Floor 1", "Front Desk", [
     ["USPS Stamps", 10, "pc", 14], ["Pens", 4, "pc", 9], ["Whiteout", 1, "pc", 2], ["Post-its, square", 2, "pc", 3], ["Post-its, pad", 2, "pc", 3]]],
-  ["Dry Cleaning Closet", "L1", "Front Desk", [
+  ["Dry Cleaning Closet", "Floor 1", "Front Desk", [
     ["Lindt Chocolates", 1, "box", 2], ["Dog Treats, chicken", 1, "container", 2], ["Dog Treats, duck", 1, "container", 0]]],
-  ["Parcel Closet", "L1", "Front Desk", [
+  ["Parcel Closet", "Floor 1", "Front Desk", [
     ["Clorox Wipes", 3, "", 1], ["Hand Sanitizer (32 oz)", 3, "", 2], ["Tide Pods", 1, "", 2], ["Marble Cleaner", 1, "", 2],
     ["Magic Eraser", 6, "pc", 8], ["Bubble Wrap", 1, "roll", 2]]],
-  ["Front Desk Back Office", "L1", "Front Desk", [
+  ["Front Desk Back Office", "Floor 1", "Front Desk", [
     ["Gloves (3-pack)", 1, "box", 2], ["KN95 Masks", 1, "box", 2], ["Brother Toner, black", 1, "", 2], ["Brother Toner, yellow", 1, "", 2],
     ["Brother Toner, cyan", 1, "", 2], ["Brother Toner, magenta", 1, "", 0], ["Lint Roller", 1, "pc", 2], ["8 oz Cups, Lobby Office", 0.5, "box", 1]]],
-  ["Lobby", "L1", "Resident Experiences", [
+  ["Lobby", "Floor 1", "Resident Experiences", [
     ["Nespresso pods, lobby machine", 2, "boxes", 3], ["Tea Pods", 0.5, "box", 1]]],
-  ["Level 3 Credenza", "L3", "Front Desk", [
+  ["Credenza", "Floor 3", "Front Desk", [
     ["Pens", 1, "box", 2], ["Whiteout", 3, "pack", 4], ["Post-its, square", 6, "pc", 10], ["Post-its, pad", 6, "pc", 8],
     ["Paper Clips", 2, "boxes", 3], ["Binder Clips, S / M / L", 1, "box each", 2], ["Badge Clips", 5, "pc", 12], ["Push Pins", 1, "container", 2],
     ["Label Maker Tape", 3, "", 2], ["Printer Paper", 3, "packs", 5], ["Laminating Sheets", 1, "pack", 2]]],
-  ["Level 3 Offices &amp; Fridge", "L3", "HOA", [
+  ["Offices &amp; HOA Fridge", "Floor 3", "HOA", [
     ["Konica Printer Ink (HOA Office)", 1, "", 2], ["Water Jugs (Engineering Office)", 4, "", 6],
     ["Pressed Juices (HOA Fridge)", 15, "", 9], ["Pressed Juice Shots (HOA Fridge)", 15, "", 16], ["Breakfast Bars (HOA Fridge)", 2, "boxes", 3]]],
-  ["Level 3 Storage", "L3", "Resident Experiences", [
+  ["Storage", "Floor 3", "Resident Experiences", [
     ["181 Water Bottles", 30, "cases", 34], ["San Pellegrino Sparkling (glass)", 4, "cases", 5], ["Gloves (3-pack)", 1, "box", 2],
     ["10 oz Cups, bar", 0.5, "box", 1], ["16 oz Cups, Tue/Thu Breakfast", 0.5, "box", 1], ["Lids, 10 and 16 oz", 0.5, "box", 2], ["8 oz Cups, Lobby Office", 0.5, "box", 1]]],
-  ["Level 4 Breakroom", "L4", "Front Desk", [
+  ["Breakroom", "Floor 4", "Front Desk", [
     ["Ground Coffee, Medium", 1, "", 2], ["Ground Coffee, Blonde", 1, "", 2], ["K-Cup Coffee Filters", 1, "box", 2], ["Paper Towels", 2, "stacks", 4],
     ["Sponges", 3, "pc", 5], ["Aluminum Foil", 1, "", 2], ["Saran Wrap", 1, "", 2], ["Dish Washing Liquid (under sink)", 3, "pc", 4],
     ["Hand Soap (under sink)", 1, "", 2], ["Lint Roller (under sink)", 3, "pc", 4]]],
-  ["Level 39 Credenza &amp; Kitchen", "L39", "Resident Experiences", [
+  ["East Lounge Credenza &amp; Club Kitchen", "The Residents&rsquo; Club, floor 39", "Resident Experiences", [
     ["10 oz Cups, bar", 0.5, "box", null], ["16 oz Cups, Tue/Thu Breakfast", 0.5, "box", null], ["Lids, 10 and 16 oz", 0.5, "box", null],
-    ["Coffee Stirrers", 2, "boxes", null], ["Coffee Sleeves", 2, "boxes", null], ["Splenda packets (yellow) †", 0.5, "box", null],
-    ["Sugar packets (white) †", 0.5, "box", null], ["Coffee mate, original †", 1, "box", null], ["Coffee mate, french vanilla †", 1, "box", null],
-    ["Coffee mate, oat †", 1, "box", null],
-    ["H&amp;S Tea: Dragon Pearl Jasmine †", 1, "box", null], ["H&amp;S Tea: Earl Grey Supreme †", 1, "box", null], ["H&amp;S Tea: Japanese Sencha †", 1, "box", null],
-    ["H&amp;S Tea: Darjeeling †", 1, "box", null], ["H&amp;S Tea: Organic English Breakfast †", 1, "box", null], ["H&amp;S Tea: Chamomile †", 1, "box", null],
-    ["Dish Pods (kitchen)", 0.5, "box", null]]],
-  ["Nespresso Vertuo pods", "L39 &middot; bartop, tea cabinet, East Lounge credenza", "Resident Experiences", [
+    ["Coffee Stirrers", 2, "boxes", null], ["Coffee Sleeves", 2, "boxes", null], ["Splenda packets (yellow)", 0.5, "box", null],
+    ["Sugar packets (white)", 0.5, "box", null], ["Coffee mate, original", 1, "box", null], ["Coffee mate, french vanilla", 1, "box", null],
+    ["Coffee mate, oat", 1, "box", null],
+    ["H&amp;S Tea: Dragon Pearl Jasmine", 3, "box", null], ["H&amp;S Tea: Earl Grey Supreme", 3, "box", null], ["H&amp;S Tea: Japanese Sencha", 3, "box", null],
+    ["H&amp;S Tea: Darjeeling", 3, "box", null], ["H&amp;S Tea: Organic English Breakfast", 3, "box", null], ["H&amp;S Tea: Chamomile", 3, "box", null],
+    ["Dish Pods (Club kitchen)", 0.5, "box", null]]],
+  ["Nespresso Vertuo pods", "The Residents&rsquo; Club, floor 39 &middot; bartop, tea cabinet, East Lounge Credenza &middot; boxes only", "Resident Experiences", [
     ["Melozio", 3, "boxes", null, "Coffee &middot; 6 &middot; gold sleeve"], ["Melozio Decaffeinato", 3, "boxes", null, "Coffee, decaf &middot; 6 &middot; gold / green"],
     ["Half Caffeinato", 3, "boxes", null, "Coffee, half-caf &middot; 6 &middot; light blue"], ["Altissio", 3, "boxes", null, "Espresso &middot; 9 &middot; purple"],
     ["Altissio Decaffeinato", 3, "boxes", null, "Espresso, decaf &middot; 9 &middot; purple / green"],
@@ -614,9 +614,9 @@ const PODS = "Nespresso Vertuo pods";
       const low = val!==null && val<=min && !(min===0.5 && val>=1);
       const minTxt = (min===0.5?'&frac12;':min) + (unit?' '+unit:'');
       if(pods){
-        html += `<div class="row two ${val!==null&&val<=min?'low':''}"><div class="nm">${nm}<small>${sub}</small></div>
+        html += `<div class="row ${val!==null&&val<=min?'low':''}"><div class="nm">${nm}<small>${sub} &middot; sealed boxes only</small></div>
           <div class="par">minimum<b>${minTxt}</b></div>
-          <div class="pair"><span><input inputmode="numeric" placeholder="0" value="${val??''}" oninput="recount()"><small>boxes</small></span><span><input inputmode="numeric" placeholder="0"><small>loose</small></span></div>
+          <input inputmode="numeric" placeholder="&ndash;" value="${val??''}" oninput="rowcheck(this,${min});recount()">
           <div class="flag">At or under the minimum. Reorder line reached.</div></div>`;
       } else {
         html += `<div class="row ${low?'low':''}"><div class="nm">${nm}${sub?'<small>'+sub+'</small>':''}</div>
@@ -653,7 +653,7 @@ recount();
           <label>Item<input value="Clorox Wipes"></label>
           <label>Minimum<input value="3" inputmode="numeric" style="width:70px"></label>
           <label>Unit<input value="containers" style="width:110px"></label>
-          <label>Area<select><option>Parcel Closet</option><option>Front Desk Cabinet</option><option>Level 3 Storage</option></select></label>
+          <label>Area<select><option>Parcel Closet</option><option>Front Desk Cabinet</option><option>Storage, floor 3</option></select></label>
           <label>Ordered by<select><option>Front Desk</option><option>Resident Experiences</option><option>HOA</option><option>Facilities</option></select></label>
           <span class="edacts"><span class="mini">Save</span> <span class="mini ghost">Cancel</span> <span class="mini ghost" style="color:var(--red)">Remove</span></span>
         </div><div class="hint" style="margin-top:6px">This is what Edit opens, right in the row. Save stamps who changed it and when.</div></td></tr>`;
@@ -670,7 +670,7 @@ recount();
   const h=document.getElementById('sheet');
   let html=`<div class="rh"><span class="h1">181 FREMONT RESIDENCES</span><span class="h2">RESIDENTS&rsquo; CLUB OPERATIONS</span></div>
     <div class="title">Inventory Count Sheet</div>
-    <div class="sub">Walk order, with each item&rsquo;s minimum. Write what is on hand; circle anything at or under its minimum. Pods: boxes and loose, ten loose make a box. Enter the count on 181residents.com (Operations, Inventory) when you are back at a desk.</div>
+    <div class="sub">Walk order, with each item&rsquo;s minimum. Write what is on hand; circle anything at or under its minimum. Pods by the sealed box only; opened or loose capsules are in circulation. Enter the count on 181residents.com (Operations, Inventory) when you are back at a desk.</div>
     <div class="idrow"><span>Counted by <span class="ln" style="min-width:2.2in"></span></span><span>Date <span class="ln"></span></span><span>Time started <span class="ln" style="min-width:.9in"></span></span></div>
     <table><tr><th>Item</th><th>Minimum</th><th>On hand</th><th>Note</th></tr>`;
   AREAS.slice(0,4).forEach(a=>{
@@ -680,7 +680,7 @@ recount();
       html+=`<tr><td>${nm}</td><td>${minTxt}</td><td class="c"></td><td class="n"></td></tr>`;});
   });
   html+=`<tr><td colspan="4" style="color:var(--stone);font-style:italic;padding:8px 6px;border-bottom:none">&hellip; every area follows, 88 items over three pages, page breaks between areas &hellip;</td></tr></table>
-    <div class="note"><b>The Front Desk never places the order.</b> Below-minimum items are reported; department heads decide. Machine faults, resident feedback and locked doors go in the Note column.</div>
+    <div class="note"><b>Orders are placed by management.</b> Below-minimum items are reported; department heads decide. Machine faults, resident feedback and locked doors go in the Note column.</div>
     <div class="ftr"><span>Blank count sheet &middot; printed from 181residents.com/admin &middot; item list as of today</span><span>Page 1 of 3</span></div>`;
   h.innerHTML=html;
 })();
