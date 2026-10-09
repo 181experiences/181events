@@ -1,0 +1,689 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>MOCKUP · Operations and Inventory in the 181 admin</title>
+<style>
+  :root{
+    --ink:#16161a; --ink-soft:#55555f; --paper:#f7f4ef; --paper-2:#fffdfa;
+    --line:#ddd6cb; --red:#c41f26; --stone:#7a7266; --radius:4px; --green:#2e6b2e;
+    --amber:#b8860b; --amber-bg:#fbf3dc;
+    --fb:'Hanken Grotesk',-apple-system,'Segoe UI',sans-serif;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--fb);font-size:14px;line-height:1.5}
+  .mocknote{background:#1b3a6b;color:#fff;text-align:center;font-size:12px;letter-spacing:.14em;
+    text-transform:uppercase;padding:7px}
+  .topbar{background:var(--ink);color:#fff;padding:14px 26px;display:flex;align-items:baseline;gap:18px}
+  .topbar .brand{font-family:Georgia,serif;letter-spacing:.14em;font-size:16px}
+  .topbar .sub{font-size:10px;letter-spacing:.22em;color:#b9afa1;text-transform:uppercase}
+  .navbar{background:var(--ink);padding:0 26px 12px;display:flex;gap:20px;font-size:12px;
+    letter-spacing:.1em;text-transform:uppercase;flex-wrap:wrap}
+  .navbar span{color:#b9afa1;padding-bottom:4px;cursor:default}
+  .navbar .on{color:#fff;border-bottom:2px solid var(--red)}
+  .wrap{max-width:1000px;margin:0 auto;padding:30px 26px 80px}
+  @media(max-width:620px){.wrap{padding:18px 16px 80px}}
+  h1{font-family:Georgia,serif;font-weight:400;font-size:28px;margin:0 0 4px}
+  .psub{color:var(--ink-soft);margin:0 0 22px;max-width:54em}
+  .btn{display:inline-block;background:var(--red);color:#fff;border:none;border-radius:var(--radius);
+    padding:10px 18px;font-family:var(--fb);font-size:13.5px;font-weight:600;cursor:pointer;min-height:40px}
+  .btn.ghost{background:transparent;color:var(--ink);border:1px solid var(--ink)}
+  .mini{display:inline-block;background:var(--ink);color:#fff;border:none;border-radius:var(--radius);
+    padding:6px 12px;font-size:12px;font-weight:600;cursor:pointer}
+  .mini.ghost{background:transparent;color:var(--ink);border:1px solid var(--line)}
+  .pill{display:inline-block;font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;
+    border-radius:20px;padding:3px 10px;white-space:nowrap}
+  .pill.open{background:var(--amber-bg);color:var(--amber);border:1px dashed var(--amber)}
+  .pill.done{background:#e7f0e4;color:var(--green)}
+  .pill.part{background:var(--red);color:#fff}
+  .pill.quiet{background:#e8e4de;color:var(--stone)}
+  .screen{display:none}
+  .screen.on{display:block}
+  .switch{margin:0 0 26px;display:flex;gap:10px;flex-wrap:wrap}
+  .switch button{background:var(--paper-2);border:1px solid var(--line);border-radius:var(--radius);
+    padding:8px 16px;font-family:var(--fb);font-size:13px;cursor:pointer}
+  .switch button.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+  .hint{font-size:12px;color:var(--stone)}
+  .card{background:var(--paper-2);border:1px solid var(--line);border-radius:var(--radius);padding:16px 18px;margin-bottom:16px}
+  .card h3{font-family:Georgia,serif;font-weight:400;font-size:16px;color:var(--red);margin:0 0 6px;
+    border-bottom:1px solid var(--line);padding-bottom:5px}
+  .card h3 .tag{font-family:var(--fb);font-size:9px;font-weight:700;letter-spacing:.16em;color:var(--stone);margin-left:8px}
+  .ib{display:inline-block;width:16px;height:16px;border:1px solid var(--stone);border-radius:50%;color:var(--stone);
+    font-size:10px;line-height:14px;text-align:center;font-weight:700;vertical-align:2px;margin-left:6px;cursor:default}
+
+  /* ------------- screen 1: Operations ------------- */
+  .quad{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+  @media(max-width:760px){.quad{grid-template-columns:1fr}}
+  .opcard{background:var(--paper-2);border:1px solid var(--line);border-radius:var(--radius);padding:22px 20px 18px;
+    cursor:pointer;display:flex;flex-direction:column;gap:6px;min-height:170px}
+  .opcard:hover{border-color:var(--stone)}
+  .opcard .ic{width:34px;height:34px;border-radius:50%;background:var(--red);color:#fff;display:flex;align-items:center;
+    justify-content:center;font-family:Georgia,serif;font-size:17px}
+  .opcard .t{font-family:Georgia,serif;font-size:20px;margin-top:4px}
+  .opcard .d{color:var(--ink-soft);font-size:13px}
+  .opcard .st{margin-top:auto;font-size:12px;color:var(--stone);padding-top:8px;border-top:1px solid var(--paper)}
+  .opcard.later{border-style:dashed;cursor:default;opacity:.7}
+  .opcard.later .ic{background:var(--paper);color:var(--stone);border:1px solid var(--line)}
+
+  /* ------------- screen 2: the Inventory door ------------- */
+  .toprow{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:18px}
+  .toprow h1{margin:0}
+  .toprow .grow{flex:1}
+  .ccard{background:var(--paper-2);border:1px solid var(--line);border-radius:var(--radius);
+    padding:14px 18px;margin-bottom:10px;display:flex;align-items:center;gap:18px;flex-wrap:wrap}
+  .ccard.hot{border-left:5px solid var(--red);background:#fff8f6}
+  .ccard.hot .t{color:var(--red)}
+  .ccard .dt{flex:none;width:78px;text-align:center;border-right:1px solid var(--line);padding-right:14px}
+  .ccard .dt .d{font-family:Georgia,serif;font-size:24px;line-height:1}
+  .ccard .dt .m{font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--red);font-weight:700}
+  .ccard .dt .w{font-size:11px;color:var(--stone)}
+  .ccard .grow{flex:1;min-width:220px}
+  .ccard .t{font-family:Georgia,serif;font-size:17px}
+  .ccard .meta{font-size:12.5px;color:var(--ink-soft)}
+  .ccard .meta b{color:var(--ink)}
+  .prog{flex:none;width:150px}
+  .prog .lab{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--stone);font-weight:700;margin-bottom:4px}
+  .prog .track{height:7px;background:var(--paper);border:1px solid var(--line);border-radius:5px;overflow:hidden}
+  .prog .fill{height:100%;background:var(--green)}
+  .prog .fill.part{background:var(--red)}
+  .archhead{margin:28px 0 10px;font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--stone)}
+  .starter{display:none;background:var(--paper-2);border:1px solid var(--ink);border-radius:var(--radius);padding:16px 18px;margin-bottom:18px}
+  .starter.on{display:block}
+  .chips{display:flex;flex-wrap:wrap;gap:8px;margin:8px 0 12px}
+  .chip{border:1px solid var(--line);border-radius:20px;padding:7px 13px;font-size:13px;background:#fff;cursor:pointer;min-height:36px}
+  .chip.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+
+  /* ------------- screen 3: the count ------------- */
+  .sticky{position:sticky;top:0;z-index:5;background:var(--paper-2);border:1px solid var(--line);border-radius:var(--radius);
+    padding:12px 16px;margin-bottom:18px;display:flex;align-items:center;gap:14px;flex-wrap:wrap;
+    box-shadow:0 2px 8px rgba(0,0,0,.06)}
+  .sticky .grow{flex:1;min-width:200px}
+  .sticky .big{font-family:Georgia,serif;font-size:18px}
+  .sticky .who{font-size:12px;color:var(--stone)}
+  .sticky .track{height:6px;background:var(--paper);border:1px solid var(--line);border-radius:5px;overflow:hidden;margin-top:6px}
+  .sticky .fill{height:100%;background:var(--green);width:73%}
+  @media(max-width:620px){.sticky{padding:10px 12px;gap:8px}.sticky .big{font-size:15px}.sticky .grow{min-width:100%}.sticky .btn{flex:1;padding:10px 8px}}
+  .area{background:var(--paper-2);border:1px solid var(--line);border-radius:var(--radius);margin-bottom:14px;overflow:hidden}
+  .ahead{display:flex;align-items:center;gap:12px;padding:12px 16px;background:var(--paper);border-bottom:1px solid var(--line);cursor:pointer}
+  .ahead .an{font-family:Georgia,serif;font-size:17px;flex:1}
+  .ahead .ac{font-size:12px;color:var(--stone)}
+  .ahead .ac.ok{color:var(--green);font-weight:700}
+  .ahead .chev{color:var(--stone);transition:transform .15s}
+  .area.closed .chev{transform:rotate(-90deg)}
+  .area.closed .abody{display:none}
+  .row{display:grid;grid-template-columns:1fr 110px 120px;gap:12px;align-items:center;padding:9px 16px;border-top:1px solid var(--paper)}
+  .row:first-child{border-top:none}
+  @media(max-width:620px){.row{grid-template-columns:1fr 84px 96px;gap:8px;padding:9px 12px}}
+  .row .nm{font-size:14.5px}
+  .row .nm small{display:block;color:var(--stone);font-size:11.5px}
+  .row .par{font-size:12px;color:var(--stone);text-align:right}
+  .row .par b{display:block;color:var(--ink);font-size:13px}
+  .row input{width:100%;min-height:44px;border:1px solid var(--line);border-radius:var(--radius);padding:8px 10px;
+    font-family:var(--fb);font-size:17px;text-align:center;background:#fff}
+  .row input:focus{outline:2px solid var(--ink);outline-offset:-1px}
+  .row.low input{border-color:var(--red);background:#fff4f3;color:var(--red);font-weight:700}
+  .row .flag{grid-column:1 / -1;font-size:12px;color:var(--red);font-weight:600;margin-top:-4px;display:none}
+  .row.low .flag{display:block}
+  .row.two input{width:48%}
+  .row .pair{display:flex;gap:4%;justify-content:space-between}
+  .row .pair small{display:block;text-align:center;color:var(--stone);font-size:10px;letter-spacing:.08em;text-transform:uppercase;margin-top:2px}
+  .anote{padding:10px 16px 14px;border-top:1px solid var(--paper)}
+  .anote textarea{width:100%;border:1px solid var(--line);border-radius:var(--radius);padding:8px 10px;
+    font-family:var(--fb);font-size:13px;min-height:44px;background:#fff}
+  .footbar{display:flex;gap:12px;flex-wrap:wrap;align-items:center;margin-top:8px}
+  .dialog{display:none;position:fixed;inset:0;background:rgba(22,22,26,.45);z-index:20;align-items:center;justify-content:center;padding:16px}
+  .dialog.on{display:flex}
+  .dbox{background:var(--paper-2);border-radius:6px;padding:22px 24px;max-width:460px;width:100%}
+  .dbox h4{font-family:Georgia,serif;font-weight:400;font-size:19px;margin:0 0 8px}
+  .dbox p{margin:0 0 14px;color:var(--ink-soft)}
+  .dbox .acts{display:flex;gap:10px;flex-wrap:wrap}
+
+  /* ------------- screen 4: the report ------------- */
+  .rep{background:#fff;border:1px solid var(--line);border-radius:var(--radius);padding:26px 30px;max-width:760px}
+  @media(max-width:620px){.rep{padding:18px 16px}}
+  .rep .rh{display:flex;justify-content:space-between;align-items:baseline;border-bottom:2.5px solid var(--red);padding-bottom:7px}
+  .rep .rh .h1{font-family:Georgia,serif;font-size:13px;letter-spacing:.14em}
+  .rep .rh .h2{font-size:9px;font-weight:600;letter-spacing:.2em;color:var(--stone)}
+  .rep .title{font-family:Georgia,serif;font-size:22px;color:var(--red);margin:12px 0 2px}
+  .rep .sub{color:var(--ink-soft);font-size:13px;margin-bottom:14px}
+  .rep h5{font-family:Georgia,serif;font-weight:400;font-size:15px;color:var(--red);margin:16px 0 4px;border-bottom:1px solid var(--line);padding-bottom:3px}
+  .rep h5 .tag{font-family:var(--fb);font-size:9px;font-weight:700;letter-spacing:.16em;color:var(--stone);margin-left:8px}
+  table.g{width:100%;border-collapse:collapse;font-size:13px}
+  table.g th{text-align:left;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--stone);border-bottom:2px solid var(--ink);padding:4px 8px 4px 0}
+  table.g td{border-top:1px solid var(--line);padding:5px 8px 5px 0;vertical-align:top}
+  table.g td.r,table.g th.r{text-align:right}
+  table.g td.low{color:var(--red);font-weight:700}
+  .rep .note{background:var(--paper);border-left:3px solid var(--red);padding:8px 12px;margin-top:12px;font-size:13px}
+  .rep .ftr{margin-top:18px;border-top:1px solid var(--line);padding-top:6px;font-size:11px;color:var(--stone)}
+  .mailline{font-size:12.5px;color:var(--ink-soft);margin:0 0 14px}
+  .mailline b{color:var(--ink)}
+
+  /* ------------- screen 5: items ------------- */
+  .itemtbl{width:100%;border-collapse:collapse;font-size:13.5px;background:var(--paper-2)}
+  .itemtbl th{text-align:left;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--stone);border-bottom:2px solid var(--ink);padding:6px 10px}
+  .itemtbl td{border-top:1px solid var(--line);padding:7px 10px;vertical-align:middle}
+  .itemtbl tr.ah td{background:var(--paper);font-family:Georgia,serif;font-size:15px;padding:9px 10px}
+  .itemtbl tr.ah td small{font-family:var(--fb);font-size:11px;color:var(--stone);margin-left:10px}
+  .itemtbl .mini{padding:4px 9px;font-size:11px}
+  .settingcard .chips .chip{cursor:default}
+  tr.editing td{background:#fff8f6;border-left:4px solid var(--red)}
+  .edrow{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end}
+  .edrow label{display:flex;flex-direction:column;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--stone);font-weight:700;gap:3px}
+  .edrow input,.edrow select{min-height:36px;border:1px solid var(--line);border-radius:var(--radius);padding:6px 9px;font-family:var(--fb);font-size:13.5px;background:#fff;text-transform:none;letter-spacing:0;color:var(--ink);font-weight:400}
+  .edrow input{width:200px}
+  .edacts{margin-left:auto;display:flex;gap:6px;align-items:center}
+
+  /* ------------- screen 6: the printed sheet ------------- */
+  .sheet{background:#fff;border:1px solid var(--line);padding:.5in .55in;max-width:8.5in;margin:0 auto;font-size:11.5px;color:var(--ink);
+    box-shadow:0 2px 10px rgba(0,0,0,.08)}
+  .sheet .rh{display:flex;justify-content:space-between;align-items:baseline;border-bottom:2.5px solid var(--red);padding-bottom:6px}
+  .sheet .rh .h1{font-family:Georgia,serif;font-size:13px;letter-spacing:.14em}
+  .sheet .rh .h2{font-size:9px;font-weight:600;letter-spacing:.2em;color:var(--stone)}
+  .sheet .title{font-family:Georgia,serif;font-size:19px;color:var(--red);margin:10px 0 2px}
+  .sheet .sub{color:var(--ink-soft);font-size:11px;margin-bottom:8px}
+  .sheet .idrow{display:flex;gap:22px;margin:4px 0 10px;font-size:11px;flex-wrap:wrap}
+  .sheet .ln{display:inline-block;border-bottom:1px solid var(--ink);min-width:1.3in;height:11px;vertical-align:bottom}
+  .sheet table{width:100%;border-collapse:collapse}
+  .sheet th{text-align:left;font-size:8.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--stone);border-bottom:2px solid var(--ink);padding:3px 6px}
+  .sheet td{border-bottom:1px solid var(--line);padding:5px 6px;vertical-align:middle}
+  .sheet td.c{border-left:1px solid var(--line);width:1in}
+  .sheet td.n{border-left:1px solid var(--line);width:1.9in}
+  .sheet tr.ah td{background:var(--paper);font-family:Georgia,serif;font-size:12.5px;padding:5px 6px;border-bottom:1px solid var(--line)}
+  .sheet .note{background:var(--paper);border-left:3px solid var(--red);padding:6px 10px;margin-top:10px;font-size:10.5px}
+  .sheet .ftr{margin-top:12px;border-top:1px solid var(--line);padding-top:5px;font-size:9px;color:var(--stone);display:flex;justify-content:space-between}
+  .footnote{margin-top:40px;border-top:1px solid var(--line);padding-top:14px;font-size:12.5px;color:var(--stone);max-width:62em}
+  .qs{background:var(--amber-bg);border:1px solid var(--amber);border-radius:var(--radius);padding:12px 16px;margin:0 0 22px;font-size:13px}
+  .qs b{color:var(--amber)}
+  .qs ul{margin:6px 0 0 18px;padding:0}
+</style>
+</head>
+<body>
+
+<div class="mocknote">Mockup &middot; Operations and Inventory, nothing here works or saves</div>
+<div class="topbar"><span class="brand">181 FREMONT</span><span class="sub">Resident Experiences &middot; Admin</span></div>
+<div class="navbar"><span>Dashboard</span><span>Events</span><span>Calendar</span><span>Pages</span><span>Assets</span><span>Residents</span><span>Spaces</span><span class="on">Operations</span><span>Messages</span><span>Settings</span></div>
+
+<div class="wrap">
+
+<div class="switch">
+  <button class="on" onclick="go('ops',this)">1 &middot; Operations tab</button>
+  <button onclick="go('inv',this)">2 &middot; The Inventory door</button>
+  <button onclick="go('count',this)">3 &middot; A count, mid-walk</button>
+  <button onclick="go('rep',this)">4 &middot; The submitted report</button>
+  <button onclick="go('items',this)">5 &middot; The item list</button>
+  <button onclick="go('sheet',this)">6 &middot; The printed sheet</button>
+</div>
+
+<!-- ================= SCREEN 1: OPERATIONS ================= -->
+<div class="screen on" id="scr-ops">
+  <h1>Operations</h1>
+  <p class="psub">The working side of the Club, for every staff tier including the desk. One card per job.
+  Inventory is the first; the dashed cards show where Receiving and Key Control would sit if their SOPs
+  ever want a screen. Nothing on this tab is seen by residents.</p>
+
+  <div class="quad">
+    <div class="opcard" onclick="go('inv', document.querySelectorAll('.switch button')[1])">
+      <div class="ic">&#9776;</div>
+      <div class="t">Inventory</div>
+      <div class="d">Walk the building with your phone, count what is on hand, submit. The department heads get the report by email.</div>
+      <div class="st"><span class="pill part">Needs finishing</span> &nbsp; Friday&rsquo;s count stopped at 64 of 88 &middot; last full count Mon Oct 6</div>
+    </div>
+    <div class="opcard later">
+      <div class="ic">&#9636;</div>
+      <div class="t">Receiving</div>
+      <div class="d">Deliveries checked against the packing slip, discrepancies noted the same day.</div>
+      <div class="st">Not in this build &middot; SOP-RC Receiving Deliveries</div>
+    </div>
+    <div class="opcard later">
+      <div class="ic">&#9919;</div>
+      <div class="t">Key control</div>
+      <div class="d">Liquor storage key sign-out and return.</div>
+      <div class="st">Not in this build &middot; SOP-RC Liquor Storage Key Control</div>
+    </div>
+  </div>
+
+  <div class="footnote">
+    <b>Who sees what.</b> Operations shows for owner, staff and desk alike, because porters and concierges do the
+    counting. Starting, continuing and submitting a count: every tier. Editing the item list and the
+    report recipients: staff and owner only; the desk sees the list read-only. Same fence pattern as the
+    rest of the admin, enforced server-side.
+  </div>
+</div>
+
+<!-- ================= SCREEN 2: THE INVENTORY DOOR ================= -->
+<div class="screen" id="scr-inv">
+  <div class="toprow">
+    <h1>Inventory</h1>
+    <div class="grow"></div>
+    <button class="btn" onclick="document.getElementById('starter').classList.toggle('on')">Start a count</button>
+    <button class="btn ghost" onclick="go('items', document.querySelectorAll('.switch button')[4])">The item list</button>
+    <button class="btn ghost" onclick="go('sheet', document.querySelectorAll('.switch button')[5])">Print a blank sheet</button>
+  </div>
+  <p class="psub">Every count ever taken, newest first. A red-edged card is a count somebody had to leave; anyone
+  can pick it up and finish. Submitted counts stay here as the record, so nobody counts twice and the
+  department heads can look back.</p>
+
+  <div class="starter" id="starter">
+    <h3 style="font-family:Georgia,serif;font-weight:400;font-size:17px;margin:0 0 4px">What are you counting today?</h3>
+    <div class="hint">The full walk is the default. Pick areas for a shorter count, like the Monday Nespresso check.</div>
+    <div class="chips">
+      <span class="chip on" onclick="pickAll(this)">Everything &middot; the full walk</span>
+      <span class="chip" onclick="pick(this)">Front Desk &amp; Lobby (L1)</span>
+      <span class="chip" onclick="pick(this)">Level 3</span>
+      <span class="chip" onclick="pick(this)">Level 4 Breakroom</span>
+      <span class="chip" onclick="pick(this)">Level 39 Credenza &amp; Kitchen</span>
+      <span class="chip" onclick="pick(this)">Nespresso Vertuo pods</span>
+    </div>
+    <div class="hint" style="margin-bottom:12px">A count is already open from Friday (64 of 88). Starting a new one leaves that card red until someone finishes or closes it.</div>
+    <button class="btn" onclick="go('count', document.querySelectorAll('.switch button')[2])">Begin counting</button>
+    <button class="btn ghost" onclick="document.getElementById('starter').classList.remove('on')">Never mind</button>
+  </div>
+
+  <div class="ccard hot">
+    <div class="dt"><div class="m">OCT</div><div class="d">9</div><div class="w">Friday</div></div>
+    <div class="grow">
+      <div class="t">Full walk &middot; needs finishing</div>
+      <div class="meta">Started 2:10 PM by <b>Anthony B.</b> &middot; handed off 3:05 PM (&ldquo;called to the desk&rdquo;) &middot;
+      L1, L3 and L4 done &middot; <b>L39 and Nespresso still to count</b> &middot; 6 items below minimum so far</div>
+    </div>
+    <div class="prog"><div class="lab">64 of 88 counted</div><div class="track"><div class="fill part" style="width:73%"></div></div></div>
+    <button class="btn" onclick="go('count', document.querySelectorAll('.switch button')[2])">Pick this up</button>
+  </div>
+
+  <div class="ccard">
+    <div class="dt"><div class="m">OCT</div><div class="d">6</div><div class="w">Monday</div></div>
+    <div class="grow">
+      <div class="t">Full walk <span class="pill done">Submitted</span></div>
+      <div class="meta">Counted by <b>Krystle T.</b> 9:05 to 10:42 AM &middot; 88 of 88 &middot; <b>6 items below minimum</b> &middot;
+      emailed 10:42 AM to 5 department heads</div>
+    </div>
+    <div class="prog"><div class="lab">complete</div><div class="track"><div class="fill" style="width:100%"></div></div></div>
+    <button class="mini ghost" onclick="go('rep', document.querySelectorAll('.switch button')[3])">View</button>
+  </div>
+
+  <div class="ccard">
+    <div class="dt"><div class="m">SEP</div><div class="d">29</div><div class="w">Monday</div></div>
+    <div class="grow">
+      <div class="t">Full walk <span class="pill done">Submitted</span> <span class="pill quiet">finished in two parts</span></div>
+      <div class="meta">Started by <b>Neema E.</b> Sep 29, submitted 70 of 88 at end of shift &middot; finished by
+      <b>Marty A.</b> Sep 30 9:20 AM &middot; 4 below minimum &middot; both reports emailed</div>
+    </div>
+    <div class="prog"><div class="lab">complete</div><div class="track"><div class="fill" style="width:100%"></div></div></div>
+    <button class="mini ghost">View</button>
+  </div>
+
+  <div class="ccard">
+    <div class="dt"><div class="m">SEP</div><div class="d">29</div><div class="w">Monday</div></div>
+    <div class="grow">
+      <div class="t">Nespresso Vertuo pods <span class="pill done">Submitted</span></div>
+      <div class="meta">Counted by <b>Iman N.</b> 9:12 AM &middot; 7 of 7 &middot; <b>Altissio at 3 boxes</b>, reorder line &middot; emailed 9:14 AM</div>
+    </div>
+    <div class="prog"><div class="lab">complete</div><div class="track"><div class="fill" style="width:100%"></div></div></div>
+    <button class="mini ghost">View</button>
+  </div>
+
+  <div class="archhead">September and earlier &middot; 6 counts</div>
+  <div class="ccard" style="opacity:.75">
+    <div class="dt"><div class="m">SEP</div><div class="d">22</div><div class="w">Monday</div></div>
+    <div class="grow"><div class="t">Full walk <span class="pill done">Submitted</span></div>
+      <div class="meta">Counted by <b>Keavash M.</b> &middot; 88 of 88 &middot; 2 below minimum</div></div>
+    <button class="mini ghost">View</button>
+  </div>
+
+  <div class="footnote">
+    <b>What a card knows.</b> Who started, who finished, when, how many items, how many fell below their minimum, and
+    when the email went out. Every submit sends; a count finished in two parts sends twice, the second email
+    headed &ldquo;completes Friday&rsquo;s count&rdquo;. Nothing is ever deleted; a count nobody finishes can be
+    <i>closed</i> by staff, which files it as &ldquo;Closed, 64 of 88&rdquo; and takes the red edge off.
+  </div>
+</div>
+
+<!-- ================= SCREEN 3: THE COUNT ================= -->
+<div class="screen" id="scr-count">
+  <div class="sticky">
+    <div class="grow">
+      <div class="big">Friday, October 9 &middot; full walk</div>
+      <div class="who">Started by Anthony B. 2:10 PM &middot; picked up by <b>you</b> (Keavash M.) 3:40 PM</div>
+      <div class="track"><div class="fill" id="pfill"></div></div>
+      <div class="who" id="pcount">64 of 88 counted &middot; 3 below minimum</div>
+    </div>
+    <button class="btn ghost" onclick="dlg('handoff')">Hand off</button>
+    <button class="btn" onclick="dlg('submit')">Submit</button>
+  </div>
+  <p class="psub" style="margin-top:-6px">Type what is on the shelf. Red means it is at or under the minimum, which is
+  the reorder line, not an emergency. Leave a box empty if you could not get to it; the report says so honestly.
+  Everything saves as you type, so the walk survives a phone going to sleep or a hand-off.</p>
+
+  <div id="areas"></div>
+
+  <div class="footbar">
+    <button class="btn ghost" onclick="dlg('handoff')">Hand off to someone else</button>
+    <button class="btn" onclick="dlg('submit')">Submit the count</button>
+  </div>
+
+  <div class="footnote">
+    <b>Rules the screen keeps.</b> Minimums come from the item list, never typed here. Items that live in two
+    places are two rows, one per place, so a counter never adds in their head. Pods: boxes and loose, the site
+    does the ten-to-a-box math. The area note is where machine faults, resident feedback and &ldquo;the closet was
+    locked&rdquo; go. Who typed each number is stamped, so a two-person count reads correctly on the report.
+    <b>On an iPhone:</b> this screen is built for one hand; number boxes open the numeric keypad, every target is at least
+    44 pixels, one area opens at a time so the thumb never travels far, and the sticky bar keeps Hand off and Submit in reach.
+  </div>
+</div>
+
+<!-- dialogs for screen 3 -->
+<div class="dialog" id="dlg-submit" onclick="if(event.target===this)this.classList.remove('on')">
+  <div class="dbox">
+    <h4>Submit with 24 items not counted?</h4>
+    <p>The report goes to the department heads now with what you have: 64 items, 6 below minimum. This count stays
+    red on the Inventory screen so someone can finish L39 and the Nespresso pods; their numbers go out in a second
+    email when they do.</p>
+    <div class="acts">
+      <button class="btn" onclick="closeDlg();go('rep', document.querySelectorAll('.switch button')[3])">Submit what I have</button>
+      <button class="btn ghost" onclick="closeDlg()">Keep counting</button>
+    </div>
+  </div>
+</div>
+<div class="dialog" id="dlg-handoff" onclick="if(event.target===this)this.classList.remove('on')">
+  <div class="dbox">
+    <h4>Hand this count off?</h4>
+    <p>Nothing is emailed. Your 64 numbers are saved, the card turns red on the Inventory screen, and the next
+    person presses Pick this up. One line for them, optional:</p>
+    <input style="width:100%;min-height:44px;border:1px solid var(--line);border-radius:4px;padding:8px 10px;font-family:var(--fb);font-size:14px;margin-bottom:14px" placeholder="L39 credenza not started, kitchen key is at the desk">
+    <div class="acts">
+      <button class="btn" onclick="closeDlg();go('inv', document.querySelectorAll('.switch button')[1])">Hand off</button>
+      <button class="btn ghost" onclick="closeDlg()">Keep counting</button>
+    </div>
+  </div>
+</div>
+
+<!-- ================= SCREEN 4: THE REPORT ================= -->
+<div class="screen" id="scr-rep">
+  <div class="toprow">
+    <h1>Inventory count &middot; Monday, October 6</h1>
+    <div class="grow"></div>
+    <button class="mini ghost">Print</button>
+    <button class="mini ghost">CSV</button>
+    <button class="mini ghost">Send the email again</button>
+  </div>
+  <p class="mailline">Emailed <b>10:42 AM</b> from reports@181residents.com to: Resident Experience Manager, General Manager,
+  Leigh Anne, Carley-Ann, Facilities Manager &middot; subject <b>&ldquo;RC Inventory, Monday Oct 6: 6 items below minimum&rdquo;</b>
+  &middot; the email body is this page, below-minimum items first, so a department head can order from the phone.</p>
+
+  <div class="rep">
+    <div class="rh"><span class="h1">181 FREMONT RESIDENCES</span><span class="h2">RESIDENTS&rsquo; CLUB OPERATIONS</span></div>
+    <div class="title">Inventory count &middot; Monday, October 6, 2026</div>
+    <div class="sub">Full walk, 88 of 88 items. Counted by <b>Krystle T.</b> 9:05 to 10:42 AM. Six items at or below their
+    minimum. Department heads review and place their own orders; nothing here is an order.</div>
+
+    <h5>Below minimum <span class="tag">ORDER THESE, OR DECIDE NOT TO</span></h5>
+    <table class="g">
+      <tr><th>Item</th><th>Where</th><th class="r">Minimum</th><th class="r">On hand</th><th>Ordered by</th></tr>
+      <tr><td>Altissio (Vertuo)</td><td>L39 Nespresso</td><td class="r">3 boxes</td><td class="r low">2 boxes + 6 loose</td><td>Resident Experiences</td></tr>
+      <tr><td>Melozio Decaffeinato (Vertuo)</td><td>L39 Nespresso</td><td class="r">3 boxes</td><td class="r low">3 boxes</td><td>Resident Experiences</td></tr>
+      <tr><td>Pressed Juices</td><td>L3 HOA Fridge</td><td class="r">15</td><td class="r low">9</td><td>HOA</td></tr>
+      <tr><td>Clorox Wipes</td><td>Parcel Closet</td><td class="r">3</td><td class="r low">1</td><td>Front Desk</td></tr>
+      <tr><td>Coffee mate, oat</td><td>L39 Credenza</td><td class="r">1 box</td><td class="r low">0</td><td>Resident Experiences</td></tr>
+      <tr><td>Hand Sanitizer (32 oz)</td><td>Parcel Closet</td><td class="r">3</td><td class="r low">2</td><td>Front Desk</td></tr>
+    </table>
+
+    <h5>Notes from the walk</h5>
+    <table class="g">
+      <tr><td style="width:150px;color:var(--stone)">L39 Nespresso</td><td>Machine normal. A resident in 44B asked whether Solelio is coming back.</td></tr>
+      <tr><td style="color:var(--stone)">L4 Breakroom</td><td>Dish liquid is the new brand, counted the same.</td></tr>
+    </table>
+
+    <h5>Everything counted <span class="tag">BY AREA, IN WALK ORDER</span></h5>
+    <table class="g">
+      <tr><th>Item</th><th class="r">Minimum</th><th class="r">On hand</th></tr>
+      <tr><td colspan="3" style="font-family:Georgia,serif;background:var(--paper);padding:6px 8px 6px 0">Front Desk Cabinet (L1)</td></tr>
+      <tr><td>Jumbo Sharpies</td><td class="r">1 box</td><td class="r">2</td></tr>
+      <tr><td>Badge Holders</td><td class="r">5 pc</td><td class="r">11</td></tr>
+      <tr><td>Batteries AA</td><td class="r">1 pack</td><td class="r">2</td></tr>
+      <tr><td colspan="3" style="color:var(--stone);font-style:italic;padding:8px 0">&hellip; the full list follows in the same shape, every area, every item &hellip;</td></tr>
+      <tr><td colspan="3" style="font-family:Georgia,serif;background:var(--paper);padding:6px 8px 6px 0">Nespresso Vertuo pods (L39)</td></tr>
+      <tr><td>Melozio</td><td class="r">3 boxes</td><td class="r">5 boxes + 3 loose</td></tr>
+      <tr><td>Half Caffeinato</td><td class="r">3 boxes</td><td class="r">4 boxes</td></tr>
+      <tr><td>Rotating: Intenso</td><td class="r">3 boxes</td><td class="r">4 boxes + 8 loose</td></tr>
+    </table>
+
+    <div class="note"><b>Counted on 181residents.com &middot; Operations &middot; Inventory.</b> The live record, with who counted what and when,
+    is at the same address. The Front Desk never places the order (SOP-RC-001).</div>
+    <div class="ftr">Inventory count #0041 &middot; submitted Monday, October 6, 2026, 10:42 AM &middot; 181residents.com/admin</div>
+  </div>
+
+  <div class="footnote">
+    <b>How the email travels.</b> The same zero-vendor pipeline the RSVP notes already ride: the site hands the
+    report to the rsvp-notify Worker, which sends it through Cloudflare Email Routing from an address on
+    181residents.com. The recipient list lives in Settings (screen 5). One constraint to know up front: each
+    recipient address must be verified once in Cloudflare Email Routing, a single click on a link they receive;
+    yours already is. Work mailboxes are already clearing mail from this domain since the Oct 2 allowlisting.
+  </div>
+</div>
+
+<!-- ================= SCREEN 5: ITEMS ================= -->
+<div class="screen" id="scr-items">
+  <div class="toprow">
+    <h1>The item list</h1>
+    <div class="grow"></div>
+    <button class="btn">Add an item</button>
+    <button class="btn ghost">Add an area</button>
+    <button class="btn ghost" onclick="go('sheet', document.querySelectorAll('.switch button')[5])">Print a blank sheet</button>
+  </div>
+  <p class="psub">What gets counted, where, and what the minimum is. Leadership keeps this table itself: <b>Edit</b> on any row
+  opens it in place (name, minimum, unit, area, who orders it), <b>Add an item</b> puts a new row in an area, <b>Remove</b> retires a
+  row without touching past counts. Areas are in walk order and can be moved; items too. Changing a minimum changes the next
+  count, never a past one. Staff and owner edit; the desk reads.</p>
+
+  <div class="qs">
+    <b>Three things from your spreadsheet I need you to confirm</b> (I normalized them in this mock, flagged with &dagger;):
+    <ul>
+      <li>Rows 72 to 82 (Splenda through the teas) had a drag-fill run: Floor 40, 41, 42 &hellip; 50 and &ldquo;Credenza on L40 &hellip; L50&rdquo;.
+      I read them all as <b>Level 39 Credenza</b>.</li>
+      <li>The six Harney &amp; Sons tea minimums ran 3, 4, 5, 6, 7, 8 boxes, the same fill artifact. I set every tea to
+      <b>1 box</b> until you give me the real par.</li>
+      <li>Several minimums read &ldquo;&#65533; Box&rdquo; (a lost character). I read them as <b>&frac12; box</b>.</li>
+    </ul>
+    Also: the sheet has no &ldquo;ordered by&rdquo; column. I added one so the report can group below-minimum items by
+    who orders them; the values shown are my guesses and the column can simply be left off.
+  </div>
+
+  <table class="itemtbl" id="itemtbl"></table>
+
+  <div class="card settingcard" style="margin-top:26px">
+    <h3>Inventory reports go to <span class="tag">LIVES IN SETTINGS</span><span class="ib">i</span></h3>
+    <div class="hint">Every submitted count is emailed to these addresses. Each one is verified once in Cloudflare Email Routing.</div>
+    <div class="chips">
+      <span class="chip">leonardo@181sf.com &middot; Resident Experience Manager</span>
+      <span class="chip">General Manager</span>
+      <span class="chip">Leigh Anne</span>
+      <span class="chip">Carley-Ann</span>
+      <span class="chip">Facilities Manager</span>
+      <span class="chip" style="border-style:dashed;color:var(--stone)">+ add</span>
+    </div>
+  </div>
+
+  <div class="footnote">
+    <b>Under the hood, if you say go.</b> Three D1 tables: <i>inv_items</i> (name, area, walk order, minimum, unit, ordered-by, active),
+    <i>inv_counts</i> (started/finished by and when, scope, status Open / Submitted / Closed, notes), and <i>inv_lines</i>
+    (count, item, quantity, loose pods, who typed it, when). Autosave is a PATCH per keystroke-pause, so a hand-off
+    loses nothing. The report is rendered once at submit, stored as HTML on the count row, and that same HTML is
+    the email body and the printable page. Dev server mirrors every route. Two sessions, same playbook as Pages.
+  </div>
+</div>
+
+<!-- ================= SCREEN 6: THE PRINTED SHEET ================= -->
+<div class="screen" id="scr-sheet">
+  <div class="toprow">
+    <h1>The printed sheet</h1>
+    <div class="grow"></div>
+    <button class="btn">Print</button>
+  </div>
+  <p class="psub">For anyone who would rather walk with paper. <b>Print a blank sheet</b> renders the live item list, in walk
+  order with today&rsquo;s minimums, as a Letter page set. The sheet is a helper, not the record: whoever carries it types
+  the numbers into a count on the site when they are back at a desk, or hands the sheet to someone who will. Every submitted
+  report prints the same way, from its own Print button.</p>
+
+  <div class="sheet" id="sheet"></div>
+
+  <div class="footnote">
+    <b>Why it stays a helper.</b> A paper count the site never hears about cannot email anyone, cannot turn red, and
+    cannot be picked up by the next shift. The sheet makes the walk comfortable for people who like a clipboard; the
+    site remains the one place the count lives.
+  </div>
+</div>
+
+</div>
+
+<script>
+function go(id, btn){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('on'));
+  document.getElementById('scr-'+id).classList.add('on');
+  document.querySelectorAll('.switch button').forEach(b=>b.classList.remove('on'));
+  if(btn) btn.classList.add('on');
+  window.scrollTo(0,0);
+}
+function pick(el){ document.querySelector('.chips .chip.on')?.classList.remove('on'); el.classList.toggle('on'); }
+function pickAll(el){ document.querySelectorAll('#starter .chip').forEach(c=>c.classList.remove('on')); el.classList.add('on'); }
+function dlg(k){ document.getElementById('dlg-'+k).classList.add('on'); }
+function closeDlg(){ document.querySelectorAll('.dialog').forEach(d=>d.classList.remove('on')); }
+
+/* ---- the item catalog, in walk order, from "inventory counts.xlsx" + SOP-RC-001 ---- */
+/* [name, minimum(number or null), unit/label, ordered-by, counted value for the demo (null = not yet), sub] */
+const AREAS = [
+  ["Front Desk Cabinet", "L1", "Front Desk", [
+    ["Jumbo Sharpies", 1, "box", 2], ["Badge Holders", 5, "pc", 11], ["Batteries AA", 1, "pack", 2],
+    ["Batteries AAA", 1, "pack", 2], ["Batteries 9V", 1, "pack", 2], ["Masks", 1, "box", 3], ["Packaging Tape", 1, "roll", 2]]],
+  ["Front Desk Drawer", "L1", "Front Desk", [
+    ["USPS Stamps", 10, "pc", 14], ["Pens", 4, "pc", 9], ["Whiteout", 1, "pc", 2], ["Post-its, square", 2, "pc", 3], ["Post-its, pad", 2, "pc", 3]]],
+  ["Dry Cleaning Closet", "L1", "Front Desk", [
+    ["Lindt Chocolates", 1, "box", 2], ["Dog Treats, chicken", 1, "container", 2], ["Dog Treats, duck", 1, "container", 0]]],
+  ["Parcel Closet", "L1", "Front Desk", [
+    ["Clorox Wipes", 3, "", 1], ["Hand Sanitizer (32 oz)", 3, "", 2], ["Tide Pods", 1, "", 2], ["Marble Cleaner", 1, "", 2],
+    ["Magic Eraser", 6, "pc", 8], ["Bubble Wrap", 1, "roll", 2]]],
+  ["Front Desk Back Office", "L1", "Front Desk", [
+    ["Gloves (3-pack)", 1, "box", 2], ["KN95 Masks", 1, "box", 2], ["Brother Toner, black", 1, "", 2], ["Brother Toner, yellow", 1, "", 2],
+    ["Brother Toner, cyan", 1, "", 2], ["Brother Toner, magenta", 1, "", 0], ["Lint Roller", 1, "pc", 2], ["8 oz Cups, Lobby Office", 0.5, "box", 1]]],
+  ["Lobby", "L1", "Resident Experiences", [
+    ["Nespresso pods, lobby machine", 2, "boxes", 3], ["Tea Pods", 0.5, "box", 1]]],
+  ["Level 3 Credenza", "L3", "Front Desk", [
+    ["Pens", 1, "box", 2], ["Whiteout", 3, "pack", 4], ["Post-its, square", 6, "pc", 10], ["Post-its, pad", 6, "pc", 8],
+    ["Paper Clips", 2, "boxes", 3], ["Binder Clips, S / M / L", 1, "box each", 2], ["Badge Clips", 5, "pc", 12], ["Push Pins", 1, "container", 2],
+    ["Label Maker Tape", 3, "", 2], ["Printer Paper", 3, "packs", 5], ["Laminating Sheets", 1, "pack", 2]]],
+  ["Level 3 Offices &amp; Fridge", "L3", "HOA", [
+    ["Konica Printer Ink (HOA Office)", 1, "", 2], ["Water Jugs (Engineering Office)", 4, "", 6],
+    ["Pressed Juices (HOA Fridge)", 15, "", 9], ["Pressed Juice Shots (HOA Fridge)", 15, "", 16], ["Breakfast Bars (HOA Fridge)", 2, "boxes", 3]]],
+  ["Level 3 Storage", "L3", "Resident Experiences", [
+    ["181 Water Bottles", 30, "cases", 34], ["San Pellegrino Sparkling (glass)", 4, "cases", 5], ["Gloves (3-pack)", 1, "box", 2],
+    ["10 oz Cups, bar", 0.5, "box", 1], ["16 oz Cups, Tue/Thu Breakfast", 0.5, "box", 1], ["Lids, 10 and 16 oz", 0.5, "box", 2], ["8 oz Cups, Lobby Office", 0.5, "box", 1]]],
+  ["Level 4 Breakroom", "L4", "Front Desk", [
+    ["Ground Coffee, Medium", 1, "", 2], ["Ground Coffee, Blonde", 1, "", 2], ["K-Cup Coffee Filters", 1, "box", 2], ["Paper Towels", 2, "stacks", 4],
+    ["Sponges", 3, "pc", 5], ["Aluminum Foil", 1, "", 2], ["Saran Wrap", 1, "", 2], ["Dish Washing Liquid (under sink)", 3, "pc", 4],
+    ["Hand Soap (under sink)", 1, "", 2], ["Lint Roller (under sink)", 3, "pc", 4]]],
+  ["Level 39 Credenza &amp; Kitchen", "L39", "Resident Experiences", [
+    ["10 oz Cups, bar", 0.5, "box", null], ["16 oz Cups, Tue/Thu Breakfast", 0.5, "box", null], ["Lids, 10 and 16 oz", 0.5, "box", null],
+    ["Coffee Stirrers", 2, "boxes", null], ["Coffee Sleeves", 2, "boxes", null], ["Splenda packets (yellow) †", 0.5, "box", null],
+    ["Sugar packets (white) †", 0.5, "box", null], ["Coffee mate, original †", 1, "box", null], ["Coffee mate, french vanilla †", 1, "box", null],
+    ["Coffee mate, oat †", 1, "box", null],
+    ["H&amp;S Tea: Dragon Pearl Jasmine †", 1, "box", null], ["H&amp;S Tea: Earl Grey Supreme †", 1, "box", null], ["H&amp;S Tea: Japanese Sencha †", 1, "box", null],
+    ["H&amp;S Tea: Darjeeling †", 1, "box", null], ["H&amp;S Tea: Organic English Breakfast †", 1, "box", null], ["H&amp;S Tea: Chamomile †", 1, "box", null],
+    ["Dish Pods (kitchen)", 0.5, "box", null]]],
+  ["Nespresso Vertuo pods", "L39 &middot; bartop, tea cabinet, East Lounge credenza", "Resident Experiences", [
+    ["Melozio", 3, "boxes", null, "Coffee &middot; 6 &middot; gold sleeve"], ["Melozio Decaffeinato", 3, "boxes", null, "Coffee, decaf &middot; 6 &middot; gold / green"],
+    ["Half Caffeinato", 3, "boxes", null, "Coffee, half-caf &middot; 6 &middot; light blue"], ["Altissio", 3, "boxes", null, "Espresso &middot; 9 &middot; purple"],
+    ["Altissio Decaffeinato", 3, "boxes", null, "Espresso, decaf &middot; 9 &middot; purple / green"],
+    ["Rotating: Intenso", 3, "boxes", null, "Standing rotating pod &middot; 9 &middot; brown"], ["Rotating: Solelio", 3, "boxes", null, "Only on written notice &middot; 2 &middot; yellow"]]],
+];
+const PODS = "Nespresso Vertuo pods";
+
+/* screen 3 */
+(function(){
+  const host = document.getElementById('areas');
+  let html = '';
+  AREAS.forEach((a,ai)=>{
+    const [name, floor, orderer, items] = a;
+    const done = items.filter(i=>i[3]!==null).length;
+    const closed = done===items.length;
+    html += `<div class="area ${closed?'closed':''}"><div class="ahead" onclick="this.parentElement.classList.toggle('closed')">
+      <span class="chev">&#9660;</span><span class="an">${name} <span class="hint">${floor}</span></span>
+      <span class="ac ${closed?'ok':''}">${closed?'all '+items.length+' counted':done+' of '+items.length+' counted'}</span></div><div class="abody">`;
+    items.forEach(it=>{
+      const [nm, min, unit, val, sub] = it;
+      const pods = name===PODS;
+      const low = val!==null && val<=min && !(min===0.5 && val>=1);
+      const minTxt = (min===0.5?'&frac12;':min) + (unit?' '+unit:'');
+      if(pods){
+        html += `<div class="row two ${val!==null&&val<=min?'low':''}"><div class="nm">${nm}<small>${sub}</small></div>
+          <div class="par">minimum<b>${minTxt}</b></div>
+          <div class="pair"><span><input inputmode="numeric" placeholder="0" value="${val??''}" oninput="recount()"><small>boxes</small></span><span><input inputmode="numeric" placeholder="0"><small>loose</small></span></div>
+          <div class="flag">At or under the minimum. Reorder line reached.</div></div>`;
+      } else {
+        html += `<div class="row ${low?'low':''}"><div class="nm">${nm}${sub?'<small>'+sub+'</small>':''}</div>
+          <div class="par">minimum<b>${minTxt}</b></div>
+          <input inputmode="numeric" placeholder="&ndash;" value="${val??''}" oninput="rowcheck(this,${min});recount()">
+          <div class="flag">At or under the minimum.</div></div>`;
+      }
+    });
+    html += `<div class="anote"><textarea placeholder="Note for ${name.replace(/&amp;/g,'&')}: machine faults, what a resident said, a locked door"></textarea></div></div></div>`;
+  });
+  host.innerHTML = html;
+})();
+function rowcheck(inp,min){ const v=inp.value===''?null:parseFloat(inp.value); const r=inp.closest('.row'); r.classList.toggle('low', v!==null && v<=min); }
+function recount(){
+  const rows=[...document.querySelectorAll('#areas .row')];
+  const done=rows.filter(r=>{const i=r.querySelector('input');return i.value!=='';}).length;
+  const low=rows.filter(r=>r.classList.contains('low')).length;
+  document.getElementById('pfill').style.width=Math.round(done/rows.length*100)+'%';
+  document.getElementById('pcount').textContent=`${done} of ${rows.length} counted · ${low} below minimum`;
+}
+recount();
+
+/* screen 5 */
+(function(){
+  const t=document.getElementById('itemtbl');
+  let html='<tr><th>Item</th><th>Minimum</th><th>Ordered by</th><th></th></tr>';
+  AREAS.forEach(a=>{
+    const [name,floor,orderer,items]=a;
+    html+=`<tr class="ah"><td colspan="4">${name}<small>${floor} &middot; ${items.length} items</small><span style="float:right"><span class="mini ghost">Rename</span> <span class="mini ghost">Move</span></span></td></tr>`;
+    items.forEach(it=>{
+      const [nm,min,unit]=it; const minTxt=(min===0.5?'&frac12;':min)+(unit?' '+unit:'');
+      if(nm==='Clorox Wipes'){
+        html+=`<tr class="editing"><td colspan="4"><div class="edrow">
+          <label>Item<input value="Clorox Wipes"></label>
+          <label>Minimum<input value="3" inputmode="numeric" style="width:70px"></label>
+          <label>Unit<input value="containers" style="width:110px"></label>
+          <label>Area<select><option>Parcel Closet</option><option>Front Desk Cabinet</option><option>Level 3 Storage</option></select></label>
+          <label>Ordered by<select><option>Front Desk</option><option>Resident Experiences</option><option>HOA</option><option>Facilities</option></select></label>
+          <span class="edacts"><span class="mini">Save</span> <span class="mini ghost">Cancel</span> <span class="mini ghost" style="color:var(--red)">Remove</span></span>
+        </div><div class="hint" style="margin-top:6px">This is what Edit opens, right in the row. Save stamps who changed it and when.</div></td></tr>`;
+        return;
+      }
+      html+=`<tr><td>${nm}</td><td>${minTxt}</td><td class="hint">${orderer}</td><td style="text-align:right"><span class="mini ghost">Edit</span></td></tr>`;
+    });
+  });
+  t.innerHTML=html;
+})();
+
+/* screen 6 */
+(function(){
+  const h=document.getElementById('sheet');
+  let html=`<div class="rh"><span class="h1">181 FREMONT RESIDENCES</span><span class="h2">RESIDENTS&rsquo; CLUB OPERATIONS</span></div>
+    <div class="title">Inventory Count Sheet</div>
+    <div class="sub">Walk order, with each item&rsquo;s minimum. Write what is on hand; circle anything at or under its minimum. Pods: boxes and loose, ten loose make a box. Enter the count on 181residents.com (Operations, Inventory) when you are back at a desk.</div>
+    <div class="idrow"><span>Counted by <span class="ln" style="min-width:2.2in"></span></span><span>Date <span class="ln"></span></span><span>Time started <span class="ln" style="min-width:.9in"></span></span></div>
+    <table><tr><th>Item</th><th>Minimum</th><th>On hand</th><th>Note</th></tr>`;
+  AREAS.slice(0,4).forEach(a=>{
+    const [name,floor,orderer,items]=a;
+    html+=`<tr class="ah"><td colspan="4">${name} <span style="font-family:var(--fb);font-size:9.5px;color:var(--stone)">${floor}</span></td></tr>`;
+    items.forEach(it=>{const [nm,min,unit]=it; const minTxt=(min===0.5?'&frac12;':min)+(unit?' '+unit:'');
+      html+=`<tr><td>${nm}</td><td>${minTxt}</td><td class="c"></td><td class="n"></td></tr>`;});
+  });
+  html+=`<tr><td colspan="4" style="color:var(--stone);font-style:italic;padding:8px 6px;border-bottom:none">&hellip; every area follows, 88 items over three pages, page breaks between areas &hellip;</td></tr></table>
+    <div class="note"><b>The Front Desk never places the order.</b> Below-minimum items are reported; department heads decide. Machine faults, resident feedback and locked doors go in the Note column.</div>
+    <div class="ftr"><span>Blank count sheet &middot; printed from 181residents.com/admin &middot; item list as of today</span><span>Page 1 of 3</span></div>`;
+  h.innerHTML=html;
+})();
+</script>
+</body>
+</html>
