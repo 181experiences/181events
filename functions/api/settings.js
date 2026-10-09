@@ -23,18 +23,39 @@ function cleanList(v, fallback) {
 }
 
 async function readLists(env) {
-  const out = { locations: DEFAULTS.locations.slice(), hosts: DEFAULTS.hosts.slice() };
+  const out = { locations: DEFAULTS.locations.slice(), hosts: DEFAULTS.hosts.slice(), inv_recipients: [] };
   try {
     const { results } = await env.DB.prepare(
-      "SELECT key, value FROM settings WHERE key IN ('locations','hosts')").all();
+      "SELECT key, value FROM settings WHERE key IN ('locations','hosts','inv_recipients')").all();
     for (const r of results) {
       try {
         const v = JSON.parse(r.value);
-        if (Array.isArray(v) && v.length) out[r.key] = cleanList(v, DEFAULTS[r.key]);
+        if (r.key === "inv_recipients") out.inv_recipients = cleanEmails(v);
+        else if (Array.isArray(v) && v.length) out[r.key] = cleanList(v, DEFAULTS[r.key]);
       } catch (e) {}
     }
   } catch (e) {}
   return out;
+}
+
+// Where submitted inventory counts are emailed: the department heads. Each
+// address must also be a verified destination in Email Routing, or the note
+// quietly never arrives there (DEPLOY.md, "Inventory").
+export function cleanEmails(v) {
+  if (!Array.isArray(v)) return [];
+  const out = [];
+  for (const item of v) {
+    const s = String(item || "").trim().toLowerCase().slice(0, 120);
+    if (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(s) && !out.includes(s)) out.push(s);
+    if (out.length >= 25) break;
+  }
+  return out;
+}
+export async function inventoryRecipients(env) {
+  try {
+    const r = await env.DB.prepare("SELECT value FROM settings WHERE key='inv_recipients'").first();
+    return r ? cleanEmails(JSON.parse(r.value)) : [];
+  } catch (e) { return []; }
 }
 
 export async function onRequestGet({ request, env }) {
@@ -60,6 +81,7 @@ export async function onRequestPut({ request, env }) {
   if ("locations" in body) put("locations", JSON.stringify(cleanList(body.locations, DEFAULTS.locations)));
   if ("hosts" in body) put("hosts", JSON.stringify(cleanList(body.hosts, DEFAULTS.hosts)));
   if ("notes_open" in body) put("notes_open", body.notes_open ? "1" : "0");
+  if ("inv_recipients" in body) put("inv_recipients", JSON.stringify(cleanEmails(body.inv_recipients)));
   if (!writes.length) return json({ error: "Nothing to save" }, 400);
   await env.DB.batch(writes);
   return json({ ...(await getWindow(env)), ...(await readLists(env)) });

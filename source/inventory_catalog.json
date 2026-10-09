@@ -1,0 +1,117 @@
+{
+  "_about": "The starting item list for Operations > Inventory, in walk order. Loaded once into an empty list by the admin's 'Load the starting list' button (POST /api/inventory/seed); after that the list lives in the database and leadership edits it on the site. From Leo's 'inventory counts.xlsx' (Oct 9, 2026) plus the seven Vertuo pods of SOP-RC-001. Floors are numbers; the 39th-floor space is The Residents' Club.",
+  "areas": [
+    {"name": "Front Desk Cabinet", "floor": "1", "orderer": "Front Desk", "items": [
+      {"name": "Jumbo Sharpies", "minimum": 1, "unit": "box"},
+      {"name": "Badge Holders", "minimum": 5, "unit": "pc"},
+      {"name": "Batteries AA", "minimum": 1, "unit": "pack"},
+      {"name": "Batteries AAA", "minimum": 1, "unit": "pack"},
+      {"name": "Batteries 9V", "minimum": 1, "unit": "pack"},
+      {"name": "Masks", "minimum": 1, "unit": "box"},
+      {"name": "Packaging Tape", "minimum": 1, "unit": "roll"}
+    ]},
+    {"name": "Front Desk Drawer", "floor": "1", "orderer": "Front Desk", "items": [
+      {"name": "USPS Stamps", "minimum": 10, "unit": "pc"},
+      {"name": "Pens", "minimum": 4, "unit": "pc"},
+      {"name": "Whiteout", "minimum": 1, "unit": "pc"},
+      {"name": "Post-its, square", "minimum": 2, "unit": "pc"},
+      {"name": "Post-its, pad", "minimum": 2, "unit": "pc"}
+    ]},
+    {"name": "Dry Cleaning Closet", "floor": "1", "orderer": "Front Desk", "items": [
+      {"name": "Lindt Chocolates", "minimum": 1, "unit": "box"},
+      {"name": "Dog Treats, chicken", "minimum": 1, "unit": "container"},
+      {"name": "Dog Treats, duck", "minimum": 1, "unit": "container"}
+    ]},
+    {"name": "Parcel Closet", "floor": "1", "orderer": "Front Desk", "items": [
+      {"name": "Clorox Wipes", "minimum": 3, "unit": "containers"},
+      {"name": "Hand Sanitizer (32 oz)", "minimum": 3, "unit": "bottles"},
+      {"name": "Tide Pods", "minimum": 1, "unit": "bag"},
+      {"name": "Marble Cleaner", "minimum": 1, "unit": "bottle"},
+      {"name": "Magic Eraser", "minimum": 6, "unit": "pc"},
+      {"name": "Bubble Wrap", "minimum": 1, "unit": "roll"}
+    ]},
+    {"name": "Front Desk Back Office", "floor": "1", "orderer": "Front Desk", "items": [
+      {"name": "Gloves (3-pack)", "minimum": 1, "unit": "box"},
+      {"name": "KN95 Masks", "minimum": 1, "unit": "box"},
+      {"name": "Brother Toner, black", "minimum": 1, "unit": "cartridge"},
+      {"name": "Brother Toner, yellow", "minimum": 1, "unit": "cartridge"},
+      {"name": "Brother Toner, cyan", "minimum": 1, "unit": "cartridge"},
+      {"name": "Brother Toner, magenta", "minimum": 1, "unit": "cartridge"},
+      {"name": "Lint Roller", "minimum": 1, "unit": "pc"},
+      {"name": "8 oz Cups, Lobby Office", "minimum": 0.5, "unit": "box"}
+    ]},
+    {"name": "Lobby", "floor": "1", "orderer": "Resident Experiences", "items": [
+      {"name": "Nespresso pods, lobby machine", "minimum": 2, "unit": "boxes", "hint": "Sealed boxes only"},
+      {"name": "Tea Pods", "minimum": 0.5, "unit": "box"}
+    ]},
+    {"name": "Credenza", "floor": "3", "orderer": "Front Desk", "items": [
+      {"name": "Pens", "minimum": 1, "unit": "box"},
+      {"name": "Whiteout", "minimum": 3, "unit": "pack"},
+      {"name": "Post-its, square", "minimum": 6, "unit": "pc"},
+      {"name": "Post-its, pad", "minimum": 6, "unit": "pc"},
+      {"name": "Paper Clips", "minimum": 2, "unit": "boxes"},
+      {"name": "Binder Clips, S / M / L", "minimum": 1, "unit": "box each"},
+      {"name": "Badge Clips", "minimum": 5, "unit": "pc"},
+      {"name": "Push Pins", "minimum": 1, "unit": "container"},
+      {"name": "Label Maker Tape", "minimum": 3, "unit": "cartridges"},
+      {"name": "Printer Paper", "minimum": 3, "unit": "packs"},
+      {"name": "Laminating Sheets", "minimum": 1, "unit": "pack"}
+    ]},
+    {"name": "Offices & HOA Fridge", "floor": "3", "orderer": "HOA", "items": [
+      {"name": "Konica Printer Ink (HOA Office)", "minimum": 1, "unit": "cartridge"},
+      {"name": "Water Jugs (Engineering Office)", "minimum": 4, "unit": "jugs"},
+      {"name": "Pressed Juices (HOA Fridge)", "minimum": 15, "unit": "bottles"},
+      {"name": "Pressed Juice Shots (HOA Fridge)", "minimum": 15, "unit": "bottles"},
+      {"name": "Breakfast Bars (HOA Fridge)", "minimum": 2, "unit": "boxes"}
+    ]},
+    {"name": "Storage", "floor": "3", "orderer": "Resident Experiences", "items": [
+      {"name": "181 Water Bottles", "minimum": 30, "unit": "cases"},
+      {"name": "San Pellegrino Sparkling (glass)", "minimum": 4, "unit": "cases"},
+      {"name": "Gloves (3-pack)", "minimum": 1, "unit": "box"},
+      {"name": "10 oz Cups, bar", "minimum": 0.5, "unit": "box"},
+      {"name": "16 oz Cups, Tue/Thu Breakfast", "minimum": 0.5, "unit": "box"},
+      {"name": "Lids, 10 and 16 oz", "minimum": 0.5, "unit": "box"},
+      {"name": "8 oz Cups, Lobby Office", "minimum": 0.5, "unit": "box"}
+    ]},
+    {"name": "Breakroom", "floor": "4", "orderer": "Front Desk", "items": [
+      {"name": "Ground Coffee, Medium", "minimum": 1, "unit": "bag"},
+      {"name": "Ground Coffee, Blonde", "minimum": 1, "unit": "bag"},
+      {"name": "K-Cup Coffee Filters", "minimum": 1, "unit": "box"},
+      {"name": "Paper Towels", "minimum": 2, "unit": "stacks"},
+      {"name": "Sponges", "minimum": 3, "unit": "pc"},
+      {"name": "Aluminum Foil", "minimum": 1, "unit": "roll"},
+      {"name": "Saran Wrap", "minimum": 1, "unit": "roll"},
+      {"name": "Dish Washing Liquid (under sink)", "minimum": 3, "unit": "pc"},
+      {"name": "Hand Soap (under sink)", "minimum": 1, "unit": "bottle"},
+      {"name": "Lint Roller (under sink)", "minimum": 3, "unit": "pc"}
+    ]},
+    {"name": "East Lounge Credenza & Club Kitchen", "floor": "39", "orderer": "Resident Experiences", "items": [
+      {"name": "10 oz Cups, bar", "minimum": 0.5, "unit": "box"},
+      {"name": "16 oz Cups, Tue/Thu Breakfast", "minimum": 0.5, "unit": "box"},
+      {"name": "Lids, 10 and 16 oz", "minimum": 0.5, "unit": "box"},
+      {"name": "Coffee Stirrers", "minimum": 2, "unit": "boxes"},
+      {"name": "Coffee Sleeves", "minimum": 2, "unit": "boxes"},
+      {"name": "Splenda packets (yellow)", "minimum": 0.5, "unit": "box"},
+      {"name": "Sugar packets (white)", "minimum": 0.5, "unit": "box"},
+      {"name": "Coffee mate, original", "minimum": 1, "unit": "box"},
+      {"name": "Coffee mate, french vanilla", "minimum": 1, "unit": "box"},
+      {"name": "Coffee mate, oat", "minimum": 1, "unit": "box"},
+      {"name": "H&S Tea: Dragon Pearl Jasmine", "minimum": 3, "unit": "boxes"},
+      {"name": "H&S Tea: Earl Grey Supreme", "minimum": 3, "unit": "boxes"},
+      {"name": "H&S Tea: Japanese Sencha", "minimum": 3, "unit": "boxes"},
+      {"name": "H&S Tea: Darjeeling", "minimum": 3, "unit": "boxes"},
+      {"name": "H&S Tea: Organic English Breakfast", "minimum": 3, "unit": "boxes"},
+      {"name": "H&S Tea: Chamomile", "minimum": 3, "unit": "boxes"},
+      {"name": "Dish Pods (Club kitchen)", "minimum": 0.5, "unit": "box"}
+    ]},
+    {"name": "Nespresso Vertuo pods", "floor": "39", "orderer": "Resident Experiences", "items": [
+      {"name": "Melozio", "minimum": 3, "unit": "boxes", "hint": "Coffee · 6 · gold sleeve · sealed boxes only"},
+      {"name": "Melozio Decaffeinato", "minimum": 3, "unit": "boxes", "hint": "Coffee, decaf · 6 · gold / green · sealed boxes only"},
+      {"name": "Half Caffeinato", "minimum": 3, "unit": "boxes", "hint": "Coffee, half-caf · 6 · light blue · sealed boxes only"},
+      {"name": "Altissio", "minimum": 3, "unit": "boxes", "hint": "Espresso · 9 · purple · sealed boxes only"},
+      {"name": "Altissio Decaffeinato", "minimum": 3, "unit": "boxes", "hint": "Espresso, decaf · 9 · purple / green · sealed boxes only"},
+      {"name": "Rotating: Intenso", "minimum": 3, "unit": "boxes", "hint": "The standing rotating pod · 9 · brown · sealed boxes only"},
+      {"name": "Rotating: Solelio", "minimum": 3, "unit": "boxes", "hint": "Only on written notice · 2 · yellow · sealed boxes only"}
+    ]}
+  ]
+}

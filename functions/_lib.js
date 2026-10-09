@@ -158,6 +158,48 @@ export const RESIDENT_TABLES = [
     draft_json TEXT,
     created TEXT NOT NULL, updated TEXT, updated_by TEXT
   )`,
+  // Inventory (the Operations tab): the item list leadership keeps, the counts
+  // staff walk on a phone, and the lines each count fills in. A count is never
+  // deleted; it is Open, Submitted (complete or still needing finishing), or
+  // Closed by staff. report_html is rendered once at submit and is both the
+  // email body and the printable page, so the record can never drift.
+  `CREATE TABLE IF NOT EXISTS inv_areas (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL, floor TEXT, ord INTEGER NOT NULL DEFAULT 0,
+    active INTEGER NOT NULL DEFAULT 1,
+    created TEXT NOT NULL, updated TEXT, updated_by TEXT
+  )`,
+  `CREATE TABLE IF NOT EXISTS inv_items (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    area_id INTEGER NOT NULL, name TEXT NOT NULL,
+    minimum REAL, unit TEXT, orderer TEXT, hint TEXT,
+    ord INTEGER NOT NULL DEFAULT 0, active INTEGER NOT NULL DEFAULT 1,
+    created TEXT NOT NULL, updated TEXT, updated_by TEXT
+  )`,
+  `CREATE INDEX IF NOT EXISTS inv_items_by_area ON inv_items(area_id, ord)`,
+  `CREATE TABLE IF NOT EXISTS inv_counts (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    scope TEXT, status TEXT NOT NULL DEFAULT 'Open',
+    complete INTEGER NOT NULL DEFAULT 0,
+    started TEXT NOT NULL, started_by TEXT,
+    handoff_note TEXT, handoff_by TEXT, handoff_at TEXT,
+    submitted TEXT, submitted_by TEXT, submits INTEGER NOT NULL DEFAULT 0,
+    closed TEXT, closed_by TEXT,
+    report_html TEXT, report_text TEXT, emails TEXT,
+    updated TEXT, updated_by TEXT
+  )`,
+  `CREATE TABLE IF NOT EXISTS inv_lines (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    count_id INTEGER NOT NULL, item_id INTEGER NOT NULL,
+    qty REAL, who TEXT, at TEXT
+  )`,
+  `CREATE UNIQUE INDEX IF NOT EXISTS inv_lines_one ON inv_lines(count_id, item_id)`,
+  `CREATE TABLE IF NOT EXISTS inv_area_notes (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    count_id INTEGER NOT NULL, area_id INTEGER NOT NULL,
+    body TEXT, who TEXT, at TEXT
+  )`,
+  `CREATE UNIQUE INDEX IF NOT EXISTS inv_area_notes_one ON inv_area_notes(count_id, area_id)`,
 ];
 
 // Standalone pages publish at the site root (181residents.com/{slug}), so a
@@ -285,6 +327,28 @@ export function notifyStaff(context, subject, lines) {
       method: "POST",
       headers: { "content-type": "application/json" },
       body: JSON.stringify({ subject: String(subject || "RSVP update"), body }),
+    }).catch(() => {}));
+  } catch (e) {}
+}
+
+// A fuller note than notifyStaff: its own recipients (the inventory report
+// goes to the department heads, not the RSVP list), an HTML body for phones,
+// and a From on the site's own domain. Email Routing still delivers only to
+// destinations verified in the dashboard, so an address that was never
+// verified simply gets nothing. Same quiet no-op without the binding.
+export function notifyMail(context, mail) {
+  try {
+    if (!context.env.NOTIFY) return;
+    context.waitUntil(context.env.NOTIFY.fetch("https://notify/send", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({
+        subject: String(mail.subject || "181 Fremont"),
+        body: String(mail.text || ""),
+        html: mail.html ? String(mail.html) : "",
+        to: Array.isArray(mail.to) ? mail.to : [],
+        from: mail.from || "",
+      }),
     }).catch(() => {}));
   } catch (e) {}
 }

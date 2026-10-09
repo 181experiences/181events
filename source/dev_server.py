@@ -14,6 +14,7 @@ Run: python source/dev_server.py  (port 8181, or PORT=...)"""
 import json, os, re, sys, subprocess, datetime, random, hmac, hashlib, time, secrets
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from urllib.parse import urlparse, parse_qs, unquote_plus
+import dev_inventory
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 SITE = os.path.normpath(os.path.join(HERE, "..", "site"))
@@ -654,9 +655,25 @@ def clean_list(v, key):
             break
     return out
 
+def clean_emails(v):
+    out = []
+    for item in (v if isinstance(v, list) else []):
+        e = str(item or "").strip().lower()[:120]
+        if "@" in e and "." in e.split("@")[-1] and e not in out:
+            out.append(e)
+    return out[:25]
+
+def inventory_recipients():
+    try:
+        raw = json.load(open(os.path.join(HERE, "settings_live.json"), encoding="utf-8"))
+        return clean_emails(raw.get("inv_recipients"))
+    except Exception:
+        return []
+
 def load_all_settings():
     out = dict(load_window(), **{k: list(v) for k, v in LIST_DEFAULTS.items()})
     out["notes_open"] = notes_board_open()
+    out["inv_recipients"] = inventory_recipients()
     try:
         raw = json.load(open(os.path.join(HERE, "settings_live.json"), encoding="utf-8"))
         for k in LIST_DEFAULTS:
@@ -899,6 +916,9 @@ class H(SimpleHTTPRequestHandler):
         if p.path == "/api/guests":
             bid = int((q.get("booking") or ["0"])[0] or 0)
             return self._json({"guests": [g for g in load_store("guests", []) if g["booking_id"] == bid]})
+        if p.path.startswith("/api/inventory"):
+            return dev_inventory.handle(self, "GET", p, dict(load_store=load_store, save_store=save_store,
+                                        notify=dev_notify, now_iso=now_iso, recipients=inventory_recipients))
         if p.path == "/api/pages":
             rows = load_store("pages", [])
             rows = sorted(rows, key=lambda r: (r.get("updated") or "", r.get("id") or 0), reverse=True)
@@ -1218,6 +1238,9 @@ class H(SimpleHTTPRequestHandler):
                        event_key=(b.get("event_key") or "").strip() or None)
             bookings.append(row); save_store("bookings", bookings)
             return self._json({"booking": dict(row, guest_parties=0, guest_heads=0, guest_arrived=0)}, 201)
+        if p.path.startswith("/api/inventory"):
+            return dev_inventory.handle(self, "POST", p, dict(load_store=load_store, save_store=save_store,
+                                        notify=dev_notify, now_iso=now_iso, recipients=inventory_recipients))
         if p.path == "/api/pages":
             if self._role() == "desk": return self._json({"error": "forbidden"}, 403)
             b = self._body_json()
@@ -1514,6 +1537,8 @@ class H(SimpleHTTPRequestHandler):
                     stored[k] = clean_list(body[k], k)
             if "notes_open" in body:
                 stored["notes_open"] = "1" if body["notes_open"] else "0"
+            if "inv_recipients" in body:
+                stored["inv_recipients"] = clean_emails(body["inv_recipients"])
             json.dump(stored, open(os.path.join(HERE, "settings_live.json"), "w", encoding="utf-8"),
                       ensure_ascii=False)
             return self._json(load_all_settings())
@@ -1650,6 +1675,9 @@ class H(SimpleHTTPRequestHandler):
                                        "arrived": r.get("arrived"), "arrived_at": r.get("arrived_at") or "",
                                        "door_note": r.get("door_note") or ""})
             return self._json({"error": "No such RSVP"}, 404)
+        if p.path.startswith("/api/inventory"):
+            return dev_inventory.handle(self, "PATCH", p, dict(load_store=load_store, save_store=save_store,
+                                        notify=dev_notify, now_iso=now_iso, recipients=inventory_recipients))
         if p.path.startswith("/api/pages/"):
             if self._role() == "desk": return self._json({"error": "forbidden"}, 403)
             pid = p.path.rsplit("/", 1)[1]; body = self._body_json()

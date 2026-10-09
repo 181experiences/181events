@@ -11,15 +11,20 @@ CATEGORIES = ["Morning Offering", "Happy Hour", "Community Dinner", "Culinary Ex
 STATUSES = ["Draft", "Live", "Unpublished", "Archived"]
 RSVP_TYPES = ["None", "Guest count only", "Seat", "Paid seat", "Partner email"]
 
-SCREENS = ["dash", "events", "editor", "cal", "pages", "pageedit", "assets", "arch", "res", "spaces", "msgs", "inst",
-           "inst-events", "inst-brand", "inst-email", "inst-screens", "inst-private"]
+SCREENS = ["dash", "events", "editor", "cal", "pages", "pageedit", "assets", "arch", "res", "spaces", "ops", "inv", "invcount", "invitems",
+           "msgs", "inst", "inst-events", "inst-brand", "inst-email", "inst-screens", "inst-private", "inst-inventory"]
 NAV_OF = {"dash": "dash", "events": "events", "editor": "events", "cal": "cal",
           "pages": "pages", "pageedit": "pages", "assets": "assets",
-          "res": "res", "spaces": "spaces", "msgs": "msgs", "inst": "inst",
+          "res": "res", "spaces": "spaces", "ops": "ops", "inv": "ops", "invcount": "ops", "invitems": "ops",
+          "msgs": "msgs", "inst": "inst", "inst-inventory": "inst",
           "inst-events": "inst", "inst-brand": "inst", "inst-email": "inst",
           "inst-screens": "inst", "inst-private": "inst"}
 NAV = [("dash", "Dashboard"), ("events", "Events"), ("cal", "Calendar"), ("pages", "Pages"),
-       ("assets", "Assets"), ("res", "Residents"), ("spaces", "Spaces"), ("msgs", "Messages"), ("inst", "Settings")]
+       ("assets", "Assets"), ("res", "Residents"), ("spaces", "Spaces"), ("ops", "Operations"), ("msgs", "Messages"), ("inst", "Settings")]
+
+# The starting item list rides the page as JSON, so "Load the starting list"
+# needs no extra request and no build-time database access.
+INV_CATALOG = open(os.path.join(HERE, "inventory_catalog.json"), encoding="utf-8").read().replace("</", "<\\/")
 
 rules = [f'#s-{s}:checked ~ .body #scr-{s}{{display:block}}' for s in SCREENS]
 for s, nav in NAV_OF.items():
@@ -342,6 +347,81 @@ HTML = f'''<!DOCTYPE html>
     border-radius:var(--radius);align-items:center}}
   .pgaddbar .lab{{font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--stone);font-weight:700;margin-right:4px}}
   .pgrow .addr{{font-family:ui-monospace,Menlo,monospace;font-size:12px;color:var(--red)}}
+
+  /* ---------- operations & inventory ---------- */
+  body.role-desk .staffonly{{display:none !important}}
+  .opsgrid{{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px}}
+  .opcard{{background:var(--paper-2);border:1px solid var(--line);border-radius:var(--radius);padding:22px 20px 18px;
+    display:flex;flex-direction:column;gap:6px;min-height:170px;text-align:left;font-family:var(--fb);cursor:pointer;color:var(--ink)}}
+  .opcard:hover{{border-color:var(--stone)}}
+  .opcard .ic{{width:34px;height:34px;border-radius:50%;background:var(--red);color:#fff;display:flex;align-items:center;justify-content:center;font-family:Georgia,serif;font-size:17px}}
+  .opcard .t{{font-family:var(--fd);font-size:20px;margin-top:4px}}
+  .opcard .d{{color:var(--ink-soft);font-size:13.5px;line-height:1.45}}
+  .opcard .st{{margin-top:auto;font-size:12.5px;color:var(--stone);padding-top:10px;border-top:1px solid var(--line-2);line-height:1.5}}
+  .opcard.later{{border-style:dashed;cursor:default;opacity:.7}}
+  .opcard.later .ic{{background:var(--paper);color:var(--stone);border:1px solid var(--line)}}
+  .invcard{{background:var(--paper-2);border:1px solid var(--line);border-radius:var(--radius);padding:14px 18px;margin-bottom:10px;
+    display:flex;align-items:center;gap:18px;flex-wrap:wrap}}
+  .invcard.hot{{border-left:5px solid var(--red);background:#fff8f6}}
+  .invcard.hot .t{{color:var(--red)}}
+  .invcard.quiet{{opacity:.7}}
+  .invcard .dt{{flex:none;width:78px;text-align:center;border-right:1px solid var(--line);padding-right:14px}}
+  .invcard .dt .d{{font-family:Georgia,serif;font-size:24px;line-height:1}}
+  .invcard .dt .m{{font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--red);font-weight:700}}
+  .invcard .dt .w{{font-size:11px;color:var(--stone)}}
+  .invcard .grow{{flex:1;min-width:220px}}
+  .invcard .t{{font-family:var(--fd);font-size:16.5px;font-weight:600;display:flex;gap:8px;align-items:center;flex-wrap:wrap}}
+  .invcard .meta{{font-size:12.5px;color:var(--ink-soft);line-height:1.5}}
+  .invcard .meta b{{color:var(--ink)}}
+  .invprog{{flex:none;width:150px}}
+  .invprog .lab{{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--stone);font-weight:700;margin-bottom:4px}}
+  .invprog .track{{height:7px;background:var(--paper);border:1px solid var(--line);border-radius:5px;overflow:hidden}}
+  .invprog .fill{{height:100%;background:#2c5c37}}
+  .invprog .fill.part{{background:var(--red)}}
+  .invsticky{{position:sticky;top:0;z-index:5;background:var(--paper-2);border:1px solid var(--line);border-radius:var(--radius);
+    padding:12px 16px;margin-bottom:18px;display:flex;align-items:center;gap:14px;flex-wrap:wrap;box-shadow:0 2px 8px rgba(0,0,0,.06)}}
+  .invsticky .grow{{flex:1;min-width:200px}}
+  .invsticky .big{{font-family:var(--fd);font-size:17px;font-weight:600}}
+  .invsticky .who{{font-size:12px;color:var(--stone)}}
+  .invsticky .track{{height:6px;background:var(--paper);border:1px solid var(--line);border-radius:5px;overflow:hidden;margin-top:6px}}
+  .invsticky .fill{{height:100%;background:#2c5c37;width:0}}
+  @media(max-width:620px){{.invsticky{{padding:10px 12px;gap:8px}}.invsticky .big{{font-size:15px}}.invsticky .grow{{min-width:100%}}.invsticky .btn{{flex:1;padding:10px 8px}}}}
+  .invarea{{background:var(--paper-2);border:1px solid var(--line);border-radius:var(--radius);margin-bottom:14px;overflow:hidden}}
+  .invarea .ahead{{display:flex;align-items:center;gap:12px;padding:12px 16px;background:var(--paper);border-bottom:1px solid var(--line);cursor:pointer;margin:0}}
+  .invarea .ahead .an{{font-family:var(--fd);font-size:16px;font-weight:600;flex:1}}
+  .invarea .ahead .ac{{font-size:12px;color:var(--stone)}}
+  .invarea .ahead .ac.ok{{color:#2c5c37;font-weight:700}}
+  .invarea .ahead .chev{{color:var(--stone);transition:transform .15s;font-size:12px}}
+  .invarea.closed .chev{{transform:rotate(-90deg)}}
+  .invarea.closed .abody{{display:none}}
+  .invarea.closed .ahead{{border-bottom:none}}
+  .invrow{{display:grid;grid-template-columns:1fr 110px 120px;gap:12px;align-items:center;padding:9px 16px;border-top:1px solid var(--line-2)}}
+  .invrow:first-child{{border-top:none}}
+  @media(max-width:620px){{.invrow{{grid-template-columns:1fr 84px 96px;gap:8px;padding:9px 12px}}}}
+  .invrow .nm{{font-size:14.5px;color:var(--ink)}}
+  .invrow .nm small{{display:block;color:var(--stone);font-size:11.5px}}
+  .invrow .par{{font-size:11px;color:var(--stone);text-align:right;letter-spacing:.04em}}
+  .invrow .par b{{display:block;color:var(--ink);font-size:13px;letter-spacing:0}}
+  .invrow input{{width:100%;min-height:44px;border:1px solid var(--line);border-radius:var(--radius);padding:8px 10px;
+    font-family:var(--fb);font-size:17px;text-align:center;background:#fff;color:var(--ink)}}
+  .invrow input:focus{{outline:2px solid var(--ink);outline-offset:-1px}}
+  .invrow.low input{{border-color:var(--red);background:#fff4f3;color:var(--red);font-weight:700}}
+  .invrow .flag{{grid-column:1 / -1;font-size:12px;color:var(--red);font-weight:600;margin-top:-4px;display:none}}
+  .invrow.low .flag{{display:block}}
+  .invarea .anote{{padding:10px 16px 14px;border-top:1px solid var(--line-2)}}
+  .invarea .anote textarea{{width:100%;border:1px solid var(--line);border-radius:var(--radius);padding:8px 10px;font-family:var(--fb);font-size:13px;min-height:44px;background:#fff;color:var(--ink)}}
+  .invgroup{{background:var(--paper-2);border:1px solid var(--line);border-radius:var(--radius);margin-bottom:12px;overflow:hidden}}
+  .invgroup .ghead{{display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:10px 16px;background:var(--paper);border-bottom:1px solid var(--line)}}
+  .invgroup .ghead .gn{{font-family:var(--fd);font-size:15.5px;font-weight:600}}
+  .invgroup .ghead .eact{{margin-left:auto}}
+  .invitem{{display:grid;grid-template-columns:2fr 1fr 1fr auto;gap:12px;align-items:center;padding:8px 16px;border-top:1px solid var(--line-2);font-size:13.5px}}
+  .invitem:nth-child(2){{border-top:none}}
+  .invitem .in small{{display:block;color:var(--stone);font-size:11.5px}}
+  @media(max-width:760px){{.invitem{{grid-template-columns:1fr 1fr;row-gap:4px}}.invitem .io{{display:none}}}}
+  .invedit{{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;padding:12px 16px;background:#fff8f6;border-left:4px solid var(--red);border-top:1px solid var(--line-2)}}
+  .invedit label{{display:flex;flex-direction:column;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--stone);font-weight:700;gap:3px}}
+  .invedit .inp{{width:200px;text-transform:none;letter-spacing:0;font-weight:400}}
+  .invedit .edacts{{margin-left:auto;display:flex;gap:6px;align-items:center}}
 
   /* ---------- residents ---------- */
   /* One card per unit: the header is a banner on its own ground, not a line
@@ -936,6 +1016,97 @@ HTML = f'''<!DOCTYPE html>
   <div id="bklist"></div>
 </div></section>
 
+<!-- ================= OPERATIONS ================= -->
+<section class="screen" id="scr-ops"><div class="wrap">
+  <div class="phead" style="display:flex;align-items:center;gap:10px"><h1>Operations</h1>{info("The working side of the Club, for every staff tier including the desk: one card per job. Inventory is the first. Nothing on this tab is seen by residents.")}</div>
+  <div class="psub">One card per job. Open a card to do the work; the line at its foot says where things stand.</div>
+  <div class="opsgrid">
+    <button class="opcard" data-inv="go|inv">
+      <div class="ic">&#9776;</div>
+      <div class="t">Inventory</div>
+      <div class="d">Walk the building with your phone, count what is on hand, submit. The department heads get the report by email.</div>
+      <div class="st" id="ops-inv-status">Loading&hellip;</div>
+    </button>
+    <div class="opcard later">
+      <div class="ic">&#9636;</div>
+      <div class="t">Receiving</div>
+      <div class="d">Deliveries checked against the packing slip, discrepancies noted the same day.</div>
+      <div class="st">Not built yet &middot; the Receiving Deliveries SOP runs on paper</div>
+    </div>
+    <div class="opcard later">
+      <div class="ic">&#9919;</div>
+      <div class="t">Key control</div>
+      <div class="d">Liquor storage key sign-out and return.</div>
+      <div class="st">Not built yet &middot; the Key Control SOP runs on paper</div>
+    </div>
+  </div>
+</div></section>
+
+<!-- ================= INVENTORY ================= -->
+<section class="screen" id="scr-inv"><div class="wrap">
+  <label class="back" for="s-ops">&larr; Back to Operations</label>
+  <div class="phead" style="display:flex;align-items:center;gap:10px;flex-wrap:wrap"><h1>Inventory</h1>{info("Every count ever taken, newest first. A red-edged card is a count somebody had to leave: anyone presses Pick this up and finishes it. Submitted counts stay here as the record, so nobody counts twice and the department heads can look back. Minimums come from the item list; the report emails itself on Submit.")}
+    <span style="flex:1"></span>
+    <button class="btn" data-inv="starter|">Start a count</button>
+    <button class="btn ghost" data-inv="go|invitems">The item list</button>
+    <a class="btn ghost" href="/api/inventory/sheet" target="_blank" rel="noopener" title="Today&rsquo;s list as a paper count sheet, for anyone who prefers a clipboard">Print a blank sheet</a>
+  </div>
+  <div class="psub" id="invcount">Loading&hellip;</div>
+  <div class="card" id="inv-starter" style="display:none;margin-bottom:18px;border-color:var(--ink)">
+    <h3 style="font-family:var(--fd);font-weight:600;font-size:16px;margin:0 0 4px">What are you counting today?</h3>
+    <div class="hint" style="margin:0 0 10px">The full walk is the default. Pick areas for a shorter count, like the Monday Nespresso check.</div>
+    <div class="chips" id="inv-scope" style="margin-bottom:12px"></div>
+    <div class="hint" id="inv-openwarn" style="display:none;margin:0 0 12px;color:var(--red)">A count is already open. Starting another leaves that card red until someone finishes or closes it.</div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap"><button class="btn" data-inv="start|">Begin counting</button><button class="btn ghost" data-inv="starter|">Never mind</button></div>
+  </div>
+  <div id="invlist"></div>
+</div></section>
+
+<!-- ================= THE COUNT ================= -->
+<section class="screen" id="scr-invcount"><div class="wrap">
+  <button class="back" data-inv="back|" style="background:none;border:none;cursor:pointer;font-family:var(--fb);padding:0">&larr; Back to Inventory</button>
+  <div class="invsticky">
+    <div class="grow">
+      <div class="big" id="ic-title"></div>
+      <div class="who" id="ic-who"></div>
+      <div class="track"><div class="fill" id="ic-fill"></div></div>
+      <div class="who"><span id="ic-count"></span> &middot; <span id="ic-saved">saves as you type</span></div>
+    </div>
+    <button class="btn ghost" data-inv="handoff|">Hand off</button>
+    <button class="btn" data-inv="submit|">Submit</button>
+  </div>
+  <div class="psub" style="margin-top:-6px">Type what is on the shelf. Red means at or under the minimum, which is the reorder line, not an emergency. Leave a box empty for anything you could not reach and say why in the area note. Everything saves as you type.</div>
+  <div id="ic-areas"></div>
+  <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:center;margin-top:8px">
+    <button class="btn ghost" data-inv="handoff|">Hand off to someone else</button>
+    <button class="btn" data-inv="submit|">Submit the count</button>
+  </div>
+</div></section>
+
+<!-- ================= THE ITEM LIST ================= -->
+<section class="screen" id="scr-invitems"><div class="wrap">
+  <label class="back" for="s-inv">&larr; Back to Inventory</label>
+  <div class="phead" style="display:flex;align-items:center;gap:10px;flex-wrap:wrap"><h1>The item list</h1>{info("What gets counted, where, and what the minimum is. Edit opens a row in place; Add an item puts a new row in an area; Remove retires a row without touching past counts. Areas are in walk order and move with the arrows. A changed minimum applies to the next count, never a past one. Staff and owner edit; the desk reads.")}
+    <span style="flex:1"></span>
+    <button class="btn ghost staffonly" data-inv="area-add|">Add an area</button>
+    <a class="btn ghost" href="/api/inventory/sheet" target="_blank" rel="noopener">Print a blank sheet</a>
+  </div>
+  <div class="psub">In walk order, top to bottom. Leadership keeps this table; it is the one truth behind every count.</div>
+  <div class="card staffonly" id="inv-seedwrap" style="display:none;margin-bottom:16px">
+    <strong>The list is empty.</strong> Load the starting list from the spreadsheet, then edit it here.
+    <div style="margin-top:10px"><button class="btn" data-inv="seed|">Load the starting list</button></div>
+  </div>
+  <div id="invitems"></div>
+  <div class="card staffonly" style="margin-top:26px">
+    <div style="display:flex;align-items:center;gap:10px"><h3 style="font-family:var(--fd);font-weight:600;font-size:15px;margin:0">Inventory reports go to</h3>{info("Every submitted count is emailed to these addresses from reports@181residents.com. Each address must also be verified once in Cloudflare Email Routing, a single click on a link that person receives; an unverified address simply never gets the report. With nobody listed, reports go to the RSVP addresses.")}</div>
+    <div class="chips" id="inv-rcpts" style="margin:10px 0 14px"></div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
+      <input class="inp" id="inv-rcpt-new" type="email" inputmode="email" autocapitalize="none" placeholder="name@181sf.com" style="max-width:320px">
+      <button class="mini" data-inv="rcpt-add|">Add address</button>
+    </div>
+  </div>
+</div></section>
+
 <!-- ================= MESSAGES ================= -->
 <section class="screen" id="scr-msgs"><div class="wrap">
   <div class="phead"><h1>Messages</h1></div>
@@ -958,6 +1129,48 @@ HTML = f'''<!DOCTYPE html>
   </div>
 </div></section>
 
+<!-- ================= INSTRUCTIONS: INVENTORY ================= -->
+<section class="screen" id="scr-inst-inventory"><div class="wrap prose">
+  <label class="back" for="s-inst">&larr; Back to Settings</label>
+  <h1 style="font-size:34px">Operations &amp; inventory</h1>
+  <p>The <strong>Operations</strong> tab is the working side of the Club, open to every tier including the desk. Its first card is
+  <strong>Inventory</strong>: the building&rsquo;s supplies are counted on a phone, in walk order, and the submitted count is emailed
+  to the department heads, who review it and place their own orders. Ordering is management&rsquo;s job; the count only reports.
+  The procedure is SOP-RC-002; the screens are SOP-RC-003; the Nespresso pods keep SOP-RC-001.</p>
+
+  <h2>The Inventory screen</h2>
+  <p>One card per count, newest first. <strong>In progress</strong> is a count still being walked. A <strong>red-edged card</strong>
+  is a count somebody had to leave, with their note; anyone presses <strong>Pick this up</strong> and carries on. <strong>Submitted</strong>
+  (green) is complete; <strong>View</strong> opens its report. <strong>Start a count</strong> begins a new one: Everything for the full walk,
+  or tick areas for a shorter count such as the Monday Nespresso check.</p>
+
+  <h2>Counting</h2>
+  <ol>
+    <li>Areas open one at a time, in walk order. Each row shows the item, its minimum, and one box: type the number on the shelf.
+    The row turns <strong>red</strong> at or under the minimum, which is the reorder line, not a problem to solve on the spot.</li>
+    <li>Nespresso pods are counted by the <strong>sealed box</strong> only. Opened or loose capsules at the station are in circulation.</li>
+    <li>Could not reach something? Leave its box empty and say why in the <strong>area note</strong>, which is also where machine faults,
+    a new brand, and resident requests go.</li>
+    <li>Everything <strong>saves as you type</strong>. A phone going to sleep or a hand-off loses nothing.</li>
+  </ol>
+  <div class="callout"><strong>Two ways to end a count.</strong> <strong>Submit</strong> emails the report now; if items remain uncounted it asks
+  once, then the card stays red so someone can finish, and their numbers go out as a second email. <strong>Hand off</strong> sends nothing,
+  saves everything, and leaves a line for the next person. A count is never left silently open; the incoming shift reads the screen at
+  shift change. A count nobody will finish is <strong>closed</strong> by staff from its card.</div>
+
+  <h2>The report</h2>
+  <p>Below-minimum items first, with who orders them; then notes from the walk; then everything by area. The report page is the printable
+  page, and <strong>CSV</strong> opens in Excel. <strong>Send again</strong> re-sends the stored report. The email comes from
+  reports@181residents.com to the addresses under <strong>The item list &rarr; Inventory reports go to</strong>; each address is verified
+  once in Cloudflare Email Routing (DEPLOY.md, &ldquo;Inventory&rdquo;).</p>
+
+  <h2>The item list</h2>
+  <p>Staff and owner tiers keep the list; the desk reads it. <strong>Edit</strong> opens a row in place (name, minimum, unit, area, who orders
+  it); <strong>Add an item</strong> and <strong>Add an area</strong> grow it; <strong>Remove</strong> retires a row without touching past counts;
+  the arrows move an area along the walk. A changed minimum applies to the next count. <strong>Print a blank sheet</strong> turns today&rsquo;s
+  list into paper for anyone who prefers a clipboard; the numbers are still entered on the site afterwards.</p>
+</div></section>
+
 <!-- ================= INSTRUCTIONS ================= -->
 <section class="screen" id="scr-inst"><div class="wrap">
   <div class="phead"><h1>Settings</h1></div>
@@ -967,6 +1180,8 @@ HTML = f'''<!DOCTYPE html>
   <div class="docs">
     <label class="doc" for="s-inst-events"><span class="dt">Creating &amp; archiving events</span>
       <span class="dd">The full loop: draft, asset kit, publish, promote, archive.</span><span class="dm">Updated Sept 2026</span></label>
+    <label class="doc" for="s-inst-inventory"><span class="dt">Operations &amp; inventory</span>
+      <span class="dd">The count that walks the building on a phone, and the report the department heads receive.</span><span class="dm">Updated Oct 2026</span></label>
     <label class="doc" for="s-inst-private"><span class="dt">Private events &amp; guest lists</span>
       <span class="dd">Registration pages for invited outside guests, and the list the desk runs from.</span><span class="dm">Updated Sept 2026</span></label>
     <label class="doc" for="s-inst-brand"><span class="dt">Brand &amp; Canva templates</span>
@@ -1309,6 +1524,7 @@ HTML = f'''<!DOCTYPE html>
 
 </div>
 <input type="file" id="afile" style="display:none">
+<script id="inv-catalog" type="application/json">__INV_CATALOG__</script>
 <div id="dlg-wrap"><div id="dlg"><div id="dlg-t"></div><div id="dlg-p"></div><div id="dlg-f"></div><div id="dlg-b"></div></div></div>
 <div class="toast" id="toast"></div>
 <script>
@@ -1319,5 +1535,6 @@ HTML = f'''<!DOCTYPE html>
 '''
 
 import os
+HTML = HTML.replace("__INV_CATALOG__", INV_CATALOG)
 open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "181fremont_admin_prototype.html"), "w", encoding="utf-8").write(HTML)
 print("built", len(HTML), "bytes")

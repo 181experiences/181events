@@ -1919,6 +1919,424 @@
     } catch (e) { toast(e.message, "warn"); }
   }
 
+  // ---------------------------------------------------------------- inventory
+  // The Operations tab's Inventory door. Every tier counts (the desk does the
+  // walking); the item list and the report recipients belong to staff and
+  // owner, and the server refuses the desk's writes. Numbers autosave as they
+  // are typed, so a hand-off or a sleeping phone loses nothing; Submit is the
+  // only button that sends email. Mirrors functions/api/inventory.
+  let inv = { areas: [], items: [], counts: [], recipients: null };
+  let invCount = null;                       // the open count: {count, lines, notes}
+  let invPending = { lines: {}, notes: {} }, invTimer = null, invSaving = false;
+  let invScope = new Set();                  // the starter's picked areas; empty = everything
+  let invEditItem = null, invAddTo = null;
+  let meEmail = "";
+
+  const invStaff = () => role !== "desk";
+  const invName = e => { const s = String(e || "").split("@")[0].replace(/[._-]+/g, " ").trim(); return s ? s[0].toUpperCase() + s.slice(1) : "staff"; };
+  const invQty = q => q == null ? "" : q === 0.5 ? "½" : (Math.abs(q - Math.round(q)) < 1e-9 ? String(Math.round(q)) : String(q));
+  const invMin = it => it.minimum == null ? "" : invQty(it.minimum) + (it.unit ? " " + it.unit : "");
+  const invLow = (it, q) => q != null && it.minimum != null && q <= it.minimum;
+  const PT = { timeZone: "America/Los_Angeles" };
+  const invWhen = iso => { if (!iso) return ""; const d = new Date(iso); return d.toLocaleDateString("en-US", { ...PT, weekday: "short", month: "short", day: "numeric" }) + " " + d.toLocaleTimeString("en-US", { ...PT, hour: "numeric", minute: "2-digit" }); };
+  const invTime = iso => { if (!iso) return ""; return new Date(iso).toLocaleTimeString("en-US", { ...PT, hour: "numeric", minute: "2-digit" }); };
+  const invDate = iso => { const d = new Date(iso); return { m: d.toLocaleDateString("en-US", { ...PT, month: "short" }), d: d.toLocaleDateString("en-US", { ...PT, day: "numeric" }), w: d.toLocaleDateString("en-US", { ...PT, weekday: "long" }) }; };
+  const activeAreas = () => inv.areas.filter(a => a.active).sort((a, b) => a.ord - b.ord || a.id - b.id);
+  const itemsIn = (aid, all) => inv.items.filter(i => i.area_id === aid && (all || i.active)).sort((a, b) => a.ord - b.ord || a.id - b.id);
+  const invEditable = c => c.status === "Open" || (c.status === "Submitted" && !c.complete);
+
+  async function loadInventory() {
+    try { inv = await api("/api/inventory"); } catch (e) { inv = { areas: [], items: [], counts: [], recipients: null }; }
+    renderOps(); renderInv(); renderInvItems();
+  }
+
+  // ---- the Operations tab: one card per job
+  function renderOps() {
+    const st = $("#ops-inv-status"); if (!st) return;
+    const open = inv.counts.filter(invEditable);
+    const done = inv.counts.find(c => c.status === "Submitted" && c.complete);
+    let s = "";
+    if (open.length) {
+      const c = open[0];
+      s = `<span class="pill ${c.status === "Open" ? "draft" : "unpublished"}">${c.status === "Open" ? "In progress" : "Needs finishing"}</span> &nbsp; ${esc(invDate(c.started).w)}&rsquo;s count stopped at ${c.counted} of ${c.total}`;
+    } else if (!inv.areas.length) s = "The item list is empty; load the starting list to begin.";
+    else s = "No count open.";
+    if (done) s += ` &middot; last full count ${esc(invWhen(done.submitted).split(" ").slice(0, 3).join(" "))}`;
+    st.innerHTML = s;
+  }
+
+  // ---- the Inventory door: every count, newest first
+  function renderInv() {
+    const box = $("#invlist"); if (!box) return;
+    const n = inv.counts.length;
+    $("#invcount").textContent = !inv.areas.length
+      ? "The item list is empty. Staff load the starting list from The item list, then anyone can start a count."
+      : n ? `${n} count${n === 1 ? "" : "s"} on file. A red-edged card is a count somebody had to leave; anyone can pick it up and finish.`
+        : "No counts yet. Start a count walks the building in list order; Submit emails the report.";
+    // the starter's area chips
+    const chips = $("#inv-scope");
+    if (chips) chips.innerHTML = `<span class="chip${invScope.size ? "" : " done"}" data-inv="scope|all">Everything &middot; the full walk</span>`
+      + activeAreas().map(a => `<span class="chip${invScope.has(a.id) ? " done" : ""}" data-inv="scope|${a.id}">${esc(a.name)}${a.floor ? ` <span style="opacity:.6">&middot; floor ${esc(a.floor)}</span>` : ""}</span>`).join("");
+    const openOnes = inv.counts.filter(invEditable);
+    const warn = $("#inv-openwarn"); if (warn) warn.style.display = openOnes.length ? "" : "none";
+    const prog = c => `<div class="invprog"><div class="lab">${c.counted} of ${c.total} counted</div><div class="track"><div class="fill${c.status === "Submitted" && c.complete ? "" : " part"}" style="width:${c.total ? Math.round(c.counted / c.total * 100) : 0}%"></div></div></div>`;
+    const card = c => {
+      const d = invDate(c.started), hot = invEditable(c);
+      const scope = c.scope_names.length ? c.scope_names.join(", ") : "Full walk";
+      const pill = c.status === "Closed" ? '<span class="pill archived">Closed</span>'
+        : c.status === "Open" ? '<span class="pill draft">In progress</span>'
+        : c.complete ? '<span class="pill live">Submitted</span>' : '<span class="pill unpublished">Needs finishing</span>';
+      const people = c.people.map(invName).join(", ");
+      let meta = `Started ${esc(invWhen(c.started))} by <b>${esc(invName(c.started_by))}</b>`;
+      if (c.handoff_by) meta += ` &middot; handed off ${esc(invTime(c.handoff_at))}${c.handoff_note ? ` (&ldquo;${esc(c.handoff_note)}&rdquo;)` : ""}`;
+      if (c.submitted) meta += ` &middot; submitted ${esc(invWhen(c.submitted))}${c.submits > 1 ? ` (${c.submits} times)` : ""}`;
+      if (c.closed) meta += ` &middot; closed ${esc(invWhen(c.closed))} by ${esc(invName(c.closed_by))}`;
+      meta += ` &middot; <b>${c.low} below minimum</b>`;
+      if (c.people.length > 1) meta += ` &middot; counted by ${esc(people)}`;
+      const last = c.emails && c.emails.length ? c.emails[c.emails.length - 1] : null;
+      if (last) meta += `<br>Emailed ${esc(invTime(last.at))} to ${esc(last.to.join(", "))}`;
+      return `<div class="invcard${hot ? " hot" : ""}${c.status === "Closed" ? " quiet" : ""}">
+        <div class="dt"><div class="m">${esc(d.m)}</div><div class="d">${esc(d.d)}</div><div class="w">${esc(d.w)}</div></div>
+        <div class="grow"><div class="t">${esc(scope)} ${pill}</div><div class="meta">${meta}</div></div>
+        ${prog(c)}
+        <span class="eact">
+          ${hot ? `<button class="btn" data-inv="open|${c.id}">${c.counted ? "Pick this up" : "Continue"}</button>` : ""}
+          ${c.submitted ? `<a class="mini ghost" href="/api/inventory/counts/${c.id}/report" target="_blank" rel="noopener">View</a>` : (hot ? `<a class="mini ghost" href="/api/inventory/counts/${c.id}/report" target="_blank" rel="noopener">So far</a>` : "")}
+          ${c.submitted ? `<a class="mini ghost" href="/api/inventory/counts/${c.id}/report?format=csv">CSV</a><button class="mini ghost" data-inv="resend|${c.id}" title="Sends the stored report again to the recipients under Settings">Send again</button>` : ""}
+          ${hot && invStaff() ? `<button class="mini ghost staffonly" data-inv="close|${c.id}" title="Files this count as Closed with what was counted; nothing is deleted">Close</button>` : ""}
+        </span></div>`;
+    };
+    const live = inv.counts.filter(c => c.status !== "Closed"), closed = inv.counts.filter(c => c.status === "Closed");
+    let html = live.map(card).join("");
+    if (closed.length) html += `<div class="archhead" style="margin:26px 0 8px;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--stone)">Closed &middot; ${closed.length}</div>` + closed.map(card).join("");
+    box.innerHTML = html || "";
+    renderOps();
+  }
+
+  async function invStart() {
+    if (!inv.areas.length) { toast("The item list is empty; load the starting list first.", "warn"); return; }
+    try {
+      const r = await api("/api/inventory/counts", { method: "POST", body: JSON.stringify({ scope: [...invScope] }) });
+      $("#inv-starter").style.display = "none"; invScope = new Set();
+      await loadInventory();
+      invOpen(r.count.id);
+    } catch (e) { toast(e.message, "warn"); }
+  }
+
+  // ---- the count itself
+  async function invOpen(id) {
+    try { invCount = await api("/api/inventory/counts/" + id); } catch (e) { toast(e.message, "warn"); return; }
+    inv.areas = invCount.areas; inv.items = invCount.items;
+    invPending = { lines: {}, notes: {} };
+    renderInvCount();
+    go("invcount");
+  }
+
+  function invState() {
+    const c = invCount.count, scope = c.scope;
+    const areas = activeAreas().filter(a => !scope.length || scope.includes(a.id));
+    const q = {}; for (const l of invCount.lines) q[l.item_id] = l.qty;
+    for (const [k, v] of Object.entries(invPending.lines)) q[k] = v;
+    const notes = {}; for (const n of invCount.notes) notes[n.area_id] = n.body || "";
+    Object.assign(notes, invPending.notes);
+    let total = 0, counted = 0, low = 0;
+    const per = areas.map(a => {
+      const its = itemsIn(a.id);
+      let done = 0;
+      for (const it of its) { total++; const v = q[it.id]; if (v != null) { counted++; done++; if (invLow(it, v)) low++; } }
+      return { a, its, done };
+    });
+    return { c, per, q, notes, total, counted, low };
+  }
+
+  function renderInvCount() {
+    const st = invState(), c = st.c, d = invDate(c.started);
+    $("#ic-title").textContent = `${d.w}, ${d.m} ${d.d} · ${c.scope_names && c.scope_names.length ? c.scope_names.join(", ") : (c.scope.length && c.scope.length < activeAreas().length ? st.per.map(x => x.a.name).join(", ") : "full walk")}`;
+    const who = [`Started ${invTime(c.started)} by ${invName(c.started_by)}`];
+    if (c.handoff_by) who.push(`handed off ${invTime(c.handoff_at)}${c.handoff_note ? ` (“${c.handoff_note}”)` : ""}`);
+    if (c.submitted) who.push(`submitted ${invTime(c.submitted)}, still needs finishing`);
+    who.push(`you: ${invName(meEmail || role)}`);
+    $("#ic-who").textContent = who.join(" · ");
+    invProgress(st);
+    const box = $("#ic-areas");
+    box.innerHTML = st.per.map(({ a, its, done }) => `<div class="invarea${done === its.length && its.length ? " closed" : ""}" id="invarea-${a.id}">
+      <div class="ahead" data-inv="fold|${a.id}"><span class="chev">&#9660;</span><span class="an">${esc(a.name)}${a.floor ? ` <span class="hint" style="margin:0">floor ${esc(a.floor)}</span>` : ""}</span><span class="ac${done === its.length && its.length ? " ok" : ""}" id="invac-${a.id}">${done === its.length && its.length ? `all ${its.length} counted` : `${done} of ${its.length} counted`}</span></div>
+      <div class="abody">${its.map(it => { const v = st.q[it.id]; return `<div class="invrow${invLow(it, v) ? " low" : ""}" id="invrow-${it.id}">
+          <div class="nm">${esc(it.name)}${it.hint ? `<small>${esc(it.hint)}</small>` : ""}</div>
+          <div class="par">minimum<b>${esc(invMin(it)) || "none"}</b></div>
+          <input inputmode="decimal" placeholder="&ndash;" data-invline="${it.id}" value="${v == null ? "" : esc(invQty(v) === "½" ? "0.5" : invQty(v))}">
+          <div class="flag">At or under the minimum. The reorder line, not an emergency.</div></div>`; }).join("") || '<div class="nodata" style="padding:12px 16px">No items in this area.</div>'}
+        <div class="anote"><textarea placeholder="Note for ${esc(a.name)}: machine faults, what a resident said, a locked door" data-invnote="${a.id}">${esc(st.notes[a.id] || "")}</textarea></div>
+      </div></div>`).join("");
+  }
+
+  function invProgress(st) {
+    st = st || invState();
+    $("#ic-fill").style.width = (st.total ? Math.round(st.counted / st.total * 100) : 0) + "%";
+    $("#ic-count").textContent = `${st.counted} of ${st.total} counted · ${st.low} below minimum`;
+    for (const { a, its, done } of st.per) {
+      const ac = $("#invac-" + a.id); if (ac) { ac.textContent = done === its.length && its.length ? `all ${its.length} counted` : `${done} of ${its.length} counted`; ac.classList.toggle("ok", done === its.length && its.length > 0); }
+    }
+  }
+
+  function invQueue() {
+    clearTimeout(invTimer);
+    invTimer = setTimeout(invFlush, 700);
+    const s = $("#ic-saved"); if (s) s.textContent = "typing…";
+  }
+  async function invFlush() {
+    clearTimeout(invTimer);
+    if (!invCount || invSaving) return;
+    const body = {};
+    if (Object.keys(invPending.lines).length) body.lines = invPending.lines;
+    if (Object.keys(invPending.notes).length) body.notes = invPending.notes;
+    if (!body.lines && !body.notes) return;
+    invSaving = true; invPending = { lines: {}, notes: {} };
+    try {
+      await api("/api/inventory/counts/" + invCount.count.id, { method: "PATCH", body: JSON.stringify(body) });
+      // fold the saved values into the loaded record so a re-render reads true
+      for (const [k, v] of Object.entries(body.lines || {})) {
+        const l = invCount.lines.find(x => String(x.item_id) === k);
+        if (l) l.qty = v; else invCount.lines.push({ count_id: invCount.count.id, item_id: Number(k), qty: v, who: meEmail });
+      }
+      for (const [k, v] of Object.entries(body.notes || {})) {
+        const n = invCount.notes.find(x => String(x.area_id) === k);
+        if (n) n.body = v; else invCount.notes.push({ count_id: invCount.count.id, area_id: Number(k), body: v });
+      }
+      const s = $("#ic-saved"); if (s) s.textContent = "saved";
+    } catch (e) {
+      // put it back for the next try; the walk goes on
+      for (const [k, v] of Object.entries(body.lines || {})) if (!(k in invPending.lines)) invPending.lines[k] = v;
+      for (const [k, v] of Object.entries(body.notes || {})) if (!(k in invPending.notes)) invPending.notes[k] = v;
+      const s = $("#ic-saved"); if (s) s.textContent = "not saved yet, retrying";
+      toast(e.message, "warn"); invTimer = setTimeout(invFlush, 4000);
+    } finally { invSaving = false; }
+    if (Object.keys(invPending.lines).length || Object.keys(invPending.notes).length) invQueue();
+  }
+
+  async function invHandoff() {
+    const r = await dialog("Hand this count off?",
+      "Nothing is emailed. Your numbers are saved, the card turns red on the Inventory screen, and the next person presses Pick this up. One line for them, optional:",
+      [{ label: "Hand off", kind: "primary", value: "yes" }, { label: "Keep counting", kind: "quiet", value: null }],
+      [{ id: "note", label: "A line for the next person", placeholder: "East Lounge not started, kitchen key at the desk" }]);
+    if (!r || !r.value) return;
+    await invFlush();
+    try {
+      await api("/api/inventory/counts/" + invCount.count.id, { method: "PATCH", body: JSON.stringify({ action: "handoff", note: r.fields.note }) });
+      toast("Handed off. The card is red until someone finishes it.");
+      invCount = null; await loadInventory(); go("inv");
+    } catch (e) { toast(e.message, "warn"); }
+  }
+
+  async function invSubmit() {
+    await invFlush();
+    const st = invState();
+    const left = st.total - st.counted;
+    const to = inv.recipients && inv.recipients.length ? `${inv.recipients.length} address${inv.recipients.length === 1 ? "" : "es"} under Settings` : "the RSVP addresses (no recipients set yet)";
+    const v = await dialog(left ? `Submit with ${left} item${left === 1 ? "" : "s"} not counted?` : "Submit the count?",
+      left ? `The report goes to ${esc(to)} now with what you have: ${st.counted} items, ${st.low} below minimum. This count stays red on the Inventory screen so someone can finish; their numbers go out in a second email when they do.`
+           : `All ${st.total} items counted, ${st.low} below minimum. The report is emailed to ${esc(to)} and this count is filed as complete.`,
+      [{ label: left ? "Submit what I have" : "Submit", kind: "primary", value: "yes" }, { label: "Keep counting", kind: "quiet", value: null }]);
+    if (!v) return;
+    try {
+      const r = await api("/api/inventory/counts/" + invCount.count.id, { method: "PATCH", body: JSON.stringify({ action: "submit" }) });
+      toast(r.complete ? `Submitted and emailed: ${r.low} below minimum.` : `Submitted ${r.counted} of ${r.total}; the card stays red for whoever finishes.`);
+      const id = invCount.count.id; invCount = null;
+      await loadInventory(); go("inv");
+      window.open("/api/inventory/counts/" + id + "/report", "_blank");
+    } catch (e) { toast(e.message, "warn"); }
+  }
+
+  // ---- the item list (staff and owner edit; the desk reads)
+  function renderInvItems() {
+    const box = $("#invitems"); if (!box) return;
+    const staff = invStaff();
+    const seed = $("#inv-seedwrap"); if (seed) seed.style.display = staff && !inv.areas.length ? "" : "none";
+    const sel = `<select class="inp" data-invf="orderer" style="width:auto">${["", "Front Desk", "Resident Experiences", "HOA", "Facilities"].map(o => `<option value="${o}">${o || "Nobody set"}</option>`).join("")}</select>`;
+    const areaSel = (cur) => `<select class="inp" data-invf="area_id" style="width:auto">${activeAreas().map(a => `<option value="${a.id}"${a.id === cur ? " selected" : ""}>${esc(a.name)}${a.floor ? ` · floor ${esc(a.floor)}` : ""}</option>`).join("")}</select>`;
+    const editor = (it, aid) => `<div class="invedit" data-invedit="${it ? it.id : "new"}">
+      <label>Item<input class="inp" data-invf="name" value="${esc(it ? it.name : "")}" placeholder="Clorox Wipes" autocapitalize="words"></label>
+      <label>Minimum<input class="inp" data-invf="minimum" inputmode="decimal" value="${it && it.minimum != null ? esc(invQty(it.minimum) === "½" ? "0.5" : invQty(it.minimum)) : ""}" placeholder="3" style="width:80px"></label>
+      <label>Unit<input class="inp" data-invf="unit" value="${esc(it ? it.unit || "" : "")}" placeholder="boxes" style="width:120px"></label>
+      <label>Area${areaSel(it ? it.area_id : aid)}</label>
+      <label>Ordered by${sel}</label>
+      <label style="flex:1;min-width:200px">Small line under the name, optional<input class="inp" data-invf="hint" value="${esc(it ? it.hint || "" : "")}" placeholder="Sealed boxes only"></label>
+      <span class="edacts">
+        <button class="mini" data-inv="item-save|${it ? it.id : "new"}">Save</button>
+        <button class="mini ghost" data-inv="item-cancel|">Cancel</button>
+        ${it ? `<button class="mini ghost" style="color:var(--red)" data-inv="item-retire|${it.id}" title="Takes the row off future counts; past counts keep it">Remove</button>` : ""}
+      </span></div>`;
+    const areas = inv.areas.filter(a => a.active).sort((a, b) => a.ord - b.ord || a.id - b.id);
+    let html = "";
+    areas.forEach((a, i) => {
+      const its = itemsIn(a.id);
+      html += `<div class="invgroup"><div class="ghead"><span class="gn">${esc(a.name)}</span><span class="hint" style="margin:0">${a.floor ? `floor ${esc(a.floor)} &middot; ` : ""}${its.length} item${its.length === 1 ? "" : "s"}</span>
+        ${staff ? `<span class="eact staffonly"><button class="mini ghost" data-inv="item-add|${a.id}">Add an item</button><button class="mini ghost" data-inv="area-rename|${a.id}">Rename</button><button class="mini ghost" data-inv="area-move|${a.id}|-1" title="Earlier in the walk"${i === 0 ? " disabled" : ""}>&uarr;</button><button class="mini ghost" data-inv="area-move|${a.id}|1" title="Later in the walk"${i === areas.length - 1 ? " disabled" : ""}>&darr;</button>${its.length ? "" : `<button class="mini ghost" style="color:var(--red)" data-inv="area-retire|${a.id}">Remove area</button>`}</span>` : ""}</div>`;
+      if (invAddTo === a.id) html += editor(null, a.id);
+      html += its.map(it => invEditItem === it.id ? editor(it) : `<div class="invitem"><span class="in">${esc(it.name)}${it.hint ? `<small>${esc(it.hint)}</small>` : ""}</span><span class="im">${esc(invMin(it)) || '<span class="hint" style="margin:0">no minimum</span>'}</span><span class="io hint" style="margin:0">${esc(it.orderer || "")}</span>${staff ? `<span class="eact staffonly"><button class="mini ghost" data-inv="item-edit|${it.id}">Edit</button></span>` : "<span></span>"}</div>`).join("")
+        || (invAddTo === a.id ? "" : '<div class="nodata" style="padding:10px 16px">Nothing here yet.</div>');
+      html += `</div>`;
+    });
+    box.innerHTML = html || (inv.areas.length ? "" : '<div class="nodata">The list is empty.</div>');
+    // the editor's selects carry their current values after the markup lands
+    $$("[data-invedit]").forEach(ed => {
+      const id = ed.dataset.invedit; const it = id === "new" ? null : inv.items.find(x => String(x.id) === id);
+      const o = $("[data-invf=orderer]", ed); if (o) o.value = it ? it.orderer || "" : (inv.areas.find(a => a.id === invAddTo) || {}).orderer || "";
+    });
+    // recipients
+    const rc = $("#inv-rcpts");
+    if (rc) {
+      if (!staff) rc.closest(".card").style.display = "none";
+      else rc.innerHTML = (inv.recipients || []).map((e, i) => `<span class="setchip">${esc(e)}<button class="x" data-inv="rcpt-del|${i}" title="Remove from the list">&times;</button></span>`).join("")
+        || '<span class="hint">Nobody yet. Until an address is added, reports go to the RSVP addresses.</span>';
+    }
+  }
+
+  function invReadEditor(ed) {
+    const v = k => { const el = $(`[data-invf=${k}]`, ed); return el ? el.value.trim() : ""; };
+    return { name: v("name"), minimum: v("minimum") === "" ? null : Number(v("minimum").replace(",", ".")), unit: v("unit"), orderer: v("orderer"), hint: v("hint"), area_id: Number(v("area_id")) };
+  }
+
+  async function invItemSave(id, ed) {
+    const f = invReadEditor(ed);
+    if (!f.name) { toast("Give the item a name.", "warn"); return; }
+    if (f.minimum != null && !(f.minimum >= 0)) { toast("The minimum is a number, like 3 or 0.5.", "warn"); return; }
+    try {
+      if (id === "new") { const r = await api("/api/inventory/items", { method: "POST", body: JSON.stringify(f) }); inv.items.push(r.item); toast("Added. It is on the next count."); }
+      else { const r = await api("/api/inventory/items/" + id, { method: "PATCH", body: JSON.stringify(f) }); const i = inv.items.findIndex(x => String(x.id) === id); if (i >= 0) inv.items[i] = r.item; toast("Saved. The next count uses it; past counts are untouched."); }
+      invEditItem = null; invAddTo = null; renderInvItems();
+    } catch (e) { toast(e.message, "warn"); }
+  }
+
+  async function invAreaMove(id, dir) {
+    const areas = activeAreas(); const i = areas.findIndex(a => a.id === id); const j = i + dir;
+    if (i < 0 || j < 0 || j >= areas.length) return;
+    const a = areas[i], b = areas[j];
+    // give every area a clean 0..n order, then swap the two
+    const order = areas.map(x => x.id); order[i] = b.id; order[j] = a.id;
+    try {
+      for (let k = 0; k < order.length; k++) { const ar = inv.areas.find(x => x.id === order[k]); if (ar.ord !== k) { ar.ord = k; await api("/api/inventory/areas/" + ar.id, { method: "PATCH", body: JSON.stringify({ ord: k }) }); } }
+      renderInvItems();
+    } catch (e) { toast(e.message, "warn"); }
+  }
+
+  async function invSaveRecipients() {
+    try {
+      const r = await api("/api/settings", { method: "PUT", body: JSON.stringify({ inv_recipients: inv.recipients }) });
+      inv.recipients = r.inv_recipients || inv.recipients;
+    } catch (e) { toast(e.message, "warn"); }
+    renderInvItems();
+  }
+
+  document.addEventListener("click", async ev => {
+    const b = ev.target.closest("[data-inv]"); if (!b) return;
+    const [verb, arg, arg2] = b.dataset.inv.split("|");
+    if (verb === "go") { go(arg); if (arg === "inv" || arg === "invitems") loadInventory(); return; }
+    if (verb === "starter") { const s = $("#inv-starter"); s.style.display = s.style.display === "none" ? "" : "none"; return; }
+    if (verb === "scope") {
+      if (arg === "all") invScope = new Set(); else { const id = Number(arg); if (invScope.has(id)) invScope.delete(id); else invScope.add(id); }
+      renderInv(); return;
+    }
+    if (verb === "start") { invStart(); return; }
+    if (verb === "open") { invOpen(Number(arg)); return; }
+    if (verb === "fold") { const a = $("#invarea-" + arg); if (a) a.classList.toggle("closed"); return; }
+    if (verb === "handoff") { invHandoff(); return; }
+    if (verb === "submit") { invSubmit(); return; }
+    if (verb === "back") { await invFlush(); invCount = null; await loadInventory(); go("inv"); return; }
+    if (verb === "resend") {
+      const v = await dialog("Send the report again?", "The stored report goes to the recipients under Settings, exactly as submitted.",
+        [{ label: "Send again", kind: "primary", value: "yes" }, { label: "Not now", kind: "quiet", value: null }]);
+      if (!v) return;
+      try { await api("/api/inventory/counts/" + arg, { method: "PATCH", body: JSON.stringify({ action: "resend" }) }); toast("Sent again."); loadInventory(); } catch (e) { toast(e.message, "warn"); }
+      return;
+    }
+    if (verb === "close") {
+      const v = await dialog("Close this count?", "It files as Closed with what was counted, the red edge comes off, and nothing is emailed or deleted. For a count nobody will finish.",
+        [{ label: "Close it", kind: "primary", value: "yes" }, { label: "Leave it open", kind: "quiet", value: null }]);
+      if (!v) return;
+      try { await api("/api/inventory/counts/" + arg, { method: "PATCH", body: JSON.stringify({ action: "close" }) }); toast("Closed."); loadInventory(); } catch (e) { toast(e.message, "warn"); }
+      return;
+    }
+    if (verb === "seed") {
+      let cat = null; try { cat = JSON.parse($("#inv-catalog").textContent); } catch (e) {}
+      if (!cat) { toast("The starting list is missing from this build.", "warn"); return; }
+      const n = cat.areas.reduce((s, a) => s + a.items.length, 0);
+      const v = await dialog("Load the starting list?", `${cat.areas.length} areas and ${n} items from the spreadsheet, in walk order. After this the list lives here and is edited on this screen.`,
+        [{ label: "Load it", kind: "primary", value: "yes" }, { label: "Not now", kind: "quiet", value: null }]);
+      if (!v) return;
+      try { const r = await api("/api/inventory/seed", { method: "POST", body: JSON.stringify(cat) }); toast(`Loaded ${r.areas} areas, ${r.items} items.`); loadInventory(); } catch (e) { toast(e.message, "warn"); }
+      return;
+    }
+    if (verb === "item-edit") { invEditItem = Number(arg); invAddTo = null; renderInvItems(); return; }
+    if (verb === "item-add") { invAddTo = Number(arg); invEditItem = null; renderInvItems(); const f = $("[data-invedit=new] [data-invf=name]"); if (f) f.focus(); return; }
+    if (verb === "item-cancel") { invEditItem = null; invAddTo = null; renderInvItems(); return; }
+    if (verb === "item-save") { invItemSave(arg, b.closest("[data-invedit]")); return; }
+    if (verb === "item-retire") {
+      const it = inv.items.find(x => String(x.id) === arg); if (!it) return;
+      const v = await dialog(`Remove "${esc(it.name)}" from the list?`, "It leaves future counts. Past counts keep their numbers for it.",
+        [{ label: "Remove", kind: "primary", value: "yes" }, { label: "Keep it", kind: "quiet", value: null }]);
+      if (!v) return;
+      try { const r = await api("/api/inventory/items/" + arg, { method: "PATCH", body: JSON.stringify({ active: 0 }) }); Object.assign(it, r.item); invEditItem = null; renderInvItems(); toast("Removed from the list."); } catch (e) { toast(e.message, "warn"); }
+      return;
+    }
+    if (verb === "area-add") {
+      const r = await dialog("Add an area", "A stop on the walk. Items are added inside it afterwards.",
+        [{ label: "Add", kind: "primary", value: "yes" }, { label: "Cancel", kind: "quiet", value: null }],
+        [{ id: "name", label: "Area name", placeholder: "Parcel Closet" }, { id: "floor", label: "Floor", placeholder: "1" }]);
+      if (!r || !r.value) return;
+      try { const a = await api("/api/inventory/areas", { method: "POST", body: JSON.stringify({ name: r.fields.name, floor: r.fields.floor }) }); inv.areas.push(a.area); renderInvItems(); toast("Area added at the end of the walk."); } catch (e) { toast(e.message, "warn"); }
+      return;
+    }
+    if (verb === "area-rename") {
+      const a = inv.areas.find(x => String(x.id) === arg); if (!a) return;
+      const r = await dialog("Rename this area", "",
+        [{ label: "Save", kind: "primary", value: "yes" }, { label: "Cancel", kind: "quiet", value: null }],
+        [{ id: "name", label: "Area name", value: a.name }, { id: "floor", label: "Floor", value: a.floor || "" }]);
+      if (!r || !r.value) return;
+      try { const u = await api("/api/inventory/areas/" + arg, { method: "PATCH", body: JSON.stringify({ name: r.fields.name, floor: r.fields.floor }) }); Object.assign(a, u.area); renderInvItems(); } catch (e) { toast(e.message, "warn"); }
+      return;
+    }
+    if (verb === "area-move") { invAreaMove(Number(arg), Number(arg2)); return; }
+    if (verb === "area-retire") {
+      const a = inv.areas.find(x => String(x.id) === arg); if (!a) return;
+      const v = await dialog(`Remove the area "${esc(a.name)}"?`, "It has no items. Past counts keep their record of it.",
+        [{ label: "Remove", kind: "primary", value: "yes" }, { label: "Keep it", kind: "quiet", value: null }]);
+      if (!v) return;
+      try { const u = await api("/api/inventory/areas/" + arg, { method: "PATCH", body: JSON.stringify({ active: 0 }) }); Object.assign(a, u.area); renderInvItems(); } catch (e) { toast(e.message, "warn"); }
+      return;
+    }
+    if (verb === "rcpt-add") {
+      const el = $("#inv-rcpt-new"); const v = el.value.trim().toLowerCase();
+      if (!v || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)) { toast("That does not read as an email address.", "warn"); return; }
+      inv.recipients = inv.recipients || [];
+      if (!inv.recipients.includes(v)) inv.recipients.push(v);
+      el.value = ""; await invSaveRecipients();
+      toast("Added. Remember: the address must also be verified in Cloudflare Email Routing, once.");
+      return;
+    }
+    if (verb === "rcpt-del") { inv.recipients.splice(Number(arg), 1); await invSaveRecipients(); return; }
+  });
+  document.addEventListener("input", ev => {
+    const t = ev.target;
+    if (t.dataset.invline !== undefined) {
+      if (!invCount) return;
+      const raw = t.value.trim().replace(",", ".");
+      const v = raw === "" ? null : Number(raw);
+      if (raw !== "" && !(v >= 0)) return;    // half-typed; wait
+      invPending.lines[t.dataset.invline] = v;
+      const it = inv.items.find(x => String(x.id) === t.dataset.invline);
+      const row = $("#invrow-" + t.dataset.invline); if (row && it) row.classList.toggle("low", invLow(it, v));
+      invProgress(); invQueue();
+    } else if (t.dataset.invnote !== undefined) {
+      if (!invCount) return;
+      invPending.notes[t.dataset.invnote] = t.value;
+      invQueue();
+    }
+  });
+  // leaving the screen or the page mid-type still saves
+  window.addEventListener("pagehide", () => { if (invCount) invFlush(); });
+  document.addEventListener("visibilitychange", () => { if (document.hidden && invCount) invFlush(); });
+
   // ---------------------------------------------------------------- messages
   function renderMsgs() {
     const box = $("#msglist"); if (!box) return;
@@ -2585,6 +3003,7 @@
       const gbar = $("#sysbar"); if (gbar) gbar.textContent = "Sign-in required · nothing loads without it";
       return;
     }
+    meEmail = whoEmail;
     document.body.classList.add("role-" + role);
     const roleName = { owner: "owner", staff: "staff", desk: "front desk" }[role] || role;
     $("#who").innerHTML = `Signed in as ${esc(roleName)}<strong>${esc(whoEmail || "181 Fremont · Level 39")}</strong>`;
@@ -2618,6 +3037,7 @@
     loadBookings();
     loadWindow();
     loadNotes();
+    loadInventory();
     applyDashFold();
   }
 

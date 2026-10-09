@@ -226,3 +226,30 @@ Test: change any RSVP from the admin; the note should be in Leo's inbox within
 a minute. Without the binding the site behaves exactly as before, quietly.
 Check-ins and door notes are deliberately quiet; only real changes to a
 booking (standing, party size, names) send mail.
+
+## Inventory (Operations tab): the report email and the starting list
+
+The Operations tab's Inventory door emails every submitted count to the
+department heads. It rides the same `rsvp-notify` Worker, with two additions
+in `workers/rsvp-notify/worker.js`: a `to` list of its own and an HTML body.
+
+1. **Re-paste the Worker.** Workers & Pages -> rsvp-notify -> Edit code, replace
+   the whole file with `workers/rsvp-notify/worker.js` from this repository,
+   Deploy. Until this is done the old Worker ignores the `to` list and sends
+   the report as plain text to the RSVP addresses instead; nothing breaks.
+2. **Verify each department head's address** under 181residents.com zone ->
+   Email -> Email Routing -> Destination addresses -> Add. Each person clicks
+   the link in the verification email once. Email Routing delivers only to
+   verified destinations; an unverified address simply never receives the
+   report, with no error anywhere.
+3. **Add the addresses in the admin**: Operations -> Inventory -> The item
+   list -> "Inventory reports go to". Staff and owner tiers only.
+4. **Load the starting list** once: Operations -> Inventory -> The item list ->
+   "Load the starting list" (shown only while the list is empty). It inserts
+   `source/inventory_catalog.json`, after which the list lives in D1 and is
+   edited on the site.
+
+The report's From is `reports@181residents.com`; like `rsvps@`, it needs no
+mailbox. Test: start a count, type a few numbers, press Submit; the report
+should reach every verified recipient within a minute, and the count's card
+shows when and to whom it went.
