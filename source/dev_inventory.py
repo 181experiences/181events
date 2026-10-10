@@ -74,8 +74,9 @@ def build_report(count, areas, items, lines, notes, scope_ids, now_iso):
                 counted += 1
                 if l.get("who"): counters.add(l["who"])
             lw = is_low(it, qty)
-            if lw: low.append((it, a, qty))
-            rows.append((it, qty, lw))
+            shown = dict(it, name=f"{it['name']} ({l['label']})") if l and l.get("label") else it
+            if lw: low.append((shown, a, qty))
+            rows.append((shown, qty, lw))
         n = note_of.get(a["id"])
         rows_by_area.append((a, rows, n["body"] if n and n.get("body") else ""))
     when = pacific(count.get("submitted") or now_iso())
@@ -241,7 +242,7 @@ def handle(h, method, p, env):
                 items.append(dict(id=_next_id(items), area_id=row["id"], name=iname, minimum=num(it.get("minimum")),
                                   unit=(str(it.get("unit") or "").strip()[:40] or None),
                                   orderer=(str(it.get("orderer") or a.get("orderer") or "").strip()[:60] or None),
-                                  hint=(str(it.get("hint") or "").strip()[:160] or None), ord=ii, active=1,
+                                  hint=(str(it.get("hint") or "").strip()[:160] or None), variant=1 if it.get("variant") else 0, ord=ii, active=1,
                                   created=now(), updated=None, updated_by=by))
                 n += 1
         save("inv_areas", areas); save("inv_items", items)
@@ -279,7 +280,8 @@ def handle(h, method, p, env):
                         minimum=num(b.get("minimum")) if "minimum" in b else "skip",
                         unit=(str(b["unit"] or "").strip()[:40] or None) if "unit" in b else "skip",
                         orderer=(str(b["orderer"] or "").strip()[:60] or None) if "orderer" in b else "skip",
-                        hint=(str(b["hint"] or "").strip()[:160] or None) if "hint" in b else "skip")
+                        hint=(str(b["hint"] or "").strip()[:160] or None) if "hint" in b else "skip",
+                        variant=(1 if b["variant"] else 0) if "variant" in b else "skip")
         if len(parts) == 1 and method == "POST":
             b = h._body_json(); c = clean(b)
             if not c["name"]: return h._json({"error": "Give the item a name."}, 400)
@@ -289,7 +291,7 @@ def handle(h, method, p, env):
             row = dict(id=_next_id(items), area_id=area, name=c["name"],
                        minimum=None if c["minimum"] == "skip" else c["minimum"],
                        unit=None if c["unit"] == "skip" else c["unit"], orderer=None if c["orderer"] == "skip" else c["orderer"],
-                       hint=None if c["hint"] == "skip" else c["hint"],
+                       hint=None if c["hint"] == "skip" else c["hint"], variant=0 if c["variant"] == "skip" else c["variant"],
                        ord=max([i["ord"] for i in items if i["area_id"] == area] or [-1]) + 1, active=1,
                        created=now(), updated=now(), updated_by=by)
             items.append(row); save("inv_items", items)
@@ -301,7 +303,7 @@ def handle(h, method, p, env):
                     if c["name"] is not None:
                         if not c["name"]: return h._json({"error": "Give the item a name."}, 400)
                         it["name"] = c["name"]
-                    for k in ("minimum", "unit", "orderer", "hint"):
+                    for k in ("minimum", "unit", "orderer", "hint", "variant"):
                         if c[k] != "skip": it[k] = c[k]
                     if "area_id" in b:
                         try: area = int(b["area_id"])
@@ -349,7 +351,7 @@ def handle(h, method, p, env):
                 for a in sorted([x for x in areas if x.get("active", 1) and (not scope or x["id"] in scope)], key=lambda x: x["ord"]):
                     for it in sorted([i for i in items if i.get("active", 1) and i["area_id"] == a["id"]], key=lambda i: i["ord"]):
                         l = ql.get(it["id"], {})
-                        out.append([a["name"], a.get("floor") or "", it["name"], "" if it.get("minimum") is None else it["minimum"], it.get("unit") or "",
+                        out.append([a["name"], a.get("floor") or "", it["name"] + (f" ({l['label']})" if l.get("label") else ""), "" if it.get("minimum") is None else it["minimum"], it.get("unit") or "",
                                     "" if l.get("qty") is None else l["qty"], "yes" if is_low(it, l.get("qty")) else "", it.get("orderer") or "",
                                     name_of(l["who"]) if l.get("who") else "", l.get("at") or ""])
                 csv = "\r\n".join(",".join('"' + str(v).replace('"', '""') + '"' for v in r) for r in out)
@@ -396,6 +398,13 @@ def handle(h, method, p, env):
                 l = next((x for x in lines if x["count_id"] == c["id"] and x["item_id"] == item), None)
                 if l: l.update(qty=qty, who=by, at=now())
                 else: lines.append(dict(id=_next_id(lines), count_id=c["id"], item_id=item, qty=qty, who=by, at=now()))
+                saved += 1
+            for k, v in list((b.get("labels") or {}).items())[:200]:
+                if not str(k).isdigit(): continue
+                item = int(k); label = str(v or "").strip()[:60] or None
+                l = next((x for x in lines if x["count_id"] == c["id"] and x["item_id"] == item), None)
+                if l: l.update(label=label, who=by, at=now())
+                else: lines.append(dict(id=_next_id(lines), count_id=c["id"], item_id=item, qty=None, label=label, who=by, at=now()))
                 saved += 1
             for k, v in list((b.get("notes") or {}).items())[:60]:
                 if not str(k).isdigit(): continue

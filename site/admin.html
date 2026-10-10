@@ -405,7 +405,8 @@
   .invrow input{width:100%;min-height:44px;border:1px solid var(--line);border-radius:var(--radius);padding:8px 10px;
     font-family:var(--fb);font-size:17px;text-align:center;background:#fff;color:var(--ink)}
   .invrow input:focus{outline:2px solid var(--ink);outline-offset:-1px}
-  .invrow.low input{border-color:var(--red);background:#fff4f3;color:var(--red);font-weight:700}
+  .invrow.low input:not(.invlab){border-color:var(--red);background:#fff4f3;color:var(--red);font-weight:700}
+  .invrow input.invlab{min-height:36px;font-size:13.5px;text-align:left;margin-top:5px;padding:6px 9px;font-weight:400;color:var(--ink);background:#fff;border-color:var(--line)}
   .invrow .flag{grid-column:1 / -1;font-size:12px;color:var(--red);font-weight:600;margin-top:-4px;display:none}
   .invrow.low .flag{display:block}
   .invarea .anote{padding:10px 16px 14px;border-top:1px solid var(--line-2)}
@@ -1537,125 +1538,577 @@
 <script id="inv-catalog" type="application/json">{
   "_about": "The starting item list for Operations > Inventory, in walk order. Loaded once into an empty list by the admin's 'Load the starting list' button (POST /api/inventory/seed); after that the list lives in the database and leadership edits it on the site. From Leo's 'inventory counts.xlsx' (Oct 9, 2026) plus the seven Vertuo pods of SOP-RC-001. Floors are numbers; the 39th-floor space is The Residents' Club.",
   "areas": [
-    {"name": "Front Desk Cabinet", "floor": "1", "orderer": "Front Desk", "items": [
-      {"name": "Jumbo Sharpies", "minimum": 1, "unit": "box"},
-      {"name": "Badge Holders", "minimum": 5, "unit": "pc"},
-      {"name": "Batteries AA", "minimum": 1, "unit": "pack"},
-      {"name": "Batteries AAA", "minimum": 1, "unit": "pack"},
-      {"name": "Batteries 9V", "minimum": 1, "unit": "pack"},
-      {"name": "Masks", "minimum": 1, "unit": "box"},
-      {"name": "Packaging Tape", "minimum": 1, "unit": "roll"}
-    ]},
-    {"name": "Front Desk Drawer", "floor": "1", "orderer": "Front Desk", "items": [
-      {"name": "USPS Stamps", "minimum": 10, "unit": "pc"},
-      {"name": "Pens", "minimum": 4, "unit": "pc"},
-      {"name": "Whiteout", "minimum": 1, "unit": "pc"},
-      {"name": "Post-its, square", "minimum": 2, "unit": "pc"},
-      {"name": "Post-its, pad", "minimum": 2, "unit": "pc"}
-    ]},
-    {"name": "Dry Cleaning Closet", "floor": "1", "orderer": "Front Desk", "items": [
-      {"name": "Lindt Chocolates", "minimum": 1, "unit": "box"},
-      {"name": "Dog Treats, chicken", "minimum": 1, "unit": "container"},
-      {"name": "Dog Treats, duck", "minimum": 1, "unit": "container"}
-    ]},
-    {"name": "Parcel Closet", "floor": "1", "orderer": "Front Desk", "items": [
-      {"name": "Clorox Wipes", "minimum": 3, "unit": "containers"},
-      {"name": "Hand Sanitizer (32 oz)", "minimum": 3, "unit": "bottles"},
-      {"name": "Tide Pods", "minimum": 1, "unit": "bag"},
-      {"name": "Marble Cleaner", "minimum": 1, "unit": "bottle"},
-      {"name": "Magic Eraser", "minimum": 6, "unit": "pc"},
-      {"name": "Bubble Wrap", "minimum": 1, "unit": "roll"}
-    ]},
-    {"name": "Front Desk Back Office", "floor": "1", "orderer": "Front Desk", "items": [
-      {"name": "Gloves (3-pack)", "minimum": 1, "unit": "box"},
-      {"name": "KN95 Masks", "minimum": 1, "unit": "box"},
-      {"name": "Brother Toner, black", "minimum": 1, "unit": "cartridge"},
-      {"name": "Brother Toner, yellow", "minimum": 1, "unit": "cartridge"},
-      {"name": "Brother Toner, cyan", "minimum": 1, "unit": "cartridge"},
-      {"name": "Brother Toner, magenta", "minimum": 1, "unit": "cartridge"},
-      {"name": "Lint Roller", "minimum": 1, "unit": "pc"},
-      {"name": "8 oz Cups, Lobby Office", "minimum": 0.5, "unit": "box"}
-    ]},
-    {"name": "Lobby", "floor": "1", "orderer": "Resident Experiences", "items": [
-      {"name": "Nespresso pods, lobby machine", "minimum": 2, "unit": "boxes", "hint": "Sealed boxes only"},
-      {"name": "Tea Pods", "minimum": 0.5, "unit": "box"}
-    ]},
-    {"name": "Credenza", "floor": "3", "orderer": "Front Desk", "items": [
-      {"name": "Pens", "minimum": 1, "unit": "box"},
-      {"name": "Whiteout", "minimum": 3, "unit": "pack"},
-      {"name": "Post-its, square", "minimum": 6, "unit": "pc"},
-      {"name": "Post-its, pad", "minimum": 6, "unit": "pc"},
-      {"name": "Paper Clips", "minimum": 2, "unit": "boxes"},
-      {"name": "Binder Clips, S / M / L", "minimum": 1, "unit": "box each"},
-      {"name": "Badge Clips", "minimum": 5, "unit": "pc"},
-      {"name": "Push Pins", "minimum": 1, "unit": "container"},
-      {"name": "Label Maker Tape", "minimum": 3, "unit": "cartridges"},
-      {"name": "Printer Paper", "minimum": 3, "unit": "packs"},
-      {"name": "Laminating Sheets", "minimum": 1, "unit": "pack"}
-    ]},
-    {"name": "Offices & HOA Fridge", "floor": "3", "orderer": "HOA", "items": [
-      {"name": "Konica Printer Ink (HOA Office)", "minimum": 1, "unit": "cartridge"},
-      {"name": "Water Jugs (Engineering Office)", "minimum": 4, "unit": "jugs"},
-      {"name": "Pressed Juices (HOA Fridge)", "minimum": 15, "unit": "bottles"},
-      {"name": "Pressed Juice Shots (HOA Fridge)", "minimum": 15, "unit": "bottles"},
-      {"name": "Breakfast Bars (HOA Fridge)", "minimum": 2, "unit": "boxes"}
-    ]},
-    {"name": "Storage", "floor": "3", "orderer": "Resident Experiences", "items": [
-      {"name": "181 Water Bottles", "minimum": 30, "unit": "cases"},
-      {"name": "San Pellegrino Sparkling (glass)", "minimum": 4, "unit": "cases"},
-      {"name": "Gloves (3-pack)", "minimum": 1, "unit": "box"},
-      {"name": "10 oz Cups, bar", "minimum": 0.5, "unit": "box"},
-      {"name": "16 oz Cups, Tue/Thu Breakfast", "minimum": 0.5, "unit": "box"},
-      {"name": "Lids, 10 and 16 oz", "minimum": 0.5, "unit": "box"},
-      {"name": "8 oz Cups, Lobby Office", "minimum": 0.5, "unit": "box"}
-    ]},
-    {"name": "Breakroom", "floor": "4", "orderer": "Front Desk", "items": [
-      {"name": "Ground Coffee, Medium", "minimum": 1, "unit": "bag"},
-      {"name": "Ground Coffee, Blonde", "minimum": 1, "unit": "bag"},
-      {"name": "K-Cup Coffee Filters", "minimum": 1, "unit": "box"},
-      {"name": "Paper Towels", "minimum": 2, "unit": "stacks"},
-      {"name": "Sponges", "minimum": 3, "unit": "pc"},
-      {"name": "Aluminum Foil", "minimum": 1, "unit": "roll"},
-      {"name": "Saran Wrap", "minimum": 1, "unit": "roll"},
-      {"name": "Dish Washing Liquid (under sink)", "minimum": 3, "unit": "pc"},
-      {"name": "Hand Soap (under sink)", "minimum": 1, "unit": "bottle"},
-      {"name": "Lint Roller (under sink)", "minimum": 3, "unit": "pc"}
-    ]},
-    {"name": "East Lounge Credenza & Club Kitchen", "floor": "39", "orderer": "Resident Experiences", "items": [
-      {"name": "10 oz Cups, bar", "minimum": 0.5, "unit": "box"},
-      {"name": "16 oz Cups, Tue/Thu Breakfast", "minimum": 0.5, "unit": "box"},
-      {"name": "Lids, 10 and 16 oz", "minimum": 0.5, "unit": "box"},
-      {"name": "Coffee Stirrers", "minimum": 2, "unit": "boxes"},
-      {"name": "Coffee Sleeves", "minimum": 2, "unit": "boxes"},
-      {"name": "Splenda packets (yellow)", "minimum": 0.5, "unit": "box"},
-      {"name": "Sugar packets (white)", "minimum": 0.5, "unit": "box"},
-      {"name": "Coffee mate, original", "minimum": 1, "unit": "box"},
-      {"name": "Coffee mate, french vanilla", "minimum": 1, "unit": "box"},
-      {"name": "Coffee mate, oat", "minimum": 1, "unit": "box"},
-      {"name": "H&S Tea: Dragon Pearl Jasmine", "minimum": 3, "unit": "boxes"},
-      {"name": "H&S Tea: Earl Grey Supreme", "minimum": 3, "unit": "boxes"},
-      {"name": "H&S Tea: Japanese Sencha", "minimum": 3, "unit": "boxes"},
-      {"name": "H&S Tea: Darjeeling", "minimum": 3, "unit": "boxes"},
-      {"name": "H&S Tea: Organic English Breakfast", "minimum": 3, "unit": "boxes"},
-      {"name": "H&S Tea: Chamomile", "minimum": 3, "unit": "boxes"},
-      {"name": "Dish Pods (Club kitchen)", "minimum": 0.5, "unit": "box"}
-    ]},
-    {"name": "Nespresso Vertuo pods", "floor": "39", "orderer": "Resident Experiences", "items": [
-      {"name": "Melozio", "minimum": 3, "unit": "boxes", "hint": "Coffee · 6 · gold sleeve · sealed boxes only"},
-      {"name": "Melozio Decaffeinato", "minimum": 3, "unit": "boxes", "hint": "Coffee, decaf · 6 · gold / green · sealed boxes only"},
-      {"name": "Half Caffeinato", "minimum": 3, "unit": "boxes", "hint": "Coffee, half-caf · 6 · light blue · sealed boxes only"},
-      {"name": "Altissio", "minimum": 3, "unit": "boxes", "hint": "Espresso · 9 · purple · sealed boxes only"},
-      {"name": "Altissio Decaffeinato", "minimum": 3, "unit": "boxes", "hint": "Espresso, decaf · 9 · purple / green · sealed boxes only"},
-      {"name": "Rotating: Intenso", "minimum": 3, "unit": "boxes", "hint": "The standing rotating pod · 9 · brown · sealed boxes only"},
-      {"name": "Rotating: Solelio", "minimum": 3, "unit": "boxes", "hint": "Only on written notice · 2 · yellow · sealed boxes only"}
-    ]}
+    {
+      "name": "Front Desk Cabinet",
+      "floor": "1",
+      "orderer": "Front Desk",
+      "items": [
+        {
+          "name": "Jumbo Sharpies",
+          "minimum": 1,
+          "unit": "box"
+        },
+        {
+          "name": "Badge Holders",
+          "minimum": 5,
+          "unit": "pc"
+        },
+        {
+          "name": "Batteries AA",
+          "minimum": 1,
+          "unit": "pack"
+        },
+        {
+          "name": "Batteries AAA",
+          "minimum": 1,
+          "unit": "pack"
+        },
+        {
+          "name": "Batteries 9V",
+          "minimum": 1,
+          "unit": "pack"
+        },
+        {
+          "name": "Masks",
+          "minimum": 1,
+          "unit": "box"
+        },
+        {
+          "name": "Packaging Tape",
+          "minimum": 1,
+          "unit": "roll"
+        }
+      ]
+    },
+    {
+      "name": "Front Desk Drawer",
+      "floor": "1",
+      "orderer": "Front Desk",
+      "items": [
+        {
+          "name": "USPS Stamps",
+          "minimum": 10,
+          "unit": "pc"
+        },
+        {
+          "name": "Pens",
+          "minimum": 4,
+          "unit": "pc"
+        },
+        {
+          "name": "Whiteout",
+          "minimum": 1,
+          "unit": "pc"
+        },
+        {
+          "name": "Post-its, square",
+          "minimum": 2,
+          "unit": "pc"
+        },
+        {
+          "name": "Post-its, pad",
+          "minimum": 2,
+          "unit": "pc"
+        }
+      ]
+    },
+    {
+      "name": "Dry Cleaning Closet",
+      "floor": "1",
+      "orderer": "Front Desk",
+      "items": [
+        {
+          "name": "Lindt Chocolates",
+          "minimum": 1,
+          "unit": "box"
+        },
+        {
+          "name": "Dog Treats, chicken",
+          "minimum": 1,
+          "unit": "container"
+        },
+        {
+          "name": "Dog Treats, duck",
+          "minimum": 1,
+          "unit": "container"
+        }
+      ]
+    },
+    {
+      "name": "Parcel Closet",
+      "floor": "1",
+      "orderer": "Front Desk",
+      "items": [
+        {
+          "name": "Clorox Wipes",
+          "minimum": 3,
+          "unit": "containers"
+        },
+        {
+          "name": "Hand Sanitizer (32 oz)",
+          "minimum": 3,
+          "unit": "bottles"
+        },
+        {
+          "name": "Tide Pods",
+          "minimum": 1,
+          "unit": "bag"
+        },
+        {
+          "name": "Marble Cleaner",
+          "minimum": 1,
+          "unit": "bottle"
+        },
+        {
+          "name": "Magic Eraser",
+          "minimum": 6,
+          "unit": "pc"
+        },
+        {
+          "name": "Bubble Wrap",
+          "minimum": 1,
+          "unit": "roll"
+        }
+      ]
+    },
+    {
+      "name": "Front Desk Back Office",
+      "floor": "1",
+      "orderer": "Front Desk",
+      "items": [
+        {
+          "name": "Gloves (3-pack)",
+          "minimum": 1,
+          "unit": "box"
+        },
+        {
+          "name": "KN95 Masks",
+          "minimum": 1,
+          "unit": "box"
+        },
+        {
+          "name": "Brother Toner, black",
+          "minimum": 1,
+          "unit": "cartridge"
+        },
+        {
+          "name": "Brother Toner, yellow",
+          "minimum": 1,
+          "unit": "cartridge"
+        },
+        {
+          "name": "Brother Toner, cyan",
+          "minimum": 1,
+          "unit": "cartridge"
+        },
+        {
+          "name": "Brother Toner, magenta",
+          "minimum": 1,
+          "unit": "cartridge"
+        },
+        {
+          "name": "Lint Roller",
+          "minimum": 1,
+          "unit": "pc"
+        },
+        {
+          "name": "8 oz Cups, Lobby Office",
+          "minimum": 0.5,
+          "unit": "box"
+        }
+      ]
+    },
+    {
+      "name": "Lobby",
+      "floor": "1",
+      "orderer": "Resident Experiences",
+      "items": [
+        {
+          "name": "Nespresso pods, lobby machine",
+          "minimum": 2,
+          "unit": "boxes",
+          "hint": "Sealed boxes only"
+        },
+        {
+          "name": "Tea Pods",
+          "minimum": 0.5,
+          "unit": "box"
+        }
+      ]
+    },
+    {
+      "name": "Credenza",
+      "floor": "3",
+      "orderer": "Front Desk",
+      "items": [
+        {
+          "name": "Pens",
+          "minimum": 1,
+          "unit": "box"
+        },
+        {
+          "name": "Whiteout",
+          "minimum": 3,
+          "unit": "pack"
+        },
+        {
+          "name": "Post-its, square",
+          "minimum": 6,
+          "unit": "pc"
+        },
+        {
+          "name": "Post-its, pad",
+          "minimum": 6,
+          "unit": "pc"
+        },
+        {
+          "name": "Paper Clips",
+          "minimum": 2,
+          "unit": "boxes"
+        },
+        {
+          "name": "Binder Clips, S / M / L",
+          "minimum": 1,
+          "unit": "box each"
+        },
+        {
+          "name": "Badge Clips",
+          "minimum": 5,
+          "unit": "pc"
+        },
+        {
+          "name": "Push Pins",
+          "minimum": 1,
+          "unit": "container"
+        },
+        {
+          "name": "Label Maker Tape",
+          "minimum": 3,
+          "unit": "cartridges"
+        },
+        {
+          "name": "Printer Paper",
+          "minimum": 3,
+          "unit": "packs"
+        },
+        {
+          "name": "Laminating Sheets",
+          "minimum": 1,
+          "unit": "pack"
+        }
+      ]
+    },
+    {
+      "name": "Offices & HOA Fridge",
+      "floor": "3",
+      "orderer": "HOA",
+      "items": [
+        {
+          "name": "Konica Printer Ink (HOA Office)",
+          "minimum": 1,
+          "unit": "cartridge"
+        },
+        {
+          "name": "Water Jugs (Engineering Office)",
+          "minimum": 4,
+          "unit": "jugs"
+        },
+        {
+          "name": "Pressed Juices (HOA Fridge)",
+          "minimum": 15,
+          "unit": "bottles"
+        },
+        {
+          "name": "Pressed Juice Shots (HOA Fridge)",
+          "minimum": 15,
+          "unit": "bottles"
+        },
+        {
+          "name": "Breakfast Bars (HOA Fridge)",
+          "minimum": 2,
+          "unit": "boxes"
+        }
+      ]
+    },
+    {
+      "name": "Storage",
+      "floor": "3",
+      "orderer": "Resident Experiences",
+      "items": [
+        {
+          "name": "181 Water Bottles",
+          "minimum": 30,
+          "unit": "cases"
+        },
+        {
+          "name": "San Pellegrino Sparkling (glass)",
+          "minimum": 4,
+          "unit": "cases"
+        },
+        {
+          "name": "Gloves (3-pack)",
+          "minimum": 1,
+          "unit": "box"
+        },
+        {
+          "name": "10 oz Cups, bar",
+          "minimum": 0.5,
+          "unit": "box"
+        },
+        {
+          "name": "16 oz Cups, Tue/Thu Breakfast",
+          "minimum": 0.5,
+          "unit": "box"
+        },
+        {
+          "name": "Lids, 10 and 16 oz",
+          "minimum": 0.5,
+          "unit": "box"
+        },
+        {
+          "name": "8 oz Cups, Lobby Office",
+          "minimum": 0.5,
+          "unit": "box"
+        }
+      ]
+    },
+    {
+      "name": "Breakroom",
+      "floor": "4",
+      "orderer": "Front Desk",
+      "items": [
+        {
+          "name": "Ground Coffee, Medium",
+          "minimum": 1,
+          "unit": "bag"
+        },
+        {
+          "name": "Ground Coffee, Blonde",
+          "minimum": 1,
+          "unit": "bag"
+        },
+        {
+          "name": "K-Cup Coffee Filters",
+          "minimum": 1,
+          "unit": "box"
+        },
+        {
+          "name": "Paper Towels",
+          "minimum": 2,
+          "unit": "stacks"
+        },
+        {
+          "name": "Sponges",
+          "minimum": 3,
+          "unit": "pc"
+        },
+        {
+          "name": "Aluminum Foil",
+          "minimum": 1,
+          "unit": "roll"
+        },
+        {
+          "name": "Saran Wrap",
+          "minimum": 1,
+          "unit": "roll"
+        },
+        {
+          "name": "Dish Washing Liquid (under sink)",
+          "minimum": 3,
+          "unit": "pc"
+        },
+        {
+          "name": "Hand Soap (under sink)",
+          "minimum": 1,
+          "unit": "bottle"
+        },
+        {
+          "name": "Lint Roller (under sink)",
+          "minimum": 3,
+          "unit": "pc"
+        }
+      ]
+    },
+    {
+      "name": "East Lounge Credenza & Club Kitchen",
+      "floor": "39",
+      "orderer": "Resident Experiences",
+      "items": [
+        {
+          "name": "10 oz Cups, bar",
+          "minimum": 0.5,
+          "unit": "box"
+        },
+        {
+          "name": "16 oz Cups, Tue/Thu Breakfast",
+          "minimum": 0.5,
+          "unit": "box"
+        },
+        {
+          "name": "Lids, 10 and 16 oz",
+          "minimum": 0.5,
+          "unit": "box"
+        },
+        {
+          "name": "Coffee Stirrers",
+          "minimum": 2,
+          "unit": "boxes"
+        },
+        {
+          "name": "Coffee Sleeves",
+          "minimum": 2,
+          "unit": "boxes"
+        },
+        {
+          "name": "Splenda packets (yellow)",
+          "minimum": 0.5,
+          "unit": "box"
+        },
+        {
+          "name": "Sugar packets (white)",
+          "minimum": 0.5,
+          "unit": "box"
+        },
+        {
+          "name": "Coffee mate, original",
+          "minimum": 1,
+          "unit": "box"
+        },
+        {
+          "name": "Coffee mate, french vanilla",
+          "minimum": 1,
+          "unit": "box"
+        },
+        {
+          "name": "Coffee mate, oat",
+          "minimum": 1,
+          "unit": "box"
+        },
+        {
+          "name": "H&S Tea: Dragon Pearl Jasmine",
+          "minimum": 3,
+          "unit": "boxes"
+        },
+        {
+          "name": "H&S Tea: Earl Grey Supreme",
+          "minimum": 3,
+          "unit": "boxes"
+        },
+        {
+          "name": "H&S Tea: Japanese Sencha",
+          "minimum": 3,
+          "unit": "boxes"
+        },
+        {
+          "name": "H&S Tea: Darjeeling",
+          "minimum": 3,
+          "unit": "boxes"
+        },
+        {
+          "name": "H&S Tea: Organic English Breakfast",
+          "minimum": 3,
+          "unit": "boxes"
+        },
+        {
+          "name": "H&S Tea: Chamomile",
+          "minimum": 3,
+          "unit": "boxes"
+        },
+        {
+          "name": "Dish Pods (Club kitchen)",
+          "minimum": 0.5,
+          "unit": "box"
+        }
+      ]
+    },
+    {
+      "name": "Managers Closet",
+      "floor": "39",
+      "orderer": "Resident Experiences",
+      "items": [
+        {
+          "name": "Andes Chocolate Mints",
+          "minimum": 1,
+          "unit": "tub"
+        },
+        {
+          "name": "David Bars, variety 1",
+          "minimum": 4,
+          "unit": "boxes",
+          "variant": true,
+          "hint": "Type the flavor beside the count"
+        },
+        {
+          "name": "David Bars, variety 2",
+          "minimum": 4,
+          "unit": "boxes",
+          "variant": true,
+          "hint": "Type the flavor beside the count"
+        },
+        {
+          "name": "David Bars, variety 3",
+          "minimum": 4,
+          "unit": "boxes",
+          "variant": true,
+          "hint": "Type the flavor beside the count"
+        }
+      ]
+    },
+    {
+      "name": "Nespresso Vertuo pods",
+      "floor": "39",
+      "orderer": "Resident Experiences",
+      "items": [
+        {
+          "name": "Melozio",
+          "minimum": 3,
+          "unit": "boxes",
+          "hint": "Coffee · 6 · gold sleeve · sealed boxes only"
+        },
+        {
+          "name": "Melozio Decaffeinato",
+          "minimum": 3,
+          "unit": "boxes",
+          "hint": "Coffee, decaf · 6 · gold / green · sealed boxes only"
+        },
+        {
+          "name": "Half Caffeinato",
+          "minimum": 3,
+          "unit": "boxes",
+          "hint": "Coffee, half-caf · 6 · light blue · sealed boxes only"
+        },
+        {
+          "name": "Altissio",
+          "minimum": 3,
+          "unit": "boxes",
+          "hint": "Espresso · 9 · purple · sealed boxes only"
+        },
+        {
+          "name": "Altissio Decaffeinato",
+          "minimum": 3,
+          "unit": "boxes",
+          "hint": "Espresso, decaf · 9 · purple / green · sealed boxes only"
+        },
+        {
+          "name": "Rotating: Intenso",
+          "minimum": 3,
+          "unit": "boxes",
+          "hint": "The standing rotating pod · 9 · brown · sealed boxes only"
+        },
+        {
+          "name": "Rotating: Solelio",
+          "minimum": 3,
+          "unit": "boxes",
+          "hint": "Only on written notice · 2 · yellow · sealed boxes only"
+        }
+      ]
+    }
   ]
-}
-</script>
+}</script>
 <div id="dlg-wrap"><div id="dlg"><div id="dlg-t"></div><div id="dlg-p"></div><div id="dlg-f"></div><div id="dlg-b"></div></div></div>
 <div class="toast" id="toast"></div>
 <script>
-﻿/* 181 Fremont admin. Talks to /api/* (Cloudflare Pages Functions, or dev_server.py locally).
+/* 181 Fremont admin. Talks to /api/* (Cloudflare Pages Functions, or dev_server.py locally).
    Staff only, so JavaScript is fine here. The resident site stays script-free. */
 (function () {
   "use strict";
@@ -3584,7 +4037,7 @@
   // only button that sends email. Mirrors functions/api/inventory.
   let inv = { areas: [], items: [], counts: [], recipients: null };
   let invCount = null;                       // the open count: {count, lines, notes}
-  let invPending = { lines: {}, notes: {} }, invTimer = null, invSaving = false;
+  let invPending = { lines: {}, notes: {}, labels: {} }, invTimer = null, invSaving = false;
   let invScope = new Set();                  // the starter's picked areas; empty = everything
   let invEditItem = null, invAddTo = null;
   let meEmail = "";
@@ -3684,7 +4137,7 @@
   async function invOpen(id) {
     try { invCount = await api("/api/inventory/counts/" + id); } catch (e) { toast(e.message, "warn"); return; }
     inv.areas = invCount.areas; inv.items = invCount.items;
-    invPending = { lines: {}, notes: {} };
+    invPending = { lines: {}, notes: {}, labels: {} };
     renderInvCount();
     go("invcount");
   }
@@ -3718,8 +4171,8 @@
     const box = $("#ic-areas");
     box.innerHTML = st.per.map(({ a, its, done }) => `<div class="invarea${done === its.length && its.length ? " closed" : ""}" id="invarea-${a.id}">
       <div class="ahead" data-inv="fold|${a.id}"><span class="chev">&#9660;</span><span class="an">${esc(a.name)}${a.floor ? ` <span class="hint" style="margin:0">floor ${esc(a.floor)}</span>` : ""}</span><span class="ac${done === its.length && its.length ? " ok" : ""}" id="invac-${a.id}">${done === its.length && its.length ? `all ${its.length} counted` : `${done} of ${its.length} counted`}</span></div>
-      <div class="abody">${its.map(it => { const v = st.q[it.id]; return `<div class="invrow${invLow(it, v) ? " low" : ""}" id="invrow-${it.id}">
-          <div class="nm">${esc(it.name)}${it.hint ? `<small>${esc(it.hint)}</small>` : ""}</div>
+      <div class="abody">${its.map(it => { const v = st.q[it.id]; const lab = (invPending.labels[it.id] !== undefined ? invPending.labels[it.id] : (invCount.lines.find(x => x.item_id === it.id) || {}).label) || ""; return `<div class="invrow${invLow(it, v) ? " low" : ""}" id="invrow-${it.id}">
+          <div class="nm">${esc(it.name)}${it.hint ? `<small>${esc(it.hint)}</small>` : ""}${it.variant ? `<input class="invlab" data-invlabel="${it.id}" value="${esc(lab)}" placeholder="Which one, e.g. the flavor" autocapitalize="words">` : ""}</div>
           <div class="par">minimum<b>${esc(invMin(it)) || "none"}</b></div>
           <input inputmode="decimal" placeholder="&ndash;" data-invline="${it.id}" value="${v == null ? "" : esc(invQty(v) === "½" ? "0.5" : invQty(v))}">
           <div class="flag">At or under the minimum. The reorder line, not an emergency.</div></div>`; }).join("") || '<div class="nodata" style="padding:12px 16px">No items in this area.</div>'}
@@ -3747,8 +4200,9 @@
     const body = {};
     if (Object.keys(invPending.lines).length) body.lines = invPending.lines;
     if (Object.keys(invPending.notes).length) body.notes = invPending.notes;
-    if (!body.lines && !body.notes) return;
-    invSaving = true; invPending = { lines: {}, notes: {} };
+    if (Object.keys(invPending.labels).length) body.labels = invPending.labels;
+    if (!body.lines && !body.notes && !body.labels) return;
+    invSaving = true; invPending = { lines: {}, notes: {}, labels: {} };
     try {
       await api("/api/inventory/counts/" + invCount.count.id, { method: "PATCH", body: JSON.stringify(body) });
       // fold the saved values into the loaded record so a re-render reads true
@@ -3760,15 +4214,20 @@
         const n = invCount.notes.find(x => String(x.area_id) === k);
         if (n) n.body = v; else invCount.notes.push({ count_id: invCount.count.id, area_id: Number(k), body: v });
       }
+      for (const [k, v] of Object.entries(body.labels || {})) {
+        const l = invCount.lines.find(x => String(x.item_id) === k);
+        if (l) l.label = v; else invCount.lines.push({ count_id: invCount.count.id, item_id: Number(k), qty: null, label: v, who: meEmail });
+      }
       const s = $("#ic-saved"); if (s) s.textContent = "saved";
     } catch (e) {
       // put it back for the next try; the walk goes on
       for (const [k, v] of Object.entries(body.lines || {})) if (!(k in invPending.lines)) invPending.lines[k] = v;
       for (const [k, v] of Object.entries(body.notes || {})) if (!(k in invPending.notes)) invPending.notes[k] = v;
+      for (const [k, v] of Object.entries(body.labels || {})) if (!(k in invPending.labels)) invPending.labels[k] = v;
       const s = $("#ic-saved"); if (s) s.textContent = "not saved yet, retrying";
       toast(e.message, "warn"); invTimer = setTimeout(invFlush, 4000);
     } finally { invSaving = false; }
-    if (Object.keys(invPending.lines).length || Object.keys(invPending.notes).length) invQueue();
+    if (Object.keys(invPending.lines).length || Object.keys(invPending.notes).length || Object.keys(invPending.labels).length) invQueue();
   }
 
   async function invHandoff() {
@@ -3818,6 +4277,7 @@
       <label>Area${areaSel(it ? it.area_id : aid)}</label>
       <label>Ordered by${sel}</label>
       <label style="flex:1;min-width:200px">Small line under the name, optional<input class="inp" data-invf="hint" value="${esc(it ? it.hint || "" : "")}" placeholder="Sealed boxes only"></label>
+      <label class="check" style="flex-direction:row;align-items:center;gap:6px;text-transform:none;letter-spacing:0;font-weight:400;font-size:13px;color:var(--ink)"><input type="checkbox" data-invf="variant"${it && it.variant ? " checked" : ""}> Ask which one beside the count (a flavor, a size)</label>
       <span class="edacts">
         <button class="mini" data-inv="item-save|${it ? it.id : "new"}">Save</button>
         <button class="mini ghost" data-inv="item-cancel|">Cancel</button>
@@ -3830,7 +4290,7 @@
       html += `<div class="invgroup"><div class="ghead"><span class="gn">${esc(a.name)}</span><span class="hint" style="margin:0">${a.floor ? `floor ${esc(a.floor)} &middot; ` : ""}${its.length} item${its.length === 1 ? "" : "s"}</span>
         ${staff ? `<span class="eact staffonly"><button class="mini ghost" data-inv="item-add|${a.id}">Add an item</button><button class="mini ghost" data-inv="area-rename|${a.id}">Rename</button><button class="mini ghost" data-inv="area-move|${a.id}|-1" title="Earlier in the walk"${i === 0 ? " disabled" : ""}>&uarr;</button><button class="mini ghost" data-inv="area-move|${a.id}|1" title="Later in the walk"${i === areas.length - 1 ? " disabled" : ""}>&darr;</button>${its.length ? "" : `<button class="mini ghost" style="color:var(--red)" data-inv="area-retire|${a.id}">Remove area</button>`}</span>` : ""}</div>`;
       if (invAddTo === a.id) html += editor(null, a.id);
-      html += its.map(it => invEditItem === it.id ? editor(it) : `<div class="invitem"><span class="in">${esc(it.name)}${it.hint ? `<small>${esc(it.hint)}</small>` : ""}</span><span class="im">${esc(invMin(it)) || '<span class="hint" style="margin:0">no minimum</span>'}</span><span class="io hint" style="margin:0">${esc(it.orderer || "")}</span>${staff ? `<span class="eact staffonly"><button class="mini ghost" data-inv="item-edit|${it.id}">Edit</button></span>` : "<span></span>"}</div>`).join("")
+      html += its.map(it => invEditItem === it.id ? editor(it) : `<div class="invitem"><span class="in">${esc(it.name)}${it.variant ? ' <span class="hint" style="margin:0">&middot; asks which one</span>' : ""}${it.hint ? `<small>${esc(it.hint)}</small>` : ""}</span><span class="im">${esc(invMin(it)) || '<span class="hint" style="margin:0">no minimum</span>'}</span><span class="io hint" style="margin:0">${esc(it.orderer || "")}</span>${staff ? `<span class="eact staffonly"><button class="mini ghost" data-inv="item-edit|${it.id}">Edit</button></span>` : "<span></span>"}</div>`).join("")
         || (invAddTo === a.id ? "" : '<div class="nodata" style="padding:10px 16px">Nothing here yet.</div>');
       html += `</div>`;
     });
@@ -3851,7 +4311,8 @@
 
   function invReadEditor(ed) {
     const v = k => { const el = $(`[data-invf=${k}]`, ed); return el ? el.value.trim() : ""; };
-    return { name: v("name"), minimum: v("minimum") === "" ? null : Number(v("minimum").replace(",", ".")), unit: v("unit"), orderer: v("orderer"), hint: v("hint"), area_id: Number(v("area_id")) };
+    const cb = $("[data-invf=variant]", ed);
+    return { name: v("name"), minimum: v("minimum") === "" ? null : Number(v("minimum").replace(",", ".")), unit: v("unit"), orderer: v("orderer"), hint: v("hint"), area_id: Number(v("area_id")), variant: !!(cb && cb.checked) };
   }
 
   async function invItemSave(id, ed) {
@@ -3987,6 +4448,10 @@
     } else if (t.dataset.invnote !== undefined) {
       if (!invCount) return;
       invPending.notes[t.dataset.invnote] = t.value;
+      invQueue();
+    } else if (t.dataset.invlabel !== undefined) {
+      if (!invCount) return;
+      invPending.labels[t.dataset.invlabel] = t.value;
       invQueue();
     }
   });

@@ -78,8 +78,9 @@ export function buildReport(count, areas, items, lines, notes, scopeIds) {
       const l = qtyOf[it.id]; const qty = l && l.qty != null ? l.qty : null;
       if (qty != null) { counted++; if (l.who) counters.add(l.who); }
       const lowRow = isLow(it, qty);
-      if (lowRow) low.push({ it, a, qty });
-      rows.push({ it, qty, low: lowRow });
+      const shown = l && l.label ? { ...it, name: `${it.name} (${l.label})` } : it;
+      if (lowRow) low.push({ it: shown, a, qty });
+      rows.push({ it: shown, qty, low: lowRow });
     }
     rowsByArea.push({ a, rows, note: noteOf[a.id] && noteOf[a.id].body ? noteOf[a.id].body : "" });
   }
@@ -274,9 +275,9 @@ export async function onRequest(context) {
       let ii = 0;
       for (const it of (Array.isArray(a.items) ? a.items : []).slice(0, 200)) {
         const iname = String(it.name || "").trim().slice(0, 120); if (!iname) continue;
-        await env.DB.prepare("INSERT INTO inv_items (area_id, name, minimum, unit, orderer, hint, ord, active, created, updated_by) VALUES (?,?,?,?,?,?,?,1,?,?)")
+        await env.DB.prepare("INSERT INTO inv_items (area_id, name, minimum, unit, orderer, hint, variant, ord, active, created, updated_by) VALUES (?,?,?,?,?,?,?,?,1,?,?)")
           .bind(row.id, iname, num(it.minimum), String(it.unit || "").trim().slice(0, 40) || null,
-            String(it.orderer || a.orderer || "").trim().slice(0, 60) || null, String(it.hint || "").trim().slice(0, 160) || null, ii++, now(), by).run();
+            String(it.orderer || a.orderer || "").trim().slice(0, 60) || null, String(it.hint || "").trim().slice(0, 160) || null, it.variant ? 1 : 0, ii++, now(), by).run();
         n++;
       }
     }
@@ -320,6 +321,7 @@ export async function onRequest(context) {
       unit: "unit" in b ? (String(b.unit || "").trim().slice(0, 40) || null) : undefined,
       orderer: "orderer" in b ? (String(b.orderer || "").trim().slice(0, 60) || null) : undefined,
       hint: "hint" in b ? (String(b.hint || "").trim().slice(0, 160) || null) : undefined,
+      variant: "variant" in b ? (b.variant ? 1 : 0) : undefined,
     });
     if (parts.length === 1 && m === "POST") {
       const b = await request.json(); const c = clean(b);
@@ -327,8 +329,8 @@ export async function onRequest(context) {
       if (!c.name) return json({ error: "Give the item a name." }, 400);
       if (!Number.isInteger(area) || !(await env.DB.prepare("SELECT id FROM inv_areas WHERE id=?").bind(area).first())) return json({ error: "Pick an area." }, 400);
       const top = await env.DB.prepare("SELECT COALESCE(MAX(ord),-1)+1 AS o FROM inv_items WHERE area_id=?").bind(area).first();
-      const row = await env.DB.prepare("INSERT INTO inv_items (area_id, name, minimum, unit, orderer, hint, ord, active, created, updated, updated_by) VALUES (?,?,?,?,?,?,?,1,?,?,?) RETURNING *")
-        .bind(area, c.name, c.minimum == null ? null : c.minimum, c.unit || null, c.orderer || null, c.hint || null, top.o, now(), now(), by).first();
+      const row = await env.DB.prepare("INSERT INTO inv_items (area_id, name, minimum, unit, orderer, hint, variant, ord, active, created, updated, updated_by) VALUES (?,?,?,?,?,?,?,?,1,?,?,?) RETURNING *")
+        .bind(area, c.name, c.minimum == null ? null : c.minimum, c.unit || null, c.orderer || null, c.hint || null, c.variant || 0, top.o, now(), now(), by).first();
       return json({ item: row }, 201);
     }
     if (parts.length === 2 && m === "PATCH") {
@@ -336,7 +338,7 @@ export async function onRequest(context) {
       const b = await request.json(); const c = clean(b);
       const sets = [], vals = [];
       if (c.name !== undefined) { if (!c.name) return json({ error: "Give the item a name." }, 400); sets.push("name=?"); vals.push(c.name); }
-      for (const k of ["minimum", "unit", "orderer", "hint"]) if (c[k] !== undefined) { sets.push(`${k}=?`); vals.push(c[k]); }
+      for (const k of ["minimum", "unit", "orderer", "hint", "variant"]) if (c[k] !== undefined) { sets.push(`${k}=?`); vals.push(c[k]); }
       if ("area_id" in b) {
         const area = Number(b.area_id);
         if (!Number.isInteger(area) || !(await env.DB.prepare("SELECT id FROM inv_areas WHERE id=?").bind(area).first())) return json({ error: "Pick an area." }, 400);
@@ -390,7 +392,7 @@ export async function onRequest(context) {
         for (const a of areas.filter(x => x.active && (!scope.length || scope.includes(x.id))).sort((x, y) => x.ord - y.ord)) {
           for (const it of items.filter(i => i.active && i.area_id === a.id).sort((x, y) => x.ord - y.ord)) {
             const l = q[it.id] || {};
-            out.push([a.name, a.floor || "", it.name, it.minimum == null ? "" : it.minimum, it.unit || "", l.qty == null ? "" : l.qty,
+            out.push([a.name, a.floor || "", it.name + (l.label ? ` (${l.label})` : ""), it.minimum == null ? "" : it.minimum, it.unit || "", l.qty == null ? "" : l.qty,
               isLow(it, l.qty == null ? null : l.qty) ? "yes" : "", it.orderer || "", l.who ? nameOf(l.who) : "", l.at || ""]);
           }
         }
@@ -449,6 +451,15 @@ export async function onRequest(context) {
             `INSERT INTO inv_lines (count_id, item_id, qty, who, at) VALUES (?,?,?,?,?)
              ON CONFLICT(count_id, item_id) DO UPDATE SET qty=excluded.qty, who=excluded.who, at=excluded.at`)
             .bind(id, item, qty, by, now()));
+        }
+      }
+      if (b.labels && typeof b.labels === "object") {
+        for (const [k, v] of Object.entries(b.labels).slice(0, 200)) {
+          const item = Number(k); if (!Number.isInteger(item)) continue;
+          writes.push(env.DB.prepare(
+            `INSERT INTO inv_lines (count_id, item_id, qty, label, who, at) VALUES (?,?,NULL,?,?,?)
+             ON CONFLICT(count_id, item_id) DO UPDATE SET label=excluded.label, who=excluded.who, at=excluded.at`)
+            .bind(id, item, String(v || "").trim().slice(0, 60) || null, by, now()));
         }
       }
       if (b.notes && typeof b.notes === "object") {

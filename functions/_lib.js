@@ -392,6 +392,10 @@ export async function ensureResidentTables(env) {
   for (const col of ["deleted_at TEXT", "deleted_by TEXT", "restored_at TEXT", "restored_by TEXT"]) {
     try { await env.DB.prepare(`ALTER TABLE notes ADD COLUMN ${col}`).run(); } catch (e) {}
   }
+  // Inventory: an item may ask for a word beside its count (which flavor of
+  // the David bars); the word rides the line as label.
+  try { await env.DB.prepare("ALTER TABLE inv_items ADD COLUMN variant INTEGER DEFAULT 0").run(); } catch (e) {}
+  try { await env.DB.prepare("ALTER TABLE inv_lines ADD COLUMN label TEXT").run(); } catch (e) {}
   tablesEnsured = true;
 }
 

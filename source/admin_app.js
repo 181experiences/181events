@@ -1,4 +1,4 @@
-﻿/* 181 Fremont admin. Talks to /api/* (Cloudflare Pages Functions, or dev_server.py locally).
+/* 181 Fremont admin. Talks to /api/* (Cloudflare Pages Functions, or dev_server.py locally).
    Staff only, so JavaScript is fine here. The resident site stays script-free. */
 (function () {
   "use strict";
@@ -1927,7 +1927,7 @@
   // only button that sends email. Mirrors functions/api/inventory.
   let inv = { areas: [], items: [], counts: [], recipients: null };
   let invCount = null;                       // the open count: {count, lines, notes}
-  let invPending = { lines: {}, notes: {} }, invTimer = null, invSaving = false;
+  let invPending = { lines: {}, notes: {}, labels: {} }, invTimer = null, invSaving = false;
   let invScope = new Set();                  // the starter's picked areas; empty = everything
   let invEditItem = null, invAddTo = null;
   let meEmail = "";
@@ -2027,7 +2027,7 @@
   async function invOpen(id) {
     try { invCount = await api("/api/inventory/counts/" + id); } catch (e) { toast(e.message, "warn"); return; }
     inv.areas = invCount.areas; inv.items = invCount.items;
-    invPending = { lines: {}, notes: {} };
+    invPending = { lines: {}, notes: {}, labels: {} };
     renderInvCount();
     go("invcount");
   }
@@ -2061,8 +2061,8 @@
     const box = $("#ic-areas");
     box.innerHTML = st.per.map(({ a, its, done }) => `<div class="invarea${done === its.length && its.length ? " closed" : ""}" id="invarea-${a.id}">
       <div class="ahead" data-inv="fold|${a.id}"><span class="chev">&#9660;</span><span class="an">${esc(a.name)}${a.floor ? ` <span class="hint" style="margin:0">floor ${esc(a.floor)}</span>` : ""}</span><span class="ac${done === its.length && its.length ? " ok" : ""}" id="invac-${a.id}">${done === its.length && its.length ? `all ${its.length} counted` : `${done} of ${its.length} counted`}</span></div>
-      <div class="abody">${its.map(it => { const v = st.q[it.id]; return `<div class="invrow${invLow(it, v) ? " low" : ""}" id="invrow-${it.id}">
-          <div class="nm">${esc(it.name)}${it.hint ? `<small>${esc(it.hint)}</small>` : ""}</div>
+      <div class="abody">${its.map(it => { const v = st.q[it.id]; const lab = (invPending.labels[it.id] !== undefined ? invPending.labels[it.id] : (invCount.lines.find(x => x.item_id === it.id) || {}).label) || ""; return `<div class="invrow${invLow(it, v) ? " low" : ""}" id="invrow-${it.id}">
+          <div class="nm">${esc(it.name)}${it.hint ? `<small>${esc(it.hint)}</small>` : ""}${it.variant ? `<input class="invlab" data-invlabel="${it.id}" value="${esc(lab)}" placeholder="Which one, e.g. the flavor" autocapitalize="words">` : ""}</div>
           <div class="par">minimum<b>${esc(invMin(it)) || "none"}</b></div>
           <input inputmode="decimal" placeholder="&ndash;" data-invline="${it.id}" value="${v == null ? "" : esc(invQty(v) === "½" ? "0.5" : invQty(v))}">
           <div class="flag">At or under the minimum. The reorder line, not an emergency.</div></div>`; }).join("") || '<div class="nodata" style="padding:12px 16px">No items in this area.</div>'}
@@ -2090,8 +2090,9 @@
     const body = {};
     if (Object.keys(invPending.lines).length) body.lines = invPending.lines;
     if (Object.keys(invPending.notes).length) body.notes = invPending.notes;
-    if (!body.lines && !body.notes) return;
-    invSaving = true; invPending = { lines: {}, notes: {} };
+    if (Object.keys(invPending.labels).length) body.labels = invPending.labels;
+    if (!body.lines && !body.notes && !body.labels) return;
+    invSaving = true; invPending = { lines: {}, notes: {}, labels: {} };
     try {
       await api("/api/inventory/counts/" + invCount.count.id, { method: "PATCH", body: JSON.stringify(body) });
       // fold the saved values into the loaded record so a re-render reads true
@@ -2103,15 +2104,20 @@
         const n = invCount.notes.find(x => String(x.area_id) === k);
         if (n) n.body = v; else invCount.notes.push({ count_id: invCount.count.id, area_id: Number(k), body: v });
       }
+      for (const [k, v] of Object.entries(body.labels || {})) {
+        const l = invCount.lines.find(x => String(x.item_id) === k);
+        if (l) l.label = v; else invCount.lines.push({ count_id: invCount.count.id, item_id: Number(k), qty: null, label: v, who: meEmail });
+      }
       const s = $("#ic-saved"); if (s) s.textContent = "saved";
     } catch (e) {
       // put it back for the next try; the walk goes on
       for (const [k, v] of Object.entries(body.lines || {})) if (!(k in invPending.lines)) invPending.lines[k] = v;
       for (const [k, v] of Object.entries(body.notes || {})) if (!(k in invPending.notes)) invPending.notes[k] = v;
+      for (const [k, v] of Object.entries(body.labels || {})) if (!(k in invPending.labels)) invPending.labels[k] = v;
       const s = $("#ic-saved"); if (s) s.textContent = "not saved yet, retrying";
       toast(e.message, "warn"); invTimer = setTimeout(invFlush, 4000);
     } finally { invSaving = false; }
-    if (Object.keys(invPending.lines).length || Object.keys(invPending.notes).length) invQueue();
+    if (Object.keys(invPending.lines).length || Object.keys(invPending.notes).length || Object.keys(invPending.labels).length) invQueue();
   }
 
   async function invHandoff() {
@@ -2161,6 +2167,7 @@
       <label>Area${areaSel(it ? it.area_id : aid)}</label>
       <label>Ordered by${sel}</label>
       <label style="flex:1;min-width:200px">Small line under the name, optional<input class="inp" data-invf="hint" value="${esc(it ? it.hint || "" : "")}" placeholder="Sealed boxes only"></label>
+      <label class="check" style="flex-direction:row;align-items:center;gap:6px;text-transform:none;letter-spacing:0;font-weight:400;font-size:13px;color:var(--ink)"><input type="checkbox" data-invf="variant"${it && it.variant ? " checked" : ""}> Ask which one beside the count (a flavor, a size)</label>
       <span class="edacts">
         <button class="mini" data-inv="item-save|${it ? it.id : "new"}">Save</button>
         <button class="mini ghost" data-inv="item-cancel|">Cancel</button>
@@ -2173,7 +2180,7 @@
       html += `<div class="invgroup"><div class="ghead"><span class="gn">${esc(a.name)}</span><span class="hint" style="margin:0">${a.floor ? `floor ${esc(a.floor)} &middot; ` : ""}${its.length} item${its.length === 1 ? "" : "s"}</span>
         ${staff ? `<span class="eact staffonly"><button class="mini ghost" data-inv="item-add|${a.id}">Add an item</button><button class="mini ghost" data-inv="area-rename|${a.id}">Rename</button><button class="mini ghost" data-inv="area-move|${a.id}|-1" title="Earlier in the walk"${i === 0 ? " disabled" : ""}>&uarr;</button><button class="mini ghost" data-inv="area-move|${a.id}|1" title="Later in the walk"${i === areas.length - 1 ? " disabled" : ""}>&darr;</button>${its.length ? "" : `<button class="mini ghost" style="color:var(--red)" data-inv="area-retire|${a.id}">Remove area</button>`}</span>` : ""}</div>`;
       if (invAddTo === a.id) html += editor(null, a.id);
-      html += its.map(it => invEditItem === it.id ? editor(it) : `<div class="invitem"><span class="in">${esc(it.name)}${it.hint ? `<small>${esc(it.hint)}</small>` : ""}</span><span class="im">${esc(invMin(it)) || '<span class="hint" style="margin:0">no minimum</span>'}</span><span class="io hint" style="margin:0">${esc(it.orderer || "")}</span>${staff ? `<span class="eact staffonly"><button class="mini ghost" data-inv="item-edit|${it.id}">Edit</button></span>` : "<span></span>"}</div>`).join("")
+      html += its.map(it => invEditItem === it.id ? editor(it) : `<div class="invitem"><span class="in">${esc(it.name)}${it.variant ? ' <span class="hint" style="margin:0">&middot; asks which one</span>' : ""}${it.hint ? `<small>${esc(it.hint)}</small>` : ""}</span><span class="im">${esc(invMin(it)) || '<span class="hint" style="margin:0">no minimum</span>'}</span><span class="io hint" style="margin:0">${esc(it.orderer || "")}</span>${staff ? `<span class="eact staffonly"><button class="mini ghost" data-inv="item-edit|${it.id}">Edit</button></span>` : "<span></span>"}</div>`).join("")
         || (invAddTo === a.id ? "" : '<div class="nodata" style="padding:10px 16px">Nothing here yet.</div>');
       html += `</div>`;
     });
@@ -2194,7 +2201,8 @@
 
   function invReadEditor(ed) {
     const v = k => { const el = $(`[data-invf=${k}]`, ed); return el ? el.value.trim() : ""; };
-    return { name: v("name"), minimum: v("minimum") === "" ? null : Number(v("minimum").replace(",", ".")), unit: v("unit"), orderer: v("orderer"), hint: v("hint"), area_id: Number(v("area_id")) };
+    const cb = $("[data-invf=variant]", ed);
+    return { name: v("name"), minimum: v("minimum") === "" ? null : Number(v("minimum").replace(",", ".")), unit: v("unit"), orderer: v("orderer"), hint: v("hint"), area_id: Number(v("area_id")), variant: !!(cb && cb.checked) };
   }
 
   async function invItemSave(id, ed) {
@@ -2330,6 +2338,10 @@
     } else if (t.dataset.invnote !== undefined) {
       if (!invCount) return;
       invPending.notes[t.dataset.invnote] = t.value;
+      invQueue();
+    } else if (t.dataset.invlabel !== undefined) {
+      if (!invCount) return;
+      invPending.labels[t.dataset.invlabel] = t.value;
       invQueue();
     }
   });

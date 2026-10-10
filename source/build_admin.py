@@ -405,7 +405,8 @@ HTML = f'''<!DOCTYPE html>
   .invrow input{{width:100%;min-height:44px;border:1px solid var(--line);border-radius:var(--radius);padding:8px 10px;
     font-family:var(--fb);font-size:17px;text-align:center;background:#fff;color:var(--ink)}}
   .invrow input:focus{{outline:2px solid var(--ink);outline-offset:-1px}}
-  .invrow.low input{{border-color:var(--red);background:#fff4f3;color:var(--red);font-weight:700}}
+  .invrow.low input:not(.invlab){{border-color:var(--red);background:#fff4f3;color:var(--red);font-weight:700}}
+  .invrow input.invlab{{min-height:36px;font-size:13.5px;text-align:left;margin-top:5px;padding:6px 9px;font-weight:400;color:var(--ink);background:#fff;border-color:var(--line)}}
   .invrow .flag{{grid-column:1 / -1;font-size:12px;color:var(--red);font-weight:600;margin-top:-4px;display:none}}
   .invrow.low .flag{{display:block}}
   .invarea .anote{{padding:10px 16px 14px;border-top:1px solid var(--line-2)}}
