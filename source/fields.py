@@ -46,7 +46,7 @@ def to_record(e):
         "Party": e.get("party") or "", "Partner": e.get("partner") or "", "Address": e.get("address") or "",
     }
 
-def from_record(f, month_keys):
+def from_record(f, month_key):
     """Stored field shape -> the event shape build_proto.py expects (id added by caller)."""
     from datetime import date
     d = date.fromisoformat(f["Date"])
@@ -55,7 +55,7 @@ def from_record(f, month_keys):
     raw = (f.get("Description") or "").replace("\r", "")
     desc = [markup(p.strip()).replace("\n", "<br>") for p in raw.split("\n\n") if p.strip()]
     return dict(
-        on=d, m=month_keys[d.month], d=d.day, slug=f["Slug"], title=markup(f["Title"]),
+        on=d, m=month_key(d), d=d.day, slug=f["Slug"], title=markup(f["Title"]),
         cat=f["Category"], t24=f.get("Start24") or "0000", time=f.get("Start", ""), end=f.get("End", ""),
         loc=markup(f.get("Location") or "Level 39, Residents’ Club"),
         host=f.get("Host") or "Resident Experiences", rsvp=RSVP_KEYS.get(f.get("RSVP") or "None"),

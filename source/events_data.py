@@ -4,19 +4,43 @@
 Months are NOT hand-built. A month is just a window onto the event table:
 recurring series generate their own occurrences across the range below, one-offs
 are listed explicitly, and any month in range renders whatever falls inside it.
-Extending the calendar = moving RANGE_END."""
+The range ROLLS: it starts at the current month (Pacific) and runs twelve months
+out, so every rebuild carries the calendar, its month keys and the home header
+forward by itself. The horizon dial in the admin trims how much of it shows."""
 
 import calendar
 from datetime import date, timedelta
 
 # ---- the window the calendar covers -----------------------------------------
-RANGE_START = date(2026, 8, 21)
-RANGE_END   = date(2026, 12, 31)
+# Today where the building is; the build's own TODAY (build_proto) is derived
+# the same way, so the two never disagree about which month it is.
+def _today_pacific():
+    from datetime import datetime
+    try:
+        from zoneinfo import ZoneInfo
+        return datetime.now(ZoneInfo("America/Los_Angeles")).date()
+    except Exception:
+        return datetime.utcnow().date()
+
+def _add_months(y, m, n):
+    m += n
+    while m > 12:
+        m -= 12; y += 1
+    return y, m
+
+_T = _today_pacific()
+RANGE_START = date(_T.year, _T.month, 1)
+_ey, _em = _add_months(_T.year, _T.month, 12)
+RANGE_END   = date(_ey, _em, calendar.monthrange(_ey, _em)[1])
 
 DOW   = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"]
 DOW_S = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"]
-MONTH_KEYS  = {8: "aug", 9: "sep", 10: "oct", 11: "nov", 12: "dec"}
-MONTH_SHORT = {8: "Aug", 9: "Sept", 10: "Oct", 11: "Nov", 12: "Dec"}
+# A month's key carries its year ("2026-10"), so a range that holds the same
+# month twice (this October and next) never collides in the calendar's ids.
+def month_key(d):
+    return f"{d.year}-{d.month:02d}"
+MONTH_SHORT = {1: "Jan", 2: "Feb", 3: "Mar", 4: "Apr", 5: "May", 6: "June", 7: "July", 8: "Aug",
+               9: "Sept", 10: "Oct", 11: "Nov", 12: "Dec"}
 
 def _sun_index(d):
     return d.isoweekday() % 7
@@ -25,7 +49,7 @@ def _months_in_range():
     out, y, m = [], RANGE_START.year, RANGE_START.month
     while (y, m) <= (RANGE_END.year, RANGE_END.month):
         first = date(y, m, 1)
-        out.append(dict(key=MONTH_KEYS[m], name=f"{calendar.month_name[m]} {y}", num=m, yr=y,
+        out.append(dict(key=month_key(first), name=f"{calendar.month_name[m]} {y}", num=m, yr=y,
                         first_dow=_sun_index(first), days=calendar.monthrange(y, m)[1]))
         m = 1 if m == 12 else m + 1
         y = y + 1 if m == 1 else y
@@ -244,7 +268,7 @@ for s in SERIES:
         if ov.get("note"):
             desc = [ov["note"]] + desc
         EVENTS.append(_base(
-            id=_id, m=MONTH_KEYS[d.month], d=d.day, on=d, slug=s["slug"], title=s["title"],
+            id=_id, m=month_key(d), d=d.day, on=d, slug=s["slug"], title=s["title"],
             cat=s["cat"], t24=s["t24"], time=s["time"], end=s["end"], rsvp=s["rsvp"],
             cap=s["cap"], price=s["price"], series=s["label"], desc=desc, img=s["img"],
             host=s.get("host", "Resident Experiences"), counted=s.get("counted", True),
@@ -253,7 +277,7 @@ for s in SERIES:
 for o in ONE_OFFS:
     o = dict(o)
     d = o.pop("on")
-    EVENTS.append(_base(id=_id, m=MONTH_KEYS[d.month], d=d.day, on=d, **o))
+    EVENTS.append(_base(id=_id, m=month_key(d), d=d.day, on=d, **o))
     _id += 1
 
 EVENTS.sort(key=lambda e: (e["on"], e["t24"]))
@@ -268,18 +292,16 @@ if _os.path.exists(_live) and not _os.environ.get("EVENTS_FROM_CODE"):
     from fields import from_record as _from_record
     _rows = _json.load(open(_live, encoding="utf-8"))
     def _in_range(f):
-        # Out-of-range rows step aside BEFORE the month mapping, which can only
-        # speak for months the calendar covers: a Live event dated past
-        # RANGE_END (next season, published ahead of the range moving) must
-        # wait its turn quietly, never take every build down with it
-        # (KeyError on a January date, Oct 6 2026). An unreadable date waits
-        # the same way.
+        # Out-of-range rows step aside before anything else: a Live event dated
+        # more than a year out waits its turn quietly, never taking a build
+        # down with it (the January KeyError of Oct 6 2026). An unreadable date
+        # waits the same way.
         try:
             d = date.fromisoformat(str(f.get("Date") or ""))
         except ValueError:
             return False
         return RANGE_START <= d <= RANGE_END
-    EVENTS = [_base(**_from_record(f, MONTH_KEYS))
+    EVENTS = [_base(**_from_record(f, month_key))
               for f in _rows if (f.get("Status") or "Draft") == "Live" and _in_range(f)]
     EVENTS.sort(key=lambda e: (e["on"], e["t24"]))
     for _i, e in enumerate(EVENTS, 1): e["id"] = _i
