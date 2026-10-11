@@ -59,6 +59,55 @@ def hero_img(e):
             return f"url('/hero/{stem_}')"
     return None
 
+# One subscribe box, three homes: the calendar's foot, My RSVPs, and the Board.
+# The first line ends at its colon; the rest of the explanation waits behind
+# an i (a details fold, no script). iPhone and iPad get the tap link, Google
+# Calendar and Outlook get the address with a Copy button beside it.
+COPY_ICON = ('<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" '
+             'stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="12" height="12" rx="2"/>'
+             '<path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>')
+
+def subscribe_box(title, lead, blurb, webcal, url, note=None, style=""):
+    note_i = (f'<details class="ihelp"><summary aria-label="A word about this address">i</summary>'
+              f'<div class="ipop">{note}</div></details>') if note else ""
+    return (f'<div class="guestbox subbox"{" style=" + chr(34) + style + chr(34) if style else ""}>'
+            f'<div class="gq">{title}<details class="ihelp"><summary aria-label="How this works">i</summary>'
+            f'<div class="ipop">{blurb}</div></details></div>'
+            f'<div class="gh">{lead}</div>'
+            f'<div class="subrow"><div class="sublab">iPhone or iPad</div>'
+            f'<a class="rlink" href="{webcal}">Tap here to subscribe</a></div>'
+            f'<div class="subrow"><div class="sublab">Google Calendar or Outlook{note_i}</div>'
+            f'<div class="urlline"><span class="url">{url}</span>'
+            f'<button type="button" class="copybtn" data-copy aria-label="Copy this address">{COPY_ICON}Copy</button></div></div>'
+            f'</div>')
+
+SUB_CAL = subscribe_box(
+    "Keep the whole calendar in your pocket",
+    "Subscribe once, and every event lives in your own calendar and keeps itself current:",
+    "New dates appear, changes follow along, and anything cancelled slips away on its own. "
+    "Subscribing is different from Add to My Calendar on one event: a subscription keeps following the whole calendar.",
+    "webcal://181residents.com/calendar/feed", "https://181residents.com/calendar/feed", style="margin:14px 0 70px")
+SUB_MY = subscribe_box(
+    "Your RSVPs, living in your own calendar",
+    "Subscribe once, and this page follows you:",
+    "Every event you say yes to appears in your calendar by itself, moves when a date moves, and slips away if it is cancelled.",
+    "{{FEEDWEBCAL}}", "{{FEEDURL}}",
+    note="This address is yours alone, so keep it to yourself; anyone holding it sees your RSVPs.")
+SUB_BOARD = subscribe_box(
+    "Keep these in your calendar on their own",
+    "Add the Board calendar once, and every change reaches you by itself:",
+    "A cancelled meeting leaves your calendar without anyone sending a notice; a moved one moves.",
+    "webcal://181residents.com/board/feed", "https://181residents.com/board/feed")
+
+# Shows the Copy button only where scripting runs; without it the address is
+# plain text to select, exactly as before. The resident site's one script.
+COPY_JS = ('<script>document.documentElement.className+=" js";document.addEventListener("click",function(e){'
+           'var b=e.target.closest("[data-copy]");if(!b)return;var u=b.parentNode.querySelector(".url");var t=u.textContent.trim();'
+           'function done(){b.lastChild.nodeValue="Copied";setTimeout(function(){b.lastChild.nodeValue="Copy"},2000)}'
+           'function fall(){var r=document.createRange();r.selectNodeContents(u);var s=getSelection();s.removeAllRanges();s.addRange(r);'
+           'b.lastChild.nodeValue="Selected"}'
+           'if(navigator.clipboard){navigator.clipboard.writeText(t).then(done,fall)}else{fall()}});</script>')
+
 DETAIL_END = TODAY + _td(days=WINDOW["detail_weeks"] * 7)
 _hy, _hm = TODAY.year, TODAY.month + WINDOW["horizon_months"]
 while _hm > 12:
@@ -766,6 +815,21 @@ HTML = f'''<!DOCTYPE html>
   .gq{{font-family:var(--fd);font-size:clamp(19px,4.8vw,24px);color:var(--ink);line-height:1.25}}
   .gh{{font-size:clamp(16px,4.2vw,17px);color:var(--ink-soft);margin-top:8px}}
   .gh .rlink{{min-height:0;margin:0}}   /* inline in a paragraph: the tap-target floor would stretch its line */
+  .subrow{{margin-top:16px}}
+  .sublab{{display:flex;align-items:center;gap:8px;font-size:13px;letter-spacing:.14em;text-transform:uppercase;color:var(--stone);font-weight:600;margin-bottom:4px}}
+  .subbox .urlline{{display:flex;align-items:center;gap:12px;margin-top:6px}}
+  .subbox .urlline .url{{flex:1;min-width:0}}
+  .copybtn{{display:none;align-items:center;gap:6px;flex:none;min-height:40px;padding:0 12px;border:1px solid var(--line);border-radius:var(--radius);
+    background:var(--paper-2);color:var(--red);font-family:var(--fb);font-size:13px;letter-spacing:.08em;text-transform:uppercase;font-weight:600;cursor:pointer}}
+  .js .copybtn{{display:inline-flex}}
+  .copybtn:hover{{border-color:var(--red)}}
+  .ihelp{{display:inline-block;margin-left:8px;vertical-align:2px}}
+  .ihelp summary{{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:50%;border:1px solid var(--stone);
+    color:var(--stone);font-family:Georgia,serif;font-size:13px;font-style:italic;text-transform:none;letter-spacing:0;cursor:pointer;list-style:none;vertical-align:middle}}
+  .ihelp summary::-webkit-details-marker{{display:none}}
+  .ihelp[open] summary{{background:var(--ink);border-color:var(--ink);color:var(--paper-2)}}
+  .ihelp .ipop{{display:block;font-family:var(--fb);font-size:16px;font-weight:400;font-style:normal;letter-spacing:0;text-transform:none;color:var(--ink-soft);
+    background:var(--paper);border-left:3px solid var(--red);padding:10px 14px;margin:10px 0 2px;line-height:1.5}}
   .glab{{font-size:13px;letter-spacing:.14em;text-transform:uppercase;color:var(--stone);font-weight:500;margin:20px 0 10px}}
   .gchips{{display:flex;gap:10px;flex-wrap:wrap}}
   .gchip{{min-width:62px;min-height:56px;display:flex;align-items:center;justify-content:center;
@@ -944,14 +1008,7 @@ HTML = f'''<!DOCTYPE html>
 
     <div class="listwrap"><div class="wrap">{LIST}<div style="height:24px"></div></div></div>
 
-    <div class="wrap"><div class="guestbox" style="margin:14px 0 70px">
-      <div class="gq">Keep the whole calendar in your pocket</div>
-      <div class="gh">Subscribe once, and every event lives in your own calendar and keeps itself current:
-      new dates appear, changes follow along, and anything cancelled slips away on its own. On an iPhone or iPad,
-      <a class="rlink" href="webcal://181residents.com/calendar/feed">tap here to subscribe</a>.
-      In Google Calendar or Outlook, add a calendar from this address:</div>
-      <div class="urlline">https://181residents.com/calendar/feed</div>
-    </div></div>
+    <div class="wrap">{SUB_CAL}</div>
   </section>
 
   <section class="screen" id="scr-msg">
@@ -1002,6 +1059,7 @@ HTML = f'''<!DOCTYPE html>
 </div>
 
 <footer>181 Fremont Residences &middot; Resident Experiences &middot; <a class="stafflink" href="/admin">Staff</a></footer>
+{COPY_JS}
 </body>
 </html>
 '''
@@ -1117,6 +1175,21 @@ SHELL_CSS = '''
   .gq,.statebox h2{font-family:var(--fd);font-size:clamp(19px,4.8vw,24px);color:var(--ink);line-height:1.25}
   .gh,.statebox p{font-size:clamp(16px,4.2vw,17px);color:var(--ink-soft);margin:8px 0 0}
   .gh .rlink{min-height:0;margin:0}
+  .subrow{margin-top:16px}
+  .sublab{display:flex;align-items:center;gap:8px;font-size:13px;letter-spacing:.14em;text-transform:uppercase;color:var(--stone);font-weight:600;margin-bottom:4px}
+  .subbox .urlline{display:flex;align-items:center;gap:12px;margin-top:6px}
+  .subbox .urlline .url{flex:1;min-width:0}
+  .copybtn{display:none;align-items:center;gap:6px;flex:none;min-height:40px;padding:0 12px;border:1px solid var(--line);border-radius:var(--radius);
+    background:var(--paper-2);color:var(--red);font-family:var(--fb);font-size:13px;letter-spacing:.08em;text-transform:uppercase;font-weight:600;cursor:pointer}
+  .js .copybtn{display:inline-flex}
+  .copybtn:hover{border-color:var(--red)}
+  .ihelp{display:inline-block;margin-left:8px;vertical-align:2px}
+  .ihelp summary{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:50%;border:1px solid var(--stone);
+    color:var(--stone);font-family:Georgia,serif;font-size:13px;font-style:italic;text-transform:none;letter-spacing:0;cursor:pointer;list-style:none;vertical-align:middle}
+  .ihelp summary::-webkit-details-marker{display:none}
+  .ihelp[open] summary{background:var(--ink);border-color:var(--ink);color:var(--paper-2)}
+  .ihelp .ipop{display:block;font-family:var(--fb);font-size:16px;font-weight:400;font-style:normal;letter-spacing:0;text-transform:none;color:var(--ink-soft);
+    background:var(--paper);border-left:3px solid var(--red);padding:10px 14px;margin:10px 0 2px;line-height:1.5}
   .alsobox{background:#efe9e0;border-radius:var(--radius);padding:20px 22px;margin:26px 0 0;max-width:34em}
   .alsobox .al-t{font-size:13px;letter-spacing:.14em;text-transform:uppercase;color:#6d6355;font-weight:600;margin-bottom:8px}
   .alsobox p{margin:0;font-size:18px;color:var(--ink)}
@@ -1182,6 +1255,7 @@ SHELL = '''<!DOCTYPE html>
 {{CONTENT}}
 </main>
 <footer>181 Fremont Residences &middot; Resident Experiences &middot; <a class="stafflink" href="/admin">Staff</a></footer>
+''' + COPY_JS + '''
 </body>
 </html>
 '''
@@ -1216,12 +1290,7 @@ T_MY = '''<a class="back" href="/">&larr; Back to the calendar</a>
 <span class="ev-go">&rarr;</span></a><!--/ROW-->
 </div>
 <p class="note">Tap any RSVP to change your party or cancel.</p><!--/ROWS-->
-<div class="guestbox"><div class="gq">Your RSVPs, living in your own calendar</div>
-<div class="gh">Subscribe once, and this page follows you: every event you say yes to appears in your
-calendar by itself, moves when a date moves, and slips away if it is cancelled. On an iPhone or iPad,
-<a class="rlink" style="min-height:0;margin:0" href="{{FEEDWEBCAL}}">tap here to subscribe</a>.
-In Google Calendar or Outlook, add a calendar from this address. It is yours alone, so keep it to yourself:</div>
-<div class="urlline">{{FEEDURL}}</div></div>
+''' + SUB_MY + '''
 <form method="post" action="/signout" class="signoutform"><button type="submit">Sign out of this device</button></form>'''
 
 # Parties self-serve to three: just me, plus one, plus two. The fourth chip is
@@ -1365,12 +1434,7 @@ and questions about them go to the Board or building management rather than Resi
 <a class="rlink" href="{{ICS}}">Add to My Calendar</a></span>
 </div><!--/ROW-->
 </div>
-<div class="guestbox"><div class="gq">Keep these in your calendar on their own</div>
-<div class="gh">Add the Board calendar once, and every change reaches you by itself: a cancelled meeting
-leaves your calendar without anyone sending a notice. On an iPhone or iPad,
-<a class="rlink" style="margin:0" href="webcal://181residents.com/board/feed">tap here to subscribe</a>.
-In Google Calendar or Outlook, add a calendar from this address:</div>
-<div class="urlline">https://181residents.com/board/feed</div></div><!--/ROWS-->'''
+''' + SUB_BOARD + '''<!--/ROWS-->'''
 
 T_SPACES = '''<a class="back" href="/">&larr; Back to the calendar</a>
 <div class="pagehead"><h1>Level 39 Spaces</h1>

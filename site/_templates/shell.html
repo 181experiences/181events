@@ -111,6 +111,21 @@
   .gq,.statebox h2{font-family:var(--fd);font-size:clamp(19px,4.8vw,24px);color:var(--ink);line-height:1.25}
   .gh,.statebox p{font-size:clamp(16px,4.2vw,17px);color:var(--ink-soft);margin:8px 0 0}
   .gh .rlink{min-height:0;margin:0}
+  .subrow{margin-top:16px}
+  .sublab{display:flex;align-items:center;gap:8px;font-size:13px;letter-spacing:.14em;text-transform:uppercase;color:var(--stone);font-weight:600;margin-bottom:4px}
+  .subbox .urlline{display:flex;align-items:center;gap:12px;margin-top:6px}
+  .subbox .urlline .url{flex:1;min-width:0}
+  .copybtn{display:none;align-items:center;gap:6px;flex:none;min-height:40px;padding:0 12px;border:1px solid var(--line);border-radius:var(--radius);
+    background:var(--paper-2);color:var(--red);font-family:var(--fb);font-size:13px;letter-spacing:.08em;text-transform:uppercase;font-weight:600;cursor:pointer}
+  .js .copybtn{display:inline-flex}
+  .copybtn:hover{border-color:var(--red)}
+  .ihelp{display:inline-block;margin-left:8px;vertical-align:2px}
+  .ihelp summary{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:50%;border:1px solid var(--stone);
+    color:var(--stone);font-family:Georgia,serif;font-size:13px;font-style:italic;text-transform:none;letter-spacing:0;cursor:pointer;list-style:none;vertical-align:middle}
+  .ihelp summary::-webkit-details-marker{display:none}
+  .ihelp[open] summary{background:var(--ink);border-color:var(--ink);color:var(--paper-2)}
+  .ihelp .ipop{display:block;font-family:var(--fb);font-size:16px;font-weight:400;font-style:normal;letter-spacing:0;text-transform:none;color:var(--ink-soft);
+    background:var(--paper);border-left:3px solid var(--red);padding:10px 14px;margin:10px 0 2px;line-height:1.5}
   .alsobox{background:#efe9e0;border-radius:var(--radius);padding:20px 22px;margin:26px 0 0;max-width:34em}
   .alsobox .al-t{font-size:13px;letter-spacing:.14em;text-transform:uppercase;color:#6d6355;font-weight:600;margin-bottom:8px}
   .alsobox p{margin:0;font-size:18px;color:var(--ink)}
@@ -165,5 +180,6 @@
 {{CONTENT}}
 </main>
 <footer>181 Fremont Residences &middot; Resident Experiences &middot; <a class="stafflink" href="/admin">Staff</a></footer>
+<script>document.documentElement.className+=" js";document.addEventListener("click",function(e){var b=e.target.closest("[data-copy]");if(!b)return;var u=b.parentNode.querySelector(".url");var t=u.textContent.trim();function done(){b.lastChild.nodeValue="Copied";setTimeout(function(){b.lastChild.nodeValue="Copy"},2000)}function fall(){var r=document.createRange();r.selectNodeContents(u);var s=getSelection();s.removeAllRanges();s.addRange(r);b.lastChild.nodeValue="Selected"}if(navigator.clipboard){navigator.clipboard.writeText(t).then(done,fall)}else{fall()}});</script>
 </body>
 </html>
