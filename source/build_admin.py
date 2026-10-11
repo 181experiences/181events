@@ -1502,6 +1502,11 @@ HTML = f'''<!DOCTYPE html>
     <li>Post one week out, and remove them the morning after, the same rule as the screens.</li>
     <li>Each print carries a <strong>different QR code</strong>, even though the artwork is otherwise identical. That is what lets the dashboard tell an elevator scan from a Level 39 scan, and tells you whether the second sign is earning its place.</li>
   </ol>
+  <p><strong>Making the code.</strong> Every event row on the Events screen has a <strong>QR</strong> button beside Short link. It
+  draws the code right here, no service involved, and downloads a PNG on a clear background in ink, white, or red, or an SVG, so it
+  drops onto a Canva flyer with the flyer&rsquo;s own color showing through. The event-row code carries the standing address
+  (always the next date&rsquo;s RSVP page); the QR on a single date row carries that date alone. For an event further out than the
+  calendar window, tick <strong>Announce</strong> on the event so the page is already open when the flyer goes up.</p>
   <p>Note that Level 39 has a printed sign but no Nixplay screen. The screens are the bar, the lobby, and the Level 7 landing.</p>
 
   <h2>Why all of it points to one place</h2>

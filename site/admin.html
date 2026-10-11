@@ -1512,6 +1512,11 @@
     <li>Post one week out, and remove them the morning after, the same rule as the screens.</li>
     <li>Each print carries a <strong>different QR code</strong>, even though the artwork is otherwise identical. That is what lets the dashboard tell an elevator scan from a Level 39 scan, and tells you whether the second sign is earning its place.</li>
   </ol>
+  <p><strong>Making the code.</strong> Every event row on the Events screen has a <strong>QR</strong> button beside Short link. It
+  draws the code right here, no service involved, and downloads a PNG on a clear background in ink, white, or red, or an SVG, so it
+  drops onto a Canva flyer with the flyer&rsquo;s own color showing through. The event-row code carries the standing address
+  (always the next date&rsquo;s RSVP page); the QR on a single date row carries that date alone. For an event further out than the
+  calendar window, tick <strong>Announce</strong> on the event so the page is already open when the flyer goes up.</p>
   <p>Note that Level 39 has a printed sign but no Nixplay screen. The screens are the bar, the lobby, and the Level 7 landing.</p>
 
   <h2>Why all of it points to one place</h2>
@@ -2385,13 +2390,14 @@
         <div class="ecell"><span class="pill ${cls(g.status)}">${esc(g.mixed ? "Mixed" : g.status)}</span></div>
         <div class="ecell"><span class="lbl">RSVPs</span>${rsvp}</div>
         <div class="ecell"><span class="lbl">Asset kit</span>${kits} of 6</div>
-        <div class="ecell eact">${g.series ? `<button class="mini ghost" data-dates="${esc(g.key)}">${(g.upcoming.length || g.rows.length)} dates</button>` : ""}<button class="mini ghost" data-copylink="${esc(stem(h))}" title="Copies this date's page address, for emails and reminders">Link</button><button class="mini ghost" data-copyshort="${esc(h.Slug || slugify(h.Title || ""))}" title="The standing address: always lands on the next upcoming date of this event, so QR codes, stills, and print never go stale">Short link</button><button class="mini" data-edit="${esc(g.key)}">Edit</button>${g.status === "Unpublished" ? `<button class="mini ghost" data-archive="${esc(g.key)}" title="Filed away, kept for reporting">Archive</button>` : ""}${g.rows.every(r => (r.Status || "Draft") === "Draft") ? `<button class="mini ghost" data-evdelete="${esc(g.key)}" title="Drafts only: residents never saw it, so nothing is lost">Delete draft</button>` : ""}</div>
+        <div class="ecell eact">${g.series ? `<button class="mini ghost" data-dates="${esc(g.key)}">${(g.upcoming.length || g.rows.length)} dates</button>` : ""}<button class="mini ghost" data-copylink="${esc(stem(h))}" title="Copies this date's page address, for emails and reminders">Link</button><button class="mini ghost" data-copyshort="${esc(h.Slug || slugify(h.Title || ""))}" title="The standing address: always lands on the next upcoming date of this event, so QR codes, stills, and print never go stale">Short link</button><button class="mini ghost" data-qr="e|${esc(h.Slug || slugify(h.Title || ""))}|${esc(h.Title || "")}" title="A QR code of the standing address, on a clear background, for flyers and the screens">QR</button><button class="mini" data-edit="${esc(g.key)}">Edit</button>${g.status === "Unpublished" ? `<button class="mini ghost" data-archive="${esc(g.key)}" title="Filed away, kept for reporting">Archive</button>` : ""}${g.rows.every(r => (r.Status || "Draft") === "Draft") ? `<button class="mini ghost" data-evdelete="${esc(g.key)}" title="Drafts only: residents never saw it, so nothing is lost">Delete draft</button>` : ""}</div>
       </div>
       <div class="edates" data-dates-for="${esc(g.key)}" style="display:none">${(g.upcoming.length ? g.upcoming : g.rows).map(r => `
         <div class="edrow"><span class="edwhen">${esc(fmt(r.Date))} &middot; ${esc(r.Start)}</span>
           <span class="pill ${cls(r.Status)}">${esc(r.Status || "Draft")}</span>
           ${r.Moved ? '<span class="badge2">moved</span>' : ""}
           <button class="mini ghost" data-copylink="${esc(stem(r))}" title="Copies this date's page address">Link</button>
+          <button class="mini ghost" data-qr="d|${esc(stem(r))}|${esc(r.Title || "")} · ${esc(fmt(r.Date))}" title="A QR code of this date's own page">QR</button>
           <button class="mini" data-editrow="${esc(g.key)}|${esc(r.id)}">Edit this date</button>
           ${(r.Status || "Draft") === "Draft" ? `<button class="mini ghost" data-rowdelete="${esc(g.key)}|${esc(r.id)}" title="Drafts only: removes just this date; the rest of the series stays">Delete this date</button>` : ""}</div>`).join("")}${g.upcoming.length && g.rows.length > g.upcoming.length ? `
         <div class="edrow" style="color:var(--stone)">${g.rows.length - g.upcoming.length} passed date${g.rows.length - g.upcoming.length === 1 ? "" : "s"} ride with the listing, in reporting and later in the Archive.</div>` : ""}
@@ -4458,6 +4464,200 @@
   // leaving the screen or the page mid-type still saves
   window.addEventListener("pagehide", () => { if (invCount) invFlush(); });
   document.addEventListener("visibilitychange", () => { if (document.hidden && invCount) invFlush(); });
+
+  // ---------------------------------------------------------------- qr codes
+  // A QR for any event, made here in the browser: no service, no server, no
+  // file that goes stale. The code carries the event's standing address
+  // (/e/slug, which always lands on the next date's RSVP page) or one date's
+  // own page. Byte mode, error level M, versions 1 to 10, mask chosen by the
+  // standard penalty, exactly as the ISO spec lays it out.
+  const QR = (() => {
+    const EXP = new Array(512), LOG = new Array(256);
+    let x = 1;
+    for (let i = 0; i < 255; i++) { EXP[i] = x; LOG[x] = i; x <<= 1; if (x & 0x100) x ^= 0x11D; }
+    for (let i = 255; i < 512; i++) EXP[i] = EXP[i - 255];
+    const mul = (a, b) => (a && b) ? EXP[LOG[a] + LOG[b]] : 0;
+    function genPoly(n) {
+      let g = [1];
+      for (let i = 0; i < n; i++) {
+        const ng = new Array(g.length + 1).fill(0);
+        for (let j = 0; j < g.length; j++) { ng[j] ^= g[j]; ng[j + 1] ^= mul(g[j], EXP[i]); }
+        g = ng;
+      }
+      return g;
+    }
+    function ecBytes(data, n) {
+      const g = genPoly(n), res = new Array(n).fill(0);
+      for (const d of data) {
+        const f = d ^ res[0]; res.shift(); res.push(0);
+        if (f) for (let j = 0; j < n; j++) res[j] ^= mul(g[j + 1], f);
+      }
+      return res;
+    }
+    // Level M: error codewords per block, then [blocks, data codewords per block] groups.
+    const V = [null,
+      [10, [[1, 16]]], [16, [[1, 28]]], [26, [[1, 44]]], [18, [[2, 32]]], [24, [[2, 43]]],
+      [16, [[4, 27]]], [18, [[4, 31]]], [22, [[2, 38], [2, 39]]], [22, [[3, 36], [2, 37]]], [26, [[4, 43], [1, 44]]]];
+    const ALIGN = [null, [], [6, 18], [6, 22], [6, 26], [6, 30], [6, 34], [6, 22, 38], [6, 24, 42], [6, 26, 46], [6, 28, 52]];
+    const dataCap = v => V[v][1].reduce((s, [c, l]) => s + c * l, 0);
+
+    function encode(text) {
+      const bytes = Array.from(new TextEncoder().encode(text));
+      let ver = 1;
+      while (ver <= 10 && (dataCap(ver) * 8) < 4 + (ver < 10 ? 8 : 16) + bytes.length * 8) ver++;
+      if (ver > 10) throw new Error("Too long for a QR code here.");
+      const bits = [];
+      const push = (val, n) => { for (let i = n - 1; i >= 0; i--) bits.push((val >>> i) & 1); };
+      push(4, 4); push(bytes.length, ver < 10 ? 8 : 16);
+      for (const b of bytes) push(b, 8);
+      const cap = dataCap(ver) * 8;
+      push(0, Math.min(4, cap - bits.length));
+      while (bits.length % 8) bits.push(0);
+      for (let pad = 0xEC; bits.length < cap; pad ^= 0xEC ^ 0x11) push(pad, 8);
+      const data = [];
+      for (let i = 0; i < bits.length; i += 8) data.push(parseInt(bits.slice(i, i + 8).join(""), 2));
+      // split into blocks, compute ec, interleave
+      const [ecn, groups] = V[ver];
+      const blocks = [], ecs = [];
+      let k = 0;
+      for (const [count, len] of groups) for (let c = 0; c < count; c++) { const blk = data.slice(k, k + len); k += len; blocks.push(blk); ecs.push(ecBytes(blk, ecn)); }
+      const out = [];
+      const maxLen = Math.max(...blocks.map(b => b.length));
+      for (let i = 0; i < maxLen; i++) for (const b of blocks) if (i < b.length) out.push(b[i]);
+      for (let i = 0; i < ecn; i++) for (const e of ecs) out.push(e[i]);
+      return { ver, codewords: out };
+    }
+
+    function matrix(text) {
+      const { ver, codewords } = encode(text);
+      const n = ver * 4 + 17;
+      const m = Array.from({ length: n }, () => new Array(n).fill(false));
+      const fn = Array.from({ length: n }, () => new Array(n).fill(false));
+      const set = (x, y, dark) => { m[y][x] = !!dark; fn[y][x] = true; };
+      const finder = (cx, cy) => { for (let dy = -4; dy <= 4; dy++) for (let dx = -4; dx <= 4; dx++) { const xx = cx + dx, yy = cy + dy; if (xx >= 0 && xx < n && yy >= 0 && yy < n) { const d = Math.max(Math.abs(dx), Math.abs(dy)); set(xx, yy, d !== 2 && d !== 4); } } };
+      finder(3, 3); finder(n - 4, 3); finder(3, n - 4);
+      for (let i = 0; i < n; i++) { if (!fn[6][i]) set(i, 6, i % 2 === 0); if (!fn[i][6]) set(6, i, i % 2 === 0); }
+      const al = ALIGN[ver];
+      for (const ay of al) for (const ax of al) {
+        if ((ax === 6 && ay === 6) || (ax === 6 && ay === al[al.length - 1]) || (ay === 6 && ax === al[al.length - 1])) continue;
+        for (let dy = -2; dy <= 2; dy++) for (let dx = -2; dx <= 2; dx++) set(ax + dx, ay + dy, Math.max(Math.abs(dx), Math.abs(dy)) !== 1);
+      }
+      // reserve format areas (values written after masking)
+      for (let i = 0; i <= 8; i++) { if (!fn[8][i]) set(i, 8, false); if (!fn[i][8]) set(8, i, false); }
+      for (let i = 0; i < 8; i++) { set(n - 1 - i, 8, false); set(8, n - 1 - i, false); }
+      set(8, n - 8, true);
+      if (ver >= 7) {
+        let rem = ver; for (let i = 0; i < 12; i++) rem = (rem << 1) ^ ((rem >>> 11) * 0x1F25);
+        const vb = (ver << 12) | rem;
+        for (let i = 0; i < 18; i++) { const bit = (vb >>> i) & 1, a = n - 11 + (i % 3), b = Math.floor(i / 3); set(a, b, bit); set(b, a, bit); }
+      }
+      // place the data
+      let bi = 0; const total = codewords.length * 8;
+      for (let right = n - 1; right >= 1; right -= 2) {
+        if (right === 6) right = 5;
+        for (let vert = 0; vert < n; vert++) {
+          for (let j = 0; j < 2; j++) {
+            const xx = right - j, up = ((right + 1) & 2) === 0, yy = up ? n - 1 - vert : vert;
+            if (!fn[yy][xx]) { m[yy][xx] = bi < total ? ((codewords[bi >>> 3] >>> (7 - (bi & 7))) & 1) === 1 : false; bi++; }
+          }
+        }
+      }
+      const MASKS = [
+        (i, j) => (i + j) % 2 === 0, (i, j) => i % 2 === 0, (i, j) => j % 3 === 0, (i, j) => (i + j) % 3 === 0,
+        (i, j) => (Math.floor(i / 2) + Math.floor(j / 3)) % 2 === 0, (i, j) => (i * j) % 2 + (i * j) % 3 === 0,
+        (i, j) => ((i * j) % 2 + (i * j) % 3) % 2 === 0, (i, j) => ((i + j) % 2 + (i * j) % 3) % 2 === 0];
+      const applyMask = k => { for (let y = 0; y < n; y++) for (let xx = 0; xx < n; xx++) if (!fn[y][xx] && MASKS[k](y, xx)) m[y][xx] = !m[y][xx]; };
+      const writeFormat = k => {
+        const dat = (0 << 3) | k;   // level M = 00
+        let rem = dat; for (let i = 0; i < 10; i++) rem = (rem << 1) ^ ((rem >>> 9) * 0x537);
+        const fb = ((dat << 10) | rem) ^ 0x5412;
+        const bit = i => ((fb >>> i) & 1) === 1;
+        for (let i = 0; i <= 5; i++) set(8, i, bit(i));
+        set(8, 7, bit(6)); set(8, 8, bit(7)); set(7, 8, bit(8));
+        for (let i = 9; i < 15; i++) set(14 - i, 8, bit(i));
+        for (let i = 0; i < 8; i++) set(n - 1 - i, 8, bit(i));
+        for (let i = 8; i < 15; i++) set(8, n - 15 + i, bit(i));
+        set(8, n - 8, true);
+      };
+      const penalty = () => {
+        let p = 0;
+        const run = line => { let r = 1; for (let i = 1; i <= line.length; i++) { if (i < line.length && line[i] === line[i - 1]) r++; else { if (r >= 5) p += 3 + (r - 5); r = 1; } } };
+        for (let y = 0; y < n; y++) run(m[y]);
+        for (let xx = 0; xx < n; xx++) run(m.map(row => row[xx]));
+        for (let y = 0; y < n - 1; y++) for (let xx = 0; xx < n - 1; xx++) { const c = m[y][xx]; if (c === m[y][xx + 1] && c === m[y + 1][xx] && c === m[y + 1][xx + 1]) p += 3; }
+        const pat = [true, false, true, true, true, false, true];
+        const find = (get, len) => { for (let i = 0; i + 7 <= len; i++) { let ok = true; for (let q = 0; q < 7; q++) if (get(i + q) !== pat[q]) { ok = false; break; } if (!ok) continue; const before = i >= 4 && [1, 2, 3, 4].every(q => !get(i - q)); const after = i + 11 <= len && [7, 8, 9, 10].every(q => !get(i + q)); if (before || after) p += 40; } };
+        for (let y = 0; y < n; y++) find(i => m[y][i], n);
+        for (let xx = 0; xx < n; xx++) find(i => m[i][xx], n);
+        let dark = 0; for (const row of m) for (const c of row) if (c) dark++;
+        p += Math.floor(Math.abs(dark * 100 / (n * n) - 50) / 5) * 10;
+        return p;
+      };
+      let best = 0, bestScore = Infinity;
+      for (let k = 0; k < 8; k++) { applyMask(k); writeFormat(k); const s = penalty(); if (s < bestScore) { bestScore = s; best = k; } applyMask(k); }
+      applyMask(best); writeFormat(best);
+      return { n, m, ver, mask: best };
+    }
+
+    function png(text, color, bg, size) {
+      const { n, m } = matrix(text);
+      const scale = Math.max(1, Math.floor((size || 1200) / (n + 8)));
+      const px = (n + 8) * scale;
+      const c = document.createElement("canvas"); c.width = px; c.height = px;
+      const g = c.getContext("2d");
+      if (bg) { g.fillStyle = bg; g.fillRect(0, 0, px, px); }
+      g.fillStyle = color;
+      for (let y = 0; y < n; y++) for (let xx = 0; xx < n; xx++) if (m[y][xx]) g.fillRect((xx + 4) * scale, (y + 4) * scale, scale, scale);
+      return c;
+    }
+    function svg(text, color, bg) {
+      const { n, m } = matrix(text);
+      const s = n + 8;
+      let d = "";
+      for (let y = 0; y < n; y++) for (let xx = 0; xx < n; xx++) if (m[y][xx]) d += `M${xx + 4} ${y + 4}h1v1h-1z`;
+      return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${s} ${s}" width="${s * 10}" height="${s * 10}" shape-rendering="crispEdges">${bg ? `<rect width="${s}" height="${s}" fill="${bg}"/>` : ""}<path d="${d}" fill="${color}"/></svg>`;
+    }
+    return { matrix, png, svg };
+  })();
+
+  function qrDownload(blob, name) {
+    const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = name;
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(a.href), 5000);
+  }
+
+  async function qrDialog(kind, key, title) {
+    const standing = kind === "e";
+    const url = standing ? `https://181residents.com/e/${key}` : `https://181residents.com/rsvp/${key}`;
+    const name = (standing ? key : key) + "-qr";
+    let preview;
+    try { preview = QR.png(url, "#16161a", "#ffffff", 320).toDataURL("image/png"); } catch (e) { toast(e.message, "warn"); return; }
+    const what = standing
+      ? "the event&rsquo;s <strong>standing address</strong>: it always opens the RSVP page of the next upcoming date, so a flyer or a Nixplay still never goes stale"
+      : "<strong>this date&rsquo;s own RSVP page</strong>. For a flyer that may outlive this date, use the QR on the event row instead";
+    const v = await dialog(`QR for ${esc(title)}`,
+      `<div style="display:flex;gap:16px;align-items:flex-start;flex-wrap:wrap"><img src="${preview}" style="width:132px;height:132px;border:1px solid var(--line);border-radius:4px;background:#fff">
+       <div style="flex:1;min-width:200px;font-size:13.5px">The code opens ${what}.<br><span style="font-family:ui-monospace,Menlo,monospace;font-size:12px;color:var(--red)">${esc(url)}</span>
+       <div class="hint" style="margin-top:8px">The PNG has a <strong>clear background</strong>, so your flyer&rsquo;s own color shows through in Canva. Keep it at least an inch wide in print, and on the screens a good tenth of the width; scan-test from where people actually stand.</div></div></div>`,
+      [{ label: "PNG, ink on clear", kind: "primary", value: "png|#16161a|" },
+       { label: "PNG, white on clear", value: "png|#ffffff|" },
+       { label: "PNG, red on clear", value: "png|#c41f26|" },
+       { label: "SVG, ink on clear", value: "svg|#16161a|" },
+       { label: "Not now", kind: "quiet", value: null }]);
+    if (!v) return;
+    const [fmt, color] = v.split("|");
+    try {
+      if (fmt === "svg") qrDownload(new Blob([QR.svg(url, color, "")], { type: "image/svg+xml" }), name + ".svg");
+      else QR.png(url, color, "", 1200).toBlob(b => qrDownload(b, name + (color === "#ffffff" ? "-white" : color === "#c41f26" ? "-red" : "") + ".png"), "image/png");
+      toast("Downloaded. Drop it on the flyer; the background stays clear.");
+    } catch (e) { toast(e.message, "warn"); }
+  }
+
+  document.addEventListener("click", ev => {
+    const b = ev.target.closest("[data-qr]"); if (!b) return;
+    const [kind, key, ...rest] = b.dataset.qr.split("|");
+    qrDialog(kind, key, rest.join("|"));
+  });
 
   // ---------------------------------------------------------------- messages
   function renderMsgs() {
