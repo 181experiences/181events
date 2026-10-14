@@ -571,6 +571,8 @@ HTML = f'''<!DOCTYPE html>
   .fmtbar .mini{{min-width:44px;justify-content:center;background:var(--paper-2)}}
   .desced{{min-height:150px;line-height:1.55;white-space:pre-wrap;overflow-y:auto;cursor:text}}
   .desced:empty::before{{content:attr(data-ph);color:var(--stone);pointer-events:none}}
+  .pgblk .desced{{min-height:96px}}
+  .pgblk .fmtbar{{margin-bottom:6px}}
   .desced strong{{font-weight:700}} .desced em{{font-style:italic}} .desced u{{text-decoration:underline}}
   .desced a{{color:var(--red);text-decoration:underline}}
   .desced ul,.desced ol{{margin:4px 0;padding-left:1.4em}} .desced li{{margin:0}}

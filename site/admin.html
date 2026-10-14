@@ -571,6 +571,8 @@
   .fmtbar .mini{min-width:44px;justify-content:center;background:var(--paper-2)}
   .desced{min-height:150px;line-height:1.55;white-space:pre-wrap;overflow-y:auto;cursor:text}
   .desced:empty::before{content:attr(data-ph);color:var(--stone);pointer-events:none}
+  .pgblk .desced{min-height:96px}
+  .pgblk .fmtbar{margin-bottom:6px}
   .desced strong{font-weight:700} .desced em{font-style:italic} .desced u{text-decoration:underline}
   .desced a{color:var(--red);text-decoration:underline}
   .desced ul,.desced ol{margin:4px 0;padding-left:1.4em} .desced li{margin:0}
@@ -2459,7 +2461,9 @@
     if (/^[a-z0-9.-]+\.[a-z]{2,}(\/[^\s<>"']*)?$/i.test(u)) return "https://" + u;   // typed without the scheme
     return "";
   }
-  function descSet(v) {
+  function descSet(v) { richSet($("#f-desc"), v); }
+  function descGet() { return richGet($("#f-desc")); }
+  function richSet(box, v) {
     let s = String(v == null ? "" : v).replace(/\r/g, "");
     // Everything is text except the tags the fmtbar writes: strong, em, u, and
     // a link with a safe address. Lines that begin "- " or "1. " are lists.
@@ -2485,9 +2489,9 @@
     close();
     let out = html.join("");
     out = out.replace(/<\/(ul|ol)><br>/g, "</$1>").replace(/<br>$/, "");
-    $("#f-desc").innerHTML = out;
+    box.innerHTML = out;
   }
-  function descGet() {
+  function richGet(box) {
     const walk = n => {
       if (n.nodeType === 3) return n.nodeValue.replace(/ /g, " ");
       if (n.nodeType !== 1) return "";
@@ -2506,7 +2510,7 @@
       if (n.tagName === "DIV" || n.tagName === "P") return "\n" + (inner === "\n" ? "" : inner);
       return inner;
     };
-    return [...$("#f-desc").childNodes].map(walk).join("")
+    return [...box.childNodes].map(walk).join("")
       .replace(/^\n+/, "").replace(/[ \t]+\n/g, "\n").replace(/\n{3,}/g, "\n\n").trimEnd();
   }
 
@@ -3890,11 +3894,14 @@
       <input class="inp" data-pb="${i}|${k}" value="${esc(b[k] || "")}" placeholder="${ph || ""}"></div>`;
     const ta = (k, label, ph, rows) => `<div class="field" style="margin:0 0 10px"><label class="fl">${label}</label>
       <textarea class="inp" data-pb="${i}|${k}" rows="${rows || 3}" placeholder="${ph || ""}">${esc(b[k] || "")}</textarea></div>`;
+    const rich = (k, label, ph) => `<div class="field" style="margin:0 0 10px"><label class="fl">${label}</label>
+      <div class="fmtbar"><button type="button" class="mini" data-pfmt="strong" title="Bold"><strong>B</strong></button><button type="button" class="mini" data-pfmt="em" title="Italic"><em>I</em></button><button type="button" class="mini" data-pfmt="u" title="Underline"><u>U</u></button><button type="button" class="mini" data-pfmt="link" title="Turn the selected words into a link, or insert an address">Link</button><button type="button" class="mini" data-pfmt="ul" title="A bulleted list">&bull; List</button><button type="button" class="mini" data-pfmt="ol" title="A numbered list">1. List</button></div>
+      <div class="inp desced" data-pb="${i}|${k}" data-rich contenteditable="true" data-ph="${esc(ph || "")}"></div></div>`;
     let fields = "";
-    if (b.kind === "text") fields = ta("body", "Text", "Paragraphs show as written; a blank line starts a new one.", 4);
+    if (b.kind === "text") fields = rich("body", "Text", "Paragraphs show as written; a blank line starts a new one. Select words for bold, a link, or a list.");
     else if (b.kind === "feature") fields = inp("heading", "Heading", "Watch the air show from the Terrace")
       + inp("when", "The red line, when", "Friday, October 9 · Noon to 4:00 PM")
-      + ta("body", "Body", "What we are doing, in a paragraph or two.", 4);
+      + rich("body", "Body", "What we are doing, in a paragraph or two.");
     else if (b.kind === "heading") fields = inp("heading", "Heading", "Your Fleet Week cheat sheet")
       + inp("sub", "Small line under it, optional", "Tap a day to open it.");
     else if (b.kind === "fold") fields = inp("title", "Fold title", "Friday, October 9")
@@ -3920,6 +3927,8 @@
     const box = $("#pgblocks"); if (!box) return;
     box.innerHTML = pgBlocks.map((b, i) => pgBlockForm(b, i)).join("")
       || '<div class="nodata" style="margin-bottom:4px">No blocks yet. Add the first one below; the page shows them top to bottom.</div>';
+    // the rich bodies are laid in after the markup lands, the way the description is
+    $$("[data-rich]", box).forEach(el => { const [i, k] = el.dataset.pb.split("|"); richSet(el, (pgBlocks[Number(i)] || {})[k] || ""); });
   }
 
   function readPageForm() {
@@ -5964,7 +5973,16 @@
     const el = ev.target.closest("[data-pb]");
     if (!el) return;
     const [i, k] = el.dataset.pb.split("|");
-    if (pgBlocks[Number(i)]) pgBlocks[Number(i)][k] = el.value;
+    if (pgBlocks[Number(i)]) pgBlocks[Number(i)][k] = el.dataset.rich !== undefined ? richGet(el) : el.value;
+  });
+  // the block toolbars act on the editor beside them
+  document.addEventListener("click", ev => {
+    const b = ev.target.closest("[data-pfmt]"); if (!b) return;
+    const box = b.closest(".field").querySelector("[data-rich]"); if (!box) return;
+    if (b.dataset.pfmt === "link") { descLink(box); return; }
+    box.focus();
+    document.execCommand({ strong: "bold", em: "italic", u: "underline", ul: "insertUnorderedList", ol: "insertOrderedList" }[b.dataset.pfmt]);
+    box.dispatchEvent(new Event("input", { bubbles: true }));
   });
   document.addEventListener("change", ev => {
     const el = ev.target.closest("select[data-pb]");
@@ -5975,8 +5993,8 @@
 
   // The Link button: the selection becomes the link, or the address itself
   // is inserted as one. The selection is remembered across the dialog.
-  async function descLink() {
-    const box = $("#f-desc"); box.focus();
+  async function descLink(which) {
+    const box = which || $("#f-desc"); box.focus();
     const sel = window.getSelection();
     const range = sel.rangeCount && box.contains(sel.anchorNode) ? sel.getRangeAt(0).cloneRange() : null;
     const picked = range ? range.toString().trim() : "";
@@ -5992,13 +6010,14 @@
     if (range) { sel.removeAllRanges(); sel.addRange(range); }
     if (range && picked) document.execCommand("createLink", false, href);
     else document.execCommand("insertHTML", false, `<a href="${esc(href)}">${esc(r.fields.url.trim())}</a>`);
+    box.dispatchEvent(new Event("input", { bubbles: true }));
   }
 
   // Paste into the description arrives as plain text, so a paragraph from
   // Word or an email never smuggles its fonts and markup into the record;
   // bold and italics are applied here, with the fmtbar.
-  const descBox = $("#f-desc");
-  if (descBox) descBox.addEventListener("paste", ev => {
+  document.addEventListener("paste", ev => {
+    if (!ev.target.closest(".desced")) return;
     ev.preventDefault();
     const t = (ev.clipboardData || window.clipboardData).getData("text/plain");
     if (t) document.execCommand("insertText", false, t);

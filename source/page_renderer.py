@@ -27,11 +27,10 @@ def _esc(s):
 
 
 def _paras(s):
-    out = []
-    for para in re.split(r"\n\s*\n", str(s or "").strip()):
-        if para.strip():
-            out.append("<p>" + _esc(para).replace("\n", "<br>") + "</p>")
-    return "\n".join(out)
+    # The same shape the event description speaks: paragraphs, line breaks,
+    # bold/italic/underline, safe links, and "- " / "1. " lines as lists.
+    from fields import desc_blocks
+    return "\n".join(desc_blocks(str(s or "")))
 
 
 def _split_line(line):
@@ -132,6 +131,10 @@ CSS = """
   .hero .when{font-size:clamp(15px,3.8vw,16.5px);letter-spacing:.06em;text-transform:uppercase;
     color:var(--red);font-weight:600;margin:0 0 14px}
   .hero p{margin:10px 0}
+  .wrap p a,.wrap li a{color:var(--red);text-decoration:underline;text-underline-offset:3px;text-decoration-thickness:1px}
+  .wrap p a:hover,.wrap li a:hover{color:#a5171d}
+  .wrap ul:not([class]),.wrap ol:not([class]){margin:0 0 18px;padding-left:1.3em;line-height:1.6}
+  .wrap ul:not([class]) li,.wrap ol:not([class]) li{margin:0 0 6px}
   h2.sec{font-family:'Marcellus',Georgia,serif;font-weight:400;color:var(--ink);
     font-size:clamp(24px,6vw,30px);margin:46px 0 6px;padding-top:26px;border-top:1px solid var(--line)}
   .sd{color:var(--ink-soft);margin:0 0 18px}
