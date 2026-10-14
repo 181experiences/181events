@@ -208,7 +208,7 @@ export const RESERVED_SLUGS = new Set([
   "admin", "api", "rsvp", "register", "signin", "signout", "my", "message",
   "board", "spaces", "notes", "calendar", "ics", "fonts", "hero", "e", "q",
   "index.html", "manifest.webmanifest", "admin.webmanifest",
-  "_templates", "cdn-cgi", "pages",
+  "_templates", "cdn-cgi", "pages", "gala",
 ]);
 
 // The six pieces of an event's kit, by slug. The file itself lives in R2 (the

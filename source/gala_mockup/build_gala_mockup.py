@@ -6,7 +6,7 @@ set in img/. Script-free like every resident page: the lightbox is a :target
 overlay, the folds are <details>, the reels are scroll-snap strips with
 per-slide arrows. Run: python build_gala_mockup.py -> index.html
 """
-import html, os
+import html, os, re
 HERE = os.path.dirname(os.path.abspath(__file__))
 e = html.escape
 RSVP = "https://181residents.com/rsvp/2026-12-18_lights-camera-gala"
@@ -111,11 +111,12 @@ nav.chapters .in{max-width:1120px;margin:0 auto;display:flex;gap:4px;overflow-x:
 nav.chapters a{flex:none;display:inline-block;padding:16px 14px;font-family:Arial,Helvetica,sans-serif;font-size:12px;letter-spacing:.24em;text-transform:uppercase;color:var(--soft);text-decoration:none;border-bottom:2px solid transparent}
 nav.chapters a:hover{color:var(--champ);border-bottom-color:var(--gold)}
 nav.chapters a.rsvp{margin-left:auto;color:var(--night);background:var(--gold);border-radius:3px;padding:10px 16px;margin-top:9px;margin-bottom:9px;font-weight:700}
-.hero{position:relative;min-height:min(92vh,980px);aspect-ratio:9/16;max-height:980px;display:grid;grid-template-columns:1fr;align-items:end;overflow:hidden;border-bottom:1px solid var(--line)}
-.hero img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 0}
-.hero .veil{position:absolute;inset:0;background:linear-gradient(180deg,rgba(11,9,8,.15) 0,rgba(11,9,8,0) 30%,rgba(11,9,8,.92) 100%)}
-.hero .copy{position:relative;padding:60px 0 48px}
-@media(min-width:820px){.hero{aspect-ratio:16/9;min-height:0;max-height:900px}}
+.hero{position:relative;width:100%;border-bottom:1px solid var(--line)}
+.hero img{display:block;width:100%;height:auto;aspect-ratio:9/16;object-fit:cover;object-position:50% 0}
+.hero .veil{display:none}
+.hero .copy{padding:30px 0 40px}
+@media(min-width:820px){.hero img{aspect-ratio:16/9;max-height:820px}.hero .copy{padding:38px 0 46px}}
+@media(max-width:819px){.hero .lede{font-size:clamp(21px,5.6vw,26px)}}
 .hero h1{font-size:clamp(14px,2vw,18px);font-family:Arial,Helvetica,sans-serif;letter-spacing:.36em;text-transform:uppercase;color:var(--gold);margin-bottom:14px}
 .hero .lede{font-size:clamp(22px,3.4vw,34px);line-height:1.2;color:var(--champ);max-width:22em;margin:0 0 22px}
 .facts{display:flex;flex-wrap:wrap;gap:10px 28px;font-family:Arial,Helvetica,sans-serif;font-size:13px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink);margin-bottom:26px}
@@ -221,7 +222,7 @@ HERO = f'''<div class="hero" id="top">
 <div class="wrap copy">
   <h1>Friday, December 18 &middot; The holiday gala</h1>
   <p class="lede">Our end-of-year party, and the one evening the whole building comes together. A red-carpet gala in the spirit of Old Hollywood.</p>
-  <div class="facts"><span><b>When</b>6:30 to 9:00 PM</span><span><b>Where</b>The Residents&rsquo; Club</span><span><b>Dress</b>Black tie if you have it</span><span><b>RSVP by</b>Monday, December 14</span></div>
+  <div class="facts"><span><b>When</b>6:30 to 9:00 PM</span><span><b>Where</b>The Residents&rsquo; Club</span><span><b>Dress</b>Black tie if you have it</span><span><b>RSVP by</b>Monday, December 7</span></div>
   <div class="btnrow"><a class="btn" href="{RSVP}">RSVP on the calendar</a><a class="btn ghost" href="#look">The dress code, decoded</a></div>
 </div></div>'''
 
@@ -305,8 +306,8 @@ SCENE = section("scene", "Chapter six", "The scene", f'''
 
 QUESTIONS = section("questions", "Chapter seven", "Questions, answered", '''
 <details class="q"><summary>Do I have to dress up?</summary><div class="a"><p>No. Come as you are and you will be welcome. The evening rewards a little effort, and a single Old Hollywood touch is all it takes to join in.</p></div></details>
-<details class="q"><summary>Can I bring a guest?</summary><div class="a"><p>This one is residents only, with no outside guests. The building&rsquo;s own children are residents too, and welcome. Seats are limited, so RSVP by Monday, December 14.</p></div></details>
-<details class="q"><summary>Where do I find a tuxedo, or a gown, in time?</summary><div class="a"><p>Rental is the easy road for black tie, and most houses deliver within the week. For gowns, rental and vintage both work, and the city&rsquo;s vintage shops are made for this brief. <span class="tiny">Mockup note: Leo to add the places he trusts.</span></p></div></details>
+<details class="q"><summary>Can I bring a guest?</summary><div class="a"><p>This one is residents only, with no outside guests. The building&rsquo;s own children are residents too, and welcome. Seats are limited, so RSVP by Monday, December 7.</p></div></details>
+<details class="q"><summary>Where do I find a tuxedo, or a gown, in time?</summary><div class="a"><p>Rental is the easy road for black tie, and most houses deliver within the week. For gowns, rental and vintage both work, and the city&rsquo;s vintage shops are made for this brief.</p></div></details>
 <details class="q"><summary>Will there be photographs?</summary><div class="a"><p>On the red carpet, yes, and you will get yours. Inside, the evening is for the people in it; take all the pictures you like, and ask before you post someone else&rsquo;s.</p></div></details>
 <details class="q"><summary>Is there anything I should not wear?</summary><div class="a"><p>Costumes in the Halloween sense. This is glamour, not fancy dress: no plastic cigarette holders, no gangster props. A feather boa, on the other hand, is allowed.</p></div></details>
 ''')
@@ -331,7 +332,7 @@ HTML = f'''<!DOCTYPE html>
 <style>{CSS}</style>
 </head>
 <body>
-<div class="mocknote">Mockup &middot; a resident style and inspiration guide for the holiday gala &middot; nothing here is published</div>
+__MOCKNOTE__
 <div class="bulbs"></div>
 {HERO}
 {NAV}
@@ -350,6 +351,15 @@ HTML = f'''<!DOCTYPE html>
 </body>
 </html>'''
 
-with open(os.path.join(HERE, "index.html"), "w", encoding="utf-8", newline="\n") as f:
-    f.write(HTML)
-print("built index.html", len(HTML), "bytes;", len(HER), "looks for her,", len(HIM), "for him")
+MOCKNOTE = '<div class="mocknote">Mockup &middot; a resident style and inspiration guide for the holiday gala &middot; nothing here is published</div>'
+
+def render(live=False):
+    """The page as HTML. live=True drops the mock banner; img/ paths stay relative."""
+    return HTML.replace("__MOCKNOTE__", "" if live else MOCKNOTE)
+
+IMAGES = sorted(set(re.findall(r"img/([a-z0-9-]+[.]jpg)", HTML)))
+
+if __name__ == "__main__":
+    with open(os.path.join(HERE, "index.html"), "w", encoding="utf-8", newline="\n") as f:
+        f.write(render(False))
+    print("built index.html", len(HTML), "bytes;", len(HER), "looks for her,", len(HIM), "for him;", len(IMAGES), "images")

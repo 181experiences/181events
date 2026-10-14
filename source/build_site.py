@@ -233,7 +233,7 @@ if os.path.exists(_pages_live):
 _made = []
 for _p in _pages:
     _slug = _re.sub(r"[^a-z0-9-]", "", str(_p.get("slug") or ""))
-    if len(_slug) < 3 or _slug in ("q", "ics", "fonts", "admin", "api"):
+    if len(_slug) < 3 or _slug in ("q", "ics", "fonts", "admin", "api", "gala"):
         continue
     os.makedirs(f"{SITE}/{_slug}", exist_ok=True)
     open(f"{SITE}/{_slug}/index.html", "w", encoding="utf-8").write(page_renderer.render(_p))
@@ -243,6 +243,21 @@ print(f"builder pages: {len(_made)}")
 
 # Fleet Week lives entirely in the Pages builder now (migrated Oct 7); its
 # hardcoded module and the one-time import endpoint are gone with it.
+
+# The holiday gala style guide: a standalone page in its own skin at /gala,
+# rendered by its module (source/gala_mockup) with the photographs it uses
+# copied beside it. Script-free and self-hosted like every resident page.
+import sys as _sys
+_sys.path.insert(0, os.path.join(HERE, "gala_mockup"))
+import build_gala_mockup as _gala
+os.makedirs(f"{SITE}/gala/img", exist_ok=True)
+open(f"{SITE}/gala/index.html", "w", encoding="utf-8").write(_gala.render(live=True))
+_gala_n = 0
+for _img in _gala.IMAGES:
+    _src = os.path.join(HERE, "gala_mockup", "img", _img)
+    if os.path.exists(_src):
+        shutil.copyfile(_src, f"{SITE}/gala/img/{_img}"); _gala_n += 1
+print(f"gala guide: /gala with {_gala_n} pictures")
 
 # ---------------------------------------------------------------- admin
 admin = open(os.path.join(HERE, "181fremont_admin_prototype.html"), encoding="utf-8").read()
