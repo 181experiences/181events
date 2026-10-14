@@ -51,6 +51,17 @@ export function cleanEmails(v) {
   }
   return out;
 }
+// Pages built in code (source/coded_pages.json) keep a status each under
+// page_<slug>: Published when nothing is stored, else what the admin set.
+const PAGE_STATUSES = ["Published", "Unpublished", "Archived"];
+export async function codedStatuses(env) {
+  const out = {};
+  try {
+    const { results } = await env.DB.prepare("SELECT key, value FROM settings WHERE key LIKE 'page_%'").all();
+    for (const r of results) if (PAGE_STATUSES.includes(r.value)) out[r.key.slice(5)] = r.value;
+  } catch (e) {}
+  return out;
+}
 export async function inventoryRecipients(env) {
   try {
     const r = await env.DB.prepare("SELECT value FROM settings WHERE key='inv_recipients'").first();
@@ -63,7 +74,7 @@ export async function onRequestGet({ request, env }) {
   const role = await adminRole(request, env);
   if (!role || role === "desk") return forbidden();
   await ensureEventTables(env);
-  return json({ ...(await getWindow(env)), ...(await readLists(env)) });
+  return json({ ...(await getWindow(env)), ...(await readLists(env)), coded: await codedStatuses(env) });
 }
 
 export async function onRequestPut({ request, env }) {
@@ -82,7 +93,12 @@ export async function onRequestPut({ request, env }) {
   if ("hosts" in body) put("hosts", JSON.stringify(cleanList(body.hosts, DEFAULTS.hosts)));
   if ("notes_open" in body) put("notes_open", body.notes_open ? "1" : "0");
   if ("inv_recipients" in body) put("inv_recipients", JSON.stringify(cleanEmails(body.inv_recipients)));
+  if (body.coded && typeof body.coded === "object") {
+    for (const [slug, st] of Object.entries(body.coded)) {
+      if (/^[a-z0-9-]{3,40}$/.test(slug) && PAGE_STATUSES.includes(st)) put("page_" + slug, st);
+    }
+  }
   if (!writes.length) return json({ error: "Nothing to save" }, 400);
   await env.DB.batch(writes);
-  return json({ ...(await getWindow(env)), ...(await readLists(env)) });
+  return json({ ...(await getWindow(env)), ...(await readLists(env)), coded: await codedStatuses(env) });
 }

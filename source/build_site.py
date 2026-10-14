@@ -247,17 +247,32 @@ print(f"builder pages: {len(_made)}")
 # The holiday gala style guide: a standalone page in its own skin at /gala,
 # rendered by its module (source/gala_mockup) with the photographs it uses
 # copied beside it. Script-free and self-hosted like every resident page.
+# Each coded page (source/coded_pages.json) has a status in the settings
+# table, page_<slug>, Published when nothing is set. Published renders;
+# Unpublished or Archived sweeps the folder, and the address falls back to
+# the calendar exactly as an unpublished builder page does.
+_coded_status = {}
+try:
+    _sl = json.load(open(os.path.join(HERE, "settings_live.json"), encoding="utf-8"))
+    _coded_status = {k[5:]: str(v) for k, v in _sl.items() if k.startswith("page_")}
+except Exception:
+    pass
 import sys as _sys
 _sys.path.insert(0, os.path.join(HERE, "gala_mockup"))
 import build_gala_mockup as _gala
-os.makedirs(f"{SITE}/gala/img", exist_ok=True)
-open(f"{SITE}/gala/index.html", "w", encoding="utf-8").write(_gala.render(live=True))
-_gala_n = 0
-for _img in _gala.IMAGES:
-    _src = os.path.join(HERE, "gala_mockup", "img", _img)
-    if os.path.exists(_src):
-        shutil.copyfile(_src, f"{SITE}/gala/img/{_img}"); _gala_n += 1
-print(f"gala guide: /gala with {_gala_n} pictures")
+if _coded_status.get("gala", "Published") == "Published":
+    os.makedirs(f"{SITE}/gala/img", exist_ok=True)
+    open(f"{SITE}/gala/index.html", "w", encoding="utf-8").write(_gala.render(live=True))
+    _gala_n = 0
+    for _img in _gala.IMAGES:
+        _src = os.path.join(HERE, "gala_mockup", "img", _img)
+        if os.path.exists(_src):
+            shutil.copyfile(_src, f"{SITE}/gala/img/{_img}"); _gala_n += 1
+    print(f"gala guide: /gala with {_gala_n} pictures")
+else:
+    if os.path.isdir(f"{SITE}/gala"):
+        _rm_page_dir(f"{SITE}/gala")
+    print(f"gala guide: {_coded_status.get('gala')}, not on the site")
 
 # ---------------------------------------------------------------- admin
 admin = open(os.path.join(HERE, "181fremont_admin_prototype.html"), encoding="utf-8").read()

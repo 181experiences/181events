@@ -675,6 +675,11 @@ def load_all_settings():
     out["notes_open"] = notes_board_open()
     out["inv_recipients"] = inventory_recipients()
     try:
+        _raw = json.load(open(os.path.join(HERE, "settings_live.json"), encoding="utf-8"))
+        out["coded"] = {k[5:]: v for k, v in _raw.items() if k.startswith("page_") and v in ("Published", "Unpublished", "Archived")}
+    except Exception:
+        out["coded"] = {}
+    try:
         raw = json.load(open(os.path.join(HERE, "settings_live.json"), encoding="utf-8"))
         for k in LIST_DEFAULTS:
             if isinstance(raw.get(k), list) and raw[k]:
@@ -1539,6 +1544,10 @@ class H(SimpleHTTPRequestHandler):
                 stored["notes_open"] = "1" if body["notes_open"] else "0"
             if "inv_recipients" in body:
                 stored["inv_recipients"] = clean_emails(body["inv_recipients"])
+            if isinstance(body.get("coded"), dict):
+                for slug, st in body["coded"].items():
+                    if re.match(r"^[a-z0-9-]{3,40}$", str(slug)) and st in ("Published", "Unpublished", "Archived"):
+                        stored["page_" + slug] = st
             json.dump(stored, open(os.path.join(HERE, "settings_live.json"), "w", encoding="utf-8"),
                       ensure_ascii=False)
             return self._json(load_all_settings())

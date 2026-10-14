@@ -955,6 +955,12 @@
   <div class="psub" id="pgcount">Loading&hellip;</div>
   <div style="margin:0 0 16px"><button class="btn" data-pgnew>New Page</button></div>
   <div id="pglist"></div>
+
+  <div class="sec" style="margin-top:36px">
+    <div style="display:flex;align-items:center;gap:10px"><h2>Pages built in code</h2><span class="iwrap"><button type="button" class="ib" aria-label="What this does">i</button><span class="ipop">Pages that exist as code rather than blocks, like the gala guide with its photo reels. Their words and pictures change through the developer; their life on the site is yours: Unpublish takes one off the air with everything kept, Archive files it, Publish walks it back out. A change takes effect at the next rebuild, within a couple of minutes, and the address stays reserved while a page is off, so nothing else can take it.</span></span></div>
+    <div class="sd">Their words change in code; whether they are on the air is decided here.</div>
+    <div id="codedlist"></div>
+  </div>
 </div></section>
 
 <!-- ================= PAGE EDITOR ================= -->
@@ -2117,6 +2123,17 @@
     }
   ]
 }</script>
+<script id="coded-pages" type="application/json">{
+  "_about": "Pages that exist as code (a module under source/), not as builder blocks. Each has a status in the settings table under page_<slug> (Published when absent). The admin lists them at the foot of the Pages screen; the build renders only the published ones and sweeps the rest.",
+  "pages": [
+    {
+      "slug": "gala",
+      "title": "Lights, Camera, Gala: the style guide",
+      "since": "2026-10-13",
+      "note": "The holiday gala's inspiration guide, in its own skin, with the photo reels."
+    }
+  ]
+}</script>
 <div id="dlg-wrap"><div id="dlg"><div id="dlg-t"></div><div id="dlg-p"></div><div id="dlg-f"></div><div id="dlg-b"></div></div></div>
 <div class="toast" id="toast"></div>
 <script>
@@ -2916,9 +2933,68 @@
       $("#w-months").value = String(w.horizon_months);
       if (Array.isArray(w.locations) && w.locations.length) listSettings.locations = w.locations;
       if (Array.isArray(w.hosts) && w.hosts.length) listSettings.hosts = w.hosts;
+      if (w.coded && typeof w.coded === "object") codedStatus = w.coded;
     } catch (e) {}   // the desk tier has no events screen, and no business here
     renderListSettings();
+    renderCoded();
   }
+
+  // ---------------------------------------------------------- pages built in code
+  // The registry rides the page (coded-pages JSON); the status per page lives
+  // in the settings table as page_<slug>, Published when nothing is set.
+  let codedStatus = {};
+  function codedPages() {
+    try { return JSON.parse($("#coded-pages").textContent).pages || []; } catch (e) { return []; }
+  }
+  function renderCoded() {
+    const box = $("#codedlist"); if (!box) return;
+    const pages = codedPages();
+    const pill = s => s === "Published" ? '<span class="pill live">Published</span>'
+      : s === "Archived" ? '<span class="pill archived">Archived</span>' : '<span class="pill unpublished">Unpublished</span>';
+    box.innerHTML = pages.map(p => {
+      const st = codedStatus[p.slug] || "Published";
+      return `<div class="erow pgrow" style="display:flex;align-items:center;gap:14px;flex-wrap:wrap">
+        <div style="flex:1;min-width:220px">
+          <div style="font-size:15.5px;color:var(--ink);font-weight:600">${esc(p.title)}</div>
+          <div class="addr">181residents.com/${esc(p.slug)}${st !== "Published" ? " · not on the air" : ""}</div>
+          <div style="font-size:12px;color:var(--stone)">${esc(p.note || "")}${p.since ? ` · since ${esc(p.since)}` : ""}</div>
+        </div>
+        ${pill(st)}
+        <span class="eact">
+          ${st === "Published" ? `<button class="mini ghost" data-coded="${esc(p.slug)}|Unpublished">Unpublish</button>` : `<button class="mini" data-coded="${esc(p.slug)}|Published">Publish</button>`}
+          ${st === "Unpublished" ? `<button class="mini ghost" data-coded="${esc(p.slug)}|Archived" title="For safety, a page archives from Unpublished, never straight off the site">Archive</button>` : ""}
+          <button class="mini ghost" data-codedcopy="${esc(p.slug)}" title="The page's address">Copy link</button>
+          ${st === "Published" ? `<a class="mini ghost" href="/${esc(p.slug)}/" target="_blank" rel="noopener">View</a>` : ""}
+        </span></div>`;
+    }).join("") || '<div class="nodata">No coded pages yet.</div>';
+  }
+  async function codedSet(slug, st) {
+    const p = codedPages().find(x => x.slug === slug); if (!p) return;
+    const texts = {
+      Unpublished: ["Take this page off the air?", `181residents.com/${esc(slug)} stops answering at the next rebuild; the link falls back to the calendar and everything is kept, ready to republish.`, "Unpublish"],
+      Archived: ["Archive this page?", "It files away as a record and stays off the air. Publish walks it back out whenever it is wanted again.", "Archive"],
+      Published: ["Put this page back on the air?", `181residents.com/${esc(slug)} is live again at the next rebuild, within a couple of minutes.`, "Publish"],
+    }[st];
+    const v = await dialog(texts[0], texts[1], [{ label: texts[2], kind: "primary", value: "yes" }, { label: "Not now", kind: "quiet", value: null }]);
+    if (!v) return;
+    try {
+      const w = await api("/api/settings", { method: "PUT", body: JSON.stringify({ coded: { [slug]: st } }) });
+      if (w.coded) codedStatus = w.coded;
+      renderCoded();
+      if (status.publish) { api("/api/publish", { method: "POST" }).catch(() => {}); toast(st === "Published" ? "Publishing. The page is live in a couple of minutes." : "Saved. The page comes off the site in a couple of minutes."); }
+      else toast("Saved. It takes effect at the next publish.");
+    } catch (e) { toast(e.message, "warn"); }
+  }
+  document.addEventListener("click", ev => {
+    const b = ev.target.closest("[data-coded],[data-codedcopy]"); if (!b) return;
+    if (b.dataset.codedcopy) {
+      const url = "https://181residents.com/" + b.dataset.codedcopy;
+      (navigator.clipboard ? navigator.clipboard.writeText(url) : Promise.reject()).then(() => toast("Link copied: " + url), () => prompt("Copy this address:", url));
+      return;
+    }
+    const [slug, st] = b.dataset.coded.split("|");
+    codedSet(slug, st);
+  });
   async function saveWindow(btn) {
     btn.disabled = true;
     try {

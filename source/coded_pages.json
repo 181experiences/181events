@@ -1,0 +1,11 @@
+{
+  "_about": "Pages that exist as code (a module under source/), not as builder blocks. Each has a status in the settings table under page_<slug> (Published when absent). The admin lists them at the foot of the Pages screen; the build renders only the published ones and sweeps the rest.",
+  "pages": [
+    {
+      "slug": "gala",
+      "title": "Lights, Camera, Gala: the style guide",
+      "since": "2026-10-13",
+      "note": "The holiday gala's inspiration guide, in its own skin, with the photo reels."
+    }
+  ]
+}

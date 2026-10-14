@@ -56,11 +56,11 @@ print(f"{len(rows)} live events pulled from the database")
 # stands, so a hiccup here never blocks a build.
 try:
     req = urllib.request.Request(url, method="POST",
-        data=json.dumps({"sql": "SELECT key, value FROM settings WHERE key IN ('detail_weeks','horizon_months')"}).encode(),
+        data=json.dumps({"sql": "SELECT key, value FROM settings WHERE key IN ('detail_weeks','horizon_months') OR key LIKE 'page_%'"}).encode(),
         headers={"Authorization": f"Bearer {token}", "content-type": "application/json"})
     with urllib.request.urlopen(req) as r:
         srows = json.load(r)["result"][0]["results"]
-    win = {s["key"]: int(s["value"]) for s in srows}
+    win = {s["key"]: (int(s["value"]) if s["key"] in ("detail_weeks", "horizon_months") else s["value"]) for s in srows}
     if win:
         json.dump(win, open(os.path.join(HERE, "settings_live.json"), "w", encoding="utf-8"))
         print(f"calendar window: {win}")

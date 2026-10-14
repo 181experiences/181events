@@ -25,6 +25,7 @@ NAV = [("dash", "Dashboard"), ("events", "Events"), ("cal", "Calendar"), ("pages
 # The starting item list rides the page as JSON, so "Load the starting list"
 # needs no extra request and no build-time database access.
 INV_CATALOG = open(os.path.join(HERE, "inventory_catalog.json"), encoding="utf-8").read().replace("</", "<\\/")
+CODED_PAGES = open(os.path.join(HERE, "coded_pages.json"), encoding="utf-8").read().replace("</", "<\\/")
 
 rules = [f'#s-{s}:checked ~ .body #scr-{s}{{display:block}}' for s in SCREENS]
 for s, nav in NAV_OF.items():
@@ -945,6 +946,12 @@ HTML = f'''<!DOCTYPE html>
   <div class="psub" id="pgcount">Loading&hellip;</div>
   <div style="margin:0 0 16px"><button class="btn" data-pgnew>New Page</button></div>
   <div id="pglist"></div>
+
+  <div class="sec" style="margin-top:36px">
+    <div style="display:flex;align-items:center;gap:10px"><h2>Pages built in code</h2>{info("Pages that exist as code rather than blocks, like the gala guide with its photo reels. Their words and pictures change through the developer; their life on the site is yours: Unpublish takes one off the air with everything kept, Archive files it, Publish walks it back out. A change takes effect at the next rebuild, within a couple of minutes, and the address stays reserved while a page is off, so nothing else can take it.")}</div>
+    <div class="sd">Their words change in code; whether they are on the air is decided here.</div>
+    <div id="codedlist"></div>
+  </div>
 </div></section>
 
 <!-- ================= PAGE EDITOR ================= -->
@@ -1538,6 +1545,7 @@ HTML = f'''<!DOCTYPE html>
 </div>
 <input type="file" id="afile" style="display:none">
 <script id="inv-catalog" type="application/json">__INV_CATALOG__</script>
+<script id="coded-pages" type="application/json">__CODED_PAGES__</script>
 <div id="dlg-wrap"><div id="dlg"><div id="dlg-t"></div><div id="dlg-p"></div><div id="dlg-f"></div><div id="dlg-b"></div></div></div>
 <div class="toast" id="toast"></div>
 <script>
@@ -1548,6 +1556,6 @@ HTML = f'''<!DOCTYPE html>
 '''
 
 import os
-HTML = HTML.replace("__INV_CATALOG__", INV_CATALOG)
+HTML = HTML.replace("__INV_CATALOG__", INV_CATALOG).replace("__CODED_PAGES__", CODED_PAGES)
 open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "181fremont_admin_prototype.html"), "w", encoding="utf-8").write(HTML)
 print("built", len(HTML), "bytes")
