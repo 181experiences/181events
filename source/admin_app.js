@@ -332,12 +332,40 @@
   // rendered — descSet lays that string into the editable box, and descGet
   // walks the box back out to exactly that shape (b->strong, i->em, blocks
   // and <br> back to newlines, anything else stripped to its text).
+  // A link address the record may carry: http(s), mailto, or a path on this site.
+  function safeHref(u) {
+    u = String(u || "").trim();
+    if (/^(https?:\/\/|mailto:)[^\s<>"']+$/.test(u) || /^\/[^\s<>"']*$/.test(u)) return u;
+    if (/^[a-z0-9.-]+\.[a-z]{2,}(\/[^\s<>"']*)?$/i.test(u)) return "https://" + u;   // typed without the scheme
+    return "";
+  }
   function descSet(v) {
     let s = String(v == null ? "" : v).replace(/\r/g, "");
-    // Everything is text except the three tags the fmtbar has ever written.
+    // Everything is text except the tags the fmtbar writes: strong, em, u, and
+    // a link with a safe address. Lines that begin "- " or "1. " are lists.
     s = s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
     s = s.replace(/&lt;(\/?)(strong|em|u)&gt;/gi, "<$1$2>");
-    $("#f-desc").innerHTML = s.split("\n").join("<br>");
+    s = s.replace(/&lt;a href="([^"]*)"&gt;([\s\S]*?)&lt;\/a&gt;/gi, (m, href, text) => {
+      const h = safeHref(href.replace(/&amp;/g, "&"));
+      return h ? `<a href="${esc(h)}">${text}</a>` : text;
+    });
+    const html = [], lines = s.split("\n");
+    let list = null;
+    const close = () => { if (list) { html.push(`</${list}>`); list = null; } };
+    for (const line of lines) {
+      const m = /^\s*(?:[-*\u2022]\s+|(\d+)[.)]\s+)(.*)$/.exec(line);
+      if (m) {
+        const kind = m[1] ? "ol" : "ul";
+        if (list !== kind) { close(); html.push(`<${kind}>`); list = kind; }
+        html.push(`<li>${m[2]}</li>`);
+      } else {
+        close(); html.push(line, "<br>");
+      }
+    }
+    close();
+    let out = html.join("");
+    out = out.replace(/<\/(ul|ol)><br>/g, "</$1>").replace(/<br>$/, "");
+    $("#f-desc").innerHTML = out;
   }
   function descGet() {
     const walk = n => {
@@ -348,11 +376,18 @@
       if (n.tagName === "STRONG" || n.tagName === "B") return inner.trim() ? `<strong>${inner}</strong>` : inner;
       if (n.tagName === "EM" || n.tagName === "I") return inner.trim() ? `<em>${inner}</em>` : inner;
       if (n.tagName === "U") return inner.trim() ? `<u>${inner}</u>` : inner;
+      if (n.tagName === "A") { const h = safeHref(n.getAttribute("href")); return h && inner.trim() ? `<a href="${h}">${inner.trim()}</a>` : inner; }
+      if (n.tagName === "UL" || n.tagName === "OL") {
+        const items = [...n.children].filter(c => c.tagName === "LI")
+          .map((li, i) => (n.tagName === "OL" ? `${i + 1}. ` : "- ") + [...li.childNodes].map(walk).join("").replace(/\n+/g, " ").trim());
+        return "\n" + items.join("\n") + "\n";
+      }
+      if (n.tagName === "LI") return "\n- " + inner;
       if (n.tagName === "DIV" || n.tagName === "P") return "\n" + (inner === "\n" ? "" : inner);
       return inner;
     };
     return [...$("#f-desc").childNodes].map(walk).join("")
-      .replace(/^\n/, "").replace(/[ \t]+\n/g, "\n").trimEnd();
+      .replace(/^\n+/, "").replace(/[ \t]+\n/g, "\n").replace(/\n{3,}/g, "\n\n").trimEnd();
   }
 
   function applyFields(e) {
@@ -3729,9 +3764,11 @@
     }
     if (b.dataset.fmt) {
       // The box is contenteditable: formatting applies live to the selection,
-      // shown as residents will see it. descGet maps b/i back to strong/em.
+      // shown as residents will see it. descGet maps b/i back to strong/em,
+      // lists back to "- " and "1. " lines, links back to <a href>.
+      if (b.dataset.fmt === "link") { descLink(); return; }
       $("#f-desc").focus();
-      document.execCommand({ strong: "bold", em: "italic", u: "underline" }[b.dataset.fmt]);
+      document.execCommand({ strong: "bold", em: "italic", u: "underline", ul: "insertUnorderedList", ol: "insertOrderedList" }[b.dataset.fmt]);
       return;
     }
     if (b.dataset.edit) openEditor(b.dataset.edit);
@@ -3815,6 +3852,27 @@
     const [i, k] = el.dataset.pb.split("|");
     if (pgBlocks[Number(i)]) pgBlocks[Number(i)][k] = el.value;
   });
+
+  // The Link button: the selection becomes the link, or the address itself
+  // is inserted as one. The selection is remembered across the dialog.
+  async function descLink() {
+    const box = $("#f-desc"); box.focus();
+    const sel = window.getSelection();
+    const range = sel.rangeCount && box.contains(sel.anchorNode) ? sel.getRangeAt(0).cloneRange() : null;
+    const picked = range ? range.toString().trim() : "";
+    const r = await dialog("Add a link", picked
+      ? `The selected words become the link: <strong>${esc(picked)}</strong>`
+      : "No words selected, so the address itself will appear as the link. Select text first to link it instead.",
+      [{ label: "Add the link", kind: "primary", value: "yes" }, { label: "Cancel", kind: "quiet", value: null }],
+      [{ id: "url", label: "Address", placeholder: "181residents.com/gala" }]);
+    if (!r || !r.value) return;
+    const href = safeHref(r.fields.url);
+    if (!href) { toast("That does not read as a web address.", "warn"); return; }
+    box.focus();
+    if (range) { sel.removeAllRanges(); sel.addRange(range); }
+    if (range && picked) document.execCommand("createLink", false, href);
+    else document.execCommand("insertHTML", false, `<a href="${esc(href)}">${esc(r.fields.url.trim())}</a>`);
+  }
 
   // Paste into the description arrives as plain text, so a paragraph from
   // Word or an email never smuggles its fonts and markup into the record;

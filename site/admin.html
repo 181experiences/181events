@@ -572,6 +572,8 @@
   .desced{min-height:150px;line-height:1.55;white-space:pre-wrap;overflow-y:auto;cursor:text}
   .desced:empty::before{content:attr(data-ph);color:var(--stone);pointer-events:none}
   .desced strong{font-weight:700} .desced em{font-style:italic} .desced u{text-decoration:underline}
+  .desced a{color:var(--red);text-decoration:underline}
+  .desced ul,.desced ol{margin:4px 0;padding-left:1.4em} .desced li{margin:0}
   .chart{width:100%;height:auto;display:block}
   .chart .bar{fill:#cfc6b8} .chart .bar.hot{fill:var(--ink)}
   .chart .tick{font-size:11px;fill:var(--stone);font-family:var(--fb)}
@@ -801,11 +803,14 @@
     <div class="field"><label class="fl" for="f-price">Price per person</label><input class="inp" id="f-price" placeholder="$75"></div>
     <div class="field"><div class="flrow"><label class="fl" for="f-cutoff">RSVP closes</label><span class="iwrap"><button type="button" class="ib" aria-label="What this does">i</button><span class="ipop">End of that day, Pacific. From the next morning the button reads Join the Waitlist and requests come to you for a yes or a no; Confirm seats is the yes. Blank keeps RSVPs open. Workshops close the Monday of the event week, so materials are ordered against a firm count.</span></span></div><input class="inp" type="date" id="f-cutoff">
       <div class="flrow" style="margin:10px 0 0"><label class="check"><input type="checkbox" id="f-closed"> Close RSVPs now</label><span class="iwrap"><button type="button" class="ib" aria-label="What this does">i</button><span class="ipop">The by-hand switch, for a sudden max or a change of plans: the button turns to Join the Waitlist the moment this publishes. Capacity and the close date already do this on their own schedule; untick to reopen.</span></span></div></div>
-    <div class="field f-full"><div class="flrow"><label class="fl" for="f-desc">Description</label><span class="iwrap"><button type="button" class="ib" aria-label="What this does">i</button><span class="ipop">The first paragraph is the one that travels: residents who tap Add to My Calendar carry paragraph one into their phone&rsquo;s own calendar, and nothing after it. Lead with the line you want them to keep; menus, schedules, and the rest read beautifully from paragraph two on.</span></span></div>
+    <div class="field f-full"><div class="flrow"><label class="fl" for="f-desc">Description</label><span class="iwrap"><button type="button" class="ib" aria-label="What this does">i</button><span class="ipop">The first paragraph is the one that travels: residents who tap Add to My Calendar carry paragraph one into their phone&rsquo;s own calendar, and nothing after it. Lead with the line you want them to keep; menus, schedules, and the rest read beautifully from paragraph two on. Select words and press Link to make them a link (an address pasted on its own becomes one too); the two List buttons start bullets or numbers, and pressing one again on an empty item leaves the list.</span></span></div>
       <div class="fmtbar">
         <button type="button" class="mini" data-fmt="strong" title="Bold the selected text"><strong>B</strong></button>
         <button type="button" class="mini" data-fmt="em" title="Italicise the selected text"><em>I</em></button>
         <button type="button" class="mini" data-fmt="u" title="Underline the selected text"><u>U</u></button>
+        <button type="button" class="mini" data-fmt="link" title="Turn the selected words into a link, or insert an address">Link</button>
+        <button type="button" class="mini" data-fmt="ul" title="A bulleted list; press it again to leave the list">&bull; List</button>
+        <button type="button" class="mini" data-fmt="ol" title="A numbered list; press it again to leave the list">1. List</button>
       </div>
       <div class="inp desced" id="f-desc" contenteditable="true" data-ph="Write it as if the reader knows nothing about the event. It shows exactly as typed: a return starts a new line, a blank line starts a new paragraph."></div>
       <div class="hint">Select some text, then B, I, or U; it shows here exactly as residents will see it. Titles of books and films take italics. A return is a new line (menus read one item per line), a blank line is a new paragraph. Sizes are set by the calendar itself.</div></div>
@@ -2447,12 +2452,40 @@
   // rendered — descSet lays that string into the editable box, and descGet
   // walks the box back out to exactly that shape (b->strong, i->em, blocks
   // and <br> back to newlines, anything else stripped to its text).
+  // A link address the record may carry: http(s), mailto, or a path on this site.
+  function safeHref(u) {
+    u = String(u || "").trim();
+    if (/^(https?:\/\/|mailto:)[^\s<>"']+$/.test(u) || /^\/[^\s<>"']*$/.test(u)) return u;
+    if (/^[a-z0-9.-]+\.[a-z]{2,}(\/[^\s<>"']*)?$/i.test(u)) return "https://" + u;   // typed without the scheme
+    return "";
+  }
   function descSet(v) {
     let s = String(v == null ? "" : v).replace(/\r/g, "");
-    // Everything is text except the three tags the fmtbar has ever written.
+    // Everything is text except the tags the fmtbar writes: strong, em, u, and
+    // a link with a safe address. Lines that begin "- " or "1. " are lists.
     s = s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
     s = s.replace(/&lt;(\/?)(strong|em|u)&gt;/gi, "<$1$2>");
-    $("#f-desc").innerHTML = s.split("\n").join("<br>");
+    s = s.replace(/&lt;a href="([^"]*)"&gt;([\s\S]*?)&lt;\/a&gt;/gi, (m, href, text) => {
+      const h = safeHref(href.replace(/&amp;/g, "&"));
+      return h ? `<a href="${esc(h)}">${text}</a>` : text;
+    });
+    const html = [], lines = s.split("\n");
+    let list = null;
+    const close = () => { if (list) { html.push(`</${list}>`); list = null; } };
+    for (const line of lines) {
+      const m = /^\s*(?:[-*\u2022]\s+|(\d+)[.)]\s+)(.*)$/.exec(line);
+      if (m) {
+        const kind = m[1] ? "ol" : "ul";
+        if (list !== kind) { close(); html.push(`<${kind}>`); list = kind; }
+        html.push(`<li>${m[2]}</li>`);
+      } else {
+        close(); html.push(line, "<br>");
+      }
+    }
+    close();
+    let out = html.join("");
+    out = out.replace(/<\/(ul|ol)><br>/g, "</$1>").replace(/<br>$/, "");
+    $("#f-desc").innerHTML = out;
   }
   function descGet() {
     const walk = n => {
@@ -2463,11 +2496,18 @@
       if (n.tagName === "STRONG" || n.tagName === "B") return inner.trim() ? `<strong>${inner}</strong>` : inner;
       if (n.tagName === "EM" || n.tagName === "I") return inner.trim() ? `<em>${inner}</em>` : inner;
       if (n.tagName === "U") return inner.trim() ? `<u>${inner}</u>` : inner;
+      if (n.tagName === "A") { const h = safeHref(n.getAttribute("href")); return h && inner.trim() ? `<a href="${h}">${inner.trim()}</a>` : inner; }
+      if (n.tagName === "UL" || n.tagName === "OL") {
+        const items = [...n.children].filter(c => c.tagName === "LI")
+          .map((li, i) => (n.tagName === "OL" ? `${i + 1}. ` : "- ") + [...li.childNodes].map(walk).join("").replace(/\n+/g, " ").trim());
+        return "\n" + items.join("\n") + "\n";
+      }
+      if (n.tagName === "LI") return "\n- " + inner;
       if (n.tagName === "DIV" || n.tagName === "P") return "\n" + (inner === "\n" ? "" : inner);
       return inner;
     };
     return [...$("#f-desc").childNodes].map(walk).join("")
-      .replace(/^\n/, "").replace(/[ \t]+\n/g, "\n").trimEnd();
+      .replace(/^\n+/, "").replace(/[ \t]+\n/g, "\n").replace(/\n{3,}/g, "\n\n").trimEnd();
   }
 
   function applyFields(e) {
@@ -5844,9 +5884,11 @@
     }
     if (b.dataset.fmt) {
       // The box is contenteditable: formatting applies live to the selection,
-      // shown as residents will see it. descGet maps b/i back to strong/em.
+      // shown as residents will see it. descGet maps b/i back to strong/em,
+      // lists back to "- " and "1. " lines, links back to <a href>.
+      if (b.dataset.fmt === "link") { descLink(); return; }
       $("#f-desc").focus();
-      document.execCommand({ strong: "bold", em: "italic", u: "underline" }[b.dataset.fmt]);
+      document.execCommand({ strong: "bold", em: "italic", u: "underline", ul: "insertUnorderedList", ol: "insertOrderedList" }[b.dataset.fmt]);
       return;
     }
     if (b.dataset.edit) openEditor(b.dataset.edit);
@@ -5930,6 +5972,27 @@
     const [i, k] = el.dataset.pb.split("|");
     if (pgBlocks[Number(i)]) pgBlocks[Number(i)][k] = el.value;
   });
+
+  // The Link button: the selection becomes the link, or the address itself
+  // is inserted as one. The selection is remembered across the dialog.
+  async function descLink() {
+    const box = $("#f-desc"); box.focus();
+    const sel = window.getSelection();
+    const range = sel.rangeCount && box.contains(sel.anchorNode) ? sel.getRangeAt(0).cloneRange() : null;
+    const picked = range ? range.toString().trim() : "";
+    const r = await dialog("Add a link", picked
+      ? `The selected words become the link: <strong>${esc(picked)}</strong>`
+      : "No words selected, so the address itself will appear as the link. Select text first to link it instead.",
+      [{ label: "Add the link", kind: "primary", value: "yes" }, { label: "Cancel", kind: "quiet", value: null }],
+      [{ id: "url", label: "Address", placeholder: "181residents.com/gala" }]);
+    if (!r || !r.value) return;
+    const href = safeHref(r.fields.url);
+    if (!href) { toast("That does not read as a web address.", "warn"); return; }
+    box.focus();
+    if (range) { sel.removeAllRanges(); sel.addRange(range); }
+    if (range && picked) document.execCommand("createLink", false, href);
+    else document.execCommand("insertHTML", false, `<a href="${esc(href)}">${esc(r.fields.url.trim())}</a>`);
+  }
 
   // Paste into the description arrives as plain text, so a paragraph from
   // Word or an email never smuggles its fonts and markup into the record;

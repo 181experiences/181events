@@ -132,11 +132,19 @@ for _e in EVENTS:
     _e["far"] = _e["on"] > DETAIL_END and not _e.get("announce")
 
 def plain(s):
-    for a, b in [("&rsquo;", "'"), ("&amp;", "&"), ("&middot;", "-"), ("&mdash;", "-"),
+    import re as _re2
+    s = _re2.sub(r'<a href="([^"]*)"[^>]*>(.*?)</a>', lambda m: m.group(2) if m.group(2).strip() == m.group(1) else f"{m.group(2)} ({m.group(1)})", s, flags=_re2.S)
+    for a, b in [("&rsquo;", "'"), ("&amp;", "&"), ("&middot;", "-"), ("&mdash;", "-"), ("&quot;", '"'), ("&#x27;", "'"),
                  ("<em>", ""), ("</em>", ""), ("<strong>", ""), ("</strong>", ""),
-                 ("<u>", ""), ("</u>", ""), ("—", "-")]:
+                 ("<u>", ""), ("</u>", ""), ("<p>", ""), ("</p>", "\n"), ("<br>", "\n"),
+                 ("<ul>", ""), ("</ul>", ""), ("<ol>", ""), ("</ol>", ""), ("<li>", "- "), ("</li>", "\n"), ("—", "-")]:
         s = s.replace(a, b)
-    return s
+    return s.strip()
+
+# Description blocks: the database path hands ready blocks (<p>, <ul>, <ol>);
+# the code path's series hand plain paragraphs, wrapped here.
+def desc_html(e):
+    return "".join(d if d.startswith(("<p>", "<ul>", "<ol>")) else f"<p>{d}</p>" for d in e["desc"])
 
 def slug(e):
     return plain(e["title"]).lower().replace(" ", "-").replace(":", "").replace("'", "")
@@ -186,7 +194,7 @@ def ics_href(e):
         # calendar entry maps to the boutique, never to our lobby.
         (f"LOCATION:{plain(e.get('address') or e['loc'])}" if e["rsvp"] == "partner"
          else f"LOCATION:181 Fremont - {plain(e['loc'])}"),
-        f"DESCRIPTION:{plain(e['desc'][0]) if e['desc'] else ''}", "END:VEVENT", "END:VCALENDAR"]) + "\r\n"
+        "DESCRIPTION:" + (plain(e['desc'][0]).replace("\\", "\\\\").replace("\n", "\\n") if e['desc'] else ""), "END:VEVENT", "END:VCALENDAR"]) + "\r\n"
     fname = f"{e['on'].isoformat()}_{e['slug']}.ics"
     ICS_FILES[fname] = body
     return f"/ics/{fname}"
@@ -443,7 +451,7 @@ def event_screen(e):
         <div class="e-eyebrow">{eyebrow} &middot; Past event</div>
         <h1 class="e-title">{e["title"]}</h1>
         {facts}
-        <div class="e-copy">{"".join(f"<p>{p}</p>" for p in e["desc"])}</div>
+        <div class="e-copy">{desc_html(e)}</div>
         {box}
         {cta}
       </div>
@@ -467,7 +475,7 @@ def event_screen(e):
         <div class="e-eyebrow">{e["sub"] or e["cat"]} &middot; Coming soon</div>
         <h1 class="e-title">{e["title"]}</h1>
         {facts}
-        <div class="e-copy">{"".join(f"<p>{p}</p>" for p in e["desc"])}</div>
+        <div class="e-copy">{desc_html(e)}</div>
         {box}
         {cta}
       </div>
@@ -527,7 +535,7 @@ def event_screen(e):
         <div class="e-eyebrow">{eyebrow}</div>
         <h1 class="e-title">{e["title"]}</h1>
         {facts}
-        <div class="e-copy">{"".join(f"<p>{p}</p>" for p in e["desc"])}</div>
+        <div class="e-copy">{desc_html(e)}</div>
         {guest_ui}
         {box}
         {cta}
@@ -805,6 +813,10 @@ HTML = f'''<!DOCTYPE html>
   .fact dt{{flex:0 0 112px;font-size:13px;letter-spacing:.14em;text-transform:uppercase;color:var(--stone);padding-top:5px;margin:0;font-weight:500}}
   .fact dd{{margin:0;flex:1;font-size:20px;color:var(--ink)}}
   .e-copy p{{color:var(--ink-body);font-size:20px;line-height:1.65;margin:0 0 18px}}
+  .e-copy ul,.e-copy ol{{color:var(--ink-body);font-size:20px;line-height:1.6;margin:0 0 18px;padding-left:1.3em}}
+  .e-copy li{{margin:0 0 6px}}
+  .e-copy a{{color:var(--red);text-decoration:underline;text-underline-offset:3px;text-decoration-thickness:1px}}
+  .e-copy a:hover{{color:#a5171d}}
 
   .rlink{{display:inline-flex;align-items:center;min-height:54px;font-size:14px;letter-spacing:.1em;
     text-transform:uppercase;font-weight:600;color:var(--red);border-bottom:1px solid currentColor;padding-bottom:2px}}

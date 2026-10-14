@@ -21,16 +21,67 @@ def plain(s):
     """HTML entities -> readable text for storage."""
     return html.unescape(s) if isinstance(s, str) else s
 
+import re as _re
+
+SITE_HOST = "181residents.com"
+
+def safe_href(url):
+    """A link address the page may carry: http(s), mailto, or a path on this site."""
+    u = (url or "").strip()
+    if _re.match(r"^(https?://|mailto:)[^\s<>\"']+$", u) or _re.match(r"^/[^\s<>\"']*$", u):
+        return u
+    return ""
+
 def markup(s):
     """Stored text -> safe HTML for the site (the page is UTF-8, so accents stay as they are).
-    Everything is escaped except <em>, <strong>, and <u>, the three the admin's
-    formatting buttons produce."""
+    Everything is escaped except <em>, <strong>, <u>, and <a href="..."> with a
+    safe address, the tags the admin's formatting buttons produce. Links off
+    the site open in a new tab."""
     if not isinstance(s, str):
         return s
     s = html.escape(s, quote=False)
     for t in ("em", "strong", "u"):
         s = s.replace(f"&lt;{t}&gt;", f"<{t}>").replace(f"&lt;/{t}&gt;", f"</{t}>")
+    def _a(m):
+        href = safe_href(html.unescape(m.group(1)))
+        if not href:
+            return m.group(2)
+        ext = href.startswith("http") and SITE_HOST not in href.split("/")[2]
+        extra = ' target="_blank" rel="noopener"' if ext else ""
+        return '<a href="' + html.escape(href) + '"' + extra + '>' + m.group(2) + '</a>'
+    s = _re.sub(r'&lt;a href="([^"]*)"&gt;(.*?)&lt;/a&gt;', _a, s, flags=_re.S)
+    s = _re.sub(r"&lt;/?a(?: [^&]*)?&gt;", "", s)
     return s
+
+def desc_blocks(raw):
+    """Stored description -> a list of HTML blocks. A blank line starts a new
+    paragraph; inside a paragraph a return is a line break; lines that begin
+    "- " (or "* ") make a bulleted list and lines that begin "1. " a numbered
+    one. The first block is the one the calendar file carries."""
+    raw = (raw or "").replace("\r", "")
+    out = []
+    for para in raw.split("\n\n"):
+        if not para.strip():
+            continue
+        lines, buf, kind = [l for l in para.split("\n")], [], None
+        def flush():
+            nonlocal buf, kind
+            if not buf:
+                return
+            if kind == "p":
+                out.append("<p>" + "<br>".join(markup(l) for l in buf) + "</p>")
+            else:
+                out.append(f"<{kind}>" + "".join(f"<li>{markup(l)}</li>" for l in buf) + f"</{kind}>")
+            buf, kind = [], None
+        for line in lines:
+            m = _re.match(r"^\s*(?:[-*\u2022]\s+|(\d+)[.)]\s+)(.*)$", line)
+            k = ("ol" if m.group(1) else "ul") if m else "p"
+            text = m.group(2) if m else line.strip()
+            if k != kind:
+                flush(); kind = k
+            buf.append(text if k != "p" else line.strip())
+        flush()
+    return out
 
 def to_record(e):
     """events_data event -> the stored field shape."""
@@ -53,7 +104,7 @@ def from_record(f, month_key):
     # A blank line starts a new paragraph; a single return stays a line break,
     # so a menu typed one item per line reads one item per line.
     raw = (f.get("Description") or "").replace("\r", "")
-    desc = [markup(p.strip()).replace("\n", "<br>") for p in raw.split("\n\n") if p.strip()]
+    desc = desc_blocks(raw)
     return dict(
         on=d, m=month_key(d), d=d.day, slug=f["Slug"], title=markup(f["Title"]),
         cat=f["Category"], t24=f.get("Start24") or "0000", time=f.get("Start", ""), end=f.get("End", ""),
