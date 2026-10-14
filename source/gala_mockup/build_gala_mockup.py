@@ -88,7 +88,7 @@ def reel(items, key):
 
 def lightboxes(items):
     seen = set(); items = [it for it in items if not (it[0] in seen or seen.add(it[0]))]
-    return "".join(f'<div class="lb" id="lb-{s}"><a class="lbx" href="#top" aria-label="Close">&times;</a>'
+    return "".join(f'<div class="lb" id="lb-{s}"><a class="lbbg" href="#shut" aria-label="Close"></a><a class="lbx" href="#shut" aria-label="Close">&times;</a>'
                    f'<img src="img/{s}.jpg" alt="{e(c)}">{f"<p>{e(c)}</p>" if c else ""}</div>' for s, c in items)
 
 CSS = r'''
@@ -203,6 +203,9 @@ details.q .a{padding:0 0 20px;max-width:40em}
 .lb:target{display:flex}
 .lb img{max-width:min(96vw,900px);max-height:84vh;border:1px solid var(--line)}
 .lb p{color:var(--champ);margin:14px 0 0;font-size:16px}
+.lb .lbbg{position:absolute;inset:0}
+.lb img,.lb p{position:relative}
+#shut{position:fixed;top:0;left:0;width:1px;height:1px}
 .lb .lbx{position:absolute;top:14px;right:18px;color:var(--champ);font-size:44px;text-decoration:none;line-height:1;min-width:54px;min-height:54px;display:flex;align-items:center;justify-content:center}
 footer{padding:50px 0 70px;text-align:center;color:var(--soft);font-size:15px}
 footer .eyebrow{display:block;margin-bottom:14px}
@@ -332,6 +335,7 @@ HTML = f'''<!DOCTYPE html>
 <style>{CSS}</style>
 </head>
 <body>
+<div id="shut"></div>
 __MOCKNOTE__
 <div class="bulbs"></div>
 {HERO}
