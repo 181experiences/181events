@@ -78,15 +78,16 @@ def reel(items, key):
     slides = []
     for i, (stem, cap) in enumerate(items):
         prev = f"{key}-{(i - 1) % n + 1:02d}"; nxt = f"{key}-{(i + 1) % n + 1:02d}"
-        slides.append(f'<figure class="slide" id="{key}-{i + 1:02d}"><a href="#lb-{stem}"><img src="img/{stem}.jpg" alt="{e(cap)}" loading="lazy"></a>'
-                      f'<figcaption><span>{e(cap)}</span><span class="sa"><a href="#{prev}" aria-label="Previous">&lsaquo;</a>'
-                      f'<i>{i + 1} / {n}</i><a href="#{nxt}" aria-label="Next">&rsaquo;</a></span></figcaption></figure>')
+        slides.append(f'<figure class="slide" id="{key}-{i + 1:02d}"><div class="pic"><a href="#lb-{stem}"><img src="img/{stem}.jpg" alt="{e(cap)}"></a>'
+                      f'<a class="arr l" href="#{prev}" aria-label="Previous">&lsaquo;</a><a class="arr r" href="#{nxt}" aria-label="Next">&rsaquo;</a></div>'
+                      f'<figcaption><span>{e(cap)}</span><i>{i + 1} / {n}</i></figcaption></figure>')
     return (f'<div class="reel" id="reel-{key}"><div class="track">{"".join(slides)}</div>'
-            f'<div class="reelhint">Swipe, or use the arrows &middot; tap a picture to see it large</div>'
+            f'<div class="reelhint">Use the arrows, or swipe &middot; tap the picture to see it large</div>'
             f'<details class="seeall"><summary>See all {n} looks at once</summary><div class="gal tall">'
             + "".join(fig(s, c) for s, c in items) + '</div></details></div>')
 
 def lightboxes(items):
+    seen = set(); items = [it for it in items if not (it[0] in seen or seen.add(it[0]))]
     return "".join(f'<div class="lb" id="lb-{s}"><a class="lbx" href="#top" aria-label="Close">&times;</a>'
                    f'<img src="img/{s}.jpg" alt="{e(c)}">{f"<p>{e(c)}</p>" if c else ""}</div>' for s, c in items)
 
@@ -142,17 +143,23 @@ section.ch{padding:72px 0 56px;border-bottom:1px solid var(--line)}
 .gal.wide{grid-template-columns:repeat(auto-fill,minmax(240px,1fr))}
 .gal.wide .ph a{aspect-ratio:4/3;height:auto;width:100%}
 /* reels */
-.reel{margin:6px 0 10px}
-.track{display:flex;gap:16px;overflow-x:auto;scroll-snap-type:x mandatory;padding:6px 2px 14px;scrollbar-width:thin;scrollbar-color:var(--gold2) transparent;-webkit-overflow-scrolling:touch}
-.slide{flex:0 0 auto;width:min(74vw,330px);margin:0;scroll-snap-align:center;scroll-margin-top:96px;background:#1a1510;border:1px solid var(--line);padding:6px}
-.slide a{display:block}
-.slide img{display:block;width:100%;aspect-ratio:2/3;object-fit:cover;object-position:50% 12%}
-.slide figcaption{display:flex;justify-content:space-between;align-items:center;gap:10px;font-family:Arial,Helvetica,sans-serif;font-size:12px;letter-spacing:.06em;color:var(--soft);padding:9px 4px 3px;line-height:1.35}
-.slide .sa{display:inline-flex;align-items:center;gap:8px;flex:none}
-.slide .sa a{display:inline-flex;align-items:center;justify-content:center;width:38px;height:38px;border:1px solid var(--gold2);border-radius:50%;color:var(--champ);text-decoration:none;font-size:24px;line-height:1;font-family:Georgia,serif}
-.slide .sa a:hover{background:var(--gold);color:var(--night)}
-.slide .sa i{font-style:normal;color:var(--gold);letter-spacing:.1em;font-size:11px}
-.reelhint{font-family:Arial,Helvetica,sans-serif;font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--gold2);margin:2px 0 8px}
+.reel{margin:6px auto 10px;max-width:560px}
+.track{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+.track::-webkit-scrollbar{display:none}
+.slide{flex:0 0 100%;width:100%;margin:0;scroll-snap-align:start;scroll-margin-top:110px;background:#1a1510;border:1px solid var(--line);padding:8px}
+.slide .pic{position:relative}
+.slide .pic>a{display:block}
+.slide img{display:block;width:100%;aspect-ratio:3/4;object-fit:cover;object-position:50% 10%}
+.slide .arr{position:absolute;top:50%;transform:translateY(-50%);width:54px;height:54px;border-radius:50%;background:rgba(11,9,8,.72);border:1px solid var(--gold);color:var(--champ);
+  display:flex;align-items:center;justify-content:center;text-decoration:none;font-size:34px;line-height:1;font-family:Georgia,serif}
+.slide .arr.l{left:12px}.slide .arr.r{right:12px}
+.slide .arr:hover{background:var(--gold);color:var(--night)}
+.slide figcaption{display:flex;justify-content:space-between;align-items:center;gap:10px;font-family:Arial,Helvetica,sans-serif;font-size:13px;letter-spacing:.06em;color:var(--champ);padding:12px 6px 4px;line-height:1.35}
+.slide figcaption i{font-style:normal;color:var(--gold);letter-spacing:.12em;font-size:11px;flex:none}
+.reelhint{font-family:Arial,Helvetica,sans-serif;font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--gold2);margin:10px 0 8px;text-align:center}
+.hairrow{display:flex;gap:14px;margin:8px 0 26px}
+.hairrow .ph{flex:1;min-width:0}
+.hairrow .ph a{aspect-ratio:3/4;height:auto;width:100%}
 details.seeall summary{cursor:pointer;list-style:none;font-family:Arial,Helvetica,sans-serif;font-size:12px;letter-spacing:.2em;text-transform:uppercase;color:var(--gold);padding:10px 0;min-height:44px;display:flex;align-items:center;gap:10px}
 details.seeall summary::-webkit-details-marker{display:none}
 details.seeall summary:before{content:"+";font-size:20px;color:var(--gold)}
@@ -218,7 +225,7 @@ HERO = f'''<div class="hero" id="top">
 </div></div>'''
 
 NAV = f'''<nav class="chapters"><div class="in">
-<a href="#evening">The evening</a><a href="#look">The look</a><a href="#her">For her</a><a href="#him">For him</a><a href="#touches">Finishing touches</a><a href="#scene">The scene</a><a href="#questions">Questions</a>
+<a href="#evening">The evening</a><a href="#look">The look</a><a href="#her">For her</a><a href="#him">For him</a><a href="#touches">Finishing touches</a><a href="#questions">Questions</a>
 <a class="rsvp" href="{RSVP}">RSVP</a></div></nav>'''
 
 EVENING = section("evening", "Chapter one", "What to expect", '''
@@ -257,7 +264,11 @@ LOOK = section("look", "Chapter two", "The look, decoded", f'''
     <h3>Fabrics that read from across the room</h3>
     {chips(["Satin", "Velvet", "Sequins", "Beading", "Fur, faux is perfect", "Brocade", "Embroidered silk", "Pinstripe wool", "Crisp white cotton"])}
   </div>
-  {fig("moodboard", "The moodboard, the whole evening on one board", "big")}
+  <div>
+    <h3>The hair, in pictures</h3>
+    <div class="hairrow">{fig("women09", "Finger waves")}{fig("women11", "The sleek updo")}{fig("cw09", "Soft waves and a comb")}</div>
+    <div class="hairrow">{fig("cm16", "Combed back, silver")}{fig("cm01", "Pomade and a side part")}{fig("hp12", "A beard, kept neat")}</div>
+  </div>
 </div>
 ''')
 
@@ -273,19 +284,14 @@ SEC_HIM = section("him", "Chapter four", "For him", f'''
 <p class="lead">A tuxedo is the easy answer and the right one. A dark suit with a bow tie is the next easiest. A dinner jacket in white, burgundy or green velvet is the one people remember.</p>
 {chips(["Black tuxedo, peak or shawl lapel", "White dinner jacket", "Velvet dinner jacket, burgundy or green", "Dark suit, double-breasted if you have it", "A sherwani or bandhgala", "Bow tie, hand-tied", "Cummerbund or waistcoat", "White pocket square", "Cufflinks", "Suspenders", "Polished black oxfords", "A fedora, left at the door"])}
 {reel(HIM, "him")}
-<div style="height:24px"></div>
-<div class="gal wide">{fig("guys05", "The group at the bar")}{fig("guys08", "Bow tie, hand-tied")}{fig("guys09", "The cuff and the watch")}</div>
 ''')
 
 TOUCHES = section("touches", "Chapter five", "Finishing touches", f'''
 <p class="lead">The details are the costume. One or two of these turn a good outfit into a scene.</p>
-<div class="two">
-  <div>
+<div>
     <h3>Her</h3>{chips(["Red lipstick, one shade bluer than you think", "Long gloves, past the elbow", "A hair comb or a jeweled clip", "A maang tikka or a feather", "A beaded clutch no bigger than a hand", "Stockings with a seam"])}
     <h3>Him</h3>{chips(["A real bow tie, slightly imperfect", "Pomade and a comb in the pocket", "A watch with a leather strap", "A boutonniere, white", "A silk pocket square, folded flat", "Shoes shined that afternoon"])}
     <h3>Both</h3>{chips(["A coupe, not a flute", "An arm to arrive on", "A good exit line"], "v")}
-  </div>
-  {fig("heromix", "The studio reference sheet", "big")}
 </div>
 ''')
 
@@ -298,7 +304,7 @@ SCENE = section("scene", "Chapter six", "The scene", f'''
 
 QUESTIONS = section("questions", "Chapter seven", "Questions, answered", '''
 <details class="q"><summary>Do I have to dress up?</summary><div class="a"><p>No. Come as you are and you will be welcome. The evening rewards a little effort, and a single Old Hollywood touch is all it takes to join in.</p></div></details>
-<details class="q"><summary>Can I bring a guest?</summary><div class="a"><p>This one is for residents only, with no outside guests, and that includes children. It is the building&rsquo;s own night. Seats are limited, so RSVP by Monday, December 14.</p></div></details>
+<details class="q"><summary>Can I bring a guest?</summary><div class="a"><p>This one is residents only, with no outside guests. The building&rsquo;s own children are residents too, and welcome. Seats are limited, so RSVP by Monday, December 14.</p></div></details>
 <details class="q"><summary>Where do I find a tuxedo, or a gown, in time?</summary><div class="a"><p>Rental is the easy road for black tie, and most houses deliver within the week. For gowns, rental and vintage both work, and the city&rsquo;s vintage shops are made for this brief. <span class="tiny">Mockup note: Leo to add the places he trusts.</span></p></div></details>
 <details class="q"><summary>Will there be photographs?</summary><div class="a"><p>On the red carpet, yes, and you will get yours. Inside, the evening is for the people in it; take all the pictures you like, and ask before you post someone else&rsquo;s.</p></div></details>
 <details class="q"><summary>Is there anything I should not wear?</summary><div class="a"><p>Costumes in the Halloween sense. This is glamour, not fancy dress: no plastic cigarette holders, no gangster props. A feather boa, on the other hand, is allowed.</p></div></details>
@@ -311,8 +317,7 @@ FOOT = f'''<footer><div class="wrap">
 <p class="tiny">181 Fremont Residences &middot; Resident Experiences</p>
 </div></footer>'''
 
-ALL_LB = lightboxes(HER + HIM + [("guys05", "The group at the bar"), ("guys08", "Bow tie, hand-tied"), ("guys09", "The cuff and the watch")]
-                    + [(s, t) for s, t, c in VIBE] + BIG)
+ALL_LB = lightboxes(HER + HIM + [("cw09", "Soft waves and a comb"), ("cm16", "Combed back, silver"), ("cm01", "Pomade and a side part"), ("hp12", "A beard, kept neat")])
 
 HTML = f'''<!DOCTYPE html>
 <html lang="en">
@@ -337,7 +342,6 @@ HTML = f'''<!DOCTYPE html>
 {SEC_HIM}
 {TOUCHES}
 <div class="film"></div>
-{SCENE}
 {QUESTIONS}
 <div class="bulbs"></div>
 {FOOT}
