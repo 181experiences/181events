@@ -7,3 +7,6 @@ source/dev_*.json
 source/dev_assets/
 .DS_Store
 source/pages_live.json
+
+# the single-file copy of the gala mockup is 11 MB of inlined photos; rebuild it from index.html
+source/gala_mockup/Lights-Camera-Gala-style-guide-MOCKUP.html
