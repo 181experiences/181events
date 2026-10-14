@@ -307,10 +307,9 @@ SCENE = section("scene", "Chapter six", "The scene", f'''
 <div class="gal wide">{fig("banquet", "The banquet, the bar, the house")}{fig("vibe-all", "The scene, all together")}</div>
 ''')
 
-QUESTIONS = section("questions", "Chapter seven", "Questions, answered", '''
+QUESTIONS = section("questions", "Chapter six", "Questions, answered", '''
 <details class="q"><summary>Do I have to dress up?</summary><div class="a"><p>No. Come as you are and you will be welcome. The evening rewards a little effort, and a single Old Hollywood touch is all it takes to join in.</p></div></details>
 <details class="q"><summary>Can I bring a guest?</summary><div class="a"><p>This one is residents only, with no outside guests. The building&rsquo;s own children are residents too, and welcome. Seats are limited, so RSVP by Monday, December 7.</p></div></details>
-<details class="q"><summary>Where do I find a tuxedo, or a gown, in time?</summary><div class="a"><p>Rental is the easy road for black tie, and most houses deliver within the week. For gowns, rental and vintage both work, and the city&rsquo;s vintage shops are made for this brief.</p></div></details>
 <details class="q"><summary>Will there be photographs?</summary><div class="a"><p>On the red carpet, yes, and you will get yours. Inside, the evening is for the people in it; take all the pictures you like, and ask before you post someone else&rsquo;s.</p></div></details>
 <details class="q"><summary>Is there anything I should not wear?</summary><div class="a"><p>Costumes in the Halloween sense. This is glamour, not fancy dress: no plastic cigarette holders, no gangster props. A feather boa, on the other hand, is allowed.</p></div></details>
 ''')
