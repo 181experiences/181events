@@ -1187,6 +1187,7 @@ SHELL_CSS = '''
   .gq,.statebox h2{font-family:var(--fd);font-size:clamp(19px,4.8vw,24px);color:var(--ink);line-height:1.25}
   .gh,.statebox p{font-size:clamp(16px,4.2vw,17px);color:var(--ink-soft);margin:8px 0 0}
   .gh .rlink{min-height:0;margin:0}
+  .dishnote{font-size:16px;color:var(--ink-soft);margin:4px 0 12px;max-width:34em}
   .subrow{margin-top:16px}
   .sublab{display:flex;align-items:center;gap:8px;font-size:13px;letter-spacing:.14em;text-transform:uppercase;color:var(--stone);font-weight:600;margin-bottom:4px}
   .subbox .urlline{display:flex;align-items:center;gap:12px;margin-top:6px}
@@ -1317,7 +1318,12 @@ RSVP_CHIPS = '''<div class="flabel2">{{COUNTLABEL}}</div>
 <a class="rlink" href="/message">Message page</a>, or a word at the front desk does it,
 and we&rsquo;ll arrange it together.</div>
 <label class="field"><span>Their names, if you&rsquo;d like us to know</span>
-<input type="text" name="names" value="{{NAMES}}" autocomplete="off" autocapitalize="words" placeholder="Optional"></label>'''
+<input type="text" name="names" value="{{NAMES}}" autocomplete="off" autocapitalize="words" placeholder="Optional"></label>
+<!--DISH--><div class="flabel2" style="margin-top:22px">What are you bringing?</div>
+<p class="dishnote">Pick a kind and name the dish, so no two tables bring the same thing. Nothing to bring? Leave it blank and come as you are.</p>
+<!--DCHIP--><input class="state" type="radio" name="brings_cat" id="bc{{CAT}}" value="{{CAT}}" {{CHECKED}}><label class="gchip chipflow" for="bc{{CAT}}">{{CATLABEL}}</label><!--/DCHIP-->
+<label class="field"><span>The dish</span>
+<input type="text" name="brings" value="{{BRINGS}}" maxlength="80" autocomplete="off" autocapitalize="sentences" placeholder="Sweet potato gratin"></label><!--/DISH-->'''
 
 T_RSVP = '''<a class="back" href="/">&larr; Back to the calendar</a>
 <div class="e-eyebrow">{{EYEBROW}}</div>
@@ -1328,6 +1334,10 @@ T_RSVP = '''<a class="back" href="/">&larr; Back to the calendar</a>
 <!--SEATS--><div class="fact"><dt>Seats</dt><dd>{{SEATS}}</dd></div><!--/SEATS-->
 <!--CUTOFF--><div class="fact"><dt>RSVP by</dt><dd>{{CUTOFF}}</dd></div><!--/CUTOFF-->
 </dl>
+<!--BOARD--><div class="alsobox"><div class="al-t">What&rsquo;s coming so far</div>
+<p>{{DISHES}}</p>
+<p class="al-s">The Club sets the main table; these are the dishes residents have signed up to bring so far.</p>
+</div><!--/BOARD-->
 <!--ALSO--><div class="alsobox"><div class="al-t">Also from your unit</div>
 <p>{{MATES}}</p>
 <p class="al-s">Shown so a household never counts itself twice. If they already have you covered, you&rsquo;re all set.</p>

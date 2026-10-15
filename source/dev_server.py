@@ -276,6 +276,25 @@ def cutoff_pretty(e):
     d = datetime.date.fromisoformat(c)
     return f"{DOW[(d.weekday() + 1) % 7]}, {MON_PRETTY[d.month]} {d.day}"
 
+DISH_CATS = [("main", "Main"), ("side", "Side"), ("dessert", "Dessert"), ("drink", "Drink")]
+
+def dish_section(section, e, row):
+    # Mirrors rsvp/[key].js: the dish question only on potluck events.
+    if not e.get("Potluck"):
+        return cut(section, "DISH", None)
+    d = inner(section, "DISH")
+    chip = inner(d, "DCHIP"); cur = (row or {}).get("brings_cat") or ""
+    d = cut(d, "DCHIP", "".join(fill(chip, dict(CAT=v, CATLABEL=l, CHECKED="checked" if v == cur else "")) for v, l in DISH_CATS))
+    return cut(section, "DISH", d)
+
+def dish_board(key):
+    units = {r["id"]: r.get("unit") or "" for r in load_store("residents", [])}
+    label = dict(DISH_CATS)
+    rows = sorted([r for r in load_store("rsvps", []) if r["event_key"] == key and r["status"] != "Cancelled" and r.get("brings")],
+                  key=lambda r: (r.get("brings_cat") or "", r["created"]))
+    return "<br>".join(f"{esc(label.get(r.get('brings_cat'), 'Bringing'))} &middot; {esc(r['brings'])}"
+                       + (f" &middot; {esc(units.get(r['resident_id']))}" if units.get(r["resident_id"]) else "") for r in rows)
+
 def rsvp_page(e, key, me):
     rsvp_type = TYPE_OF.get(e["RSVP"])   # None for drop-in events: facts, no forms
     tpl = template("rsvp")
@@ -328,6 +347,8 @@ def rsvp_page(e, key, me):
         return shell_page(e["Title"], body, me)
     body = cut(body, "DROPIN", None)
 
+    dishes = dish_board(key) if me and e.get("Potluck") else ""
+    body = cut(body, "BOARD", fill(inner(tpl, "BOARD"), dict(DISHES=dishes)) if dishes else None)
     mates = unit_mates(me, key) if me else []
     body = cut(body, "ALSO", fill(inner(tpl, "ALSO"), dict(MATES="<br>".join(mate_line(m) for m in mates))) if mates else None)
 
@@ -340,9 +361,10 @@ def rsvp_page(e, key, me):
     if active:
         ex = inner(tpl, "EXISTING")
         section = cut(ex, "CHIP", chips_html(ex, rsvp_type, active["count"], party_max(e)))
+        section = dish_section(section, e, active)
         body = cut(body, "FORM", None)
         body = cut(body, "EXISTING", fill(section, dict(KEY=key, STATE=state_line(active),
-            NAMES=esc(active.get("names") or ""),
+            NAMES=esc(active.get("names") or ""), BRINGS=esc(active.get("brings") or ""),
             COUNTLABEL="Outside guests" if rsvp_type == "guest" else "Your party")))
         return shell_page(e["Title"], body, me)
 
@@ -355,11 +377,12 @@ def rsvp_page(e, key, me):
     section = cut(section, "CLOSEDNOTE",
                   fill(inner(section, "CLOSEDNOTE"), dict(CLOSEDLINE=esc(closed_line(e, "RSVPs for this one")))) if closed else None)
     section = cut(section, "CHIP", chips_html(section, rsvp_type, 1, party_max(e)))
+    section = dish_section(section, e, None)
     if closed or (full and rsvp_type != "guest"): btn = "Join the Waitlist"
     elif rsvp_type == "guest": btn = "Register Guests"
     elif rsvp_type == "paid": btn = (f"{esc(e['Price'])} &middot; " if e.get("Price") else "") + "Request Seats"
     else: btn = "Confirm RSVP"
-    body = cut(cut(body, "EXISTING", None), "FORM", fill(section, dict(KEY=key,
+    body = cut(cut(body, "EXISTING", None), "FORM", fill(section, dict(KEY=key, BRINGS="",
         COUNTLABEL="Outside guests" if rsvp_type == "guest" else "Your party", BTNTEXT=btn)))
     return shell_page(e["Title"], body, me)
 
@@ -393,6 +416,7 @@ def my_page(me):
                 tag, tagc = ("You&rsquo;re going" if r["count"] == 1 else f"You&rsquo;re going &middot; party of {r['count']}"), "open"
             meta = f"{MONTHS_S[d.month - 1]} {d.day}"
             if r.get("names"): meta += f" &middot; with {esc(r['names'])}"
+            if r.get("brings"): meta += f" &middot; bringing {esc(r['brings'])}"
             rendered += fill(inner(tpl, "ROW"), dict(KEY=r["event_key"], DAY=d.day,
                 DOW=DOW_S[(d.weekday() + 1) % 7], TITLE=esc(r["event_title"]), META=meta,
                 TAG=tag, TAGCLASS=tagc))
@@ -1451,6 +1475,9 @@ class H(SimpleHTTPRequestHandler):
                 # party above three never quietly shrinks on an untouched save.
                 count = mine["count"] if mine and mine["status"] != "Cancelled" else 1
             names = (form.get("names") or "").strip()[:120]
+            cat_in = (form.get("brings_cat") or "").strip().lower()
+            brings_cat = cat_in if e.get("Potluck") and cat_in in dict(DISH_CATS) else None
+            brings = (form.get("brings") or "").strip()[:80] if e.get("Potluck") else ""
             cap = int(e["Capacity"]) if e.get("Capacity") else None
             # Mirrors the Cloudflare rules exactly: a confirmed party never
             # forfeits seats by editing, growing must fit or nothing changes,
@@ -1485,11 +1512,13 @@ class H(SimpleHTTPRequestHandler):
                 if mine["status"] == "Cancelled":
                     mine["created"] = now_iso()   # a revived RSVP queues from now
                 mine.update(rsvp_type=rsvp_type, count=count, names=names, status=status,
+                            brings_cat=brings_cat, brings=brings or None,
                             updated=now_iso(), updated_by="resident")
             else:
                 rsvps.append(dict(id=max([r["id"] for r in rsvps] or [0]) + 1, resident_id=me["id"],
                                   event_key=key, event_date=e["Date"], event_title=e["Title"],
                                   rsvp_type=rsvp_type, count=count, names=names, status=status,
+                                  brings_cat=brings_cat, brings=brings or None,
                                   created=now_iso(), updated=now_iso(), updated_by="resident"))
             if status == "Confirmed" and cap and rsvp_type != "guest":
                 total = sum(r["count"] for r in rsvps if r["event_key"] == key and r["status"] == "Confirmed")

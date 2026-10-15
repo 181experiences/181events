@@ -5,7 +5,7 @@ import html
 
 FIELDS = ["Status", "Date", "Title", "Category", "Start", "End", "Start24", "Location",
           "Host", "RSVP", "Capacity", "Price", "Series", "Description", "Cutoff", "Marquee",
-          "Counted", "Moved", "Image", "Slug", "Teaser", "Closed", "Announce", "Party", "Partner", "Address"]
+          "Counted", "Moved", "Image", "Slug", "Teaser", "Closed", "Announce", "Party", "Partner", "Address", "Potluck"]
 
 # SQL column per field in the D1 events table ("End" would collide with the SQL keyword).
 COLS = {f: f.lower() for f in FIELDS}
@@ -95,6 +95,7 @@ def to_record(e):
         "Image": e["img"] or "", "Slug": e["slug"], "Teaser": bool(e.get("teaser")),
         "Closed": bool(e.get("closed")), "Announce": bool(e.get("announce")),
         "Party": e.get("party") or "", "Partner": e.get("partner") or "", "Address": e.get("address") or "",
+        "Potluck": bool(e.get("potluck")),
     }
 
 def from_record(f, month_key):
@@ -118,4 +119,5 @@ def from_record(f, month_key):
         closed=bool(f.get("Closed")), announce=bool(f.get("Announce")),
         party=int(f["Party"]) if f.get("Party") else None,
         partner=f.get("Partner") or None, address=f.get("Address") or None,
+        potluck=bool(f.get("Potluck")),
     )

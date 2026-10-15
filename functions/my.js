@@ -14,6 +14,7 @@ function rowSlots(r) {
   else { tag = r.count === 1 ? "You&rsquo;re going" : `You&rsquo;re going &middot; party of ${r.count}`; }
   let meta = `${MONTHS_S[d.getMonth()]} ${d.getDate()}`;
   if (r.names) meta += ` &middot; with ${esc(r.names)}`;
+  if (r.brings) meta += ` &middot; bringing ${esc(r.brings)}`;
   return {
     KEY: r.event_key,
     DAY: d.getDate(),

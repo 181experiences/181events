@@ -7,6 +7,10 @@
 <!--SEATS--><div class="fact"><dt>Seats</dt><dd>{{SEATS}}</dd></div><!--/SEATS-->
 <!--CUTOFF--><div class="fact"><dt>RSVP by</dt><dd>{{CUTOFF}}</dd></div><!--/CUTOFF-->
 </dl>
+<!--BOARD--><div class="alsobox"><div class="al-t">What&rsquo;s coming so far</div>
+<p>{{DISHES}}</p>
+<p class="al-s">The Club sets the main table; these are the dishes residents have signed up to bring so far.</p>
+</div><!--/BOARD-->
 <!--ALSO--><div class="alsobox"><div class="al-t">Also from your unit</div>
 <p>{{MATES}}</p>
 <p class="al-s">Shown so a household never counts itself twice. If they already have you covered, you&rsquo;re all set.</p>
@@ -40,6 +44,11 @@
 and we&rsquo;ll arrange it together.</div>
 <label class="field"><span>Their names, if you&rsquo;d like us to know</span>
 <input type="text" name="names" value="{{NAMES}}" autocomplete="off" autocapitalize="words" placeholder="Optional"></label>
+<!--DISH--><div class="flabel2" style="margin-top:22px">What are you bringing?</div>
+<p class="dishnote">Pick a kind and name the dish, so no two tables bring the same thing. Nothing to bring? Leave it blank and come as you are.</p>
+<!--DCHIP--><input class="state" type="radio" name="brings_cat" id="bc{{CAT}}" value="{{CAT}}" {{CHECKED}}><label class="gchip chipflow" for="bc{{CAT}}">{{CATLABEL}}</label><!--/DCHIP-->
+<label class="field"><span>The dish</span>
+<input type="text" name="brings" value="{{BRINGS}}" maxlength="80" autocomplete="off" autocapitalize="sentences" placeholder="Sweet potato gratin"></label><!--/DISH-->
 <button class="btn" type="submit">Save Changes</button>
 </form>
 <form method="post" action="/rsvp/{{KEY}}" class="cancelform">
@@ -68,6 +77,11 @@ your request joins the waitlist, lands with Resident Experiences, and we reach o
 and we&rsquo;ll arrange it together.</div>
 <label class="field"><span>Their names, if you&rsquo;d like us to know</span>
 <input type="text" name="names" value="{{NAMES}}" autocomplete="off" autocapitalize="words" placeholder="Optional"></label>
+<!--DISH--><div class="flabel2" style="margin-top:22px">What are you bringing?</div>
+<p class="dishnote">Pick a kind and name the dish, so no two tables bring the same thing. Nothing to bring? Leave it blank and come as you are.</p>
+<!--DCHIP--><input class="state" type="radio" name="brings_cat" id="bc{{CAT}}" value="{{CAT}}" {{CHECKED}}><label class="gchip chipflow" for="bc{{CAT}}">{{CATLABEL}}</label><!--/DCHIP-->
+<label class="field"><span>The dish</span>
+<input type="text" name="brings" value="{{BRINGS}}" maxlength="80" autocomplete="off" autocapitalize="sentences" placeholder="Sweet potato gratin"></label><!--/DISH-->
 <button class="btn" type="submit">{{BTNTEXT}}</button>
 </form><!--/FORM-->
 <p class="note">Full details for this event are on <a href="/">the calendar</a>.</p>

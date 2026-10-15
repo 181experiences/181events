@@ -2,14 +2,14 @@
 // The API speaks the same field names the admin and the build use: Status, Date, Title, ...
 
 export const FIELDS = ["Status","Date","Title","Category","Start","End","Start24","Location","Host",
-  "RSVP","Capacity","Price","Series","Description","Cutoff","Marquee","Counted","Moved","Image","Slug","Teaser","Closed","Announce","Party","Partner","Address"];
+  "RSVP","Capacity","Price","Series","Description","Cutoff","Marquee","Counted","Moved","Image","Slug","Teaser","Closed","Announce","Party","Partner","Address","Potluck"];
 
 // SQL column per field. "End" would collide with the SQL keyword, so it gets its own name.
 export const COLS = { Status: "status", Date: "date", Title: "title", Category: "category",
   Start: "start", End: "end_time", Start24: "start24", Location: "location", Host: "host",
   RSVP: "rsvp", Capacity: "capacity", Price: "price", Series: "series", Description: "description",
   Cutoff: "cutoff", Marquee: "marquee", Counted: "counted", Moved: "moved", Image: "image", Slug: "slug",
-  Teaser: "teaser", Closed: "closed", Announce: "announce", Party: "party", Partner: "partner", Address: "address" };
+  Teaser: "teaser", Closed: "closed", Announce: "announce", Party: "party", Partner: "partner", Address: "address", Potluck: "potluck" };
 
 export const CREATE_SQL = `CREATE TABLE IF NOT EXISTS events (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -46,6 +46,7 @@ export async function ensureEventTables(env) {
   try { await env.DB.prepare("ALTER TABLE events ADD COLUMN party INTEGER").run(); } catch (e) {}
   try { await env.DB.prepare("ALTER TABLE events ADD COLUMN partner TEXT").run(); } catch (e) {}
   try { await env.DB.prepare("ALTER TABLE events ADD COLUMN address TEXT").run(); } catch (e) {}
+  try { await env.DB.prepare("ALTER TABLE events ADD COLUMN potluck INTEGER DEFAULT 0").run(); } catch (e) {}
   await env.DB.batch(EVENT_SIDE_TABLES.map(s => env.DB.prepare(s)));
   eventTablesEnsured = true;
 }
@@ -374,7 +375,7 @@ export async function ensureResidentTables(env) {
   }
   // Attendance: how many of the party actually came, marked at the door.
   // Kept apart from count so the sign-up story survives the evening.
-  for (const col of ["arrived INTEGER", "arrived_at TEXT", "updated_by TEXT", "door_note TEXT"]) {
+  for (const col of ["arrived INTEGER", "arrived_at TEXT", "updated_by TEXT", "door_note TEXT", "brings_cat TEXT", "brings TEXT"]) {
     try { await env.DB.prepare(`ALTER TABLE rsvps ADD COLUMN ${col}`).run(); } catch (e) {}
   }
   // Outside guests carry an email for updates, and a standing once a guest
@@ -472,7 +473,7 @@ export function fromRow(r) {
   const out = { id: String(r.id) };
   for (const f of FIELDS) {
     let v = r[COLS[f]];
-    if (["Marquee", "Counted", "Moved", "Teaser", "Closed", "Announce"].includes(f)) v = !!v;
+    if (["Marquee", "Counted", "Moved", "Teaser", "Closed", "Announce", "Potluck"].includes(f)) v = !!v;
     if (v === null) v = (f === "Capacity" || f === "Party") ? null : "";
     out[f] = v;
   }
@@ -487,7 +488,7 @@ export function toCols(fields) {
     if (!(f in fields)) continue;
     let v = fields[f];
     if (f === "Capacity" || f === "Party") v = (v === "" || v == null) ? null : Number(v);
-    if (["Marquee", "Counted", "Moved", "Teaser", "Closed", "Announce"].includes(f)) v = v ? 1 : 0;
+    if (["Marquee", "Counted", "Moved", "Teaser", "Closed", "Announce", "Potluck"].includes(f)) v = v ? 1 : 0;
     cols.push(COLS[f]); vals.push(v === undefined ? null : v);
   }
   return { cols, vals };

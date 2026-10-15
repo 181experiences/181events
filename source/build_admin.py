@@ -811,6 +811,7 @@ HTML = f'''<!DOCTYPE html>
     <div class="field f-full"><label class="check"><input type="checkbox" id="f-teaser"> Coming soon: publish the date and title, hold the details</label>
       <div class="hint">For an event still taking shape. It appears on the calendar with a Coming soon note; RSVP and
       Add to My Calendar stay closed until this is unticked, so plans can still change without anyone rebooking.</div></div>
+    <div class="field f-full"><div class="flrow"><label class="check"><input type="checkbox" id="f-potluck"> Potluck: ask each party what they are bringing</label>{info("For Friendsgiving and any shared table. The RSVP form gains a category (main, side, dessert, drink) and a line for the dish, both optional, saved with the RSVP and changed the same way. Signed-in residents see a board of what is already coming, by category, so no two tables bring the same thing. The Dashboard rows, the check-in print and My RSVPs carry the dish. Say in the description what the Club itself provides.")}</div></div>
     <div class="field f-full" id="ed-guests"><label class="check"><input type="checkbox" id="f-guests"> Also take outside guests</label>
       <div class="hint" id="ed-guests-hint">For an occasion with two doors, like a reading or a reception: residents RSVP here as usual,
       and saving also reserves the room under Spaces with its own registration page for invitees from outside the building.

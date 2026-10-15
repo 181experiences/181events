@@ -16,6 +16,31 @@ import {
 } from "../_resident.js";
 
 const TYPE = { "Seat": "standard", "Paid seat": "paid", "Guest count": "guest" };
+// Potluck: what a party brings, by kind. The kinds are the whole vocabulary.
+const DISH_CATS = [["main", "Main"], ["side", "Side"], ["dessert", "Dessert"], ["drink", "Drink"]];
+function dishChips(section, current) {
+  const chip = inner(section, "DCHIP");
+  return DISH_CATS.map(([v, l]) => fill(chip, { CAT: v, CATLABEL: l, CHECKED: v === current ? "checked" : "" })).join("");
+}
+// The dish question rides both RSVP forms: cut it away unless the event is a
+// potluck, else lay in the kind chips with the party's own choice marked.
+function dishSection(section, ev, row) {
+  if (!ev.potluck) return cut(section, "DISH", null);
+  let d = inner(section, "DISH");
+  d = cut(d, "DCHIP", dishChips(d, row && row.brings_cat ? row.brings_cat : ""));
+  return cut(section, "DISH", d);
+}
+async function dishBoard(env, key) {
+  const { results } = await env.DB.prepare(
+    `SELECT r.brings_cat, r.brings, res.unit FROM rsvps r JOIN residents res ON res.id = r.resident_id
+     WHERE r.event_key = ? AND r.status != 'Cancelled' AND r.brings IS NOT NULL AND r.brings != ''
+     ORDER BY r.brings_cat, r.created`).bind(key).all();
+  return results;
+}
+function boardLines(rows) {
+  const label = Object.fromEntries(DISH_CATS);
+  return rows.map(r => `${esc(label[r.brings_cat] || "Bringing")} &middot; ${esc(r.brings)}${r.unit ? ` &middot; ${esc(r.unit)}` : ""}`).join("<br>");
+}
 
 // "RSVP closes" is a date (older rows carry "Monday, Aug 31"-style text, which
 // parses to the same thing). Closed means the end of that day, Pacific: after
@@ -171,6 +196,10 @@ async function rsvpPage(context, ev, key, me) {
   }
   body = cut(body, "DROPIN", null);
 
+  // The potluck board: what signed-in residents have already said they bring.
+  const dishes = me && ev.potluck ? await dishBoard(env, key) : [];
+  body = cut(body, "BOARD", dishes.length ? fill(inner(tpl, "BOARD"), { DISHES: boardLines(dishes) }) : null);
+
   // What the rest of the unit already said, so the household sees its own picture.
   const mates = me ? await unitMates(env, me, key) : [];
   body = cut(body, "ALSO", mates.length
@@ -188,11 +217,13 @@ async function rsvpPage(context, ev, key, me) {
   if (active) {
     let section = inner(tpl, "EXISTING");
     section = cut(section, "CHIP", chips(section, type, active.count, partyMax(ev)));
+    section = dishSection(section, ev, active);
     body = cut(body, "FORM", null);
     body = cut(body, "EXISTING", fill(section, {
       KEY: key,
       STATE: stateLine(active),
       NAMES: esc(active.names || ""),
+      BRINGS: esc(active.brings || ""),
       COUNTLABEL: type === "guest" ? "Outside guests" : "Your party",
     }));
     return page(context, ev.title, body, me);
@@ -207,6 +238,7 @@ async function rsvpPage(context, ev, key, me) {
     ? fill(inner(section, "CLOSEDNOTE"), { CLOSEDLINE: esc(closedLine(ev, "RSVPs for this one")) })
     : null);
   section = cut(section, "CHIP", chips(section, type, 1, partyMax(ev)));
+  section = dishSection(section, ev, null);
   const btn = closed || (full && type !== "guest") ? "Join the Waitlist"
     : type === "guest" ? "Register Guests"
     : type === "paid" ? `${esc(ev.price || "")}${ev.price ? " &middot; " : ""}Request Seats`
@@ -214,6 +246,7 @@ async function rsvpPage(context, ev, key, me) {
   body = cut(cut(body, "EXISTING", null), "FORM", fill(section, {
     KEY: key,
     COUNTLABEL: type === "guest" ? "Outside guests" : "Your party",
+    BRINGS: "",
     BTNTEXT: btn,
   }));
   return page(context, ev.title, body, me);
@@ -289,6 +322,9 @@ export async function onRequestPost(context) {
   let count = Math.round(Number(form.get("count")));
   if (Number.isFinite(count)) count = Math.max(1, Math.min(partyMax(ev), count));
   const names = String(form.get("names") || "").trim().slice(0, 120);
+  const catIn = String(form.get("brings_cat") || "").trim().toLowerCase();
+  const bringsCat = ev.potluck && DISH_CATS.some(([v]) => v === catIn) ? catIn : null;
+  const brings = ev.potluck ? String(form.get("brings") || "").trim().slice(0, 80) : "";
 
   // Who holds what decides who gets what. A confirmed party never forfeits its
   // seats by editing; growing must fit or nothing changes; and while anyone is
@@ -330,13 +366,14 @@ export async function onRequestPost(context) {
 
   // A revived RSVP queues from now, not from its first life.
   await env.DB.prepare(
-    `INSERT INTO rsvps (resident_id, event_key, event_date, event_title, rsvp_type, count, names, status, created, updated, updated_by)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'resident')
+    `INSERT INTO rsvps (resident_id, event_key, event_date, event_title, rsvp_type, count, names, status, created, updated, updated_by, brings_cat, brings)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'resident', ?, ?)
      ON CONFLICT(resident_id, event_key) DO UPDATE SET
        rsvp_type=excluded.rsvp_type, count=excluded.count, names=excluded.names,
        status=excluded.status, updated=excluded.updated, updated_by=excluded.updated_by,
+       brings_cat=excluded.brings_cat, brings=excluded.brings,
        created=CASE WHEN rsvps.status='Cancelled' THEN excluded.created ELSE rsvps.created END`)
-    .bind(me.id, key, ev.date, ev.title, type, count, names, status, now, now).run();
+    .bind(me.id, key, ev.date, ev.title, type, count, names, status, now, now, bringsCat, brings || null).run();
 
   // Two parties can race past the capacity check; recount after writing and step
   // back onto the waitlist if the room oversold. Better a courteous wait than
@@ -353,6 +390,7 @@ export async function onRequestPost(context) {
   notifyStaff(context, `RSVP · ${me.name}${me.unit ? " · " + me.unit : ""} · ${ev.title}`, [
     `${me.name}${me.unit ? " · " + me.unit : ""} ${mine && mine.status !== "Cancelled" ? "changed their RSVP" : "RSVPed"} on the site: ${ev.title}, ${ev.date}.`,
     type === "guest" ? `Outside guests: ${count}.` : `Party of ${count}${names ? ` (${names})` : ""}.`,
+    brings ? `Bringing: ${bringsCat ? bringsCat + ", " : ""}${brings}.` : "",
     `Standing: ${status}${closed ? " (after the close date; it went in as a request)" : ""}.`,
   ]);
 

@@ -239,7 +239,7 @@
       + cell("Price", dash(h.Price))
       + cell("RSVP closes", dash(cutoffIso(h.Cutoff, h.Date)))
       + cell("Closed now", yes(h.Closed))
-      + cell("Coming soon", yes(h.Teaser))
+      + cell("Coming soon", yes(h.Teaser)) + cell("Potluck", yes(h.Potluck))
       + cell("Announced ahead", yes(h.Announce))
       + cell("Marquee", yes(h.Marquee))
       + cell("Counted", yes(h.Counted))
@@ -401,6 +401,7 @@
     $("#f-teaser").checked = e.Teaser === true || e.Teaser === "True";
     $("#f-closed").checked = e.Closed === true || e.Closed === "True";
     $("#f-announce").checked = e.Announce === true || e.Announce === "True";
+    $("#f-potluck").checked = e.Potluck === true || e.Potluck === "True";
     $$("input[name=cat]").forEach((r, i) => r.checked = CATS[i] === e.Category);
     $$("input[name=rt]").forEach((r, i) => r.checked = RSVPS[i] === (e.RSVP || "None"));
     $("#f-partner").value = e.Partner || "";
@@ -561,7 +562,7 @@
       Capacity: $("#f-cap").value ? Number($("#f-cap").value) : null, Price: $("#f-price").value.trim(),
       Series: $("#f-series").value.trim(), Cutoff: $("#f-cutoff").value.trim(), Description: descGet().trim(),
       Marquee: $("#f-marquee").checked, Teaser: $("#f-teaser").checked, Closed: $("#f-closed").checked,
-      Announce: $("#f-announce").checked,
+      Announce: $("#f-announce").checked, Potluck: $("#f-potluck").checked,
       Counted: $("#co-0").checked, Moved: editing.row ? !!editing.row.Moved : false,
       Party: (() => { const i = $$("input[name=pm]").findIndex(r => r.checked); return i < 0 ? 3 : i + 1; })(),
       Partner: $("#f-partner").value.trim(),
@@ -587,7 +588,7 @@
   }
 
   // Which field changes ripple across a series when "apply to every upcoming occurrence" is ticked.
-  const SERIES_FIELDS = ["Title", "Start", "End", "Start24", "Location", "Host", "Category", "RSVP", "Capacity", "Price", "Series", "Cutoff", "Description", "Counted", "Image", "Status", "Teaser", "Closed", "Announce", "Party", "Partner", "Address"];
+  const SERIES_FIELDS = ["Title", "Start", "End", "Start24", "Location", "Host", "Category", "RSVP", "Capacity", "Price", "Series", "Cutoff", "Description", "Counted", "Image", "Status", "Teaser", "Closed", "Announce", "Party", "Partner", "Address", "Potluck"];
 
   // The parameter is named newStatus with intent: a `status` parameter once
   // shadowed the module's /api/status capability object, so the publish check
@@ -1377,7 +1378,7 @@
         <div class="card" data-rsvpdetail="${esc(s.key)}" style="${openRsvpDetails.has(s.key) ? "" : "display:none;"}margin:4px 0 10px">
         <div style="display:flex;justify-content:flex-end;margin-bottom:6px"><button class="mini ghost" data-rsvpprint="${esc(s.key)}" title="The check-in sheet: names, parties, tick boxes">Print check-in list</button></div>
         ${s.rows.map(r => `<div class="srow"><span class="slab">${esc(r.unit || "Role")} &middot; ${esc(r.name)}</span>
-          <span class="sgrow" style="font-size:14px;color:var(--ink-soft)">${r.status === "Waitlist" ? "Waitlist" : (s.type === "guest" ? `${r.count} guest${r.count === 1 ? "" : "s"}` : `party of ${r.count}`)}${r.names ? ` &middot; ${esc(r.names)}` : ""}${r.door_note ? ` &middot; <em>${esc(r.door_note)}</em>` : ""}</span>
+          <span class="sgrow" style="font-size:14px;color:var(--ink-soft)">${r.status === "Waitlist" ? "Waitlist" : (s.type === "guest" ? `${r.count} guest${r.count === 1 ? "" : "s"}` : `party of ${r.count}`)}${r.names ? ` &middot; ${esc(r.names)}` : ""}${r.brings ? ` &middot; <b style="color:var(--ink)">bringing ${esc(r.brings_cat ? r.brings_cat + ": " : "")}${esc(r.brings)}</b>` : ""}${r.door_note ? ` &middot; <em>${esc(r.door_note)}</em>` : ""}</span>
           <span class="sval" style="font-size:12px;color:var(--stone)" title="Created ${esc((r.created || "").slice(0, 10))}${r.updated_by ? `; last change by ${esc(r.updated_by)}` : ""}">${esc(((r.updated || r.created) || "").slice(0, 10))}${r.updated_by ? ` &middot; ${esc(r.updated_by === "resident" ? "resident" : r.updated_by.split("@")[0])}` : ""}</span>
           <span class="eact">
           ${arriveBtn(r)}
@@ -1411,7 +1412,7 @@
               ${dark ? `<span class="hint" style="margin:0">${dark} ${dark === 1 ? "party has" : "parties have"} no email on file.</span>` : ""}
             </div>
             ${s.rows.map(r => `<div class="srow"><span class="slab">${esc(r.unit || "Role")} &middot; ${esc(r.name)}</span>
-              <span class="sgrow" style="font-size:14px;color:var(--ink-soft)">${r.status === "Waitlist" ? "Waitlisted" : (s.type === "guest" ? `${r.count} guest${r.count === 1 ? "" : "s"}` : `party of ${r.count}`)}${r.names ? ` &middot; ${esc(r.names)}` : ""}${r.door_note ? ` &middot; <em>${esc(r.door_note)}</em>` : ""}</span>
+              <span class="sgrow" style="font-size:14px;color:var(--ink-soft)">${r.status === "Waitlist" ? "Waitlisted" : (s.type === "guest" ? `${r.count} guest${r.count === 1 ? "" : "s"}` : `party of ${r.count}`)}${r.names ? ` &middot; ${esc(r.names)}` : ""}${r.brings ? ` &middot; <b style="color:var(--ink)">bringing ${esc(r.brings_cat ? r.brings_cat + ": " : "")}${esc(r.brings)}</b>` : ""}${r.door_note ? ` &middot; <em>${esc(r.door_note)}</em>` : ""}</span>
               <span class="sval" style="font-size:12px;color:var(--stone)" title="${r.updated_by ? `Last change by ${esc(r.updated_by)}, ${esc((r.updated || "").slice(0, 10))}` : ""}">${esc(r.email || "no email")}${r.updated_by ? ` &middot; ${esc(r.updated_by === "resident" ? "resident" : r.updated_by.split("@")[0])}` : ""}</span>
               <span class="eact">${arriveBtn(r)}</span></div>`).join("")}
             </div>`;
@@ -1431,7 +1432,7 @@
     const row = (r, i, pre) => `<tr><td><span class="box"></span></td><td class="n">${pre || ""}${i + 1}</td>
       <td>${esc(r.name)}${r.unit ? ` &middot; ${esc(r.unit)}` : ""}</td>
       <td>${sm.type === "guest" ? `${r.count} outside guest${r.count === 1 ? "" : "s"}` : `party of ${r.count}`}</td>
-      <td class="note">${esc(r.names || "")}</td></tr>`;
+      <td class="note">${esc(r.names || "")}${r.brings ? `${r.names ? " · " : ""}bringing ${esc(r.brings_cat ? r.brings_cat + ": " : "")}${esc(r.brings)}` : ""}</td></tr>`;
     const heads = conf.reduce((a, r) => a + r.count, 0);
     const w = window.open("", "_blank");
     w.document.write(`<!DOCTYPE html><html><head><title>${esc(sm.title)}</title><style>

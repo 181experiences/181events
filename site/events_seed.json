@@ -25,7 +25,8 @@
   "Announce": false,
   "Party": "",
   "Partner": "",
-  "Address": ""
+  "Address": "",
+  "Potluck": false
  },
  {
   "Status": "Live",
@@ -53,7 +54,8 @@
   "Announce": false,
   "Party": "",
   "Partner": "",
-  "Address": ""
+  "Address": "",
+  "Potluck": false
  },
  {
   "Status": "Live",
@@ -81,7 +83,8 @@
   "Announce": false,
   "Party": "",
   "Partner": "",
-  "Address": ""
+  "Address": "",
+  "Potluck": false
  },
  {
   "Status": "Live",
@@ -109,7 +112,8 @@
   "Announce": false,
   "Party": "",
   "Partner": "",
-  "Address": ""
+  "Address": "",
+  "Potluck": false
  },
  {
   "Status": "Live",
@@ -137,7 +141,8 @@
   "Announce": false,
   "Party": "",
   "Partner": "",
-  "Address": ""
+  "Address": "",
+  "Potluck": false
  },
  {
   "Status": "Live",
@@ -165,7 +170,8 @@
   "Announce": false,
   "Party": "",
   "Partner": "",
-  "Address": ""
+  "Address": "",
+  "Potluck": false
  },
  {
   "Status": "Live",
@@ -193,7 +199,8 @@
   "Announce": false,
   "Party": "",
   "Partner": "",
-  "Address": ""
+  "Address": "",
+  "Potluck": false
  },
  {
   "Status": "Live",
@@ -221,7 +228,8 @@
   "Announce": false,
   "Party": "",
   "Partner": "",
-  "Address": ""
+  "Address": "",
+  "Potluck": false
  },
  {
   "Status": "Live",
@@ -249,7 +257,8 @@
   "Announce": false,
   "Party": "",
   "Partner": "",
-  "Address": ""
+  "Address": "",
+  "Potluck": false
  },
  {
   "Status": "Live",
@@ -277,7 +286,8 @@
   "Announce": false,
   "Party": "",
   "Partner": "",
-  "Address": ""
+  "Address": "",
+  "Potluck": false
  },
  {
   "Status": "Live",
@@ -305,7 +315,8 @@
   "Announce": false,
   "Party": "",
   "Partner": "",
-  "Address": ""
+  "Address": "",
+  "Potluck": false
  },
  {
   "Status": "Live",
@@ -333,7 +344,8 @@
   "Announce": false,
   "Party": "",
   "Partner": "",
-  "Address": ""
+  "Address": "",
+  "Potluck": false
  },
  {
   "Status": "Live",
@@ -361,7 +373,8 @@
   "Announce": false,
   "Party": "",
   "Partner": "",
-  "Address": ""
+  "Address": "",
+  "Potluck": false
  },
  {
   "Status": "Live",
@@ -389,7 +402,8 @@
   "Announce": false,
   "Party": "",
   "Partner": "",
-  "Address": ""
+  "Address": "",
+  "Potluck": false
  },
  {
   "Status": "Live",
@@ -417,7 +431,8 @@
   "Announce": false,
   "Party": "",
   "Partner": "",
-  "Address": ""
+  "Address": "",
+  "Potluck": false
  },
  {
   "Status": "Live",
@@ -445,7 +460,8 @@
   "Announce": false,
   "Party": "",
   "Partner": "",
-  "Address": ""
+  "Address": "",
+  "Potluck": false
  },
  {
   "Status": "Live",
@@ -473,7 +489,8 @@
   "Announce": false,
   "Party": "",
   "Partner": "",
-  "Address": ""
+  "Address": "",
+  "Potluck": false
  },
  {
   "Status": "Live",
@@ -501,7 +518,8 @@
   "Announce": false,
   "Party": "",
   "Partner": "",
-  "Address": ""
+  "Address": "",
+  "Potluck": false
  },
  {
   "Status": "Live",
@@ -529,7 +547,8 @@
   "Announce": false,
   "Party": "",
   "Partner": "",
-  "Address": ""
+  "Address": "",
+  "Potluck": false
  },
  {
   "Status": "Live",
@@ -557,7 +576,8 @@
   "Announce": false,
   "Party": "",
   "Partner": "",
-  "Address": ""
+  "Address": "",
+  "Potluck": false
  },
  {
   "Status": "Live",
@@ -585,7 +605,8 @@
   "Announce": false,
   "Party": "",
   "Partner": "",
-  "Address": ""
+  "Address": "",
+  "Potluck": false
  },
  {
   "Status": "Live",
@@ -613,7 +634,8 @@
   "Announce": false,
   "Party": "",
   "Partner": "",
-  "Address": ""
+  "Address": "",
+  "Potluck": false
  },
  {
   "Status": "Live",
@@ -641,7 +663,8 @@
   "Announce": false,
   "Party": "",
   "Partner": "",
-  "Address": ""
+  "Address": "",
+  "Potluck": false
  },
  {
   "Status": "Live",
@@ -669,7 +692,8 @@
   "Announce": false,
   "Party": "",
   "Partner": "",
-  "Address": ""
+  "Address": "",
+  "Potluck": false
  },
  {
   "Status": "Live",
@@ -697,7 +721,8 @@
   "Announce": false,
   "Party": "",
   "Partner": "",
-  "Address": ""
+  "Address": "",
+  "Potluck": false
  },
  {
   "Status": "Live",
@@ -725,7 +750,8 @@
   "Announce": false,
   "Party": "",
   "Partner": "",
-  "Address": ""
+  "Address": "",
+  "Potluck": false
  },
  {
   "Status": "Live",
@@ -753,7 +779,8 @@
   "Announce": false,
   "Party": "",
   "Partner": "",
-  "Address": ""
+  "Address": "",
+  "Potluck": false
  },
  {
   "Status": "Live",
@@ -781,7 +808,8 @@
   "Announce": false,
   "Party": "",
   "Partner": "",
-  "Address": ""
+  "Address": "",
+  "Potluck": false
  },
  {
   "Status": "Live",
@@ -809,7 +837,8 @@
   "Announce": false,
   "Party": "",
   "Partner": "",
-  "Address": ""
+  "Address": "",
+  "Potluck": false
  },
  {
   "Status": "Live",
@@ -837,7 +866,8 @@
   "Announce": false,
   "Party": "",
   "Partner": "",
-  "Address": ""
+  "Address": "",
+  "Potluck": false
  },
  {
   "Status": "Live",
@@ -865,7 +895,8 @@
   "Announce": false,
   "Party": "",
   "Partner": "",
-  "Address": ""
+  "Address": "",
+  "Potluck": false
  },
  {
   "Status": "Live",
@@ -893,7 +924,8 @@
   "Announce": false,
   "Party": "",
   "Partner": "",
-  "Address": ""
+  "Address": "",
+  "Potluck": false
  },
  {
   "Status": "Live",
@@ -921,7 +953,8 @@
   "Announce": false,
   "Party": "",
   "Partner": "",
-  "Address": ""
+  "Address": "",
+  "Potluck": false
  },
  {
   "Status": "Live",
@@ -949,7 +982,8 @@
   "Announce": false,
   "Party": "",
   "Partner": "",
-  "Address": ""
+  "Address": "",
+  "Potluck": false
  },
  {
   "Status": "Live",
@@ -977,7 +1011,8 @@
   "Announce": false,
   "Party": "",
   "Partner": "",
-  "Address": ""
+  "Address": "",
+  "Potluck": false
  },
  {
   "Status": "Live",
@@ -1005,7 +1040,8 @@
   "Announce": false,
   "Party": "",
   "Partner": "",
-  "Address": ""
+  "Address": "",
+  "Potluck": false
  },
  {
   "Status": "Live",
@@ -1033,7 +1069,8 @@
   "Announce": false,
   "Party": "",
   "Partner": "",
-  "Address": ""
+  "Address": "",
+  "Potluck": false
  },
  {
   "Status": "Live",
@@ -1061,7 +1098,8 @@
   "Announce": false,
   "Party": "",
   "Partner": "",
-  "Address": ""
+  "Address": "",
+  "Potluck": false
  },
  {
   "Status": "Live",
@@ -1089,7 +1127,8 @@
   "Announce": false,
   "Party": "",
   "Partner": "",
-  "Address": ""
+  "Address": "",
+  "Potluck": false
  },
  {
   "Status": "Live",
@@ -1117,7 +1156,8 @@
   "Announce": false,
   "Party": "",
   "Partner": "",
-  "Address": ""
+  "Address": "",
+  "Potluck": false
  },
  {
   "Status": "Live",
@@ -1145,7 +1185,8 @@
   "Announce": false,
   "Party": "",
   "Partner": "",
-  "Address": ""
+  "Address": "",
+  "Potluck": false
  },
  {
   "Status": "Live",
@@ -1173,7 +1214,8 @@
   "Announce": false,
   "Party": "",
   "Partner": "",
-  "Address": ""
+  "Address": "",
+  "Potluck": false
  },
  {
   "Status": "Live",
@@ -1201,7 +1243,8 @@
   "Announce": false,
   "Party": "",
   "Partner": "",
-  "Address": ""
+  "Address": "",
+  "Potluck": false
  },
  {
   "Status": "Live",
@@ -1229,7 +1272,8 @@
   "Announce": false,
   "Party": "",
   "Partner": "",
-  "Address": ""
+  "Address": "",
+  "Potluck": false
  },
  {
   "Status": "Live",
@@ -1257,7 +1301,8 @@
   "Announce": false,
   "Party": "",
   "Partner": "",
-  "Address": ""
+  "Address": "",
+  "Potluck": false
  },
  {
   "Status": "Live",
@@ -1285,7 +1330,8 @@
   "Announce": false,
   "Party": "",
   "Partner": "",
-  "Address": ""
+  "Address": "",
+  "Potluck": false
  },
  {
   "Status": "Live",
@@ -1313,7 +1359,8 @@
   "Announce": false,
   "Party": "",
   "Partner": "",
-  "Address": ""
+  "Address": "",
+  "Potluck": false
  },
  {
   "Status": "Live",
@@ -1341,7 +1388,8 @@
   "Announce": false,
   "Party": "",
   "Partner": "",
-  "Address": ""
+  "Address": "",
+  "Potluck": false
  },
  {
   "Status": "Live",
@@ -1369,7 +1417,8 @@
   "Announce": false,
   "Party": "",
   "Partner": "",
-  "Address": ""
+  "Address": "",
+  "Potluck": false
  },
  {
   "Status": "Live",
@@ -1397,7 +1446,8 @@
   "Announce": false,
   "Party": "",
   "Partner": "",
-  "Address": ""
+  "Address": "",
+  "Potluck": false
  },
  {
   "Status": "Live",
@@ -1425,7 +1475,8 @@
   "Announce": false,
   "Party": "",
   "Partner": "",
-  "Address": ""
+  "Address": "",
+  "Potluck": false
  },
  {
   "Status": "Live",
@@ -1453,7 +1504,8 @@
   "Announce": false,
   "Party": "",
   "Partner": "",
-  "Address": ""
+  "Address": "",
+  "Potluck": false
  },
  {
   "Status": "Live",
@@ -1481,7 +1533,8 @@
   "Announce": false,
   "Party": "",
   "Partner": "",
-  "Address": ""
+  "Address": "",
+  "Potluck": false
  },
  {
   "Status": "Live",
@@ -1509,7 +1562,8 @@
   "Announce": false,
   "Party": "",
   "Partner": "",
-  "Address": ""
+  "Address": "",
+  "Potluck": false
  },
  {
   "Status": "Live",
@@ -1537,7 +1591,8 @@
   "Announce": false,
   "Party": "",
   "Partner": "",
-  "Address": ""
+  "Address": "",
+  "Potluck": false
  },
  {
   "Status": "Live",
@@ -1565,7 +1620,8 @@
   "Announce": false,
   "Party": "",
   "Partner": "",
-  "Address": ""
+  "Address": "",
+  "Potluck": false
  },
  {
   "Status": "Live",
@@ -1593,7 +1649,8 @@
   "Announce": false,
   "Party": "",
   "Partner": "",
-  "Address": ""
+  "Address": "",
+  "Potluck": false
  },
  {
   "Status": "Live",
@@ -1621,7 +1678,8 @@
   "Announce": false,
   "Party": "",
   "Partner": "",
-  "Address": ""
+  "Address": "",
+  "Potluck": false
  },
  {
   "Status": "Live",
@@ -1649,7 +1707,8 @@
   "Announce": false,
   "Party": "",
   "Partner": "",
-  "Address": ""
+  "Address": "",
+  "Potluck": false
  },
  {
   "Status": "Live",
@@ -1677,7 +1736,8 @@
   "Announce": false,
   "Party": "",
   "Partner": "",
-  "Address": ""
+  "Address": "",
+  "Potluck": false
  },
  {
   "Status": "Live",
@@ -1705,7 +1765,8 @@
   "Announce": false,
   "Party": "",
   "Partner": "",
-  "Address": ""
+  "Address": "",
+  "Potluck": false
  },
  {
   "Status": "Live",
@@ -1733,7 +1794,8 @@
   "Announce": false,
   "Party": "",
   "Partner": "",
-  "Address": ""
+  "Address": "",
+  "Potluck": false
  },
  {
   "Status": "Live",
@@ -1761,7 +1823,8 @@
   "Announce": false,
   "Party": "",
   "Partner": "",
-  "Address": ""
+  "Address": "",
+  "Potluck": false
  },
  {
   "Status": "Live",
@@ -1789,7 +1852,8 @@
   "Announce": false,
   "Party": "",
   "Partner": "",
-  "Address": ""
+  "Address": "",
+  "Potluck": false
  },
  {
   "Status": "Live",
@@ -1817,7 +1881,8 @@
   "Announce": false,
   "Party": "",
   "Partner": "",
-  "Address": ""
+  "Address": "",
+  "Potluck": false
  },
  {
   "Status": "Live",
@@ -1845,7 +1910,8 @@
   "Announce": false,
   "Party": "",
   "Partner": "",
-  "Address": ""
+  "Address": "",
+  "Potluck": false
  },
  {
   "Status": "Live",
@@ -1873,7 +1939,8 @@
   "Announce": false,
   "Party": "",
   "Partner": "",
-  "Address": ""
+  "Address": "",
+  "Potluck": false
  },
  {
   "Status": "Live",
@@ -1901,7 +1968,8 @@
   "Announce": false,
   "Party": "",
   "Partner": "",
-  "Address": ""
+  "Address": "",
+  "Potluck": false
  },
  {
   "Status": "Live",
@@ -1929,7 +1997,8 @@
   "Announce": false,
   "Party": "",
   "Partner": "",
-  "Address": ""
+  "Address": "",
+  "Potluck": false
  },
  {
   "Status": "Live",
@@ -1957,7 +2026,8 @@
   "Announce": false,
   "Party": "",
   "Partner": "",
-  "Address": ""
+  "Address": "",
+  "Potluck": false
  },
  {
   "Status": "Live",
@@ -1985,7 +2055,8 @@
   "Announce": false,
   "Party": "",
   "Partner": "",
-  "Address": ""
+  "Address": "",
+  "Potluck": false
  },
  {
   "Status": "Live",
@@ -2013,7 +2084,8 @@
   "Announce": false,
   "Party": "",
   "Partner": "",
-  "Address": ""
+  "Address": "",
+  "Potluck": false
  },
  {
   "Status": "Live",
@@ -2041,7 +2113,8 @@
   "Announce": false,
   "Party": "",
   "Partner": "",
-  "Address": ""
+  "Address": "",
+  "Potluck": false
  },
  {
   "Status": "Live",
@@ -2069,7 +2142,8 @@
   "Announce": false,
   "Party": "",
   "Partner": "",
-  "Address": ""
+  "Address": "",
+  "Potluck": false
  },
  {
   "Status": "Live",
@@ -2097,7 +2171,8 @@
   "Announce": false,
   "Party": "",
   "Partner": "",
-  "Address": ""
+  "Address": "",
+  "Potluck": false
  },
  {
   "Status": "Live",
@@ -2125,7 +2200,8 @@
   "Announce": false,
   "Party": "",
   "Partner": "",
-  "Address": ""
+  "Address": "",
+  "Potluck": false
  },
  {
   "Status": "Live",
@@ -2153,7 +2229,8 @@
   "Announce": false,
   "Party": "",
   "Partner": "",
-  "Address": ""
+  "Address": "",
+  "Potluck": false
  },
  {
   "Status": "Live",
@@ -2181,7 +2258,8 @@
   "Announce": false,
   "Party": "",
   "Partner": "",
-  "Address": ""
+  "Address": "",
+  "Potluck": false
  },
  {
   "Status": "Live",
@@ -2209,7 +2287,8 @@
   "Announce": false,
   "Party": "",
   "Partner": "",
-  "Address": ""
+  "Address": "",
+  "Potluck": false
  },
  {
   "Status": "Live",
@@ -2237,7 +2316,8 @@
   "Announce": false,
   "Party": "",
   "Partner": "",
-  "Address": ""
+  "Address": "",
+  "Potluck": false
  },
  {
   "Status": "Live",
@@ -2265,7 +2345,8 @@
   "Announce": false,
   "Party": "",
   "Partner": "",
-  "Address": ""
+  "Address": "",
+  "Potluck": false
  },
  {
   "Status": "Live",
@@ -2293,7 +2374,8 @@
   "Announce": false,
   "Party": "",
   "Partner": "",
-  "Address": ""
+  "Address": "",
+  "Potluck": false
  },
  {
   "Status": "Live",
@@ -2321,7 +2403,8 @@
   "Announce": false,
   "Party": "",
   "Partner": "",
-  "Address": ""
+  "Address": "",
+  "Potluck": false
  },
  {
   "Status": "Live",
@@ -2349,7 +2432,8 @@
   "Announce": false,
   "Party": "",
   "Partner": "",
-  "Address": ""
+  "Address": "",
+  "Potluck": false
  },
  {
   "Status": "Live",
@@ -2377,7 +2461,8 @@
   "Announce": false,
   "Party": "",
   "Partner": "",
-  "Address": ""
+  "Address": "",
+  "Potluck": false
  },
  {
   "Status": "Live",
@@ -2405,7 +2490,8 @@
   "Announce": false,
   "Party": "",
   "Partner": "",
-  "Address": ""
+  "Address": "",
+  "Potluck": false
  },
  {
   "Status": "Live",
@@ -2433,7 +2519,8 @@
   "Announce": false,
   "Party": "",
   "Partner": "",
-  "Address": ""
+  "Address": "",
+  "Potluck": false
  },
  {
   "Status": "Live",
@@ -2461,7 +2548,8 @@
   "Announce": false,
   "Party": "",
   "Partner": "",
-  "Address": ""
+  "Address": "",
+  "Potluck": false
  },
  {
   "Status": "Live",
@@ -2489,7 +2577,8 @@
   "Announce": false,
   "Party": "",
   "Partner": "",
-  "Address": ""
+  "Address": "",
+  "Potluck": false
  },
  {
   "Status": "Live",
@@ -2517,7 +2606,8 @@
   "Announce": false,
   "Party": "",
   "Partner": "",
-  "Address": ""
+  "Address": "",
+  "Potluck": false
  },
  {
   "Status": "Live",
@@ -2545,7 +2635,8 @@
   "Announce": false,
   "Party": "",
   "Partner": "",
-  "Address": ""
+  "Address": "",
+  "Potluck": false
  },
  {
   "Status": "Live",
@@ -2573,7 +2664,8 @@
   "Announce": false,
   "Party": "",
   "Partner": "",
-  "Address": ""
+  "Address": "",
+  "Potluck": false
  },
  {
   "Status": "Live",
@@ -2601,7 +2693,8 @@
   "Announce": false,
   "Party": "",
   "Partner": "",
-  "Address": ""
+  "Address": "",
+  "Potluck": false
  },
  {
   "Status": "Live",
@@ -2629,7 +2722,8 @@
   "Announce": false,
   "Party": "",
   "Partner": "",
-  "Address": ""
+  "Address": "",
+  "Potluck": false
  },
  {
   "Status": "Live",
@@ -2657,7 +2751,8 @@
   "Announce": false,
   "Party": "",
   "Partner": "",
-  "Address": ""
+  "Address": "",
+  "Potluck": false
  },
  {
   "Status": "Live",
@@ -2685,7 +2780,8 @@
   "Announce": false,
   "Party": "",
   "Partner": "",
-  "Address": ""
+  "Address": "",
+  "Potluck": false
  },
  {
   "Status": "Live",
@@ -2713,7 +2809,8 @@
   "Announce": false,
   "Party": "",
   "Partner": "",
-  "Address": ""
+  "Address": "",
+  "Potluck": false
  },
  {
   "Status": "Live",
@@ -2741,7 +2838,8 @@
   "Announce": false,
   "Party": "",
   "Partner": "",
-  "Address": ""
+  "Address": "",
+  "Potluck": false
  },
  {
   "Status": "Live",
@@ -2769,7 +2867,8 @@
   "Announce": false,
   "Party": "",
   "Partner": "",
-  "Address": ""
+  "Address": "",
+  "Potluck": false
  },
  {
   "Status": "Live",
@@ -2797,7 +2896,8 @@
   "Announce": false,
   "Party": "",
   "Partner": "",
-  "Address": ""
+  "Address": "",
+  "Potluck": false
  },
  {
   "Status": "Live",
@@ -2825,7 +2925,8 @@
   "Announce": false,
   "Party": "",
   "Partner": "",
-  "Address": ""
+  "Address": "",
+  "Potluck": false
  },
  {
   "Status": "Live",
@@ -2853,7 +2954,8 @@
   "Announce": false,
   "Party": "",
   "Partner": "",
-  "Address": ""
+  "Address": "",
+  "Potluck": false
  },
  {
   "Status": "Live",
@@ -2881,7 +2983,8 @@
   "Announce": false,
   "Party": "",
   "Partner": "",
-  "Address": ""
+  "Address": "",
+  "Potluck": false
  },
  {
   "Status": "Live",
@@ -2909,7 +3012,8 @@
   "Announce": false,
   "Party": "",
   "Partner": "",
-  "Address": ""
+  "Address": "",
+  "Potluck": false
  },
  {
   "Status": "Live",
@@ -2937,7 +3041,8 @@
   "Announce": false,
   "Party": "",
   "Partner": "",
-  "Address": ""
+  "Address": "",
+  "Potluck": false
  },
  {
   "Status": "Live",
@@ -2965,7 +3070,8 @@
   "Announce": false,
   "Party": "",
   "Partner": "",
-  "Address": ""
+  "Address": "",
+  "Potluck": false
  },
  {
   "Status": "Live",
@@ -2993,7 +3099,8 @@
   "Announce": false,
   "Party": "",
   "Partner": "",
-  "Address": ""
+  "Address": "",
+  "Potluck": false
  },
  {
   "Status": "Live",
@@ -3021,7 +3128,8 @@
   "Announce": false,
   "Party": "",
   "Partner": "",
-  "Address": ""
+  "Address": "",
+  "Potluck": false
  },
  {
   "Status": "Live",
@@ -3049,7 +3157,8 @@
   "Announce": false,
   "Party": "",
   "Partner": "",
-  "Address": ""
+  "Address": "",
+  "Potluck": false
  },
  {
   "Status": "Live",
@@ -3077,7 +3186,8 @@
   "Announce": false,
   "Party": "",
   "Partner": "",
-  "Address": ""
+  "Address": "",
+  "Potluck": false
  },
  {
   "Status": "Live",
@@ -3105,7 +3215,8 @@
   "Announce": false,
   "Party": "",
   "Partner": "",
-  "Address": ""
+  "Address": "",
+  "Potluck": false
  },
  {
   "Status": "Live",
@@ -3133,7 +3244,8 @@
   "Announce": false,
   "Party": "",
   "Partner": "",
-  "Address": ""
+  "Address": "",
+  "Potluck": false
  },
  {
   "Status": "Live",
@@ -3161,7 +3273,8 @@
   "Announce": false,
   "Party": "",
   "Partner": "",
-  "Address": ""
+  "Address": "",
+  "Potluck": false
  },
  {
   "Status": "Live",
@@ -3189,7 +3302,8 @@
   "Announce": false,
   "Party": "",
   "Partner": "",
-  "Address": ""
+  "Address": "",
+  "Potluck": false
  },
  {
   "Status": "Live",
@@ -3217,7 +3331,8 @@
   "Announce": false,
   "Party": "",
   "Partner": "",
-  "Address": ""
+  "Address": "",
+  "Potluck": false
  },
  {
   "Status": "Live",
@@ -3245,7 +3360,8 @@
   "Announce": false,
   "Party": "",
   "Partner": "",
-  "Address": ""
+  "Address": "",
+  "Potluck": false
  },
  {
   "Status": "Live",
@@ -3273,7 +3389,8 @@
   "Announce": false,
   "Party": "",
   "Partner": "",
-  "Address": ""
+  "Address": "",
+  "Potluck": false
  },
  {
   "Status": "Live",
@@ -3301,7 +3418,8 @@
   "Announce": false,
   "Party": "",
   "Partner": "",
-  "Address": ""
+  "Address": "",
+  "Potluck": false
  },
  {
   "Status": "Live",
@@ -3329,7 +3447,8 @@
   "Announce": false,
   "Party": "",
   "Partner": "",
-  "Address": ""
+  "Address": "",
+  "Potluck": false
  },
  {
   "Status": "Live",
@@ -3357,7 +3476,8 @@
   "Announce": false,
   "Party": "",
   "Partner": "",
-  "Address": ""
+  "Address": "",
+  "Potluck": false
  },
  {
   "Status": "Live",
@@ -3385,7 +3505,8 @@
   "Announce": false,
   "Party": "",
   "Partner": "",
-  "Address": ""
+  "Address": "",
+  "Potluck": false
  },
  {
   "Status": "Live",
@@ -3413,7 +3534,8 @@
   "Announce": false,
   "Party": "",
   "Partner": "",
-  "Address": ""
+  "Address": "",
+  "Potluck": false
  },
  {
   "Status": "Live",
@@ -3441,7 +3563,8 @@
   "Announce": false,
   "Party": "",
   "Partner": "",
-  "Address": ""
+  "Address": "",
+  "Potluck": false
  },
  {
   "Status": "Live",
@@ -3469,7 +3592,8 @@
   "Announce": false,
   "Party": "",
   "Partner": "",
-  "Address": ""
+  "Address": "",
+  "Potluck": false
  },
  {
   "Status": "Live",
@@ -3497,7 +3621,8 @@
   "Announce": false,
   "Party": "",
   "Partner": "",
-  "Address": ""
+  "Address": "",
+  "Potluck": false
  },
  {
   "Status": "Live",
@@ -3525,7 +3650,8 @@
   "Announce": false,
   "Party": "",
   "Partner": "",
-  "Address": ""
+  "Address": "",
+  "Potluck": false
  },
  {
   "Status": "Live",
@@ -3553,7 +3679,8 @@
   "Announce": false,
   "Party": "",
   "Partner": "",
-  "Address": ""
+  "Address": "",
+  "Potluck": false
  },
  {
   "Status": "Live",
@@ -3581,7 +3708,8 @@
   "Announce": false,
   "Party": "",
   "Partner": "",
-  "Address": ""
+  "Address": "",
+  "Potluck": false
  },
  {
   "Status": "Live",
@@ -3609,7 +3737,8 @@
   "Announce": false,
   "Party": "",
   "Partner": "",
-  "Address": ""
+  "Address": "",
+  "Potluck": false
  },
  {
   "Status": "Live",
@@ -3637,7 +3766,8 @@
   "Announce": false,
   "Party": "",
   "Partner": "",
-  "Address": ""
+  "Address": "",
+  "Potluck": false
  },
  {
   "Status": "Live",
@@ -3665,7 +3795,8 @@
   "Announce": false,
   "Party": "",
   "Partner": "",
-  "Address": ""
+  "Address": "",
+  "Potluck": false
  },
  {
   "Status": "Live",
@@ -3693,7 +3824,8 @@
   "Announce": false,
   "Party": "",
   "Partner": "",
-  "Address": ""
+  "Address": "",
+  "Potluck": false
  },
  {
   "Status": "Live",
@@ -3721,7 +3853,8 @@
   "Announce": false,
   "Party": "",
   "Partner": "",
-  "Address": ""
+  "Address": "",
+  "Potluck": false
  },
  {
   "Status": "Live",
@@ -3749,7 +3882,8 @@
   "Announce": false,
   "Party": "",
   "Partner": "",
-  "Address": ""
+  "Address": "",
+  "Potluck": false
  },
  {
   "Status": "Live",
@@ -3777,7 +3911,8 @@
   "Announce": false,
   "Party": "",
   "Partner": "",
-  "Address": ""
+  "Address": "",
+  "Potluck": false
  },
  {
   "Status": "Live",
@@ -3805,7 +3940,8 @@
   "Announce": false,
   "Party": "",
   "Partner": "",
-  "Address": ""
+  "Address": "",
+  "Potluck": false
  },
  {
   "Status": "Live",
@@ -3833,7 +3969,8 @@
   "Announce": false,
   "Party": "",
   "Partner": "",
-  "Address": ""
+  "Address": "",
+  "Potluck": false
  },
  {
   "Status": "Live",
@@ -3861,7 +3998,8 @@
   "Announce": false,
   "Party": "",
   "Partner": "",
-  "Address": ""
+  "Address": "",
+  "Potluck": false
  },
  {
   "Status": "Live",
@@ -3889,7 +4027,8 @@
   "Announce": false,
   "Party": "",
   "Partner": "",
-  "Address": ""
+  "Address": "",
+  "Potluck": false
  },
  {
   "Status": "Live",
@@ -3917,7 +4056,8 @@
   "Announce": false,
   "Party": "",
   "Partner": "",
-  "Address": ""
+  "Address": "",
+  "Potluck": false
  },
  {
   "Status": "Live",
@@ -3945,7 +4085,8 @@
   "Announce": false,
   "Party": "",
   "Partner": "",
-  "Address": ""
+  "Address": "",
+  "Potluck": false
  },
  {
   "Status": "Live",
@@ -3973,7 +4114,8 @@
   "Announce": false,
   "Party": "",
   "Partner": "",
-  "Address": ""
+  "Address": "",
+  "Potluck": false
  },
  {
   "Status": "Live",
@@ -4001,7 +4143,8 @@
   "Announce": false,
   "Party": "",
   "Partner": "",
-  "Address": ""
+  "Address": "",
+  "Potluck": false
  },
  {
   "Status": "Live",
@@ -4029,7 +4172,8 @@
   "Announce": false,
   "Party": "",
   "Partner": "",
-  "Address": ""
+  "Address": "",
+  "Potluck": false
  },
  {
   "Status": "Live",
@@ -4057,7 +4201,8 @@
   "Announce": false,
   "Party": "",
   "Partner": "",
-  "Address": ""
+  "Address": "",
+  "Potluck": false
  },
  {
   "Status": "Live",
@@ -4085,7 +4230,8 @@
   "Announce": false,
   "Party": "",
   "Partner": "",
-  "Address": ""
+  "Address": "",
+  "Potluck": false
  },
  {
   "Status": "Live",
@@ -4113,7 +4259,8 @@
   "Announce": false,
   "Party": "",
   "Partner": "",
-  "Address": ""
+  "Address": "",
+  "Potluck": false
  },
  {
   "Status": "Live",
@@ -4141,7 +4288,8 @@
   "Announce": false,
   "Party": "",
   "Partner": "",
-  "Address": ""
+  "Address": "",
+  "Potluck": false
  },
  {
   "Status": "Live",
@@ -4169,7 +4317,8 @@
   "Announce": false,
   "Party": "",
   "Partner": "",
-  "Address": ""
+  "Address": "",
+  "Potluck": false
  },
  {
   "Status": "Live",
@@ -4197,7 +4346,8 @@
   "Announce": false,
   "Party": "",
   "Partner": "",
-  "Address": ""
+  "Address": "",
+  "Potluck": false
  },
  {
   "Status": "Live",
@@ -4225,7 +4375,8 @@
   "Announce": false,
   "Party": "",
   "Partner": "",
-  "Address": ""
+  "Address": "",
+  "Potluck": false
  },
  {
   "Status": "Live",
@@ -4253,7 +4404,8 @@
   "Announce": false,
   "Party": "",
   "Partner": "",
-  "Address": ""
+  "Address": "",
+  "Potluck": false
  },
  {
   "Status": "Live",
@@ -4281,7 +4433,8 @@
   "Announce": false,
   "Party": "",
   "Partner": "",
-  "Address": ""
+  "Address": "",
+  "Potluck": false
  },
  {
   "Status": "Live",
@@ -4309,7 +4462,8 @@
   "Announce": false,
   "Party": "",
   "Partner": "",
-  "Address": ""
+  "Address": "",
+  "Potluck": false
  },
  {
   "Status": "Live",
@@ -4337,7 +4491,8 @@
   "Announce": false,
   "Party": "",
   "Partner": "",
-  "Address": ""
+  "Address": "",
+  "Potluck": false
  },
  {
   "Status": "Live",
@@ -4365,7 +4520,8 @@
   "Announce": false,
   "Party": "",
   "Partner": "",
-  "Address": ""
+  "Address": "",
+  "Potluck": false
  },
  {
   "Status": "Live",
@@ -4393,7 +4549,8 @@
   "Announce": false,
   "Party": "",
   "Partner": "",
-  "Address": ""
+  "Address": "",
+  "Potluck": false
  },
  {
   "Status": "Live",
@@ -4421,7 +4578,8 @@
   "Announce": false,
   "Party": "",
   "Partner": "",
-  "Address": ""
+  "Address": "",
+  "Potluck": false
  },
  {
   "Status": "Live",
@@ -4449,7 +4607,8 @@
   "Announce": false,
   "Party": "",
   "Partner": "",
-  "Address": ""
+  "Address": "",
+  "Potluck": false
  },
  {
   "Status": "Live",
@@ -4477,7 +4636,8 @@
   "Announce": false,
   "Party": "",
   "Partner": "",
-  "Address": ""
+  "Address": "",
+  "Potluck": false
  },
  {
   "Status": "Live",
@@ -4505,7 +4665,8 @@
   "Announce": false,
   "Party": "",
   "Partner": "",
-  "Address": ""
+  "Address": "",
+  "Potluck": false
  },
  {
   "Status": "Live",
@@ -4533,7 +4694,8 @@
   "Announce": false,
   "Party": "",
   "Partner": "",
-  "Address": ""
+  "Address": "",
+  "Potluck": false
  },
  {
   "Status": "Live",
@@ -4561,7 +4723,8 @@
   "Announce": false,
   "Party": "",
   "Partner": "",
-  "Address": ""
+  "Address": "",
+  "Potluck": false
  },
  {
   "Status": "Live",
@@ -4589,7 +4752,8 @@
   "Announce": false,
   "Party": "",
   "Partner": "",
-  "Address": ""
+  "Address": "",
+  "Potluck": false
  },
  {
   "Status": "Live",
@@ -4617,7 +4781,8 @@
   "Announce": false,
   "Party": "",
   "Partner": "",
-  "Address": ""
+  "Address": "",
+  "Potluck": false
  },
  {
   "Status": "Live",
@@ -4645,7 +4810,8 @@
   "Announce": false,
   "Party": "",
   "Partner": "",
-  "Address": ""
+  "Address": "",
+  "Potluck": false
  },
  {
   "Status": "Live",
@@ -4673,7 +4839,8 @@
   "Announce": false,
   "Party": "",
   "Partner": "",
-  "Address": ""
+  "Address": "",
+  "Potluck": false
  },
  {
   "Status": "Live",
@@ -4701,7 +4868,8 @@
   "Announce": false,
   "Party": "",
   "Partner": "",
-  "Address": ""
+  "Address": "",
+  "Potluck": false
  },
  {
   "Status": "Live",
@@ -4729,7 +4897,8 @@
   "Announce": false,
   "Party": "",
   "Partner": "",
-  "Address": ""
+  "Address": "",
+  "Potluck": false
  },
  {
   "Status": "Live",
@@ -4757,7 +4926,8 @@
   "Announce": false,
   "Party": "",
   "Partner": "",
-  "Address": ""
+  "Address": "",
+  "Potluck": false
  },
  {
   "Status": "Live",
@@ -4785,7 +4955,8 @@
   "Announce": false,
   "Party": "",
   "Partner": "",
-  "Address": ""
+  "Address": "",
+  "Potluck": false
  },
  {
   "Status": "Live",
@@ -4813,7 +4984,8 @@
   "Announce": false,
   "Party": "",
   "Partner": "",
-  "Address": ""
+  "Address": "",
+  "Potluck": false
  },
  {
   "Status": "Live",
@@ -4841,7 +5013,8 @@
   "Announce": false,
   "Party": "",
   "Partner": "",
-  "Address": ""
+  "Address": "",
+  "Potluck": false
  },
  {
   "Status": "Live",
@@ -4869,7 +5042,8 @@
   "Announce": false,
   "Party": "",
   "Partner": "",
-  "Address": ""
+  "Address": "",
+  "Potluck": false
  },
  {
   "Status": "Live",
@@ -4897,7 +5071,8 @@
   "Announce": false,
   "Party": "",
   "Partner": "",
-  "Address": ""
+  "Address": "",
+  "Potluck": false
  },
  {
   "Status": "Live",
@@ -4925,7 +5100,8 @@
   "Announce": false,
   "Party": "",
   "Partner": "",
-  "Address": ""
+  "Address": "",
+  "Potluck": false
  },
  {
   "Status": "Live",
@@ -4953,7 +5129,8 @@
   "Announce": false,
   "Party": "",
   "Partner": "",
-  "Address": ""
+  "Address": "",
+  "Potluck": false
  },
  {
   "Status": "Live",
@@ -4981,7 +5158,8 @@
   "Announce": false,
   "Party": "",
   "Partner": "",
-  "Address": ""
+  "Address": "",
+  "Potluck": false
  },
  {
   "Status": "Live",
@@ -5009,7 +5187,8 @@
   "Announce": false,
   "Party": "",
   "Partner": "",
-  "Address": ""
+  "Address": "",
+  "Potluck": false
  },
  {
   "Status": "Live",
@@ -5037,7 +5216,8 @@
   "Announce": false,
   "Party": "",
   "Partner": "",
-  "Address": ""
+  "Address": "",
+  "Potluck": false
  },
  {
   "Status": "Live",
@@ -5065,7 +5245,8 @@
   "Announce": false,
   "Party": "",
   "Partner": "",
-  "Address": ""
+  "Address": "",
+  "Potluck": false
  },
  {
   "Status": "Live",
@@ -5093,7 +5274,8 @@
   "Announce": false,
   "Party": "",
   "Partner": "",
-  "Address": ""
+  "Address": "",
+  "Potluck": false
  },
  {
   "Status": "Live",
@@ -5121,7 +5303,8 @@
   "Announce": false,
   "Party": "",
   "Partner": "",
-  "Address": ""
+  "Address": "",
+  "Potluck": false
  },
  {
   "Status": "Live",
@@ -5149,7 +5332,8 @@
   "Announce": false,
   "Party": "",
   "Partner": "",
-  "Address": ""
+  "Address": "",
+  "Potluck": false
  },
  {
   "Status": "Live",
@@ -5177,7 +5361,8 @@
   "Announce": false,
   "Party": "",
   "Partner": "",
-  "Address": ""
+  "Address": "",
+  "Potluck": false
  },
  {
   "Status": "Live",
@@ -5205,7 +5390,8 @@
   "Announce": false,
   "Party": "",
   "Partner": "",
-  "Address": ""
+  "Address": "",
+  "Potluck": false
  },
  {
   "Status": "Live",
@@ -5233,7 +5419,8 @@
   "Announce": false,
   "Party": "",
   "Partner": "",
-  "Address": ""
+  "Address": "",
+  "Potluck": false
  },
  {
   "Status": "Live",
@@ -5261,7 +5448,8 @@
   "Announce": false,
   "Party": "",
   "Partner": "",
-  "Address": ""
+  "Address": "",
+  "Potluck": false
  },
  {
   "Status": "Live",
@@ -5289,7 +5477,8 @@
   "Announce": false,
   "Party": "",
   "Partner": "",
-  "Address": ""
+  "Address": "",
+  "Potluck": false
  },
  {
   "Status": "Live",
@@ -5317,7 +5506,8 @@
   "Announce": false,
   "Party": "",
   "Partner": "",
-  "Address": ""
+  "Address": "",
+  "Potluck": false
  },
  {
   "Status": "Live",
@@ -5345,7 +5535,8 @@
   "Announce": false,
   "Party": "",
   "Partner": "",
-  "Address": ""
+  "Address": "",
+  "Potluck": false
  },
  {
   "Status": "Live",
@@ -5373,7 +5564,8 @@
   "Announce": false,
   "Party": "",
   "Partner": "",
-  "Address": ""
+  "Address": "",
+  "Potluck": false
  },
  {
   "Status": "Live",
@@ -5401,7 +5593,8 @@
   "Announce": false,
   "Party": "",
   "Partner": "",
-  "Address": ""
+  "Address": "",
+  "Potluck": false
  },
  {
   "Status": "Live",
@@ -5429,7 +5622,8 @@
   "Announce": false,
   "Party": "",
   "Partner": "",
-  "Address": ""
+  "Address": "",
+  "Potluck": false
  },
  {
   "Status": "Live",
@@ -5457,7 +5651,8 @@
   "Announce": false,
   "Party": "",
   "Partner": "",
-  "Address": ""
+  "Address": "",
+  "Potluck": false
  },
  {
   "Status": "Live",
@@ -5485,7 +5680,8 @@
   "Announce": false,
   "Party": "",
   "Partner": "",
-  "Address": ""
+  "Address": "",
+  "Potluck": false
  },
  {
   "Status": "Live",
@@ -5513,7 +5709,8 @@
   "Announce": false,
   "Party": "",
   "Partner": "",
-  "Address": ""
+  "Address": "",
+  "Potluck": false
  },
  {
   "Status": "Live",
@@ -5541,7 +5738,8 @@
   "Announce": false,
   "Party": "",
   "Partner": "",
-  "Address": ""
+  "Address": "",
+  "Potluck": false
  },
  {
   "Status": "Live",
@@ -5569,7 +5767,8 @@
   "Announce": false,
   "Party": "",
   "Partner": "",
-  "Address": ""
+  "Address": "",
+  "Potluck": false
  },
  {
   "Status": "Live",
@@ -5597,7 +5796,8 @@
   "Announce": false,
   "Party": "",
   "Partner": "",
-  "Address": ""
+  "Address": "",
+  "Potluck": false
  },
  {
   "Status": "Live",
@@ -5625,7 +5825,8 @@
   "Announce": false,
   "Party": "",
   "Partner": "",
-  "Address": ""
+  "Address": "",
+  "Potluck": false
  },
  {
   "Status": "Live",
@@ -5653,7 +5854,8 @@
   "Announce": false,
   "Party": "",
   "Partner": "",
-  "Address": ""
+  "Address": "",
+  "Potluck": false
  },
  {
   "Status": "Live",
@@ -5681,7 +5883,8 @@
   "Announce": false,
   "Party": "",
   "Partner": "",
-  "Address": ""
+  "Address": "",
+  "Potluck": false
  },
  {
   "Status": "Live",
@@ -5709,7 +5912,8 @@
   "Announce": false,
   "Party": "",
   "Partner": "",
-  "Address": ""
+  "Address": "",
+  "Potluck": false
  },
  {
   "Status": "Live",
@@ -5737,7 +5941,8 @@
   "Announce": false,
   "Party": "",
   "Partner": "",
-  "Address": ""
+  "Address": "",
+  "Potluck": false
  },
  {
   "Status": "Live",
@@ -5765,7 +5970,8 @@
   "Announce": false,
   "Party": "",
   "Partner": "",
-  "Address": ""
+  "Address": "",
+  "Potluck": false
  },
  {
   "Status": "Live",
@@ -5793,7 +5999,8 @@
   "Announce": false,
   "Party": "",
   "Partner": "",
-  "Address": ""
+  "Address": "",
+  "Potluck": false
  },
  {
   "Status": "Live",
@@ -5821,7 +6028,8 @@
   "Announce": false,
   "Party": "",
   "Partner": "",
-  "Address": ""
+  "Address": "",
+  "Potluck": false
  },
  {
   "Status": "Live",
@@ -5849,7 +6057,8 @@
   "Announce": false,
   "Party": "",
   "Partner": "",
-  "Address": ""
+  "Address": "",
+  "Potluck": false
  },
  {
   "Status": "Live",
@@ -5877,7 +6086,8 @@
   "Announce": false,
   "Party": "",
   "Partner": "",
-  "Address": ""
+  "Address": "",
+  "Potluck": false
  },
  {
   "Status": "Live",
@@ -5905,7 +6115,8 @@
   "Announce": false,
   "Party": "",
   "Partner": "",
-  "Address": ""
+  "Address": "",
+  "Potluck": false
  },
  {
   "Status": "Live",
@@ -5933,7 +6144,8 @@
   "Announce": false,
   "Party": "",
   "Partner": "",
-  "Address": ""
+  "Address": "",
+  "Potluck": false
  },
  {
   "Status": "Live",
@@ -5961,7 +6173,8 @@
   "Announce": false,
   "Party": "",
   "Partner": "",
-  "Address": ""
+  "Address": "",
+  "Potluck": false
  },
  {
   "Status": "Live",
@@ -5989,7 +6202,8 @@
   "Announce": false,
   "Party": "",
   "Partner": "",
-  "Address": ""
+  "Address": "",
+  "Potluck": false
  },
  {
   "Status": "Live",
@@ -6017,7 +6231,8 @@
   "Announce": false,
   "Party": "",
   "Partner": "",
-  "Address": ""
+  "Address": "",
+  "Potluck": false
  },
  {
   "Status": "Live",
@@ -6045,7 +6260,8 @@
   "Announce": false,
   "Party": "",
   "Partner": "",
-  "Address": ""
+  "Address": "",
+  "Potluck": false
  },
  {
   "Status": "Live",
@@ -6073,7 +6289,8 @@
   "Announce": false,
   "Party": "",
   "Partner": "",
-  "Address": ""
+  "Address": "",
+  "Potluck": false
  },
  {
   "Status": "Live",
@@ -6101,7 +6318,8 @@
   "Announce": false,
   "Party": "",
   "Partner": "",
-  "Address": ""
+  "Address": "",
+  "Potluck": false
  },
  {
   "Status": "Live",
@@ -6129,7 +6347,8 @@
   "Announce": false,
   "Party": "",
   "Partner": "",
-  "Address": ""
+  "Address": "",
+  "Potluck": false
  },
  {
   "Status": "Live",
@@ -6157,7 +6376,8 @@
   "Announce": false,
   "Party": "",
   "Partner": "",
-  "Address": ""
+  "Address": "",
+  "Potluck": false
  },
  {
   "Status": "Live",
@@ -6185,7 +6405,8 @@
   "Announce": false,
   "Party": "",
   "Partner": "",
-  "Address": ""
+  "Address": "",
+  "Potluck": false
  },
  {
   "Status": "Live",
@@ -6213,7 +6434,8 @@
   "Announce": false,
   "Party": "",
   "Partner": "",
-  "Address": ""
+  "Address": "",
+  "Potluck": false
  },
  {
   "Status": "Live",
@@ -6241,7 +6463,8 @@
   "Announce": false,
   "Party": "",
   "Partner": "",
-  "Address": ""
+  "Address": "",
+  "Potluck": false
  },
  {
   "Status": "Live",
@@ -6269,7 +6492,8 @@
   "Announce": false,
   "Party": "",
   "Partner": "",
-  "Address": ""
+  "Address": "",
+  "Potluck": false
  },
  {
   "Status": "Live",
@@ -6297,7 +6521,8 @@
   "Announce": false,
   "Party": "",
   "Partner": "",
-  "Address": ""
+  "Address": "",
+  "Potluck": false
  },
  {
   "Status": "Live",
@@ -6325,7 +6550,8 @@
   "Announce": false,
   "Party": "",
   "Partner": "",
-  "Address": ""
+  "Address": "",
+  "Potluck": false
  },
  {
   "Status": "Live",
@@ -6353,7 +6579,8 @@
   "Announce": false,
   "Party": "",
   "Partner": "",
-  "Address": ""
+  "Address": "",
+  "Potluck": false
  },
  {
   "Status": "Live",
@@ -6381,7 +6608,8 @@
   "Announce": false,
   "Party": "",
   "Partner": "",
-  "Address": ""
+  "Address": "",
+  "Potluck": false
  },
  {
   "Status": "Live",
@@ -6409,7 +6637,8 @@
   "Announce": false,
   "Party": "",
   "Partner": "",
-  "Address": ""
+  "Address": "",
+  "Potluck": false
  },
  {
   "Status": "Live",
@@ -6437,7 +6666,8 @@
   "Announce": false,
   "Party": "",
   "Partner": "",
-  "Address": ""
+  "Address": "",
+  "Potluck": false
  },
  {
   "Status": "Live",
@@ -6465,7 +6695,8 @@
   "Announce": false,
   "Party": "",
   "Partner": "",
-  "Address": ""
+  "Address": "",
+  "Potluck": false
  },
  {
   "Status": "Live",
@@ -6493,7 +6724,8 @@
   "Announce": false,
   "Party": "",
   "Partner": "",
-  "Address": ""
+  "Address": "",
+  "Potluck": false
  },
  {
   "Status": "Live",
@@ -6521,7 +6753,8 @@
   "Announce": false,
   "Party": "",
   "Partner": "",
-  "Address": ""
+  "Address": "",
+  "Potluck": false
  },
  {
   "Status": "Live",
@@ -6549,7 +6782,8 @@
   "Announce": false,
   "Party": "",
   "Partner": "",
-  "Address": ""
+  "Address": "",
+  "Potluck": false
  },
  {
   "Status": "Live",
@@ -6577,7 +6811,8 @@
   "Announce": false,
   "Party": "",
   "Partner": "",
-  "Address": ""
+  "Address": "",
+  "Potluck": false
  },
  {
   "Status": "Live",
@@ -6605,7 +6840,8 @@
   "Announce": false,
   "Party": "",
   "Partner": "",
-  "Address": ""
+  "Address": "",
+  "Potluck": false
  },
  {
   "Status": "Live",
@@ -6633,7 +6869,8 @@
   "Announce": false,
   "Party": "",
   "Partner": "",
-  "Address": ""
+  "Address": "",
+  "Potluck": false
  },
  {
   "Status": "Live",
@@ -6661,7 +6898,8 @@
   "Announce": false,
   "Party": "",
   "Partner": "",
-  "Address": ""
+  "Address": "",
+  "Potluck": false
  },
  {
   "Status": "Live",
@@ -6689,7 +6927,8 @@
   "Announce": false,
   "Party": "",
   "Partner": "",
-  "Address": ""
+  "Address": "",
+  "Potluck": false
  },
  {
   "Status": "Live",
@@ -6717,7 +6956,8 @@
   "Announce": false,
   "Party": "",
   "Partner": "",
-  "Address": ""
+  "Address": "",
+  "Potluck": false
  },
  {
   "Status": "Live",
@@ -6745,7 +6985,8 @@
   "Announce": false,
   "Party": "",
   "Partner": "",
-  "Address": ""
+  "Address": "",
+  "Potluck": false
  },
  {
   "Status": "Live",
@@ -6773,7 +7014,8 @@
   "Announce": false,
   "Party": "",
   "Partner": "",
-  "Address": ""
+  "Address": "",
+  "Potluck": false
  },
  {
   "Status": "Live",
@@ -6801,7 +7043,8 @@
   "Announce": false,
   "Party": "",
   "Partner": "",
-  "Address": ""
+  "Address": "",
+  "Potluck": false
  },
  {
   "Status": "Live",
@@ -6829,7 +7072,8 @@
   "Announce": false,
   "Party": "",
   "Partner": "",
-  "Address": ""
+  "Address": "",
+  "Potluck": false
  },
  {
   "Status": "Live",
@@ -6857,7 +7101,8 @@
   "Announce": false,
   "Party": "",
   "Partner": "",
-  "Address": ""
+  "Address": "",
+  "Potluck": false
  },
  {
   "Status": "Live",
@@ -6885,7 +7130,8 @@
   "Announce": false,
   "Party": "",
   "Partner": "",
-  "Address": ""
+  "Address": "",
+  "Potluck": false
  },
  {
   "Status": "Live",
@@ -6913,7 +7159,8 @@
   "Announce": false,
   "Party": "",
   "Partner": "",
-  "Address": ""
+  "Address": "",
+  "Potluck": false
  },
  {
   "Status": "Live",
@@ -6941,7 +7188,8 @@
   "Announce": false,
   "Party": "",
   "Partner": "",
-  "Address": ""
+  "Address": "",
+  "Potluck": false
  },
  {
   "Status": "Live",
@@ -6969,7 +7217,8 @@
   "Announce": false,
   "Party": "",
   "Partner": "",
-  "Address": ""
+  "Address": "",
+  "Potluck": false
  },
  {
   "Status": "Live",
@@ -6997,7 +7246,8 @@
   "Announce": false,
   "Party": "",
   "Partner": "",
-  "Address": ""
+  "Address": "",
+  "Potluck": false
  },
  {
   "Status": "Live",
@@ -7025,7 +7275,8 @@
   "Announce": false,
   "Party": "",
   "Partner": "",
-  "Address": ""
+  "Address": "",
+  "Potluck": false
  },
  {
   "Status": "Live",
@@ -7053,6 +7304,7 @@
   "Announce": false,
   "Party": "",
   "Partner": "",
-  "Address": ""
+  "Address": "",
+  "Potluck": false
  }
 ]
