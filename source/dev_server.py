@@ -745,7 +745,7 @@ def rebuild():
 RESERVED_SLUGS = {"admin", "api", "rsvp", "register", "signin", "signout", "my", "message",
                   "board", "spaces", "notes", "calendar", "ics", "fonts", "hero", "e", "q",
                   "index.html", "manifest.webmanifest", "admin.webmanifest",
-                  "_templates", "cdn-cgi", "pages", "gala"}
+                  "_templates", "cdn-cgi", "pages", "gala", "friendsgiving"}
 
 def clean_slug(v):
     return re.sub(r"^-+|-+$", "", re.sub(r"[^a-z0-9]+", "-", str(v or "").lower().strip()))[:60]

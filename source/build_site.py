@@ -233,7 +233,7 @@ if os.path.exists(_pages_live):
 _made = []
 for _p in _pages:
     _slug = _re.sub(r"[^a-z0-9-]", "", str(_p.get("slug") or ""))
-    if len(_slug) < 3 or _slug in ("q", "ics", "fonts", "admin", "api", "gala"):
+    if len(_slug) < 3 or _slug in ("q", "ics", "fonts", "admin", "api", "gala", "friendsgiving"):
         continue
     os.makedirs(f"{SITE}/{_slug}", exist_ok=True)
     open(f"{SITE}/{_slug}/index.html", "w", encoding="utf-8").write(page_renderer.render(_p))
@@ -257,22 +257,27 @@ try:
     _coded_status = {k[5:]: str(v) for k, v in _sl.items() if k.startswith("page_")}
 except Exception:
     pass
-import sys as _sys
-_sys.path.insert(0, os.path.join(HERE, "gala_mockup"))
-import build_gala_mockup as _gala
-if _coded_status.get("gala", "Published") == "Published":
-    os.makedirs(f"{SITE}/gala/img", exist_ok=True)
-    open(f"{SITE}/gala/index.html", "w", encoding="utf-8").write(_gala.render(live=True))
-    _gala_n = 0
-    for _img in _gala.IMAGES:
-        _src = os.path.join(HERE, "gala_mockup", "img", _img)
-        if os.path.exists(_src):
-            shutil.copyfile(_src, f"{SITE}/gala/img/{_img}"); _gala_n += 1
-    print(f"gala guide: /gala with {_gala_n} pictures")
-else:
-    if os.path.isdir(f"{SITE}/gala"):
-        _rm_page_dir(f"{SITE}/gala")
-    print(f"gala guide: {_coded_status.get('gala')}, not on the site")
+import sys as _sys, importlib as _importlib
+# slug -> (module folder under source/, module name). Each module exposes
+# render(live) and IMAGES; its pictures sit in <folder>/img/.
+CODED_MODULES = {"gala": ("gala_mockup", "build_gala_mockup"),
+                 "friendsgiving": ("friendsgiving_mockup", "build_fg_mockup")}
+for _slug, (_folder, _modname) in CODED_MODULES.items():
+    _sys.path.insert(0, os.path.join(HERE, _folder))
+    _mod = _importlib.import_module(_modname)
+    if _coded_status.get(_slug, "Published") == "Published":
+        os.makedirs(f"{SITE}/{_slug}/img", exist_ok=True)
+        open(f"{SITE}/{_slug}/index.html", "w", encoding="utf-8").write(_mod.render(live=True))
+        _n = 0
+        for _img in _mod.IMAGES:
+            _src = os.path.join(HERE, _folder, "img", _img)
+            if os.path.exists(_src):
+                shutil.copyfile(_src, f"{SITE}/{_slug}/img/{_img}"); _n += 1
+        print(f"coded page: /{_slug} with {_n} pictures")
+    else:
+        if os.path.isdir(f"{SITE}/{_slug}"):
+            _rm_page_dir(f"{SITE}/{_slug}")
+        print(f"coded page: /{_slug} is {_coded_status.get(_slug)}, not on the site")
 
 # ---------------------------------------------------------------- admin
 admin = open(os.path.join(HERE, "181fremont_admin_prototype.html"), encoding="utf-8").read()
