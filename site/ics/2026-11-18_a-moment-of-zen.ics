@@ -3,13 +3,13 @@ VERSION:2.0
 PRODID:-//181 Fremont//Resident Experiences//EN
 BEGIN:VEVENT
 UID:181fremont-a-moment-of-zen-20261118@181residents.com
-DTSTAMP:20261015T224829Z
-SEQUENCE:287
-LAST-MODIFIED:20261015T224829Z
+DTSTAMP:20261016T210721Z
+SEQUENCE:288
+LAST-MODIFIED:20261016T210721Z
 DTSTART:20261118T180000
 DTEND:20261118T200000
 SUMMARY:A Moment of Zen
 LOCATION:181 Fremont - Level 39, Residents’ Club
-DESCRIPTION:An evening to slow down before the holiday season begins. A sound bath, guided breathing, and massage work, in a room set for stillness.
+DESCRIPTION:An evening to slow down before the holiday season begins. A sound bath, guided breathing, and massage work, in a room set for stillness.\n\nWellness-minded drinks and snacks will be served throughout. Come as you are. There’s nothing to bring, and nothing you need to know beforehand.\n\nWe begin at 6:00, straight after Book Club, so you’re welcome to make an evening of the two.
 END:VEVENT
 END:VCALENDAR

@@ -57,7 +57,7 @@ def desc_blocks(raw):
     """Stored description -> a list of HTML blocks. A blank line starts a new
     paragraph; inside a paragraph a return is a line break; lines that begin
     "- " (or "* ") make a bulleted list and lines that begin "1. " a numbered
-    one. The first block is the one the calendar file carries."""
+    one. The calendar file carries every block, paragraphs blank-line apart."""
     raw = (raw or "").replace("\r", "")
     out = []
     for para in raw.split("\n\n"):

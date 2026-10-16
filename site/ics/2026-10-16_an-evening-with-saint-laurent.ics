@@ -3,13 +3,13 @@ VERSION:2.0
 PRODID:-//181 Fremont//Resident Experiences//EN
 BEGIN:VEVENT
 UID:181fremont-an-evening-with-saint-laurent-20261016@181residents.com
-DTSTAMP:20261015T224829Z
-SEQUENCE:287
-LAST-MODIFIED:20261015T224829Z
+DTSTAMP:20261016T210721Z
+SEQUENCE:288
+LAST-MODIFIED:20261016T210721Z
 DTSTART:20261016T180000
 DTEND:20261016T200000
 SUMMARY:An Evening with Saint Laurent
 LOCATION:384 Post St, San Francisco
-DESCRIPTION:Join us at the Saint Laurent flagship boutique in Union Square as we celebrate the arrival of their Fall Collection, an evening shared with owners and residents from our neighboring Action properties.
+DESCRIPTION:Join us at the Saint Laurent flagship boutique in Union Square as we celebrate the arrival of their Fall Collection, an evening shared with owners and residents from our neighboring Action properties.\n\nEnjoy light bites and bubbles while exploring the season’s latest pieces. Kelly Sparks, celebrated fashion stylist, will be on hand with styling advice and personal wardrobe inspiration for the new season.\n\nThe evening is limited to 30 guests across the participating buildings, so an early note is kind.
 END:VEVENT
 END:VCALENDAR

@@ -194,7 +194,9 @@ def ics_href(e):
         # calendar entry maps to the boutique, never to our lobby.
         (f"LOCATION:{plain(e.get('address') or e['loc'])}" if e["rsvp"] == "partner"
          else f"LOCATION:181 Fremont - {plain(e['loc'])}"),
-        "DESCRIPTION:" + (plain(e['desc'][0]).replace("\\", "\\\\").replace("\n", "\\n") if e['desc'] else ""), "END:VEVENT", "END:VCALENDAR"]) + "\r\n"
+        # The whole description, every paragraph, so the entry in a phone's
+        # calendar carries the same words and links as the page.
+        "DESCRIPTION:" + "\\n\\n".join(plain(d).replace("\\", "\\\\").replace("\n", "\\n") for d in e['desc']), "END:VEVENT", "END:VCALENDAR"]) + "\r\n"
     fname = f"{e['on'].isoformat()}_{e['slug']}.ics"
     ICS_FILES[fname] = body
     return f"/ics/{fname}"

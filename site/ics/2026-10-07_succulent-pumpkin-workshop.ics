@@ -3,13 +3,13 @@ VERSION:2.0
 PRODID:-//181 Fremont//Resident Experiences//EN
 BEGIN:VEVENT
 UID:181fremont-succulent-pumpkin-workshop-20261007@181residents.com
-DTSTAMP:20261015T224829Z
-SEQUENCE:287
-LAST-MODIFIED:20261015T224829Z
+DTSTAMP:20261016T210721Z
+SEQUENCE:288
+LAST-MODIFIED:20261016T210721Z
 DTSTART:20261007T180000
 DTEND:20261007T193000
 SUMMARY:Succulent Pumpkin Workshop
 LOCATION:181 Fremont - Level 39, Residents’ Club
-DESCRIPTION:A succulent-topped pumpkin to carry your home through the autumn. You’ll design your own, and learn how to keep the cuttings healthy along the way.
+DESCRIPTION:A succulent-topped pumpkin to carry your home through the autumn. You’ll design your own, and learn how to keep the cuttings healthy along the way.\n\nWe begin with a demonstration and a proper talk on succulent care, then everyone builds theirs. Mini pumpkins and all materials are provided, so there’s nothing to bring.\n\nWhen the pumpkin has had its run, often many months from now, the cuttings can be replanted and enjoyed for years. Light bites and wine will be served throughout.
 END:VEVENT
 END:VCALENDAR
