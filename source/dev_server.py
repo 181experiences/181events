@@ -719,6 +719,22 @@ def log_history(role, event_id, action, changes=None, snapshot=None):
                      changes=changes, snapshot=snapshot))
     save_store("history", rows)
 
+RESIDENT_LOG_FIELDS = ("name", "unit", "email", "ends", "tenure", "status")
+def resident_diff(before, after):
+    out = {}
+    for f in RESIDENT_LOG_FIELDS:
+        o, n = ((before or {}).get(f) or ""), ((after or {}).get(f) or "")
+        if o != n: out[f] = [o, n]
+    return out
+
+def log_change(role, kind, ref_id, label, action, changes=None):
+    # Mirrors functions/_lib.js logChange: one append-only row per roster write.
+    rows = load_store("changelog", [])
+    rows.append(dict(id=max([h["id"] for h in rows] or [0]) + 1, kind=kind, ref_id=ref_id,
+                     label=label or "", at=now_iso(), who=f"{role}@local.dev", action=action,
+                     changes=changes if changes else None))
+    save_store("changelog", rows)
+
 def field_changes(before, after):
     from fields import FIELDS
     out = {}
@@ -908,6 +924,14 @@ class H(SimpleHTTPRequestHandler):
         if p.path == "/api/analytics":
             days = max(1, min(90, int((q.get("days") or ["30"])[0])))
             return self._json(sample_analytics(days))
+        if p.path == "/api/residents/history":
+            if self._role() == "desk": return self._json({"error": "forbidden"}, 403)
+            person = (q.get("person") or [""])[0]
+            rows = [h for h in load_store("changelog", []) if h["kind"] == "resident"
+                    and (not person or str(h["ref_id"]) == person)]
+            rows.sort(key=lambda h: h["id"], reverse=True)
+            return self._json({"log": [dict(id=h["id"], person=h["ref_id"], label=h["label"], at=h["at"],
+                                            who=h["who"], action=h["action"], changes=h["changes"]) for h in rows[:1000]]})
         if p.path == "/api/residents":
             return self._json({"residents": [shape_resident(r) for r in ensure_front_desk()]})
         if p.path == "/api/rsvps":
@@ -1172,7 +1196,10 @@ class H(SimpleHTTPRequestHandler):
                             tenure = tenure_of(parts[3] if len(parts) > 3 else "")
                             if email and not ex.get("email"): ex["email"] = email; touched = True
                             if tenure and not ex.get("tenure"): ex["tenure"] = tenure; touched = True
-                            if touched: updated.append(ex)
+                            if touched:
+                                updated.append(ex)
+                                log_change(self._role(), "resident", ex["id"], label_of(ex), "Filled from a paste",
+                                           {k: ["", ex[k]] for k in ("email", "tenure") if ex.get(k) and k in ("email", "tenure")})
                             continue
                         nid += 1
                         made.append(dict(id=nid, kind="resident", unit=parts[0].upper(), name=parts[1],
@@ -1194,6 +1221,9 @@ class H(SimpleHTTPRequestHandler):
                                  epoch=1, status="Active", ends=(body.get("ends") or "").strip() or None,
                                  created=now_iso()))
             residents += made; save_store("residents", residents)
+            for r in made:
+                log_change(self._role(), "resident", r["id"], label_of(r),
+                           "Added from a paste" if isinstance(body.get("bulk"), str) else "Added", resident_diff(None, r))
             return self._json({"residents": [shape_resident(r) for r in made],
                                "updated": [shape_resident(r) for r in updated],
                                "skipped": skipped, "disabled": disabled}, 201)
@@ -1646,6 +1676,7 @@ class H(SimpleHTTPRequestHandler):
             residents = load_store("residents", [])
             for r in residents:
                 if str(r["id"]) == rid:
+                    before = dict(r)
                     if body.get("rotate"): r["code"] = make_code(); r["epoch"] += 1
                     if body.get("status") in ("Active", "Disabled"): r["status"] = body["status"]; r["epoch"] += 1
                     for f in ("name", "unit", "email", "ends"):
@@ -1655,6 +1686,11 @@ class H(SimpleHTTPRequestHandler):
                     if "tenure" in body:
                         r["tenure"] = tenure_of(body["tenure"]) or None
                     save_store("residents", residents)
+                    changes = resident_diff(before, r)
+                    action = ("Code rotated" if body.get("rotate") else "Disabled" if body.get("status") == "Disabled"
+                              else "Restored" if body.get("status") == "Active" else "Edited")
+                    if action != "Edited" or changes:
+                        log_change(self._role(), "resident", r["id"], label_of(r), action, changes)
                     return self._json(shape_resident(r))
             return self._json({"error": "No such person"}, 404)
         parts = p.path.split("/")
@@ -1887,8 +1923,10 @@ class H(SimpleHTTPRequestHandler):
             residents = load_store("residents", [])
             kept = [r for r in residents if str(r["id"]) != rid]
             if len(kept) == len(residents): return self._json({"error": "No such person"}, 404)
+            gone = next(r for r in residents if str(r["id"]) == rid)
             save_store("residents", kept)
             save_store("rsvps", [r for r in load_store("rsvps", []) if str(r["resident_id"]) != rid])
+            log_change(self._role(), "resident", gone["id"], label_of(gone), "Deleted")
             return self._json({"ok": True})
         if p.path.startswith("/api/bookings/"):
             bid = p.path.rsplit("/", 1)[1]

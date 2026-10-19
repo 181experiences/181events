@@ -464,6 +464,15 @@
   .mshade{height:16px;max-width:520px;border-radius:100px;margin:6px 0 2px;
     background:repeating-linear-gradient(90deg,#e6ded2 0 16px,#efe9e0 16px 34px)}
   .mrow{background:var(--paper-2);border:1px solid var(--line);border-radius:var(--radius);padding:14px 16px;margin-bottom:8px}
+  .lrow{display:grid;grid-template-columns:150px 1fr;gap:4px 16px;padding:10px 0;border-top:1px solid var(--line);font-size:14px}
+  .lrow:first-child{border-top:0}
+  .lwhen{color:var(--stone);font-size:13px;line-height:1.5}
+  .lwho{display:block;color:var(--stone);font-size:12px;overflow-wrap:anywhere}
+  .lact{font-size:11px;letter-spacing:.12em;text-transform:uppercase;font-weight:600;color:var(--red);margin-right:8px}
+  .lwhom{font-family:var(--fd);font-weight:600;color:var(--ink)}
+  .lch{color:var(--stone);font-size:13px;margin-top:3px;line-height:1.5}
+  .lch b{color:var(--ink);font-weight:500}
+  @media(max-width:560px){.lrow{grid-template-columns:1fr;gap:2px}}
   .mtop{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:9px}
   .munit{font-family:var(--fd);font-weight:600;font-size:14.5px;color:var(--ink)}
   .mkind{font-size:11px;letter-spacing:.14em;text-transform:uppercase;font-weight:600;border:1px solid var(--line);
@@ -914,7 +923,7 @@
 
 <!-- ================= RESIDENTS ================= -->
 <section class="screen" id="scr-res"><div class="wrap">
-  <div class="phead"><div style="display:flex;align-items:center;gap:10px"><h1>Residents</h1><span class="iwrap"><button type="button" class="ib" aria-label="What this does">i</button><span class="ipop">One code per person, grouped by unit; couples each get their own. A renter or a visiting family member gets their own row with an end date, and the code simply stops working after it; mark them a tenant and a yellow pill says so. The everyday rescue is Email code, a written draft to the address on file; Print makes one fresh card; Rotate kills a code everywhere at once and is for a card that may be in the wrong hands. Edit on any row fixes spelling, emails, end dates, and standing.</span></span></div><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="mini" data-printcards title="A printable sheet of code cards, one per person">Print code cards</button></div></div>
+  <div class="phead"><div style="display:flex;align-items:center;gap:10px"><h1>Residents</h1><span class="iwrap"><button type="button" class="ib" aria-label="What this does">i</button><span class="ipop">One code per person, grouped by unit; couples each get their own. A renter or a visiting family member gets their own row with an end date, and the code simply stops working after it; mark them a tenant and a yellow pill says so. The everyday rescue is Email code, a written draft to the address on file; Print makes one fresh card; Rotate kills a code everywhere at once and is for a card that may be in the wrong hands. Edit on any row fixes spelling, emails, end dates, and standing.</span></span></div><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="mini ghost" data-reslog title="Every change to the roster, who made it and when, under Settings">Change log</button><button class="mini" data-printcards title="A printable sheet of code cards, one per person">Print code cards</button></div></div>
   <div class="psub" id="rescount">Loading&hellip;</div>
   <div style="margin:0 0 16px;display:flex;gap:10px;flex-wrap:wrap">
     <button class="btn" id="res-open" data-resopen>Add a Person</button>
@@ -1238,6 +1247,19 @@
         <input class="inp" id="host-new" placeholder="Resident Experiences" autocapitalize="words" style="max-width:320px">
         <button class="mini" data-addhost>Add Host</button>
       </div>
+    </div>
+  </div>
+
+  <div class="sec" id="set-logsec" style="margin-top:34px">
+    <div style="display:flex;align-items:center;gap:10px"><h2>Change log</h2><span class="iwrap"><button type="button" class="ib" aria-label="What this does">i</button><span class="ipop">Every change to the Residents roster, newest first: who made it, when, and which fields moved. Adding a person, a paste, an edit, a rotated code, Disable, Restore, and Delete all land here the moment they happen, and nothing is ever removed from the log. Find narrows it to one person or one unit; Print gives you the list as it stands, or the narrowed one.</span></span></div>
+    <div class="sd">The roster&rsquo;s paper trail. Codes themselves never appear here.</div>
+    <div class="card">
+      <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:14px">
+        <input class="inp" id="log-find" placeholder="Find a person, unit, or action" autocapitalize="none" autocomplete="off" style="max-width:320px">
+        <span class="hint" id="log-count" style="margin:0"></span>
+        <button class="mini ghost" data-printlog style="margin-left:auto">Print</button>
+      </div>
+      <div id="set-log"></div>
     </div>
   </div>
 </div></section>
@@ -3820,6 +3842,68 @@
     document.querySelector("[data-editdelete]").style.display = "";
     $("#res-formhead").closest(".card").scrollIntoView({ behavior: "smooth", block: "start" });
   }
+  // ------------------------------------------------------------ change log
+  // The roster's paper trail, read from /api/residents/history whenever the
+  // Settings screen opens or the Residents shortcut is pressed. Find narrows
+  // by person, unit, action, or who; Print takes whatever is showing.
+  let changeLog = [], changeLogLoaded = false;
+  const LOG_FIELD = { name: "Name", unit: "Unit", email: "Email", ends: "Access ends", tenure: "Standing", status: "Status" };
+  const logWhen = t => new Date(t).toLocaleString([], { month: "short", day: "numeric", year: "numeric", hour: "numeric", minute: "2-digit" });
+  function logChangeLines(h) {
+    if (!h.changes) return "";
+    return Object.entries(h.changes).map(([f, [o, n]]) =>
+      h.action === "Added" || h.action === "Added from a paste"
+        ? (n ? `${LOG_FIELD[f] || f}: <b>${esc(n)}</b>` : "")
+        : `${LOG_FIELD[f] || f}: ${o ? esc(o) : "<i>blank</i>"} &rarr; <b>${n ? esc(n) : "<i>blank</i>"}</b>`
+    ).filter(Boolean).join(" &middot; ");
+  }
+  function logRows(filter) {
+    const q = (filter || "").trim().toLowerCase();
+    return q ? changeLog.filter(h => `${h.label} ${h.action} ${h.who} ${logChangeLines(h)}`.toLowerCase().includes(q)) : changeLog;
+  }
+  function renderChangeLog() {
+    const box = $("#set-log"); if (!box) return;
+    const rows = logRows($("#log-find").value);
+    $("#log-count").textContent = changeLog.length
+      ? (rows.length === changeLog.length ? `${changeLog.length} change${changeLog.length === 1 ? "" : "s"}` : `${rows.length} of ${changeLog.length}`)
+      : "";
+    box.innerHTML = rows.length ? rows.map(h => `<div class="lrow">
+      <div class="lwhen">${esc(logWhen(h.at))}<span class="lwho">${esc(h.who || "")}</span></div>
+      <div><span class="lact">${esc(h.action)}</span><span class="lwhom">${esc(h.label)}</span>${h.changes ? `<div class="lch">${logChangeLines(h)}</div>` : ""}</div>
+    </div>`).join("")
+      : `<div class="hint" style="margin:0">${changeLog.length ? "Nothing matches." : "Nothing yet. The first change to the roster starts the log."}</div>`;
+  }
+  async function loadChangeLog() {
+    try { changeLog = (await api("/api/residents/history")).log || []; changeLogLoaded = true; }
+    catch (e) { changeLog = []; }
+    renderChangeLog();
+  }
+  function printChangeLog() {
+    const rows = logRows($("#log-find").value);
+    if (!rows.length) { toast("Nothing to print yet.", "warn"); return; }
+    const q = $("#log-find").value.trim();
+    const w = window.open("", "_blank");
+    w.document.write(`<!DOCTYPE html><html><head><title>Roster change log</title><style>
+      body{font-family:Georgia,serif;color:#16161a;margin:40px;font-size:13px}
+      h1{font-size:22px;margin:0 0 2px} .meta{font-size:12px;color:#7a7266;margin-bottom:20px}
+      table{width:100%;border-collapse:collapse}
+      th{text-align:left;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:#7a7266;padding:6px 8px;border-bottom:2px solid #16161a}
+      td{padding:7px 8px;border-bottom:1px solid #ddd6cb;vertical-align:top}
+      .w{white-space:nowrap;color:#55555f} .who{color:#7a7266;font-size:11.5px} .a{font-size:11px;letter-spacing:.08em;text-transform:uppercase}
+      @media print{ body{margin:16px} }
+    </style></head><body>
+    <h1>Residents &middot; Change log</h1>
+    <p class="meta">${rows.length} change${rows.length === 1 ? "" : "s"}${q ? ` matching &ldquo;${esc(q)}&rdquo;` : ""} &middot; newest first &middot; printed ${new Date().toLocaleString([], { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" })}</p>
+    <table><tr><th>When</th><th>By</th><th>Action</th><th>Person</th><th>What changed</th></tr>
+    ${rows.map(h => `<tr><td class="w">${esc(logWhen(h.at))}</td><td class="who">${esc(h.who || "")}</td><td class="a">${esc(h.action)}</td><td>${esc(h.label)}</td><td>${logChangeLines(h)}</td></tr>`).join("")}
+    </table></body></html>`);
+    w.document.close();
+    w.focus();
+    w.print();
+  }
+  document.addEventListener("input", ev => { if (ev.target.id === "log-find") renderChangeLog(); });
+  document.addEventListener("change", ev => { if (ev.target.id === "s-inst" && ev.target.checked) loadChangeLog(); });
+
   function exitResEdit() {
     editingResId = null;
     ["r-unit", "r-name", "r-email", "r-ends", "r-tenure"].forEach(id => { $("#" + id).value = ""; });
@@ -5585,7 +5669,7 @@
   }
 
   document.addEventListener("click", ev => {
-    const r = ev.target.closest("[data-mailcode],[data-printone],[data-rotate],[data-ends],[data-toggle],[data-rdelete],[data-resedit],[data-saveres],[data-cancelres],[data-edittoggle],[data-editdelete],[data-addres],[data-resopen],[data-bulkopen],[data-bulkclose],[data-addbulk],[data-bulkreportclose],[data-printcards],[data-mreplied],[data-marchive],[data-wconfirm],[data-redit],[data-rcancel],[data-rarrive],[data-pastchev],[data-pastmail],[data-notedel],[data-noterestore],[data-nbpast],[data-rsvpprint],[data-addrsvp],[data-savearsvp],[data-closearsvp],[data-copylink],[data-copyshort],[data-aupload],[data-acanva],[data-adelete],[data-rsvpkey],[data-addbooking],[data-unbook],[data-bkchev],[data-bkreg],[data-bkcopy],[data-bkprint],[data-gadd],[data-garrive],[data-gdel],[data-gmail],[data-gedit],[data-bkedit],[data-savebk],[data-cancelbk],[data-bkopen]");
+    const r = ev.target.closest("[data-mailcode],[data-printone],[data-rotate],[data-ends],[data-toggle],[data-rdelete],[data-resedit],[data-saveres],[data-cancelres],[data-edittoggle],[data-editdelete],[data-addres],[data-resopen],[data-bulkopen],[data-bulkclose],[data-addbulk],[data-bulkreportclose],[data-printcards],[data-reslog],[data-printlog],[data-mreplied],[data-marchive],[data-wconfirm],[data-redit],[data-rcancel],[data-rarrive],[data-pastchev],[data-pastmail],[data-notedel],[data-noterestore],[data-nbpast],[data-rsvpprint],[data-addrsvp],[data-savearsvp],[data-closearsvp],[data-copylink],[data-copyshort],[data-aupload],[data-acanva],[data-adelete],[data-rsvpkey],[data-addbooking],[data-unbook],[data-bkchev],[data-bkreg],[data-bkcopy],[data-bkprint],[data-gadd],[data-garrive],[data-gdel],[data-gmail],[data-gedit],[data-bkedit],[data-savebk],[data-cancelbk],[data-bkopen]");
     if (r) {
       if (r.dataset.bkedit) {
         const b = bookings.find(x => String(x.id) === r.dataset.bkedit);
@@ -5786,6 +5870,11 @@
         if (p) printCards(p);
       }
       else if (r.dataset.printcards !== undefined) printCards();
+      else if (r.dataset.reslog !== undefined) {
+        go("inst");
+        loadChangeLog().then(() => { const s = $("#set-logsec"); if (s) s.scrollIntoView({ behavior: "smooth", block: "start" }); });
+      }
+      else if (r.dataset.printlog !== undefined) printChangeLog();
       else if (r.dataset.mreplied) {
         api("/api/messages/" + r.dataset.mreplied, { method: "PATCH", body: JSON.stringify({ state: "Replied" }) })
           .then(u => { const m = msgs.find(x => String(x.id) === String(u.id)); if (m) { m.state = u.state; m.replied = u.replied; } renderMsgs(); })

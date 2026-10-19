@@ -1,5 +1,6 @@
 import {
   json, noDb, adminRole, forbidden, ensureResidentTables, makeCode, residentView, tenureOf,
+  labelOf, residentDiff, logChange,
 } from "../../_lib.js";
 
 // PATCH /api/residents/:id -> rotate a code, disable or restore a person, set an
@@ -28,10 +29,20 @@ export async function onRequestPatch({ request, params, env }) {
   if ("tenure" in body) { sets.push("tenure=?"); vals.push(tenureOf(body.tenure) || null); }
   if (!sets.length) return json({ error: "Nothing to change" }, 400);
 
+  const before = await env.DB.prepare("SELECT * FROM residents WHERE id=?").bind(id).first();
   const row = await env.DB.prepare(
     `UPDATE residents SET ${sets.join(",")} WHERE id=? RETURNING *`)
     .bind(...vals, id).first();
   if (!row) return json({ error: "No such person" }, 404);
+  // The log line: the verb the desk used, and the fields that moved.
+  const changes = residentDiff(before, row);
+  const action = body.rotate ? "Code rotated"
+    : body.status === "Disabled" ? "Disabled"
+    : body.status === "Active" ? "Restored"
+    : "Edited";
+  if (action !== "Edited" || Object.keys(changes).length) {
+    await logChange(env, request, "resident", row.id, labelOf(row), action, changes);
+  }
   return json(residentView(row));
 }
 
@@ -45,8 +56,10 @@ export async function onRequestDelete({ request, params, env }) {
   await ensureResidentTables(env);
   const id = Number(params.id);
   if (!Number.isInteger(id)) return json({ error: "Bad id" }, 400);
+  const before = await env.DB.prepare("SELECT * FROM residents WHERE id=?").bind(id).first();
   await env.DB.prepare("DELETE FROM rsvps WHERE resident_id=?").bind(id).run();
   const { meta } = await env.DB.prepare("DELETE FROM residents WHERE id=?").bind(id).run();
   if (!meta.changes) return json({ error: "No such person" }, 404);
+  await logChange(env, request, "resident", id, before ? labelOf(before) : "", "Deleted", null);
   return json({ ok: true });
 }

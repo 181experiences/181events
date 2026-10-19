@@ -1,5 +1,6 @@
 import {
   json, noDb, adminRole, forbidden, ensureResidentTables, makeCode, residentView, tenureOf,
+  labelOf, residentDiff, logChange,
 } from "../../_lib.js";
 
 // The person registry: every admin tier may work here, including the front desk,
@@ -88,6 +89,7 @@ export async function onRequestPost({ request, env }) {
             `UPDATE residents SET ${sets.join(",")} WHERE id=? RETURNING *`)
             .bind(...vals, have.id).first();
           updated.push(residentView(row));
+          await logChange(env, request, "resident", row.id, labelOf(row), "Filled from a paste", residentDiff(have, row));
         }
         continue;
       }
@@ -98,6 +100,8 @@ export async function onRequestPost({ request, env }) {
       .bind(p.kind, p.unit || null, p.name, p.email || null, makeCode(),
         p.ends || null, now, p.tenure || null).first();
     made.push(residentView(row));
+    await logChange(env, request, "resident", row.id, labelOf(row), isBulk ? "Added from a paste" : "Added",
+      residentDiff(null, row));
   }
   return json({ residents: made, updated, skipped, disabled }, 201);
 }

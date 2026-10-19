@@ -465,6 +465,15 @@ HTML = f'''<!DOCTYPE html>
   .mshade{{height:16px;max-width:520px;border-radius:100px;margin:6px 0 2px;
     background:repeating-linear-gradient(90deg,#e6ded2 0 16px,#efe9e0 16px 34px)}}
   .mrow{{background:var(--paper-2);border:1px solid var(--line);border-radius:var(--radius);padding:14px 16px;margin-bottom:8px}}
+  .lrow{{display:grid;grid-template-columns:150px 1fr;gap:4px 16px;padding:10px 0;border-top:1px solid var(--line);font-size:14px}}
+  .lrow:first-child{{border-top:0}}
+  .lwhen{{color:var(--stone);font-size:13px;line-height:1.5}}
+  .lwho{{display:block;color:var(--stone);font-size:12px;overflow-wrap:anywhere}}
+  .lact{{font-size:11px;letter-spacing:.12em;text-transform:uppercase;font-weight:600;color:var(--red);margin-right:8px}}
+  .lwhom{{font-family:var(--fd);font-weight:600;color:var(--ink)}}
+  .lch{{color:var(--stone);font-size:13px;margin-top:3px;line-height:1.5}}
+  .lch b{{color:var(--ink);font-weight:500}}
+  @media(max-width:560px){{.lrow{{grid-template-columns:1fr;gap:2px}}}}
   .mtop{{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:9px}}
   .munit{{font-family:var(--fd);font-weight:600;font-size:14.5px;color:var(--ink)}}
   .mkind{{font-size:11px;letter-spacing:.14em;text-transform:uppercase;font-weight:600;border:1px solid var(--line);
@@ -905,7 +914,7 @@ HTML = f'''<!DOCTYPE html>
 
 <!-- ================= RESIDENTS ================= -->
 <section class="screen" id="scr-res"><div class="wrap">
-  <div class="phead"><div style="display:flex;align-items:center;gap:10px"><h1>Residents</h1>{info("One code per person, grouped by unit; couples each get their own. A renter or a visiting family member gets their own row with an end date, and the code simply stops working after it; mark them a tenant and a yellow pill says so. The everyday rescue is Email code, a written draft to the address on file; Print makes one fresh card; Rotate kills a code everywhere at once and is for a card that may be in the wrong hands. Edit on any row fixes spelling, emails, end dates, and standing.")}</div><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="mini" data-printcards title="A printable sheet of code cards, one per person">Print code cards</button></div></div>
+  <div class="phead"><div style="display:flex;align-items:center;gap:10px"><h1>Residents</h1>{info("One code per person, grouped by unit; couples each get their own. A renter or a visiting family member gets their own row with an end date, and the code simply stops working after it; mark them a tenant and a yellow pill says so. The everyday rescue is Email code, a written draft to the address on file; Print makes one fresh card; Rotate kills a code everywhere at once and is for a card that may be in the wrong hands. Edit on any row fixes spelling, emails, end dates, and standing.")}</div><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="mini ghost" data-reslog title="Every change to the roster, who made it and when, under Settings">Change log</button><button class="mini" data-printcards title="A printable sheet of code cards, one per person">Print code cards</button></div></div>
   <div class="psub" id="rescount">Loading&hellip;</div>
   <div style="margin:0 0 16px;display:flex;gap:10px;flex-wrap:wrap">
     <button class="btn" id="res-open" data-resopen>Add a Person</button>
@@ -1229,6 +1238,19 @@ HTML = f'''<!DOCTYPE html>
         <input class="inp" id="host-new" placeholder="Resident Experiences" autocapitalize="words" style="max-width:320px">
         <button class="mini" data-addhost>Add Host</button>
       </div>
+    </div>
+  </div>
+
+  <div class="sec" id="set-logsec" style="margin-top:34px">
+    <div style="display:flex;align-items:center;gap:10px"><h2>Change log</h2>{info("Every change to the Residents roster, newest first: who made it, when, and which fields moved. Adding a person, a paste, an edit, a rotated code, Disable, Restore, and Delete all land here the moment they happen, and nothing is ever removed from the log. Find narrows it to one person or one unit; Print gives you the list as it stands, or the narrowed one.")}</div>
+    <div class="sd">The roster&rsquo;s paper trail. Codes themselves never appear here.</div>
+    <div class="card">
+      <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:14px">
+        <input class="inp" id="log-find" placeholder="Find a person, unit, or action" autocapitalize="none" autocomplete="off" style="max-width:320px">
+        <span class="hint" id="log-count" style="margin:0"></span>
+        <button class="mini ghost" data-printlog style="margin-left:auto">Print</button>
+      </div>
+      <div id="set-log"></div>
     </div>
   </div>
 </div></section>

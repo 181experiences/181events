@@ -1674,6 +1674,68 @@
     document.querySelector("[data-editdelete]").style.display = "";
     $("#res-formhead").closest(".card").scrollIntoView({ behavior: "smooth", block: "start" });
   }
+  // ------------------------------------------------------------ change log
+  // The roster's paper trail, read from /api/residents/history whenever the
+  // Settings screen opens or the Residents shortcut is pressed. Find narrows
+  // by person, unit, action, or who; Print takes whatever is showing.
+  let changeLog = [], changeLogLoaded = false;
+  const LOG_FIELD = { name: "Name", unit: "Unit", email: "Email", ends: "Access ends", tenure: "Standing", status: "Status" };
+  const logWhen = t => new Date(t).toLocaleString([], { month: "short", day: "numeric", year: "numeric", hour: "numeric", minute: "2-digit" });
+  function logChangeLines(h) {
+    if (!h.changes) return "";
+    return Object.entries(h.changes).map(([f, [o, n]]) =>
+      h.action === "Added" || h.action === "Added from a paste"
+        ? (n ? `${LOG_FIELD[f] || f}: <b>${esc(n)}</b>` : "")
+        : `${LOG_FIELD[f] || f}: ${o ? esc(o) : "<i>blank</i>"} &rarr; <b>${n ? esc(n) : "<i>blank</i>"}</b>`
+    ).filter(Boolean).join(" &middot; ");
+  }
+  function logRows(filter) {
+    const q = (filter || "").trim().toLowerCase();
+    return q ? changeLog.filter(h => `${h.label} ${h.action} ${h.who} ${logChangeLines(h)}`.toLowerCase().includes(q)) : changeLog;
+  }
+  function renderChangeLog() {
+    const box = $("#set-log"); if (!box) return;
+    const rows = logRows($("#log-find").value);
+    $("#log-count").textContent = changeLog.length
+      ? (rows.length === changeLog.length ? `${changeLog.length} change${changeLog.length === 1 ? "" : "s"}` : `${rows.length} of ${changeLog.length}`)
+      : "";
+    box.innerHTML = rows.length ? rows.map(h => `<div class="lrow">
+      <div class="lwhen">${esc(logWhen(h.at))}<span class="lwho">${esc(h.who || "")}</span></div>
+      <div><span class="lact">${esc(h.action)}</span><span class="lwhom">${esc(h.label)}</span>${h.changes ? `<div class="lch">${logChangeLines(h)}</div>` : ""}</div>
+    </div>`).join("")
+      : `<div class="hint" style="margin:0">${changeLog.length ? "Nothing matches." : "Nothing yet. The first change to the roster starts the log."}</div>`;
+  }
+  async function loadChangeLog() {
+    try { changeLog = (await api("/api/residents/history")).log || []; changeLogLoaded = true; }
+    catch (e) { changeLog = []; }
+    renderChangeLog();
+  }
+  function printChangeLog() {
+    const rows = logRows($("#log-find").value);
+    if (!rows.length) { toast("Nothing to print yet.", "warn"); return; }
+    const q = $("#log-find").value.trim();
+    const w = window.open("", "_blank");
+    w.document.write(`<!DOCTYPE html><html><head><title>Roster change log</title><style>
+      body{font-family:Georgia,serif;color:#16161a;margin:40px;font-size:13px}
+      h1{font-size:22px;margin:0 0 2px} .meta{font-size:12px;color:#7a7266;margin-bottom:20px}
+      table{width:100%;border-collapse:collapse}
+      th{text-align:left;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:#7a7266;padding:6px 8px;border-bottom:2px solid #16161a}
+      td{padding:7px 8px;border-bottom:1px solid #ddd6cb;vertical-align:top}
+      .w{white-space:nowrap;color:#55555f} .who{color:#7a7266;font-size:11.5px} .a{font-size:11px;letter-spacing:.08em;text-transform:uppercase}
+      @media print{ body{margin:16px} }
+    </style></head><body>
+    <h1>Residents &middot; Change log</h1>
+    <p class="meta">${rows.length} change${rows.length === 1 ? "" : "s"}${q ? ` matching &ldquo;${esc(q)}&rdquo;` : ""} &middot; newest first &middot; printed ${new Date().toLocaleString([], { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" })}</p>
+    <table><tr><th>When</th><th>By</th><th>Action</th><th>Person</th><th>What changed</th></tr>
+    ${rows.map(h => `<tr><td class="w">${esc(logWhen(h.at))}</td><td class="who">${esc(h.who || "")}</td><td class="a">${esc(h.action)}</td><td>${esc(h.label)}</td><td>${logChangeLines(h)}</td></tr>`).join("")}
+    </table></body></html>`);
+    w.document.close();
+    w.focus();
+    w.print();
+  }
+  document.addEventListener("input", ev => { if (ev.target.id === "log-find") renderChangeLog(); });
+  document.addEventListener("change", ev => { if (ev.target.id === "s-inst" && ev.target.checked) loadChangeLog(); });
+
   function exitResEdit() {
     editingResId = null;
     ["r-unit", "r-name", "r-email", "r-ends", "r-tenure"].forEach(id => { $("#" + id).value = ""; });
@@ -3439,7 +3501,7 @@
   }
 
   document.addEventListener("click", ev => {
-    const r = ev.target.closest("[data-mailcode],[data-printone],[data-rotate],[data-ends],[data-toggle],[data-rdelete],[data-resedit],[data-saveres],[data-cancelres],[data-edittoggle],[data-editdelete],[data-addres],[data-resopen],[data-bulkopen],[data-bulkclose],[data-addbulk],[data-bulkreportclose],[data-printcards],[data-mreplied],[data-marchive],[data-wconfirm],[data-redit],[data-rcancel],[data-rarrive],[data-pastchev],[data-pastmail],[data-notedel],[data-noterestore],[data-nbpast],[data-rsvpprint],[data-addrsvp],[data-savearsvp],[data-closearsvp],[data-copylink],[data-copyshort],[data-aupload],[data-acanva],[data-adelete],[data-rsvpkey],[data-addbooking],[data-unbook],[data-bkchev],[data-bkreg],[data-bkcopy],[data-bkprint],[data-gadd],[data-garrive],[data-gdel],[data-gmail],[data-gedit],[data-bkedit],[data-savebk],[data-cancelbk],[data-bkopen]");
+    const r = ev.target.closest("[data-mailcode],[data-printone],[data-rotate],[data-ends],[data-toggle],[data-rdelete],[data-resedit],[data-saveres],[data-cancelres],[data-edittoggle],[data-editdelete],[data-addres],[data-resopen],[data-bulkopen],[data-bulkclose],[data-addbulk],[data-bulkreportclose],[data-printcards],[data-reslog],[data-printlog],[data-mreplied],[data-marchive],[data-wconfirm],[data-redit],[data-rcancel],[data-rarrive],[data-pastchev],[data-pastmail],[data-notedel],[data-noterestore],[data-nbpast],[data-rsvpprint],[data-addrsvp],[data-savearsvp],[data-closearsvp],[data-copylink],[data-copyshort],[data-aupload],[data-acanva],[data-adelete],[data-rsvpkey],[data-addbooking],[data-unbook],[data-bkchev],[data-bkreg],[data-bkcopy],[data-bkprint],[data-gadd],[data-garrive],[data-gdel],[data-gmail],[data-gedit],[data-bkedit],[data-savebk],[data-cancelbk],[data-bkopen]");
     if (r) {
       if (r.dataset.bkedit) {
         const b = bookings.find(x => String(x.id) === r.dataset.bkedit);
@@ -3640,6 +3702,11 @@
         if (p) printCards(p);
       }
       else if (r.dataset.printcards !== undefined) printCards();
+      else if (r.dataset.reslog !== undefined) {
+        go("inst");
+        loadChangeLog().then(() => { const s = $("#set-logsec"); if (s) s.scrollIntoView({ behavior: "smooth", block: "start" }); });
+      }
+      else if (r.dataset.printlog !== undefined) printChangeLog();
       else if (r.dataset.mreplied) {
         api("/api/messages/" + r.dataset.mreplied, { method: "PATCH", body: JSON.stringify({ state: "Replied" }) })
           .then(u => { const m = msgs.find(x => String(x.id) === String(u.id)); if (m) { m.state = u.state; m.replied = u.replied; } renderMsgs(); })

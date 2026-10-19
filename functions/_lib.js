@@ -118,6 +118,15 @@ export const RESIDENT_TABLES = [
     state TEXT NOT NULL DEFAULT 'New', replied TEXT, created TEXT NOT NULL
   )`,
   `CREATE TABLE IF NOT EXISTS attempts (ip TEXT NOT NULL, ts INTEGER NOT NULL)`,
+  // The change log: one row per roster write, carrying who, when, what. kind
+  // names the record family (resident for now), ref_id the row, label the
+  // person as they read at the time, so a deleted row still has a name.
+  `CREATE TABLE IF NOT EXISTS change_log (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    kind TEXT NOT NULL, ref_id INTEGER, label TEXT,
+    at TEXT NOT NULL, who TEXT, action TEXT NOT NULL, changes TEXT
+  )`,
+  `CREATE INDEX IF NOT EXISTS change_log_by_kind ON change_log(kind, id)`,
   `CREATE TABLE IF NOT EXISTS notes (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     resident_id INTEGER NOT NULL,
@@ -221,6 +230,27 @@ export const ASSET_KINDS = ["web-hero", "nixplay-still", "nixplay-video",
 // "Margaret · 12A" for residents, "Front Desk" for role accounts.
 export function labelOf(r) {
   return r.unit ? `${r.name} · ${r.unit}` : r.name;
+}
+
+// What a roster edit changed: {field: [old, new]} over the fields a person
+// can see on their own row. Standing counts; the code itself never appears.
+export const RESIDENT_LOG_FIELDS = ["name", "unit", "email", "ends", "tenure", "status"];
+export function residentDiff(before, after) {
+  const changes = {};
+  for (const f of RESIDENT_LOG_FIELDS) {
+    const o = before ? (before[f] || "") : "", n = after ? (after[f] || "") : "";
+    if (o !== n) changes[f] = [o, n];
+  }
+  return changes;
+}
+export async function logChange(env, request, kind, refId, label, action, changes) {
+  try {
+    const who = (await accessEmail(request)) || env.DEV_ROLE || "";
+    await env.DB.prepare(
+      "INSERT INTO change_log (kind, ref_id, label, at, who, action, changes) VALUES (?,?,?,?,?,?,?)")
+      .bind(kind, refId, label || "", new Date().toISOString(), who, action,
+            changes && Object.keys(changes).length ? JSON.stringify(changes) : null).run();
+  } catch (e) {}
 }
 
 // One shape for a residents row wherever the admin sees it, so a field added
