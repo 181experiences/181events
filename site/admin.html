@@ -948,8 +948,8 @@
     </div>
   </div>
   <div class="card" id="res-bulk" style="display:none;margin-bottom:18px">
-    <div class="flrow"><label class="fl" for="r-bulk" style="font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--stone);font-weight:600">Add several at once</label><span class="iwrap"><button type="button" class="ib" aria-label="What this does">i</button><span class="ipop">Safe to paste the whole directory: anyone already listed under the same unit and name is skipped, and their code is not touched. Only new names get rows and codes; a blank email or owner-or-tenant standing is filled in from the paste, never overwritten. Someone who moved out stays as you left them; someone who moved units appears as a new row, and you Disable the old one.</span></span></div>
-      <textarea class="inp" id="r-bulk" rows="3" style="margin-top:6px" placeholder="One person per line: unit, name, email, owner or tenant&#10;12A, Margaret, margaret@example.com, owner&#10;7C, Elena, , tenant"></textarea>
+    <div class="flrow"><label class="fl" for="r-bulk" style="font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--stone);font-weight:600">Add several at once</label><span class="iwrap"><button type="button" class="ib" aria-label="What this does">i</button><span class="ipop">Copy the whole Search Unit Profiles table out of BuildingLink and paste it here as is; the form reads the units, splits the names, pairs the emails, and marks everyone after a (s) as a tenant. Lines of unit, name, email work too. Anyone already listed under the same unit and name is skipped, and their code is not touched. Only new names get rows and codes; a blank email or owner-or-tenant standing is filled in from the paste, never overwritten. Someone who moved out stays as you left them and appears in the report below for you to Disable; someone who moved units appears as a new row, and you Disable the old one.</span></span></div>
+      <textarea class="inp" id="r-bulk" rows="3" style="margin-top:6px" placeholder="Paste the BuildingLink table straight from Search Unit Profiles, or one person per line: unit, name, email, owner or tenant&#10;12A, Margaret, margaret@example.com, owner&#10;7C, Elena, , tenant"></textarea>
       <div style="margin-top:10px;display:flex;gap:10px;align-items:center"><button class="mini" data-addbulk>Add Everyone Listed</button><button class="mini ghost" data-bulkclose>Close</button></div>
   </div>
   <div class="card" id="bulk-report" style="display:none;margin-bottom:18px"></div>
@@ -3736,9 +3736,109 @@
   // case and whitespace ignored.
   const resKey = (unit, name) => `${String(unit || "").trim().toUpperCase()}|${String(name || "").trim().toLowerCase().replace(/\s+/g, " ")}`;
 
+  // ------------------------------------------- the BuildingLink table, read
+  // Leo refreshes the roster by copying the whole Search Unit Profiles table
+  // out of BuildingLink and pasting it as is. Those rows are tab-separated:
+  // Unit # | Company/Family Name | Contact Name | Email | dates. This turns
+  // them into the "unit, name, email, owner or tenant" lines the sync reads,
+  // the same reading the September roster was built from, so every name
+  // lands on the row it already has:
+  //   - "Unit 55A" / "Suite 54A" -> 55A / 54A; a surname BuildingLink glues
+  //     onto the unit ("Unit 57ASy") is dropped; Bldg Mgmt and (Vacant) skip.
+  //   - Contact Name splits on "/"; "(s)" marks where the unit's tenant block
+  //     begins, and everyone from there to the end is a tenant.
+  //   - "Declarant Jay Paul Company" is the Jay Paul Company row; a name that
+  //     is only the start of a longer one in the same unit ("Bob / Bob Pryt")
+  //     is noise; a doubled last word ("Sung Sung") folds.
+  //   - Emails: ";" joins the emails inside a block and a bare space divides
+  //     the owner block's from the tenant block's. Inside a block they pair
+  //     with names in order when the counts agree, and by name otherwise;
+  //     a name that nothing fits keeps a blank, never a stranger's email.
+  //   - A name one letter off from the roster's spelling in the same unit
+  //     (Wai Min / Wai Man) takes the roster's spelling, so a typo in
+  //     BuildingLink never makes a second person.
+  function blIsTable(text) {
+    return text.split("\n").some(l => /^\s*(Unit|Suite)\s+\d+/i.test(l) && l.split("\t").length >= 3);
+  }
+  function blTokens(name) {
+    return name.toLowerCase().replace(/[()]/g, " ").split(/[\s-]+/).filter(t => t.length >= 4);
+  }
+  function blAssign(names, emails) {
+    const out = names.map(() => "");
+    if (!emails.length) return out;
+    if (emails.length === names.length) return emails.slice();
+    const used = new Set();
+    names.forEach((n, i) => {
+      const toks = blTokens(n);
+      for (let j = 0; j < emails.length; j++) {
+        if (used.has(j)) continue;
+        const local = emails[j].split("@")[0].toLowerCase();
+        if (toks.some(t => local.includes(t) || (t.length >= 5 && local.includes(t.slice(0, 5))) || local.startsWith(t.slice(0, 3)))) {
+          out[i] = emails[j]; used.add(j); break;
+        }
+      }
+    });
+    return out;
+  }
+  function blOneOff(a, b) {
+    // Levenshtein distance of at most one: an insertion, a deletion, or a swap of a letter.
+    a = a.toLowerCase(); b = b.toLowerCase();
+    if (a === b) return true;
+    if (Math.abs(a.length - b.length) > 1) return false;
+    let i = 0, j = 0, edits = 0;
+    while (i < a.length && j < b.length) {
+      if (a[i] === b[j]) { i++; j++; continue; }
+      if (++edits > 1) return false;
+      if (a.length > b.length) i++; else if (b.length > a.length) j++; else { i++; j++; }
+    }
+    return edits + (a.length - i) + (b.length - j) <= 1;
+  }
+  function blToLines(text) {
+    const lines = [];
+    for (const line of text.replace(/\r/g, "").split("\n")) {
+      const cells = line.split("\t");
+      if (cells.length < 3) continue;
+      const m = cells[0].match(/^\s*(?:Unit|Suite)\s+(\d+)\s*([A-Za-z])?/);
+      if (!m) continue;
+      const unit = (m[1] + (m[2] || "")).toUpperCase();
+      const contact = cells[2].trim();
+      if (!contact || /^\(vacant\)$/i.test(contact) || /^management$/i.test(contact)) continue;
+      let names = [], tenantFrom = -1;
+      contact.split("/").map(s => s.trim()).forEach((n, i) => {
+        if (n.startsWith("(s)")) { n = n.slice(3).trim(); if (tenantFrom < 0) tenantFrom = i; }
+        n = n.replace(/^Declarant\s+/, "").replace(/\s+/g, " ").replace(/\b(\w+) \1$/, "$1").trim();
+        names.push({ n, tenant: tenantFrom >= 0 && i >= tenantFrom });
+      });
+      names = names.filter(x => x.n && !names.some(o => o.n !== x.n && o.n.toLowerCase().startsWith(x.n.toLowerCase() + " ")));
+      // the roster's own spelling wins over a one-letter slip in BuildingLink
+      for (const x of names) {
+        const twin = residents.find(r => r.kind !== "role" && (r.unit || "").toUpperCase() === unit && r.name !== x.n && blOneOff(r.name, x.n));
+        if (twin) x.n = twin.name;
+      }
+      const em = (cells[3] || "").trim();
+      const blocks = em ? em.split(/(?<=[^;\s])\s+(?=\S)/).map(b => b.split(";").map(e => e.trim()).filter(Boolean)) : [];
+      const owners = names.filter(x => !x.tenant), tenants = names.filter(x => x.tenant);
+      let oe, te;
+      if (tenants.length && blocks.length >= 2) { oe = blocks[0]; te = blocks.slice(1).flat(); }
+      else { oe = blocks.flat(); te = []; if (tenants.length && !owners.length) { te = oe; oe = []; } }
+      const emap = new Map();
+      blAssign(owners.map(x => x.n), oe).forEach((e, i) => emap.set(owners[i].n, e));
+      blAssign(tenants.map(x => x.n), te).forEach((e, i) => emap.set(tenants[i].n, e));
+      for (const x of names) lines.push(`${unit}, ${x.n}, ${emap.get(x.n) || ""}${x.tenant ? ", tenant" : ""}`);
+    }
+    return lines.join("\n");
+  }
+
   async function addBulk() {
-    const bulk = $("#r-bulk").value;
-    if (!bulk.trim()) { toast("Paste at least one line first: unit, name, email.", "warn"); return; }
+    let bulk = $("#r-bulk").value;
+    if (!bulk.trim()) { toast("Paste at least one line first: the BuildingLink table, or unit, name, email.", "warn"); return; }
+    if (blIsTable(bulk)) {
+      // The roster as it stands right now, so the spelling pass and the
+      // departures list judge against the truth, not a list loaded hours ago.
+      try { await loadResidents(); } catch (e) {}
+      bulk = blToLines(bulk);
+      if (!bulk) { toast("That looks like the BuildingLink table, but no unit rows were found in it.", "warn"); return; }
+    }
     // The paste, parsed the way the server parses it, so the report can say
     // who in the system did NOT appear in it (departure candidates).
     const pasteKeys = new Set();
