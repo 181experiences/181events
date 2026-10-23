@@ -1398,8 +1398,12 @@
       <div id="pastrsvps" style="${pastRsvpsOpen ? "" : "display:none"}">
         ${past.map(s => {
           const staffTail = s.roleHeads ? ` &middot; +${s.roleHeads} staff` : "";
-          const went = s.arrivedMarks ? `${s.resArrivedHeads} of ${s.resHeads} arrived${staffTail}`
-            : s.type === "guest" ? `${s.heads} outside guests` : `${s.resHeads} confirmed${staffTail}`;
+          // A tied reservation keeps its outside guests beside the residents
+          // after the date too: the archive holds both doors of the evening.
+          const pbk = tiedByKey.get(s.key);
+          const guestTail = pbk ? ` &middot; ${pbk.guest_heads || 0} outside guest${(pbk.guest_heads || 0) === 1 ? "" : "s"}${pbk.guest_arrived ? `, ${pbk.guest_arrived} arrived` : ""}` : "";
+          const went = (s.arrivedMarks ? `${s.resArrivedHeads} of ${s.resHeads} arrived${staffTail}`
+            : s.type === "guest" ? `${s.heads} outside guests` : `${s.resHeads} confirmed${staffTail}`) + guestTail;
           const wait = s.waitParties ? ` &middot; ${s.waitParties} stayed waitlisted` : "";
           const mails = new Set(s.rows.filter(r => r.status !== "Waitlist" && r.email).map(r => r.email.toLowerCase()));
           const dark = s.rows.filter(r => r.status !== "Waitlist" && !r.email).length;
@@ -1415,6 +1419,7 @@
               <span class="sgrow" style="font-size:14px;color:var(--ink-soft)">${r.status === "Waitlist" ? "Waitlisted" : (s.type === "guest" ? `${r.count} guest${r.count === 1 ? "" : "s"}` : `party of ${r.count}`)}${r.names ? ` &middot; ${esc(r.names)}` : ""}${r.brings ? ` &middot; <b style="color:var(--ink)">bringing ${esc(r.brings_cat ? r.brings_cat + ": " : "")}${esc(r.brings)}</b>` : ""}${r.door_note ? ` &middot; <em>${esc(r.door_note)}</em>` : ""}</span>
               <span class="sval" style="font-size:12px;color:var(--stone)" title="${r.updated_by ? `Last change by ${esc(r.updated_by)}, ${esc((r.updated || "").slice(0, 10))}` : ""}">${esc(r.email || "no email")}${r.updated_by ? ` &middot; ${esc(r.updated_by === "resident" ? "resident" : r.updated_by.split("@")[0])}` : ""}</span>
               <span class="eact">${arriveBtn(r)}</span></div>`).join("")}
+            ${pbk ? `<div style="font-size:13px;color:var(--ink-soft);margin-top:16px"><strong>Outside guests</strong> &middot; ${esc(pbk.space)} &middot; registered by invitation, kept apart from resident figures</div>${guestSection(pbk, true)}` : ""}
             </div>`;
         }).join("")}
       </div>`;
@@ -3008,12 +3013,13 @@
   // The guest lists behind private events, fetched per reservation when its
   // panel opens and kept for the session.
   let guestsByBooking = {};
+  let pastBookingsOpen = false;
   const openGuestPanels = new Set();
 
   // The registration page's address: the written one when set, else the token.
   const regPath = b => `/register/${b.reg_slug || b.reg_token}`;
 
-  function guestSection(b) {
+  function guestSection(b, past) {
     const g = guestsByBooking[b.id];
     const heads = r => r.plus_one ? 2 : 1;
     const rows = !g ? '<div class="nodata" style="padding:12px">Loading&hellip;</div>'
@@ -3031,6 +3037,19 @@
     const total = confirmed.reduce((a, r) => a + heads(r), 0);
     const waitHeads = (g || []).filter(r => r.status === "Waitlist").reduce((a, r) => a + heads(r), 0);
     const inCount = (g || []).filter(r => r.arrived).length;
+    // After the date the levers go quiet: no registration toggle, no link to
+    // hand out, no desk add. The list itself, its print, and the marks stay.
+    if (past) return `
+      <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:14px 0 12px">
+        <button class="mini ghost" data-bkprint="${b.id}" title="The list as it stood, for the file">Print guest list</button>
+        <span class="hint" style="margin:0">The date has passed${g ? ` · ${confirmed.length} ${confirmed.length === 1 ? "party" : "parties"}, ${total} guests${waitHeads ? `, ${waitHeads} waitlisted` : ""}, ${inCount} arrived` : ""}${(() => {
+          const by = {};
+          for (const r of g || []) { if (r.source) by[r.source] = (by[r.source] || 0) + 1; }
+          const parts = Object.entries(by).sort((a, z) => z[1] - a[1]).map(([s, n]) => `${esc(s)} ${n}`);
+          return parts.length ? ` · by link: ${parts.join(", ")}` : "";
+        })()}</span>
+      </div>
+      ${rows}`;
     return `
       <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:14px 0 12px">
         <button class="mini" data-bkreg="${b.id}">${b.reg_open ? "Close registration" : "Open registration"}</button>
@@ -3064,7 +3083,8 @@
     // Every reservation folds like a unit card: the header carries what the eye
     // scans for, the body holds the working parts, and a private event's guest
     // machinery lives inside its own card.
-    box.innerHTML = ahead.map(b => {
+    const gone = bookings.filter(b => b.date < t).sort((a, b2) => (b2.date + (b2.start24 || "")).localeCompare(a.date + (a.start24 || "")));
+    const card = (b, past) => {
       const open = openGuestPanels.has(b.id);
       const isEvent = !!b.event_name;
       const hours = b.start ? `${esc(b.start)}${b.end_time ? " – " + esc(b.end_time) : ""}` : "";
@@ -3076,14 +3096,21 @@
         </div>
         <div class="ubody"><div style="padding:12px 16px 16px">
           <div style="font-size:13px;color:var(--ink-soft)">${isEvent ? `${esc(b.space)}${b.host ? " · hosted by " + esc(b.host) : ""}` : esc(b.space)}${b.note ? ` · ${esc(b.note)} <span style="color:var(--stone)">(staff only)</span>` : ""}</div>
-          <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:12px">
+          ${past ? "" : `<div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:12px">
             <button class="mini ghost" data-bkedit="${b.id}" title="Space, date, hours, note, event name, host, cap. The page invitees see is drawn from these.">Edit</button>
             <button class="mini ghost" data-unbook="${b.id}">Remove</button>
-          </div>
-          ${isEvent ? guestSection(b) : ""}
+          </div>`}
+          ${isEvent ? guestSection(b, past) : ""}
         </div></div>
       </div>`;
-    }).join("");
+    };
+    // Passed reservations fold at the foot and keep everything: a private
+    // event's guest list is the record of who came, and it stays printable.
+    box.innerHTML = ahead.map(b => card(b, false)).join("") + (gone.length ? `
+      <div class="srow" style="cursor:pointer;margin-top:18px" data-bkpast>
+        <span class="sgrow" style="color:var(--stone)">Past reservations &middot; ${gone.length}</span>
+        <span class="sval" style="color:var(--stone)">${pastBookingsOpen ? "Hide" : "Show"}</span></div>
+      <div style="${pastBookingsOpen ? "" : "display:none"}">${gone.map(b => card(b, true)).join("")}</div>` : "");
     // The dashboard's Resident hosted rows read the same stores, so any guest
     // or booking change repaints both surfaces. renderRsvps never calls back.
     renderRsvps();
@@ -3601,7 +3628,7 @@
   }
 
   document.addEventListener("click", ev => {
-    const r = ev.target.closest("[data-mailcode],[data-printone],[data-rotate],[data-ends],[data-toggle],[data-rdelete],[data-resedit],[data-saveres],[data-cancelres],[data-edittoggle],[data-editdelete],[data-addres],[data-resopen],[data-bulkopen],[data-bulkclose],[data-addbulk],[data-bulkreportclose],[data-printcards],[data-reslog],[data-printlog],[data-mreplied],[data-marchive],[data-wconfirm],[data-redit],[data-rcancel],[data-rarrive],[data-pastchev],[data-pastmail],[data-notedel],[data-noterestore],[data-nbpast],[data-rsvpprint],[data-addrsvp],[data-savearsvp],[data-closearsvp],[data-copylink],[data-copyshort],[data-aupload],[data-acanva],[data-adelete],[data-rsvpkey],[data-addbooking],[data-unbook],[data-bkchev],[data-bkreg],[data-bkcopy],[data-bkprint],[data-gadd],[data-garrive],[data-gdel],[data-gmail],[data-gedit],[data-bkedit],[data-savebk],[data-cancelbk],[data-bkopen]");
+    const r = ev.target.closest("[data-mailcode],[data-printone],[data-rotate],[data-ends],[data-toggle],[data-rdelete],[data-resedit],[data-saveres],[data-cancelres],[data-edittoggle],[data-editdelete],[data-addres],[data-resopen],[data-bulkopen],[data-bulkclose],[data-addbulk],[data-bulkreportclose],[data-printcards],[data-reslog],[data-printlog],[data-mreplied],[data-marchive],[data-wconfirm],[data-redit],[data-rcancel],[data-rarrive],[data-pastchev],[data-pastmail],[data-notedel],[data-noterestore],[data-nbpast],[data-rsvpprint],[data-addrsvp],[data-savearsvp],[data-closearsvp],[data-copylink],[data-copyshort],[data-aupload],[data-acanva],[data-adelete],[data-rsvpkey],[data-addbooking],[data-unbook],[data-bkchev],[data-bkpast],[data-bkreg],[data-bkcopy],[data-bkprint],[data-gadd],[data-garrive],[data-gdel],[data-gmail],[data-gedit],[data-bkedit],[data-savebk],[data-cancelbk],[data-bkopen]");
     if (r) {
       if (r.dataset.bkedit) {
         const b = bookings.find(x => String(x.id) === r.dataset.bkedit);
@@ -3668,6 +3695,7 @@
           .catch(() => prompt("Copy the registration link:", link));
         return;
       }
+      if (r.dataset.bkpast !== undefined) { pastBookingsOpen = !pastBookingsOpen; renderBookings(); return; }
       if (r.dataset.bkprint) {
         const b = bookings.find(x => String(x.id) === r.dataset.bkprint); if (!b) return;
         if (!guestsByBooking[b.id]) { toast("Open the Guests panel first, so the list is loaded."); return; }
