@@ -265,9 +265,16 @@ CODED_MODULES = {"gala": ("gala_mockup", "build_gala_mockup"),
 for _slug, (_folder, _modname) in CODED_MODULES.items():
     _sys.path.insert(0, os.path.join(HERE, _folder))
     _mod = _importlib.import_module(_modname)
+    _tpl_path = f"{SITE}/_templates/{getattr(_mod, 'TEMPLATE', '')}.html"
     if _coded_status.get(_slug, "Published") == "Published":
         os.makedirs(f"{SITE}/{_slug}/img", exist_ok=True)
-        open(f"{SITE}/{_slug}/index.html", "w", encoding="utf-8").write(_mod.render(live=True))
+        # A module with a TEMPLATE is served by a Function that fills live
+        # parts into it; the static copy is its fallback. Others are static.
+        if getattr(_mod, "TEMPLATE", ""):
+            open(_tpl_path, "w", encoding="utf-8").write(_mod.render(live=True))
+            open(f"{SITE}/{_slug}/index.html", "w", encoding="utf-8").write(_mod.fallback())
+        else:
+            open(f"{SITE}/{_slug}/index.html", "w", encoding="utf-8").write(_mod.render(live=True))
         _n = 0
         for _img in _mod.IMAGES:
             _src = os.path.join(HERE, _folder, "img", _img)
@@ -277,6 +284,8 @@ for _slug, (_folder, _modname) in CODED_MODULES.items():
     else:
         if os.path.isdir(f"{SITE}/{_slug}"):
             _rm_page_dir(f"{SITE}/{_slug}")
+        if getattr(_mod, "TEMPLATE", "") and os.path.exists(_tpl_path):
+            os.remove(_tpl_path)   # and the Function sends visitors to the calendar
         print(f"coded page: /{_slug} is {_coded_status.get(_slug)}, not on the site")
 
 # ---------------------------------------------------------------- admin

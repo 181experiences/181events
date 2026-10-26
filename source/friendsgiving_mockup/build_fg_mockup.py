@@ -35,6 +35,16 @@ p b{color:var(--cream);font-weight:400}
 .btnrow{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:30px}
 .small{font-size:16px;color:var(--soft)}
 .tiny{font-family:Arial,Helvetica,sans-serif;font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--soft);margin-top:40px}
+.menu{border-top:1px solid var(--line);margin-top:34px;padding-top:28px}
+.menu h2{font-weight:400;margin:0 0 6px;font-size:clamp(24px,4vw,32px);line-height:1.1;color:var(--parch)}
+.menunote{font-size:16px;color:var(--soft);margin:0 0 18px}
+.mkind{display:grid;grid-template-columns:110px 1fr;gap:6px 16px;padding:12px 0;border-top:1px solid var(--line)}
+.mkind:last-child{border-bottom:1px solid var(--line)}
+.mkind b{font-weight:400;font-size:19px;color:var(--parch)}
+.mkind b i{font-style:normal;font-family:Arial,Helvetica,sans-serif;font-size:12px;letter-spacing:.08em;color:var(--ember);margin-left:6px}
+.mkind span{color:var(--cream);line-height:1.6}
+.mkind span em{font-style:normal;color:var(--soft)}
+@media(max-width:520px){.mkind{grid-template-columns:1fr;gap:2px}}
 '''
 
 BODY = f'''<div class="hero">
@@ -51,7 +61,12 @@ BODY = f'''<div class="hero">
     <div><b>Drink</b><span>a bottle or a pitcher</span></div>
   </div>
   <div class="btnrow"><a class="btn" href="{RSVP}">RSVP and sign up your dish</a><a class="btn ghost" href="{ICS}">Add to my calendar</a></div>
-  <p class="small">When you RSVP, pick the kind and name the dish. The page shows what neighbors have signed up so far, so no two tables bring the same thing. Bring it ready to serve, in its own dish with its own spoon, enough for eight to ten.</p>
+  <p class="small">When you RSVP, pick the kind and name the dish. Bring it ready to serve, in its own dish with its own spoon, enough for eight to ten.</p>
+  <!--MENU--><div class="menu" id="menu">
+    <h2>On the menu so far</h2>
+    <p class="menunote">What neighbors have signed up to bring, so no two tables bring the same thing. The turkey and the ham are the Club&rsquo;s. Add yours when you RSVP.</p>
+    {{{{MENU}}}}
+  </div><!--/MENU-->
   <p class="tiny">181 Fremont Residences &middot; Resident Experiences</p>
 </div>'''
 
@@ -73,9 +88,34 @@ __MOCKNOTE__
 
 MOCKNOTE = '<div class="mocknote">Mockup &middot; nothing here is published</div>'
 
+# The menu section is filled live by functions/friendsgiving/[[rest]].js
+# from the event's RSVPs (dishes only, by kind, no names). The static copy
+# the build writes beside the pictures is the fallback for a Functions
+# outage, and carries no menu; the mockup shows a sample so the shape reads.
+KINDS = [("main", "Main"), ("side", "Side"), ("dessert", "Dessert"), ("drink", "Drink")]
+TEMPLATE = "friendsgiving"
+SAMPLE = {"main": ["Pork shoulder, slow roasted"], "side": ["Green bean casserole", "Cornbread stuffing", "Mac and cheese"],
+          "dessert": ["Pumpkin pie", "Apple crisp"], "drink": []}
+
+def menu_html(by_kind):
+    """by_kind: {kind: [dish, ...]} -> the rows; every kind shows, empty ones say so."""
+    rows = []
+    for k, label in KINDS:
+        dishes = by_kind.get(k) or []
+        inner = " &middot; ".join(e(d) for d in dishes) if dishes else "<em>Nothing yet. Yours could be first.</em>"
+        rows.append(f'<div class="mkind"><b>{label}{f"<i>{len(dishes)}</i>" if dishes else ""}</b><span>{inner}</span></div>')
+    return "".join(rows)
+
 def render(live=False):
-    """The page as HTML. live=True drops the mock banner; img/ paths stay relative."""
-    return HTML.replace("__MOCKNOTE__", "" if live else MOCKNOTE)
+    """The page as a TEMPLATE for the function: {{MENU}} and the MENU section stay
+    for the function to fill or cut. live=True drops the mock banner; the mockup
+    shows a sample menu."""
+    h = HTML.replace("__MOCKNOTE__", "" if live else MOCKNOTE)
+    return h if live else h.replace("{{MENU}}", menu_html(SAMPLE))
+
+def fallback():
+    """The static page the build writes beside the pictures: no menu section."""
+    return re.sub(r"<!--MENU-->[\s\S]*?<!--/MENU-->", "", HTML.replace("__MOCKNOTE__", ""))
 
 IMAGES = sorted(set(re.findall(r"img/([a-z0-9-]+[.]jpg)", HTML)))
 

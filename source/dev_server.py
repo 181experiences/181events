@@ -288,12 +288,39 @@ def dish_section(section, e, row):
     return cut(section, "DISH", d)
 
 def dish_board(key):
-    units = {r["id"]: r.get("unit") or "" for r in load_store("residents", [])}
-    label = dict(DISH_CATS)
-    rows = sorted([r for r in load_store("rsvps", []) if r["event_key"] == key and r["status"] != "Cancelled" and r.get("brings")],
-                  key=lambda r: (r.get("brings_cat") or "", r["created"]))
-    return "<br>".join(f"{esc(label.get(r.get('brings_cat'), 'Bringing'))} &middot; {esc(r['brings'])}"
-                       + (f" &middot; {esc(units.get(r['resident_id']))}" if units.get(r["resident_id"]) else "") for r in rows)
+    # Public to anyone on the page: dishes only, by kind, no names, no units.
+    by = {}
+    for r in sorted([r for r in load_store("rsvps", []) if r["event_key"] == key and r["status"] != "Cancelled" and r.get("brings")],
+                    key=lambda r: r["created"]):
+        by.setdefault(r.get("brings_cat"), []).append(r["brings"])
+    return "<br>".join(f"<b>{label}</b> &middot; " + (" &middot; ".join(esc(d) for d in by[k]) if by.get(k) else "<em>nothing yet</em>")
+                       for k, label in DISH_CATS)
+
+FG_SLUG = "friendsgiving-happy-hour"
+def friendsgiving_page():
+    """Mirrors functions/friendsgiving/[[rest]].js: the coded page's template
+    with the menu filled from the next Live Friendsgiving's RSVPs."""
+    try:
+        tpl = template("friendsgiving")
+    except FileNotFoundError:
+        return (302, "")   # unpublished: the function sends visitors home
+    ev = next((e for e in sorted(load_events(), key=lambda x: x.get("Date") or "")
+               if e.get("Slug") == FG_SLUG and e.get("Status") == "Live" and (e.get("Date") or "") >= today()), None)
+    menu = None
+    if ev and ev.get("Potluck"):
+        key = f"{ev['Date']}_{ev['Slug']}"
+        by = {}
+        for r in sorted([r for r in load_store("rsvps", []) if r["event_key"] == key and r["status"] != "Cancelled" and r.get("brings")],
+                        key=lambda r: r["created"]):
+            by.setdefault(r.get("brings_cat"), []).append(r["brings"])
+        rows = []
+        for k, label in DISH_CATS:
+            dishes = by.get(k) or []
+            body = " &middot; ".join(esc(d) for d in dishes) if dishes else "<em>Nothing yet. Yours could be first.</em>"
+            rows.append(f'<div class="mkind"><b>{label}{f"<i>{len(dishes)}</i>" if dishes else ""}</b><span>{body}</span></div>')
+        menu = "".join(rows)
+    html = cut(tpl, "MENU", None) if menu is None else fill(cut(tpl, "MENU", inner(tpl, "MENU")), {"MENU": menu})
+    return (200, html)
 
 def rsvp_page(e, key, me):
     rsvp_type = TYPE_OF.get(e["RSVP"])   # None for drop-in events: facts, no forms
@@ -347,8 +374,7 @@ def rsvp_page(e, key, me):
         return shell_page(e["Title"], body, me)
     body = cut(body, "DROPIN", None)
 
-    dishes = dish_board(key) if me and e.get("Potluck") else ""
-    body = cut(body, "BOARD", fill(inner(tpl, "BOARD"), dict(DISHES=dishes)) if dishes else None)
+    body = cut(body, "BOARD", fill(inner(tpl, "BOARD"), dict(DISHES=dish_board(key))) if e.get("Potluck") else None)
     mates = unit_mates(me, key) if me else []
     body = cut(body, "ALSO", fill(inner(tpl, "ALSO"), dict(MATES="<br>".join(mate_line(m) for m in mates))) if mates else None)
 
@@ -1124,6 +1150,8 @@ class H(SimpleHTTPRequestHandler):
             return self._text(board_ics([row], "181 Fremont Board Meeting"),
                               "text/calendar; charset=utf-8",
                               extra={"content-disposition": f'attachment; filename="{key}.ics"'})
+        if p.path in ("/friendsgiving", "/friendsgiving/"):
+            return self._html(friendsgiving_page())
         if p.path == "/spaces":
             return self._html(spaces_page(me))
         if p.path.startswith("/rsvp/"):

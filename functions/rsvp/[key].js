@@ -30,16 +30,23 @@ function dishSection(section, ev, row) {
   d = cut(d, "DCHIP", dishChips(d, row && row.brings_cat ? row.brings_cat : ""));
   return cut(section, "DISH", d);
 }
+// The board is public to anyone on the page, signed in or not, so it names
+// dishes only: by kind, no names, no units. The same list the Friendsgiving
+// page carries under "On the menu so far".
 async function dishBoard(env, key) {
   const { results } = await env.DB.prepare(
-    `SELECT r.brings_cat, r.brings, res.unit FROM rsvps r JOIN residents res ON res.id = r.resident_id
-     WHERE r.event_key = ? AND r.status != 'Cancelled' AND r.brings IS NOT NULL AND r.brings != ''
-     ORDER BY r.brings_cat, r.created`).bind(key).all();
+    `SELECT brings_cat, brings FROM rsvps
+     WHERE event_key = ? AND status != 'Cancelled' AND brings IS NOT NULL AND brings != ''
+     ORDER BY created`).bind(key).all();
   return results;
 }
 function boardLines(rows) {
-  const label = Object.fromEntries(DISH_CATS);
-  return rows.map(r => `${esc(label[r.brings_cat] || "Bringing")} &middot; ${esc(r.brings)}${r.unit ? ` &middot; ${esc(r.unit)}` : ""}`).join("<br>");
+  const by = {};
+  for (const r of rows) (by[r.brings_cat] = by[r.brings_cat] || []).push(r.brings);
+  return DISH_CATS.map(([k, label]) => {
+    const dishes = by[k] || [];
+    return `<b>${label}</b> &middot; ${dishes.length ? dishes.map(esc).join(" &middot; ") : "<em>nothing yet</em>"}`;
+  }).join("<br>");
 }
 
 // "RSVP closes" is a date (older rows carry "Monday, Aug 31"-style text, which
@@ -197,8 +204,8 @@ async function rsvpPage(context, ev, key, me) {
   body = cut(body, "DROPIN", null);
 
   // The potluck board: what signed-in residents have already said they bring.
-  const dishes = me && ev.potluck ? await dishBoard(env, key) : [];
-  body = cut(body, "BOARD", dishes.length ? fill(inner(tpl, "BOARD"), { DISHES: boardLines(dishes) }) : null);
+  const dishes = ev.potluck ? await dishBoard(env, key) : null;
+  body = cut(body, "BOARD", dishes ? fill(inner(tpl, "BOARD"), { DISHES: boardLines(dishes) }) : null);
 
   // What the rest of the unit already said, so the household sees its own picture.
   const mates = me ? await unitMates(env, me, key) : [];
