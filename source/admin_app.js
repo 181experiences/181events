@@ -1167,7 +1167,7 @@
     api("/api/rsvps/" + id, { method: "PATCH", body: JSON.stringify(body) })
       .then(u => {
         const row = rsvps.find(x => String(x.id) === String(u.id));
-        if (row) Object.assign(row, { status: u.status, count: u.count, names: u.names });
+        if (row) Object.assign(row, { status: u.status, count: u.count, names: u.names, brings_cat: u.brings_cat || "", brings: u.brings || "" });
         rsvpCache = null;
         renderDash(); renderEvents();
         if (after) after(row);
@@ -1186,8 +1186,29 @@
     const sb = document.querySelector("[data-savearsvp]");
     if (sb) sb.textContent = "Save RSVP";
     $("#ar-names").value = "";
+    $("#ar-cat").value = ""; $("#ar-brings").value = "";
     $("#ar-card").style.display = "none";
   }
+
+  // The dish fields show only for a potluck event, read from the event row
+  // the moment the Event choice changes, so the card asks for a dish exactly
+  // when the resident site would.
+  function arIsPotluck() {
+    const key = $("#ar-event").value;
+    const e = events.find(x => stem(x) === key);
+    return !!(e && (e.Potluck === true || e.Potluck === "True"));
+  }
+  function syncArDish() {
+    const on = arIsPotluck();
+    $("#ar-dish").style.display = on ? "" : "none";
+    if (!on) { $("#ar-cat").value = ""; $("#ar-brings").value = ""; }
+  }
+  function arDish() {
+    if (!arIsPotluck()) return {};
+    const brings = $("#ar-brings").value.trim().slice(0, 80);
+    return { brings_cat: brings ? $("#ar-cat").value : "", brings };
+  }
+  document.addEventListener("change", ev => { if (ev.target.id === "ar-event") syncArDish(); });
 
   function openAddRsvp() {
     const card = $("#ar-card");
@@ -1201,6 +1222,7 @@
       .sort((a, b) => (a.Date + a.Start24).localeCompare(b.Date + b.Start24));
     $("#ar-event").innerHTML = evs.map(e => `<option value="${esc(stem(e))}">${esc(fmt(e.Date))} · ${esc(e.Title)}${e.RSVP === "Guest count" ? " (outside guests)" : ""}</option>`).join("");
     if (!people.length || !evs.length) { toast("Needs at least one active person and one live upcoming event.", "warn"); return; }
+    syncArDish();
     card.style.display = "";
   }
 
@@ -1218,6 +1240,9 @@
     $("#ar-event").value = row.event_key;
     $("#ar-count").value = String(Math.min(6, Math.max(1, row.count)));
     $("#ar-names").value = row.names || "";
+    syncArDish();
+    $("#ar-cat").value = row.brings_cat || "";
+    $("#ar-brings").value = row.brings || "";
     $("#ar-head").style.display = "";
     $("#ar-head").textContent = `Editing ${row.name}'s RSVP · now ${row.event_title}, ${fmt(row.event_date)}`;
     const sb = document.querySelector("[data-savearsvp]");
@@ -1231,7 +1256,7 @@
     const count = Number($("#ar-count").value);
     const names = $("#ar-names").value.trim();
     if (newKey === row.event_key) {
-      patchRsvp(row.id, { count, names }, updated => {
+      patchRsvp(row.id, { count, names, ...arDish() }, updated => {
         exitRsvpEdit();
         toast("Updated. A note to the resident is opening; send it so the change is in writing.");
         if (updated) notifyRsvp(updated, "update");
@@ -1242,7 +1267,7 @@
     // give the honest answer; only then is the old seat released.
     try {
       const d = await api("/api/rsvps", { method: "POST",
-        body: JSON.stringify({ resident_id: row.resident_id, event_key: newKey, count, names }) });
+        body: JSON.stringify({ resident_id: row.resident_id, event_key: newKey, count, names, ...arDish() }) });
       await api("/api/rsvps/" + row.id, { method: "PATCH", body: JSON.stringify({ status: "Cancelled" }) });
       rsvps = rsvps.filter(x => String(x.id) !== String(row.id) && String(x.id) !== String(d.rsvp.id));
       rsvps.push(d.rsvp);
@@ -1262,6 +1287,7 @@
       event_key: $("#ar-event").value,
       count: Number($("#ar-count").value),
       names: $("#ar-names").value.trim(),
+      ...arDish(),
     };
     api("/api/rsvps", { method: "POST", body: JSON.stringify(body) })
       .then(d => {
@@ -1269,7 +1295,7 @@
         if (i >= 0) rsvps[i] = d.rsvp; else rsvps.push(d.rsvp);
         rsvpCache = null;
         renderDash(); renderEvents();
-        $("#ar-names").value = "";
+        $("#ar-names").value = ""; $("#ar-cat").value = ""; $("#ar-brings").value = "";
         $("#ar-card").style.display = "none";
         toast(d.rsvp.status === "Waitlist"
           ? `Saved. ${d.rsvp.name} is on the waitlist: the event is full or others are ahead in line.`

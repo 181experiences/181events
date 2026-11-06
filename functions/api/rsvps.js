@@ -48,6 +48,11 @@ export async function onRequestPost(context) {
   if (!Number.isFinite(count)) count = 1;
   count = Math.max(1, Math.min(maxCount, count));
   const names = String(body.names || "").trim().slice(0, 120);
+  // The dish, for a potluck event: the same two things the resident picks.
+  const DISH = ["main", "side", "dessert", "drink"];
+  const brings = ev.potluck ? String(body.brings || "").trim().slice(0, 80) : "";
+  const catIn = String(body.brings_cat || "").trim().toLowerCase();
+  const bringsCat = brings && DISH.includes(catIn) ? catIn : "";
 
   let status = "Confirmed";
   if (ev.capacity && type !== "guest") {
@@ -59,19 +64,21 @@ export async function onRequestPost(context) {
   const now = new Date().toISOString();
   const who = (await accessEmail(request)) || env.DEV_ROLE || "staff";
   await env.DB.prepare(
-    `INSERT INTO rsvps (resident_id, event_key, event_date, event_title, rsvp_type, count, names, status, created, updated, updated_by)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `INSERT INTO rsvps (resident_id, event_key, event_date, event_title, rsvp_type, count, names, status, created, updated, updated_by, brings_cat, brings)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
      ON CONFLICT(resident_id, event_key) DO UPDATE SET
        rsvp_type=excluded.rsvp_type, count=excluded.count, names=excluded.names,
        status=excluded.status, updated=excluded.updated, updated_by=excluded.updated_by,
+       brings_cat=excluded.brings_cat, brings=excluded.brings,
        created=CASE WHEN rsvps.status='Cancelled' THEN excluded.created ELSE rsvps.created END`)
-    .bind(resident.id, key, ev.date, ev.title, type, count, names, status, now, now, who).run();
+    .bind(resident.id, key, ev.date, ev.title, type, count, names, status, now, now, who, bringsCat || null, brings || null).run();
 
   const row = await env.DB.prepare(
     `${ROW_SQL} WHERE r.resident_id=? AND r.event_key=?`).bind(resident.id, key).first();
   notifyStaff(context, `RSVP (staff) · ${labelOf(resident)} · ${ev.title}`, [
     `${who} entered an RSVP for ${labelOf(resident)}: ${ev.title}, ${ev.date}.`,
     `Party of ${count}${names ? ` (${names})` : ""} · standing ${status}.`,
+    brings ? `Bringing: ${bringsCat ? bringsCat + ", " : ""}${brings}` : "",
   ]);
   return json({ rsvp: row }, 201);
 }

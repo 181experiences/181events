@@ -25,6 +25,13 @@ export async function onRequestPatch(context) {
     sets.push("count=?"); vals.push(count);
   }
   if ("names" in body) { sets.push("names=?"); vals.push(String(body.names || "").trim().slice(0, 120)); }
+  if ("brings" in body || "brings_cat" in body) {
+    // The dish on a potluck RSVP: kind and name together, blank clears both.
+    const brings = String(body.brings || "").trim().slice(0, 80);
+    const catIn = String(body.brings_cat || "").trim().toLowerCase();
+    const cat = brings && ["main", "side", "dessert", "drink"].includes(catIn) ? catIn : "";
+    sets.push("brings_cat=?", "brings=?"); vals.push(cat || null, brings || null);
+  }
   if ("arrived" in body) {
     // Attendance mark: null clears, 0-6 records how many of the party came.
     if (body.arrived === null) { sets.push("arrived=NULL", "arrived_at=NULL"); }
@@ -59,5 +66,6 @@ export async function onRequestPatch(context) {
     ]);
   }
   return json({ id: row.id, status: row.status, count: row.count, names: row.names || "",
+                brings_cat: row.brings_cat || "", brings: row.brings || "",
                 arrived: row.arrived ?? null, arrived_at: row.arrived_at || "", door_note: row.door_note || "" });
 }

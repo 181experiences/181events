@@ -1273,6 +1273,9 @@ class H(SimpleHTTPRequestHandler):
             try: count = max(1, min(6, int(body.get("count") or 1)))
             except ValueError: count = 1
             names = str(body.get("names") or "").strip()[:120]
+            brings = str(body.get("brings") or "").strip()[:80] if e.get("Potluck") else ""
+            cat_in = str(body.get("brings_cat") or "").strip().lower()
+            brings_cat = cat_in if brings and cat_in in dict(DISH_CATS) else ""
             rsvps = load_store("rsvps", [])
             cap = int(e["Capacity"]) if e.get("Capacity") else None
             status = "Confirmed"
@@ -1285,12 +1288,14 @@ class H(SimpleHTTPRequestHandler):
             if mine:
                 if mine["status"] == "Cancelled": mine["created"] = now_iso()
                 mine.update(rsvp_type=rsvp_type, count=count, names=names, status=status,
+                            brings_cat=brings_cat or None, brings=brings or None,
                             updated=now_iso(), updated_by=f"{self._role()}@local.dev")
                 row = mine
             else:
                 row = dict(id=max([r["id"] for r in rsvps] or [0]) + 1, resident_id=resident["id"],
                            event_key=key, event_date=e["Date"], event_title=e["Title"],
                            rsvp_type=rsvp_type, count=count, names=names, status=status,
+                           brings_cat=brings_cat or None, brings=brings or None,
                            created=now_iso(), updated=now_iso(), updated_by=f"{self._role()}@local.dev")
                 rsvps.append(row)
             save_store("rsvps", rsvps)
@@ -1752,6 +1757,11 @@ class H(SimpleHTTPRequestHandler):
                         r["count"] = n
                     if "names" in body:
                         r["names"] = str(body["names"] or "").strip()[:120]
+                    if "brings" in body or "brings_cat" in body:
+                        brings = str(body.get("brings") or "").strip()[:80]
+                        cat_in = str(body.get("brings_cat") or "").strip().lower()
+                        r["brings_cat"] = cat_in if brings and cat_in in dict(DISH_CATS) else None
+                        r["brings"] = brings or None
                     if "arrived" in body:
                         # Attendance mark, mirroring functions/api/rsvps/[id].js:
                         # None clears, 0-6 records how many of the party came.
@@ -1774,6 +1784,7 @@ class H(SimpleHTTPRequestHandler):
                                     f"Now: party of {r['count']} · standing {r['status']}."])
                     return self._json({"id": r["id"], "status": r["status"], "count": r["count"],
                                        "names": r.get("names") or "",
+                                       "brings_cat": r.get("brings_cat") or "", "brings": r.get("brings") or "",
                                        "arrived": r.get("arrived"), "arrived_at": r.get("arrived_at") or "",
                                        "door_note": r.get("door_note") or ""})
             return self._json({"error": "No such RSVP"}, 404)

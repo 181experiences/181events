@@ -675,6 +675,13 @@ HTML = f'''<!DOCTYPE html>
         <div class="field"><label class="fl" for="ar-count">Party, or outside guests</label><select class="inp" id="ar-count"><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option></select></div>
         <div class="field"><label class="fl" for="ar-names">Their names, optional</label><input class="inp" id="ar-names" autocapitalize="words"></div>
       </div>
+      <div id="ar-dish" style="display:none;margin-top:12px">
+        <div class="flrow"><span class="fl" style="font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--stone);font-weight:600">What they are bringing</span>{info("This event is a potluck. Pick the kind and name the dish, the same two things a resident picks when they RSVP themselves. It lands on the menu board residents see, dishes only, no names. Leave both blank if they are coming empty-handed.")}</div>
+        <div style="display:grid;gap:12px 16px;grid-template-columns:minmax(150px,220px) 1fr;margin-top:6px">
+          <div class="field"><label class="fl" for="ar-cat">Kind</label><select class="inp" id="ar-cat"><option value="">Nothing</option><option value="main">Main</option><option value="side">Side</option><option value="dessert">Dessert</option><option value="drink">Drink</option></select></div>
+          <div class="field"><label class="fl" for="ar-brings">The dish</label><input class="inp" id="ar-brings" maxlength="80" autocapitalize="sentences" placeholder="Green bean casserole"></div>
+        </div>
+      </div>
       <div style="display:flex;gap:10px;margin-top:14px;align-items:center">
         <button class="btn" data-savearsvp>Save RSVP</button>
         <button class="mini ghost" data-closearsvp>Close</button>
