@@ -67,10 +67,11 @@ COPY_ICON = ('<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke
              'stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="12" height="12" rx="2"/>'
              '<path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>')
 
-def subscribe_box(title, lead, blurb, webcal, url, note=None, style=""):
+def subscribe_box(title, lead, blurb, webcal, url, note=None, style="", box_id=None):
     note_i = (f'<details class="ihelp"><summary aria-label="A word about this address">i</summary>'
               f'<div class="ipop">{note}</div></details>') if note else ""
-    return (f'<div class="guestbox subbox"{" style=" + chr(34) + style + chr(34) if style else ""}>'
+    return (f'<div class="guestbox subbox"{" id=" + chr(34) + box_id + chr(34) if box_id else ""}'
+            f'{" style=" + chr(34) + style + chr(34) if style else ""}>'
             f'<div class="gq">{title}<details class="ihelp"><summary aria-label="How this works">i</summary>'
             f'<div class="ipop">{blurb}</div></details></div>'
             f'<div class="gh">{lead}</div>'
@@ -86,7 +87,8 @@ SUB_CAL = subscribe_box(
     "Subscribe once, and every event lives in your own calendar and keeps itself current:",
     "New dates appear, changes follow along, and anything cancelled slips away on its own. "
     "Subscribing is different from Add to My Calendar on one event: a subscription keeps following the whole calendar.",
-    "webcal://181residents.com/calendar/feed", "https://181residents.com/calendar/feed", style="margin:14px 0 70px")
+    "webcal://181residents.com/calendar/feed", "https://181residents.com/calendar/feed", style="margin:14px 0 70px",
+    box_id="subscribe")
 SUB_MY = subscribe_box(
     "Your RSVPs, living in your own calendar",
     "Subscribe once, and this page follows you:",
@@ -541,7 +543,7 @@ def event_screen(e):
         {guest_ui}
         {box}
         {cta}
-        <div class="note">Adding to your calendar works with Apple, Google, and Outlook.</div>
+        <div class="note">Adding to your calendar works with Apple, Google, and Outlook. It adds a one-time copy: if this event moves or is cancelled, that copy will not update on its own. To stay current, <a href="/#subscribe">subscribe to the calendar</a> instead, once, at the foot of the calendar.</div>
       </div>
     </div>
   </section>'''

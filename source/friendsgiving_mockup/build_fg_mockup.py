@@ -62,6 +62,7 @@ BODY = f'''<div class="hero">
   </div>
   <div class="btnrow"><a class="btn" href="{RSVP}">RSVP and sign up your dish</a><a class="btn ghost" href="{ICS}">Add to my calendar</a></div>
   <p class="small">When you RSVP, pick the kind and name the dish. Bring it ready to serve, in its own dish with its own spoon, enough for eight to ten.</p>
+  <p class="small">Add to my calendar makes a one-time copy: if the evening moves or is cancelled, that copy will not update. To stay current, <a href="https://181residents.com/#subscribe">subscribe to the calendar</a> instead.</p>
   <!--MENU--><div class="menu" id="menu">
     <h2>On the menu so far</h2>
     <p class="menunote">What neighbors have signed up to bring, so no two tables bring the same thing. The turkey and the ham are the Club&rsquo;s. Add yours when you RSVP.</p>

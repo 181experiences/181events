@@ -318,6 +318,7 @@ FOOT = f'''<footer><div class="wrap">
 <span class="eyebrow">Friday, December 18 &middot; 6:30 to 9:00 PM &middot; The Residents&rsquo; Club</span>
 <div class="btnrow" style="justify-content:center;margin-bottom:22px"><a class="btn" href="{RSVP}">RSVP on the calendar</a><a class="btn ghost" href="https://181residents.com/ics/2026-12-18_lights-camera-gala.ics">Add to my calendar</a></div>
 <p>Questions, or a dress you are not sure about? Resident Experiences at The Residents&rsquo; Club is happy to be asked.</p>
+<p class="tiny" style="text-transform:none;letter-spacing:0;font-family:Georgia,serif;font-size:14px">Add to my calendar makes a one-time copy: if the evening moves or is cancelled, that copy will not update. To stay current, <a href="https://181residents.com/#subscribe">subscribe to the calendar</a> instead.</p>
 <p class="tiny">181 Fremont Residences &middot; Resident Experiences</p>
 </div></footer>'''
 

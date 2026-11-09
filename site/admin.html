@@ -2799,13 +2799,15 @@
         }
         if (failed) { toast(`Saved ${done} of ${targets.length} dates. ${failed} failed: ${firstErr}`, "warn"); told = true; }
         else if (targets.length > 1) { toast(`Saved all ${done} upcoming dates.`); told = true; }
-        const changed = [];
+        const changed = [], taken = [];
         targets.forEach((r, i) => {
           const o = priors[i];
+          if (o.Status === "Live" && r.Status !== "Live") { taken.push(r); return; }
           if (o.Status === "Live" && (o.Date !== r.Date || o.Start !== r.Start || o.End !== r.End || o.Location !== r.Location))
             changed.push({ o, n: r });
         });
         if (changed.length) { notifyEventChange(changed); told = true; }
+        if (taken.length && await offerTakedownNote(taken)) told = true;
       } else if ($("#f-date2").value && $("#f-date2").value > f.Date) {
         // A multi-day event: one entry per day across the range, sharing a
         // series line so the calendar reads it as one thing.
@@ -3051,10 +3053,15 @@
     if (!confirm(n > 1 ? `Archive all ${n} upcoming dates of "${g.head.Title}"? They leave the calendar and stay in reporting.` : `Archive "${g.head.Title}"? It leaves the calendar and stays in reporting.`)) return;
     try {
       let touched = false;
-      for (const r of (n ? g.upcoming : [g.head])) { if (r.Status === "Live") touched = true; Object.assign(r, await api("/api/events/" + encodeURIComponent(r.id), { method: "PATCH", body: JSON.stringify({ Status: "Archived" }) })); }
+      const wereLive = [];
+      for (const r of (n ? g.upcoming : [g.head])) {
+        if (r.Status === "Live") { touched = true; wereLive.push({ Title: r.Title, Date: r.Date, Slug: r.Slug }); }
+        Object.assign(r, await api("/api/events/" + encodeURIComponent(r.id), { method: "PATCH", body: JSON.stringify({ Status: "Archived" }) }));
+      }
       renderAll();
-      if (touched && status.publish) { api("/api/publish", { method: "POST" }).catch(() => {}); toast("Archived. The calendar updates in a couple of minutes."); }
-      else toast("Archived.");
+      if (touched && status.publish) api("/api/publish", { method: "POST" }).catch(() => {});
+      if (!(wereLive.length && await offerTakedownNote(wereLive)))
+        toast(touched ? "Archived. The calendar updates in a couple of minutes." : "Archived.");
     } catch (e) { toast(e.message, "warn"); }
   }
 
@@ -3271,11 +3278,34 @@
     });
     const first = changed[0].n;
     const body = `Hello,\n\nA change to an event you RSVP'd for:\n\n${lines.join("\n")}\n\n`
-      + `If you added it to your calendar, open the event and tap Add to My Calendar again; the entry updates itself in place. `
+      + `If you added it to your calendar, that copy will not update by itself: delete the old entry, then open the event and tap Add to My Calendar again. `
       + `If you subscribe to the calendar, it updates on its own.\n\n`
       + `https://181residents.com/rsvp/${stem(first)}\n\nWarmly,\nResident Experiences\n181 Fremont`;
     toast("Saved. A note to everyone signed up is opening; send it so nobody arrives at the wrong hour.");
     openBccDraft(`Update: ${first.Title}`, body, emails);
+  }
+
+  // A live date leaving the calendar (unpublished from the editor, archived
+  // from the list) is the moment a resident's one-time calendar copy goes
+  // stale, so the note to everyone signed up is offered right there, never
+  // forced. Cancel this date has offered it all along; this makes the other
+  // two doors do the same.
+  async function offerTakedownNote(rows) {
+    const live = rows.filter(r => r && r.Date);
+    if (!live.length) return false;
+    const emails = rsvperEmails(new Set(live.map(stem)));
+    if (!emails.length) return false;
+    const what = live.length === 1
+      ? `${live[0].Title} on ${fmt(live[0].Date)} is cancelled.`
+      : `these dates are cancelled:\n\n${live.map(r => `${r.Title}, ${fmt(r.Date)}`).join("\n")}`;
+    const body = `Hello,\n\nWith our apologies, ${what}\n\n`
+      + `If you added ${live.length === 1 ? "it" : "them"} to your calendar, kindly remove that entry; a one-time add does not update by itself. If you subscribe to the calendar, it disappears on its own.\n\n`
+      + `Warmly,\nResident Experiences\n181 Fremont`;
+    const subject = live.length === 1 ? `Cancelled: ${live[0].Title}, ${fmt(live[0].Date)}` : `Cancelled: ${live[0].Title}`;
+    const sent = await openBccDraft(subject, body, emails, { title: "Tell everyone signed up?", noneLabel: "No note" });
+    toast(sent ? "Off the calendar. Send the note and nobody shows up to an empty room."
+      : "Off the calendar. Nobody has been told; a call or a word at the desk closes the loop.");
+    return true;
   }
 
   async function cancelEvent() {
