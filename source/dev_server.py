@@ -1115,6 +1115,30 @@ class H(SimpleHTTPRequestHandler):
                             f"DTSTAMP:{d}T000000Z", f"DTSTART:{d}T{start}00", f"DTEND:{d}T{end}00",
                             f"SUMMARY:{e['Title']}{party}", dev_loc_line(e),
                             "END:VEVENT"]
+                # Mirrors functions/calendar/my/[token].js: cancelled RSVPs, events
+                # taken down, and dates held while Live ride along as cancellations.
+                mine = [r for r in load_store("rsvps", []) if r["resident_id"] == me2["id"] and r["event_date"] >= today()]
+                live_pairs = {r["event_key"] for r in mine if r["status"] == "Confirmed" and r["event_key"] in by_key}
+                all_events = {f"{e['Date']}_{e.get('Slug')}": e for e in load_events()}
+                cancelled = {}
+                def cancel(date, slug, start24, title):
+                    if not date or date < today() or f"{date}_{slug}" in live_pairs: return
+                    uid = f"181fremont-{slug or 'event'}-{date.replace('-', '')}@181residents.com"
+                    cancelled.setdefault(uid, (date.replace("-", ""), start24 or "0000", title or ""))
+                ids = set()
+                for r in mine:
+                    e = all_events.get(r["event_key"])
+                    if e: ids.add(e["id"])
+                    if r["status"] == "Cancelled" or not e or e.get("Status") != "Live":
+                        kd, _, ks = r["event_key"].partition("_")
+                        cancel(kd, ks, (e or {}).get("Start24"), r.get("event_title"))
+                for h in load_store("history", []):
+                    s = h.get("snapshot") or {}
+                    if h.get("event_id") in ids and s.get("Status") == "Live":
+                        cancel(s.get("Date"), s.get("Slug"), s.get("Start24") or to24(s.get("Start")), s.get("Title"))
+                for uid, (d, start, title) in cancelled.items():
+                    out += ["BEGIN:VEVENT", f"UID:{uid}", f"DTSTAMP:{d}T000000Z", "SEQUENCE:1000", "STATUS:CANCELLED",
+                            f"DTSTART:{d}T{start}00", f"DTEND:{d}T{start}00", f"SUMMARY:Cancelled: {title}", "END:VEVENT"]
             return self._text("\r\n".join(out) + "\r\n" + "END:VCALENDAR", "text/calendar; charset=utf-8")
         if p.path == "/calendar/feed":
             rows = sorted([e for e in load_events()
