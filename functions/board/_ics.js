@@ -23,6 +23,25 @@ export function icsEvent(ev) {
   ].join("\r\n") + "\r\n";
 }
 
+// A meeting taken off the Board calendar says so under its own UID, so a
+// subscriber's copy is withdrawn rather than left to linger.
+export function icsCancelled(ev) {
+  const d = ev.date.replace(/-/g, "");
+  const start = ev.start24 || to24(ev.start) || "0000";
+  const title = String(ev.title || "Board Meeting").replace(/[\r\n,;]/g, " ");
+  const { seq, stamp } = icsStamp();
+  return [
+    "BEGIN:VEVENT",
+    `UID:181fremont-board-${ev.id}@181residents.com`,
+    `DTSTAMP:${stamp}`, `SEQUENCE:${seq + 1000}`,
+    "STATUS:CANCELLED",
+    `DTSTART:${d}T${start}00`,
+    `DTEND:${d}T${start}00`,
+    `SUMMARY:Cancelled: ${title}`,
+    "END:VEVENT",
+  ].join("\r\n") + "\r\n";
+}
+
 export function plainIcs(eventsBlock, name) {
   return [
     "BEGIN:VCALENDAR", "VERSION:2.0",

@@ -1133,6 +1133,26 @@ class H(SimpleHTTPRequestHandler):
                         f"DTSTAMP:{d}T000000Z", f"DTSTART:{d}T{start}00", f"DTEND:{d}T{end}00",
                         f"SUMMARY:{e['Title']}", dev_loc_line(e),
                         f"URL:https://181residents.com/rsvp/{e['Date']}_{e.get('Slug') or ''}", "END:VEVENT"]
+            # Removed and moved events ride along as cancellations, mirroring
+            # functions/calendar/feed.js cancelledEntries: non-Live rows plus
+            # the (date, slug) pairs the change history remembers.
+            live_pairs = {f"{e['Date']}_{e.get('Slug') or 'event'}" for e in load_events()
+                          if e.get("Status") == "Live" and e.get("Date", "") >= today()}
+            cancelled = {}
+            def cancel(date, slug, start24, title):
+                if not date or date < today() or f"{date}_{slug or 'event'}" in live_pairs: return
+                uid = f"181fremont-{slug or 'event'}-{date.replace('-', '')}@181residents.com"
+                cancelled.setdefault(uid, (date.replace("-", ""), start24 or "0000", title or ""))
+            for e in load_events():
+                if e.get("Status") != "Live" and e.get("Category") != "Board Meeting":
+                    cancel(e.get("Date"), e.get("Slug"), e.get("Start24") or to24(e.get("Start")), e.get("Title"))
+            for h in load_store("history", []):
+                s = h.get("snapshot") or {}
+                if s and s.get("Category") != "Board Meeting":
+                    cancel(s.get("Date"), s.get("Slug"), s.get("Start24") or to24(s.get("Start")), s.get("Title"))
+            for uid, (d, start, title) in cancelled.items():
+                out += ["BEGIN:VEVENT", f"UID:{uid}", f"DTSTAMP:{d}T000000Z", "SEQUENCE:1000", "STATUS:CANCELLED",
+                        f"DTSTART:{d}T{start}00", f"DTEND:{d}T{start}00", f"SUMMARY:Cancelled: {title}", "END:VEVENT"]
             return self._text("\r\n".join(out) + "\r\nEND:VCALENDAR\r\n", "text/calendar; charset=utf-8")
         if p.path == "/board/feed":
             return self._text(board_ics(board_rows(), "181 Fremont Board Meetings"),

@@ -10,8 +10,45 @@ import { ensureResidentTables, ensureEventTables, todayPacific, to24, icsStamp,
 // The feed honors the calendar window: an event beyond the detail line, or one
 // still marked coming-soon, stays out of subscribers' calendars until its
 // details settle, so nothing half-formed takes root on a resident's phone.
+//
+// Removed events are SAID, not just dropped. Google and Outlook are slow to
+// notice an entry that silently vanishes from a feed, and Google can keep
+// one for weeks, so every event taken off the calendar (unpublished,
+// archived, or moved to another date) rides along as STATUS:CANCELLED under
+// the UID subscribers already hold, with a SEQUENCE above anything they saw.
+// Two sources: rows that are no longer Live, and the (date, slug) pairs an
+// event held earlier, read from its change history.
+const CANCEL_LOOKBACK_DAYS = 180;
+export async function cancelledEntries(env, livePairs, today) {
+  const cancelled = new Map();   // uid -> {d, start, title}
+  const add = (date, slug, start24, title) => {
+    if (!date || date < today) return;
+    const key = `${date}_${slug || "event"}`;
+    if (livePairs.has(key)) return;
+    const d = date.replace(/-/g, "");
+    const uid = `181fremont-${slug || "event"}-${d}@181residents.com`;
+    if (!cancelled.has(uid)) cancelled.set(uid, { d, start: start24 || "0000", title: String(title || "").replace(/[\r\n,;]/g, " ") });
+  };
+  const gone = await env.DB.prepare(
+    `SELECT date, slug, start24, start, title FROM events
+     WHERE status != 'Live' AND (category IS NULL OR category != 'Board Meeting') AND date >= ?`).bind(today).all();
+  for (const ev of gone.results) add(ev.date, ev.slug, ev.start24 || to24(ev.start), ev.title);
+  const since = new Date(Date.now() - CANCEL_LOOKBACK_DAYS * 86400000).toISOString();
+  try {
+    const hist = await env.DB.prepare(
+      "SELECT snapshot FROM event_history WHERE snapshot IS NOT NULL AND at >= ?").bind(since).all();
+    for (const h of hist.results) {
+      let s; try { s = JSON.parse(h.snapshot); } catch (e) { continue; }
+      if (!s || s.Category === "Board Meeting") continue;
+      add(s.Date, s.Slug, s.Start24 || to24(s.Start), s.Title);
+    }
+  } catch (e) {}
+  return cancelled;
+}
+
 export async function onRequestGet({ env }) {
-  let rows = [];
+  let rows = [], cancelled = new Map();
+  const today = todayPacific();
   if (env.DB) {
     await ensureResidentTables(env);
     await ensureEventTables(env);
@@ -19,8 +56,14 @@ export async function onRequestGet({ env }) {
     const r = await env.DB.prepare(
       `SELECT * FROM events WHERE status='Live' AND (category IS NULL OR category != 'Board Meeting')
        AND date >= ? AND (date <= ? OR announce = 1) AND (teaser IS NULL OR teaser = 0) ORDER BY date, start24`)
-      .bind(todayPacific(), detailEnd(win)).all();
+      .bind(today, detailEnd(win)).all();
     rows = r.results;
+    // Every Live row counts as held, even one still beyond the detail line,
+    // so a date only waiting its turn is never announced as cancelled.
+    const held = await env.DB.prepare(
+      "SELECT date, slug FROM events WHERE status='Live' AND date >= ?").bind(today).all();
+    const livePairs = new Set(held.results.map(e => `${e.date}_${e.slug || "event"}`));
+    try { cancelled = await cancelledEntries(env, livePairs, today); } catch (e) {}
   }
   const out = ["BEGIN:VCALENDAR", "VERSION:2.0",
     "PRODID:-//181 Fremont//Resident Events//EN",
@@ -45,6 +88,16 @@ export async function onRequestGet({ env }) {
       `SUMMARY:${title}`,
       locLine,
       `URL:https://181residents.com/rsvp/${ev.date}_${ev.slug || ""}`,
+      "END:VEVENT");
+  }
+  for (const [uid, c] of cancelled) {
+    out.push("BEGIN:VEVENT",
+      `UID:${uid}`,
+      `DTSTAMP:${stamp}`, `SEQUENCE:${seq + 1000}`,
+      "STATUS:CANCELLED",
+      `DTSTART:${c.d}T${c.start}00`,
+      `DTEND:${c.d}T${c.start}00`,
+      `SUMMARY:Cancelled: ${c.title}`,
       "END:VEVENT");
   }
   return new Response(out.join("\r\n") + "\r\nEND:VCALENDAR\r\n", {
