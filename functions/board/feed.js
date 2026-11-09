@@ -15,7 +15,7 @@ export async function onRequestGet({ env }) {
   if (env.DB) {
     try {
       const r = await env.DB.prepare(
-        "SELECT id, date, start24, start, title FROM events WHERE category='Board Meeting' AND status != 'Live' AND date >= ?")
+        "SELECT id, date, start24, start, title FROM events WHERE category='Board Meeting' AND status IN ('Unpublished', 'Archived', 'Cancelled') AND date >= ?")
         .bind(todayPacific()).all();
       gone = r.results;
     } catch (e) {}

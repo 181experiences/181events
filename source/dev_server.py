@@ -1144,11 +1144,11 @@ class H(SimpleHTTPRequestHandler):
                 uid = f"181fremont-{slug or 'event'}-{date.replace('-', '')}@181residents.com"
                 cancelled.setdefault(uid, (date.replace("-", ""), start24 or "0000", title or ""))
             for e in load_events():
-                if e.get("Status") != "Live" and e.get("Category") != "Board Meeting":
+                if e.get("Status") in ("Unpublished", "Archived", "Cancelled") and e.get("Category") != "Board Meeting":
                     cancel(e.get("Date"), e.get("Slug"), e.get("Start24") or to24(e.get("Start")), e.get("Title"))
             for h in load_store("history", []):
                 s = h.get("snapshot") or {}
-                if s and s.get("Category") != "Board Meeting":
+                if s and s.get("Category") != "Board Meeting" and s.get("Status") == "Live":
                     cancel(s.get("Date"), s.get("Slug"), s.get("Start24") or to24(s.get("Start")), s.get("Title"))
             for uid, (d, start, title) in cancelled.items():
                 out += ["BEGIN:VEVENT", f"UID:{uid}", f"DTSTAMP:{d}T000000Z", "SEQUENCE:1000", "STATUS:CANCELLED",

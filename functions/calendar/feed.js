@@ -16,8 +16,9 @@ import { ensureResidentTables, ensureEventTables, todayPacific, to24, icsStamp,
 // one for weeks, so every event taken off the calendar (unpublished,
 // archived, or moved to another date) rides along as STATUS:CANCELLED under
 // the UID subscribers already hold, with a SEQUENCE above anything they saw.
-// Two sources: rows that are no longer Live, and the (date, slug) pairs an
-// event held earlier, read from its change history.
+// Two sources: rows that were published and since taken down (Unpublished,
+// Archived, Cancelled; a Draft never went out), and the (date, slug) pairs an
+// event held while Live, read from its change history.
 const CANCEL_LOOKBACK_DAYS = 180;
 export async function cancelledEntries(env, livePairs, today) {
   const cancelled = new Map();   // uid -> {d, start, title}
@@ -31,7 +32,7 @@ export async function cancelledEntries(env, livePairs, today) {
   };
   const gone = await env.DB.prepare(
     `SELECT date, slug, start24, start, title FROM events
-     WHERE status != 'Live' AND (category IS NULL OR category != 'Board Meeting') AND date >= ?`).bind(today).all();
+     WHERE status IN ('Unpublished', 'Archived', 'Cancelled') AND (category IS NULL OR category != 'Board Meeting') AND date >= ?`).bind(today).all();
   for (const ev of gone.results) add(ev.date, ev.slug, ev.start24 || to24(ev.start), ev.title);
   const since = new Date(Date.now() - CANCEL_LOOKBACK_DAYS * 86400000).toISOString();
   try {
@@ -39,7 +40,9 @@ export async function cancelledEntries(env, livePairs, today) {
       "SELECT snapshot FROM event_history WHERE snapshot IS NOT NULL AND at >= ?").bind(since).all();
     for (const h of hist.results) {
       let s; try { s = JSON.parse(h.snapshot); } catch (e) { continue; }
-      if (!s || s.Category === "Board Meeting") continue;
+      // Only dates that were LIVE at the time count: a draft that never went
+      // out was never on anyone's calendar, and a public feed does not name it.
+      if (!s || s.Category === "Board Meeting" || s.Status !== "Live") continue;
       add(s.Date, s.Slug, s.Start24 || to24(s.Start), s.Title);
     }
   } catch (e) {}
