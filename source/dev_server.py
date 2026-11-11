@@ -761,6 +761,27 @@ def log_change(role, kind, ref_id, label, action, changes=None):
                      changes=changes if changes else None))
     save_store("changelog", rows)
 
+def feed_agent(ua):
+    ua = ua or ""
+    if re.search(r"Google-Calendar-Importer", ua, re.I): return "Google"
+    if re.search(r"Microsoft|Outlook|MSOffice|Exchange", ua, re.I): return "Outlook"
+    if re.search(r"dataaccessd|CalendarAgent|iOS|iPhone|iPad|macOS|Mac OS X|CFNetwork|^Calendar", ua, re.I) and not re.search("Mozilla", ua, re.I): return "Apple"
+    if re.search("Mozilla", ua, re.I): return "Browser"
+    return "Other"
+
+def log_feed_hit(feed, ua):
+    # Mirrors functions/_lib.js logFeedHit: one count per fetch, by app family and day.
+    rows = load_store("feedhits", [])
+    key = (today(), feed, feed_agent(ua))
+    row = next((r for r in rows if (r["day"], r["feed"], r["agent"]) == key), None)
+    if not row:
+        row = dict(day=key[0], feed=feed, agent=key[2], n=0, last=None); rows.append(row)
+    row["n"] += 1; row["last"] = now_iso()
+    save_store("feedhits", rows)
+
+ICS_HEAD_EXTRA = ["CALSCALE:GREGORIAN", "METHOD:PUBLISH"]
+ICS_REFRESH = ["REFRESH-INTERVAL;VALUE=DURATION:PT1H", "X-PUBLISHED-TTL:PT1H"]
+
 def field_changes(before, after):
     from fields import FIELDS
     out = {}
@@ -950,6 +971,16 @@ class H(SimpleHTTPRequestHandler):
         if p.path == "/api/analytics":
             days = max(1, min(90, int((q.get("days") or ["30"])[0])))
             return self._json(sample_analytics(days))
+        if p.path == "/api/feeds":
+            if self._role() == "desk": return self._json({"error": "forbidden"}, 403)
+            since = (datetime.date.today() - datetime.timedelta(days=13)).isoformat()
+            agg = {}
+            for r in load_store("feedhits", []):
+                if r["day"] < since: continue
+                a = agg.setdefault((r["feed"], r["agent"]), dict(feed=r["feed"], agent=r["agent"], total=0, today=0, last=""))
+                a["total"] += r["n"]; a["last"] = max(a["last"], r.get("last") or "")
+                if r["day"] == today(): a["today"] += r["n"]
+            return self._json({"since": since, "rows": sorted(agg.values(), key=lambda a: (a["feed"], -a["total"]))})
         if p.path == "/api/residents/history":
             if self._role() == "desk": return self._json({"error": "forbidden"}, 403)
             person = (q.get("person") or [""])[0]
@@ -1099,9 +1130,10 @@ class H(SimpleHTTPRequestHandler):
             me2 = next((r for r in load_store("residents", [])
                         if r.get("feed_token") == token and r["status"] == "Active"
                         and (not r.get("ends") or r["ends"] >= today())), None)
-            out = ["BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//181 Fremont//My RSVPs//EN",
-                   "X-WR-CALNAME:My 181 Fremont RSVPs"]
+            out = ["BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//181 Fremont//My RSVPs//EN"] + ICS_HEAD_EXTRA + [
+                   "X-WR-CALNAME:My 181 Fremont RSVPs"] + ICS_REFRESH
             if me2:
+                log_feed_hit("my", self.headers.get("User-Agent"))
                 by_key = {f"{e['Date']}_{e.get('Slug')}": e for e in load_events() if e.get("Status") == "Live"}
                 for r in sorted(load_store("rsvps", []), key=lambda r: r["event_date"]):
                     e = by_key.get(r["event_key"])
@@ -1138,7 +1170,7 @@ class H(SimpleHTTPRequestHandler):
                         cancel(s.get("Date"), s.get("Slug"), s.get("Start24") or to24(s.get("Start")), s.get("Title"))
                 for uid, (d, start, title) in cancelled.items():
                     out += ["BEGIN:VEVENT", f"UID:{uid}", f"DTSTAMP:{d}T000000Z", "SEQUENCE:1000", "STATUS:CANCELLED",
-                            f"DTSTART:{d}T{start}00", f"DTEND:{d}T{start}00", f"SUMMARY:Cancelled: {title}", "END:VEVENT"]
+                            f"DTSTART:{d}T{start}00", f"SUMMARY:Cancelled: {title}", "END:VEVENT"]
             return self._text("\r\n".join(out) + "\r\n" + "END:VCALENDAR", "text/calendar; charset=utf-8")
         if p.path == "/calendar/feed":
             rows = sorted([e for e in load_events()
@@ -1147,8 +1179,9 @@ class H(SimpleHTTPRequestHandler):
                            and (e.get("Date", "") <= detail_end() or e.get("Announce"))
                            and not e.get("Teaser")],
                           key=lambda e: (e["Date"], e.get("Start24") or ""))
-            out = ["BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//181 Fremont//Resident Events//EN",
-                   "X-WR-CALNAME:181 Fremont Resident Events"]
+            log_feed_hit("calendar", self.headers.get("User-Agent"))
+            out = ["BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//181 Fremont//Resident Events//EN"] + ICS_HEAD_EXTRA + [
+                   "X-WR-CALNAME:181 Fremont Resident Events"] + ICS_REFRESH
             for e in rows:
                 d = e["Date"].replace("-", "")
                 start = e.get("Start24") or to24(e.get("Start"))
@@ -1176,9 +1209,10 @@ class H(SimpleHTTPRequestHandler):
                     cancel(s.get("Date"), s.get("Slug"), s.get("Start24") or to24(s.get("Start")), s.get("Title"))
             for uid, (d, start, title) in cancelled.items():
                 out += ["BEGIN:VEVENT", f"UID:{uid}", f"DTSTAMP:{d}T000000Z", "SEQUENCE:1000", "STATUS:CANCELLED",
-                        f"DTSTART:{d}T{start}00", f"DTEND:{d}T{start}00", f"SUMMARY:Cancelled: {title}", "END:VEVENT"]
+                        f"DTSTART:{d}T{start}00", f"SUMMARY:Cancelled: {title}", "END:VEVENT"]
             return self._text("\r\n".join(out) + "\r\nEND:VCALENDAR\r\n", "text/calendar; charset=utf-8")
         if p.path == "/board/feed":
+            log_feed_hit("board", self.headers.get("User-Agent"))
             return self._text(board_ics(board_rows(), "181 Fremont Board Meetings"),
                               "text/calendar; charset=utf-8")
         if p.path.startswith("/board/ics/"):

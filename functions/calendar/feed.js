@@ -5,7 +5,7 @@
 // machine-readable form; the per-event .ics files remain for one-tap adds.
 
 import { ensureResidentTables, ensureEventTables, todayPacific, to24, icsStamp,
-         getWindow, detailEnd } from "../_lib.js";
+         getWindow, detailEnd, icsHead, logFeedHit } from "../_lib.js";
 
 // The feed honors the calendar window: an event beyond the detail line, or one
 // still marked coming-soon, stays out of subscribers' calendars until its
@@ -49,7 +49,8 @@ export async function cancelledEntries(env, livePairs, today) {
   return cancelled;
 }
 
-export async function onRequestGet({ env }) {
+export async function onRequestGet(context) {
+  const { env } = context;
   let rows = [], cancelled = new Map();
   const today = todayPacific();
   if (env.DB) {
@@ -67,10 +68,9 @@ export async function onRequestGet({ env }) {
       "SELECT date, slug FROM events WHERE status='Live' AND date >= ?").bind(today).all();
     const livePairs = new Set(held.results.map(e => `${e.date}_${e.slug || "event"}`));
     try { cancelled = await cancelledEntries(env, livePairs, today); } catch (e) {}
+    logFeedHit(context, "calendar");
   }
-  const out = ["BEGIN:VCALENDAR", "VERSION:2.0",
-    "PRODID:-//181 Fremont//Resident Events//EN",
-    "X-WR-CALNAME:181 Fremont Resident Events"];
+  const out = icsHead("-//181 Fremont//Resident Events//EN", "181 Fremont Resident Events");
   const { seq, stamp } = icsStamp();
   for (const ev of rows) {
     const d = ev.date.replace(/-/g, "");
@@ -99,7 +99,6 @@ export async function onRequestGet({ env }) {
       `DTSTAMP:${stamp}`, `SEQUENCE:${seq + 1000}`,
       "STATUS:CANCELLED",
       `DTSTART:${c.d}T${c.start}00`,
-      `DTEND:${c.d}T${c.start}00`,
       `SUMMARY:Cancelled: ${c.title}`,
       "END:VEVENT");
   }

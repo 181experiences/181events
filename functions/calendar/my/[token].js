@@ -10,12 +10,12 @@
 // STATUS:CANCELLED under the UID their calendar already holds, since Google
 // and Outlook are slow to notice an entry that silently disappears.
 
-import { ensureResidentTables, todayPacific, to24, icsStamp } from "../../_lib.js";
+import { ensureResidentTables, todayPacific, to24, icsStamp, icsHead, logFeedHit } from "../../_lib.js";
 
-export async function onRequestGet({ env, params }) {
+export async function onRequestGet(context) {
+  const { env, params } = context;
   const token = String(params.token || "");
-  const empty = ["BEGIN:VCALENDAR", "VERSION:2.0",
-    "PRODID:-//181 Fremont//My RSVPs//EN", "X-WR-CALNAME:My 181 Fremont RSVPs"];
+  const empty = icsHead("-//181 Fremont//My RSVPs//EN", "My 181 Fremont RSVPs");
   let body = empty.join("\r\n") + "\r\nEND:VCALENDAR\r\n";
 
   if (env.DB && /^[a-z0-9]{16,32}$/.test(token)) {
@@ -24,6 +24,7 @@ export async function onRequestGet({ env, params }) {
       "SELECT * FROM residents WHERE feed_token=? AND status='Active' AND (ends IS NULL OR ends='' OR ends >= ?)")
       .bind(token, todayPacific()).first();
     if (me) {
+      logFeedHit(context, "my");
       const { results } = await env.DB.prepare(
         `SELECT r.count, r.status AS rstatus, e.* FROM rsvps r
          JOIN events e ON e.date || '_' || e.slug = r.event_key AND e.status = 'Live'
@@ -84,7 +85,7 @@ export async function onRequestGet({ env, params }) {
       }
       for (const [uid, c] of cancelled) {
         out.push("BEGIN:VEVENT", `UID:${uid}`, `DTSTAMP:${stamp}`, `SEQUENCE:${seq + 1000}`, "STATUS:CANCELLED",
-          `DTSTART:${c.d}T${c.start}00`, `DTEND:${c.d}T${c.start}00`, `SUMMARY:Cancelled: ${c.title}`, "END:VEVENT");
+          `DTSTART:${c.d}T${c.start}00`, `SUMMARY:Cancelled: ${c.title}`, "END:VEVENT");
       }
       body = out.join("\r\n") + "\r\nEND:VCALENDAR\r\n";
     }

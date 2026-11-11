@@ -1895,7 +1895,33 @@
     w.print();
   }
   document.addEventListener("input", ev => { if (ev.target.id === "log-find") renderChangeLog(); });
-  document.addEventListener("change", ev => { if (ev.target.id === "s-inst" && ev.target.checked) loadChangeLog(); });
+  document.addEventListener("change", ev => { if (ev.target.id === "s-inst" && ev.target.checked) { loadChangeLog(); loadFeedHits(); } });
+
+  // --------------------------------------------------- calendar subscriptions
+  // Counts of calendar apps returning for each feed, by app family. The one
+  // question it answers: is anyone's calendar still asking?
+  const FEED_NAME = { calendar: "Resident Events", my: "My RSVPs (personal)", board: "Board Meetings" };
+  function agoText(iso) {
+    if (!iso) return "never";
+    const mins = Math.max(0, Math.round((Date.now() - new Date(iso).getTime()) / 60000));
+    if (mins < 2) return "just now";
+    if (mins < 90) return `${mins} minutes ago`;
+    if (mins < 36 * 60) return `${Math.round(mins / 60)} hours ago`;
+    return `${Math.round(mins / 1440)} days ago`;
+  }
+  async function loadFeedHits() {
+    const box = $("#set-feeds"); if (!box) return;
+    let d;
+    try { d = await api("/api/feeds"); } catch (e) { box.innerHTML = `<div class="hint" style="margin:0">${esc(e.message)}</div>`; return; }
+    const rows = d.rows || [];
+    if (!rows.length) { box.innerHTML = '<div class="hint" style="margin:0">Nothing yet. The count begins with the next calendar app that comes back for a feed.</div>'; return; }
+    box.innerHTML = Object.keys(FEED_NAME).filter(f => rows.some(r => r.feed === f)).map(f => `
+      <div style="font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--stone);font-weight:600;margin:14px 0 4px">${FEED_NAME[f]}</div>
+      ${rows.filter(r => r.feed === f).map(r => `<div class="lrow">
+        <div class="lwhen"><span class="lwhom">${esc(r.agent)}</span></div>
+        <div>last asked <b style="color:var(--ink);font-weight:500">${esc(agoText(r.last))}</b><div class="lch">${r.today} today &middot; ${r.total} in fourteen days</div></div>
+      </div>`).join("")}`).join("");
+  }
 
   function exitResEdit() {
     editingResId = null;
@@ -3888,6 +3914,7 @@
       else if (r.dataset.printcards !== undefined) printCards();
       else if (r.dataset.reslog !== undefined) {
         go("inst");
+        loadFeedHits();
         loadChangeLog().then(() => { const s = $("#set-logsec"); if (s) s.scrollIntoView({ behavior: "smooth", block: "start" }); });
       }
       else if (r.dataset.printlog !== undefined) printChangeLog();

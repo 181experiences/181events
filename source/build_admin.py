@@ -1260,6 +1260,12 @@ HTML = f'''<!DOCTYPE html>
       <div id="set-log"></div>
     </div>
   </div>
+
+  <div class="sec" id="set-feedsec" style="margin-top:34px">
+    <div style="display:flex;align-items:center;gap:10px"><h2>Calendar subscriptions</h2>{info("Every time a calendar app comes back for one of the feeds, it is counted here by the kind of app that asked: Google, Outlook, Apple, a browser, or other. Counts only, no names and no addresses. It answers one question: are subscribers&rsquo; calendars still checking in? A subscription that has stopped asking cannot learn about a change or a cancellation, however the site announces it; the cure on their side is to remove the subscription and add it again. The feeds ask every app to return hourly; Google keeps its own slower pace, about once a day.")}</div>
+    <div class="sd">Whether subscribers&rsquo; calendars are still checking in, by app, over the last fourteen days.</div>
+    <div class="card"><div id="set-feeds"></div></div>
+  </div>
 </div></section>
 
 <section class="screen" id="scr-inst-events"><div class="wrap prose">

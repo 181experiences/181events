@@ -2,7 +2,7 @@
 // meeting download. Times are floating local, matching the event files the
 // static calendar ships.
 
-import { to24, icsStamp } from "../_lib.js";
+import { to24, icsStamp, icsHead } from "../_lib.js";
 
 export function icsEvent(ev) {
   const d = ev.date.replace(/-/g, "");
@@ -36,16 +36,11 @@ export function icsCancelled(ev) {
     `DTSTAMP:${stamp}`, `SEQUENCE:${seq + 1000}`,
     "STATUS:CANCELLED",
     `DTSTART:${d}T${start}00`,
-    `DTEND:${d}T${start}00`,
     `SUMMARY:Cancelled: ${title}`,
     "END:VEVENT",
   ].join("\r\n") + "\r\n";
 }
 
 export function plainIcs(eventsBlock, name) {
-  return [
-    "BEGIN:VCALENDAR", "VERSION:2.0",
-    "PRODID:-//181 Fremont//Board Meetings//EN",
-    `X-WR-CALNAME:${name}`,
-  ].join("\r\n") + "\r\n" + eventsBlock + "END:VCALENDAR\r\n";
+  return icsHead("-//181 Fremont//Board Meetings//EN", name).join("\r\n") + "\r\n" + eventsBlock + "END:VCALENDAR\r\n";
 }

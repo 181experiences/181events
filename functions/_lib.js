@@ -127,6 +127,13 @@ export const RESIDENT_TABLES = [
     at TEXT NOT NULL, who TEXT, action TEXT NOT NULL, changes TEXT
   )`,
   `CREATE INDEX IF NOT EXISTS change_log_by_kind ON change_log(kind, id)`,
+  // How often calendar apps come back for each feed, by app family and day.
+  // Counts only: no address, no person, nothing that names a subscriber.
+  `CREATE TABLE IF NOT EXISTS feed_hits (
+    day TEXT NOT NULL, feed TEXT NOT NULL, agent TEXT NOT NULL,
+    n INTEGER NOT NULL DEFAULT 0, last TEXT,
+    PRIMARY KEY (day, feed, agent)
+  )`,
   `CREATE TABLE IF NOT EXISTS notes (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     resident_id INTEGER NOT NULL,
@@ -460,6 +467,41 @@ export function makeFeedToken() {
 
 // iCalendar version stamps. SEQUENCE grows with each build day, so re-adding a
 // changed event replaces the old entry on the resident's calendar in place.
+// The head every feed opens with. METHOD and CALSCALE make it a published
+// calendar in the strict readers' eyes; the two refresh lines ask a
+// subscriber's app to come back hourly (Outlook reads X-PUBLISHED-TTL, Apple
+// reads REFRESH-INTERVAL; without them some apps wait a day or more).
+export function icsHead(prodid, name) {
+  return ["BEGIN:VCALENDAR", "VERSION:2.0", `PRODID:${prodid}`,
+    "CALSCALE:GREGORIAN", "METHOD:PUBLISH",
+    `X-WR-CALNAME:${name}`,
+    "REFRESH-INTERVAL;VALUE=DURATION:PT1H", "X-PUBLISHED-TTL:PT1H"];
+}
+
+// Which family of calendar app is asking, read from its User-Agent.
+export function feedAgent(request) {
+  const ua = request.headers.get("user-agent") || "";
+  if (/Google-Calendar-Importer/i.test(ua)) return "Google";
+  if (/Microsoft|Outlook|MSOffice|Exchange/i.test(ua)) return "Outlook";
+  if (/dataaccessd|CalendarAgent|iOS|iPhone|iPad|macOS|Mac OS X|CFNetwork|^Calendar/i.test(ua) && !/Mozilla/i.test(ua)) return "Apple";
+  if (/Mozilla/i.test(ua)) return "Browser";
+  return "Other";
+}
+// One count per fetch, after the answer has gone out, so a slow write never
+// holds up a calendar app. A failure here is silent by design.
+export function logFeedHit(context, feed) {
+  try {
+    const { env, request } = context;
+    if (!env.DB) return;
+    const now = new Date().toISOString();
+    const p = env.DB.prepare(
+      `INSERT INTO feed_hits (day, feed, agent, n, last) VALUES (?, ?, ?, 1, ?)
+       ON CONFLICT(day, feed, agent) DO UPDATE SET n = n + 1, last = excluded.last`)
+      .bind(todayPacific(), feed, feedAgent(request), now).run().catch(() => {});
+    if (context.waitUntil) context.waitUntil(p);
+  } catch (e) {}
+}
+
 export function icsStamp() {
   const now = new Date();
   return {

@@ -5,9 +5,11 @@
 
 import { plainIcs, icsEvent, icsCancelled } from "./_ics.js";
 import { boardMeetings } from "../board.js";
-import { todayPacific } from "../_lib.js";
+import { todayPacific, logFeedHit } from "../_lib.js";
 
-export async function onRequestGet({ env }) {
+export async function onRequestGet(context) {
+  const { env } = context;
+  logFeedHit(context, "board");
   const rows = env.DB ? await boardMeetings(env) : [];
   // Meetings taken off the calendar ride along as cancellations, so a
   // subscriber's copy is withdrawn instead of lingering until it is noticed.
