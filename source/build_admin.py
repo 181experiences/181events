@@ -386,8 +386,14 @@ HTML = f'''<!DOCTYPE html>
   .gdtabs button{{appearance:none;background:none;border:0;color:#b9b2a6;font-family:var(--fb);font-size:11px;letter-spacing:.09em;text-transform:uppercase;font-weight:500;padding:6px 11px;cursor:pointer}}
   .gdtabs button.on{{background:#e9e3d8;color:#232220}}
   #gd-mapnote{{color:#d9d2c6;font-size:12.5px;line-height:1.35;min-height:17px}}
-  #gd-map{{aspect-ratio:1/1;max-height:calc(100vh - var(--chrome-h,128px) - 110px);width:100%}}
-  .gdsvg{{display:none;width:100%;height:100%}}
+  #gd-map{{position:relative;aspect-ratio:1/1;max-height:calc(100vh - var(--chrome-h,128px) - 110px);width:100%}}
+  .gdsvg{{display:none;width:100%;height:100%;cursor:grab;user-select:none;-webkit-user-select:none}}
+  .gdsvg:active{{cursor:grabbing}}
+  .gdsvg text{{pointer-events:none}}
+  .gdzoom{{position:absolute;right:10px;bottom:10px;display:flex;flex-direction:column;border:1px solid #55524d;border-radius:4px;overflow:hidden;background:#232220}}
+  .gdzoom button{{appearance:none;width:40px;height:40px;background:none;border:0;border-bottom:1px solid #3a3835;color:#e9e3d8;font-family:var(--fb);font-size:19px;line-height:1;cursor:pointer}}
+  .gdzoom button:last-child{{border-bottom:0;font-size:15px}}
+  .gdzoom button:hover{{background:#34322f}}
   .gdsvg.on{{display:block}}
   .gddot{{cursor:pointer}}
   .gdcredit{{font-size:10px;color:#8d877c;padding:5px 12px 7px;letter-spacing:.03em}}
@@ -1171,7 +1177,7 @@ HTML = f'''<!DOCTYPE html>
 
 <!-- ================= THE BLACK BOOK ================= -->
 <section class="screen" id="scr-guide"><div class="wrap">
-  <div class="phead" style="display:flex;align-items:center;justify-content:flex-start;gap:10px"><h1>The Black Book</h1>{info("The front desk&rsquo;s own city guide, for the moment a resident calls down asking where to eat. Type what they asked for; every card answers with the address, today&rsquo;s hours, the phone, how to book, how far it is from the tower, and what kind of place it is. Point at a card and the map shows where it sits. Email to a resident writes the note in Outlook; Print makes a clean page of one place or the whole list. Our connection is the team&rsquo;s own line, saved here by anyone on the team and never sent to a resident. Every card carries two dates. Information automatically updated on is the weekly check of each restaurant&rsquo;s own website. Location information last verified on is a person on the team who phoned the place: press Mark verified by phone after the call, and your name goes beside the date. Edit corrects anything on a card, and History lists every change to a listing, by whom, and when.")}</div>
+  <div class="phead" style="display:flex;align-items:center;justify-content:flex-start;gap:10px"><h1>The Black Book</h1>{info("The front desk&rsquo;s own city guide, for the moment a resident calls down asking where to eat. Type what they asked for; every card answers with the address, today&rsquo;s hours, the phone, how to book, how far it is from the tower, and what kind of place it is. Choose a card and the map moves in on the streets between the tower and that place, with their names; the buttons in its corner zoom by hand, and the square shows the whole map again. Email to a resident writes the note in Outlook; Print makes a clean page of one place or the whole list. Our connection is the team&rsquo;s own line, saved here by anyone on the team and never sent to a resident. Every card carries two dates. Information automatically updated on is the weekly check of each restaurant&rsquo;s own website. Location information last verified on is a person on the team who phoned the place: press Mark verified by phone after the call, and your name goes beside the date. Edit corrects anything on a card, and History lists every change to a listing, by whom, and when.")}</div>
   <div class="psub" id="gd-sub">Loading&hellip;</div>
   <div class="gd">
     <div class="gdmap">

@@ -3841,7 +3841,7 @@
     // a listing being edited stays on screen whatever is typed or filtered
     if (gd.editing && !list.some(p => p.id === gd.editing)) { const e = gd.places.find(p => p.id === gd.editing); if (e) list.unshift(e); else gd.editing = null; }
     if (gd.active && !list.some(p => p.id === gd.active)) gd.active = null;
-    gd.hover = null;
+    gd.hover = null; gd.hoverWant = null;
     const qWord = gdTokens(gd.q).join(" ");
     $("#gd-chips").innerHTML = GD_QUICK.map(c => `<span class="chip${gdPlain(c) === qWord ? " done" : ""}" data-gd="quick|${c}">${c}</span>`).join("")
       + GD_FLAGS.map(([k, label]) => `<span class="chip${gd.flags.has(k) ? " done" : ""}" data-gd="flag|${k}">${label}</span>`).join("");
@@ -3861,58 +3861,168 @@
   }
 
   // ---- the map
+  // Two drawings (nearby, and the whole city), each an SVG whose viewBox is
+  // the camera. Choosing a place moves the camera in to frame the tower and
+  // the place together, so the streets between them are large enough to
+  // read, and street names come in as the view tightens. With nothing chosen
+  // the camera pulls back to the whole drawing. The buttons in the corner and
+  // a drag with the mouse move it by hand.
+  const GD_PX = { a: 2, b: 1.4, c: 0.8, shore: 0.8, pier: 0.7 };   // street widths in screen pixels at full view
+  const gdSvg = key => $(`#gd-map .gdsvg[data-map="${key}"]`);
+  const gdTarget = () => gd.places.find(p => p.id === (gd.hover || gd.active)) || null;
   function gdDrawMaps() {
     const box = $("#gd-map"); if (!box || !gd.map) return;
     const svg = key => {
-      const m = gd.map[key], w = m.widths;
-      const lay = k => m.layers[k] ? `<path d="${m.layers[k]}" fill="none" stroke="${GD_STREET}" stroke-width="${w[k]}" stroke-linecap="round" stroke-linejoin="round"/>` : "";
-      const pier = m.layers.pier ? `<path d="${m.layers.pier}" fill="none" stroke="${GD_STREET}" stroke-opacity=".5" stroke-width="1"/>` : "";
-      return `<svg class="gdsvg" data-map="${key}" viewBox="0 0 ${m.w} ${m.h}" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Street map, 181 Fremont at the center">
-        ${lay("shore")}${pier}${lay("c")}${lay("b")}${lay("a")}<g class="dots"></g><g class="tie"></g><g class="home"></g><g class="mark"></g></svg>`;
+      const m = gd.map[key];
+      const lay = (k, op) => m.layers[k] ? `<path data-lay="${k}" d="${m.layers[k]}" fill="none" stroke="${GD_STREET}"${op ? ` stroke-opacity="${op}"` : ""} stroke-width="${GD_PX[k]}" vector-effect="non-scaling-stroke" stroke-linecap="round" stroke-linejoin="round"/>` : "";
+      return `<svg class="gdsvg" data-map="${key}" viewBox="0 0 ${m.w} ${m.h}" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Street map, 181 Fremont marked in red">
+        ${lay("shore")}${lay("pier", ".5")}${lay("c")}${lay("b")}${lay("a")}<g class="names"></g><g class="dots"></g><g class="tie"></g><g class="home"></g><g class="mark"></g></svg>`;
     };
-    box.innerHTML = svg("near") + svg("city");
+    box.innerHTML = svg("near") + svg("city")
+      + `<div class="gdzoom"><button data-gd="zoom|in" title="Closer" aria-label="Zoom in">+</button><button data-gd="zoom|out" title="Farther" aria-label="Zoom out">&minus;</button><button data-gd="zoom|all" title="The whole map" aria-label="Show the whole map">&#9635;</button></div>`;
+    const full = key => [0, 0, gd.map[key].w, gd.map[key].h];
+    gd.vb = { near: full("near"), city: full("city") };      // where the camera is headed
+    gd.cam = { near: full("near"), city: full("city") };     // where it is this instant
+    gd.framed = "";
   }
   const gdXY = (key, p) => { const m = gd.map[key]; return [(p.lon - m.west) * m.kx, (m.north - p.lat) * m.ky]; };
   const gdOnMap = (key, p) => { const m = gd.map[key], [x, y] = gdXY(key, p); return x >= 14 && x <= m.w - 14 && y >= 14 && y <= m.h - 14; };
 
-  function gdMark() {
-    if (!gd || !gd.map) return;
-    const target = gd.places.find(p => p.id === (gd.hover || gd.active)) || null;
-    gd.view = target ? (gdOnMap("near", target) ? (gd.pick === "city" ? "city" : "near") : "city") : gd.pick;
-    $$("#gd-map .gdsvg").forEach(s => s.classList.toggle("on", s.dataset.map === gd.view));
-    $$("[data-gd^='map|']").forEach(b => b.classList.toggle("on", b.dataset.gd === "map|" + gd.view));
-    const key = gd.view, m = gd.map[key], el = $(`#gd-map .gdsvg[data-map="${key}"]`);
-    const u = m.w / Math.max(240, el.clientWidth || 520);          // drawing units per screen pixel
+  // A view widened to the shape of its box and kept inside the drawing.
+  function gdFit(key, vb, el) {
+    const m = gd.map[key], ar = (el.clientWidth || 1) / (el.clientHeight || 1);
+    let [x, y, w, h] = vb;
+    if (w / h < ar) { const nw = h * ar; x -= (nw - w) / 2; w = nw; } else { const nh = w / ar; y -= (nh - h) / 2; h = nh; }
+    if (w >= m.w || h >= m.h) return [0, 0, m.w, m.h];
+    return [Math.min(Math.max(0, x), m.w - w), Math.min(Math.max(0, y), m.h - h), w, h];
+  }
+  // The view that holds the tower and one place, with room around the pair
+  // for their names, and never closer than a few blocks across.
+  function gdFrame(key, t, el) {
+    const [hx, hy] = gdXY(key, gd.home), [x, y] = gdXY(key, t), min = key === "near" ? 250 : 230;
+    const w = Math.max(min, Math.abs(x - hx) * 1.3 + 130), h = Math.max(min, Math.abs(y - hy) * 1.3 + 130);
+    return gdFit(key, [(x + hx) / 2 - w / 2, (y + hy) / 2 - h / 2, w, h], el);
+  }
+  function gdCamera(key, to, instant) {
+    const el = gdSvg(key), from = gd.cam[key].slice();
+    const set = v => { gd.cam[key] = v; el.setAttribute("viewBox", v.map(n => +n.toFixed(2)).join(" ")); };
+    cancelAnimationFrame(gd.raf || 0); clearTimeout(gd.camT);
+    gd.vb[key] = to;
+    const still = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (instant || still || from.every((n, i) => Math.abs(n - to[i]) < 0.5)) { set(to); return; }
+    const t0 = performance.now(), dur = 560;
+    const step = now => {
+      const k = Math.min(1, (now - t0) / dur), e = k < 0.5 ? 4 * k * k * k : 1 - Math.pow(-2 * k + 2, 3) / 2;
+      set(from.map((n, i) => n + (to[i] - n) * e));
+      if (k < 1) gd.raf = requestAnimationFrame(step);
+    };
+    gd.raf = requestAnimationFrame(step);
+    gd.camT = setTimeout(() => { cancelAnimationFrame(gd.raf); set(to); }, dur + 150);   // a hidden tab never animates; land anyway
+  }
+
+  // Street names for the view the camera is headed to: the main streets from
+  // far out, every street once close, never two on top of each other and
+  // never under the tower's or the chosen place's own label.
+  function gdNames(key, vb, u, avoid) {
+    const m = gd.map[key], z = m.w / vb[2], most = z >= 2.6 ? 3 : z >= 1.9 ? 2 : z >= 1.35 ? 1 : 0;
+    const placed = []; let out = "";
+    for (const [t, x, y, a, r] of m.labels || []) {
+      if (r > most) break;
+      if (x < vb[0] + 26 * u || x > vb[0] + vb[2] - 26 * u || y < vb[1] + 14 * u || y > vb[1] + vb[3] - 14 * u) continue;
+      if (avoid.some(p => Math.hypot(p[0] - x, p[1] - y) / u < 44)) continue;
+      if (placed.some(p => { const d = Math.hypot(p.x - x, p.y - y) / u; return d < 26 + 2.7 * (t.length + p.t.length) / 2 || (p.t === t && d < 210); })) continue;
+      placed.push({ t, x, y });
+      out += `<text x="${x}" y="${y}" transform="rotate(${a} ${x} ${y})" text-anchor="middle" dominant-baseline="central" font-size="${10 * u}" font-weight="500" fill="${GD_STREET}" fill-opacity=".82" stroke="${GD_GROUND}" stroke-width="${3.4 * u}" paint-order="stroke" stroke-linejoin="round" style="font-family:var(--fb);letter-spacing:.05em">${esc(t)}</text>`;
+      if (placed.length >= 60) break;
+    }
+    return out;
+  }
+
+  // Everything drawn over the streets, sized for the view the camera is
+  // headed to: the tower, a quiet dot per result, the chosen place in gold
+  // with its line back to the tower, and the street names.
+  function gdOverlay(key) {
+    const m = gd.map[key], el = gdSvg(key), vb = gd.vb[key], target = gdTarget();
+    const u = Math.max(vb[2] / Math.max(240, el.clientWidth || 520), vb[3] / Math.max(240, el.clientHeight || 520));   // drawing units per screen pixel
+    const grow = Math.pow(m.w / vb[2], 0.42);
+    el.querySelectorAll("[data-lay]").forEach(p => p.setAttribute("stroke-width", (GD_PX[p.dataset.lay] * grow).toFixed(2)));
+    const avoid = [];
     const label = (x, y, text, sub, fill) => {
-      const right = x > m.w * 0.62, tx = x + (right ? -13 : 13) * u, anchor = right ? "end" : "start";
+      const right = x > vb[0] + vb[2] * 0.6, dir = right ? -1 : 1, tx = x + dir * 13 * u, anchor = right ? "end" : "start";
+      avoid.push([x, y], [x + dir * 45 * u, y], [x + dir * 85 * u, y]);
       const t = (dy, s, size, weight) => `<text x="${tx}" y="${y + dy * u}" text-anchor="${anchor}" font-size="${size * u}" font-weight="${weight}" fill="${fill}" stroke="${GD_GROUND}" stroke-width="${4 * u}" paint-order="stroke" stroke-linejoin="round" style="font-family:var(--fb);letter-spacing:.02em">${esc(s)}</text>`;
       return t(sub ? -2 : 4, text, 13, 600) + (sub ? t(13, sub, 11, 400) : "");
     };
-    const [hx, hy] = gdXY(key, gd.home);
+    const [hx, hy] = gdXY(key, gd.home), txy = target ? gdXY(key, target) : null;
+    const crowded = txy && Math.hypot(txy[0] - hx, txy[1] - hy) / u < 64;
     el.querySelector(".home").innerHTML = (key === "near" && m.home
       ? `<path d="${m.home}" fill="var(--red)" stroke="var(--red)" stroke-width="${1.5 * u}" stroke-linejoin="round"/>`
       : `<circle cx="${hx}" cy="${hy}" r="${4.5 * u}" fill="var(--red)"/>`)
       + `<circle cx="${hx}" cy="${hy}" r="${11 * u}" fill="none" stroke="var(--red)" stroke-width="${1.6 * u}"/>`
-      + (target && Math.hypot(...gdXY(key, target).map((v, i) => v - [hx, hy][i])) < 70 * u ? "" : label(hx, hy, "181 Fremont", "", "#fff"));
-    el.querySelector(".dots").innerHTML = gd.shown.filter(p => gdOnMap(key, p)).map(p => {
+      + (crowded ? (avoid.push([hx, hy]), "") : label(hx, hy, "181 Fremont", "", "#fff"));
+    el.querySelector(".dots").innerHTML = gd.shown.filter(p => gdOnMap(key, p) && (!target || p.id !== target.id)).map(p => {
       const [x, y] = gdXY(key, p);
-      return `<circle class="gddot" data-gd="pick|${p.id}" cx="${x}" cy="${y}" r="${3.4 * u}" fill="${GD_STREET}" stroke="${GD_GROUND}" stroke-width="${1.4 * u}"><title>${esc(p.name)}</title></circle>`;
+      return `<circle class="gddot" data-gd="pick|${p.id}" cx="${x}" cy="${y}" r="${3.6 * u}" fill="${GD_STREET}" stroke="${GD_GROUND}" stroke-width="${1.4 * u}"><title>${esc(p.name)}</title></circle>`;
     }).join("");
     let tie = "", mark = "";
     if (target) {
-      const [x, y] = gdXY(key, target);
-      tie = `<line x1="${hx}" y1="${hy}" x2="${x}" y2="${y}" stroke="${GD_GOLD}" stroke-width="${1.6 * u}" stroke-dasharray="${5 * u} ${4 * u}" stroke-linecap="round"/>`;
+      const [x, y] = txy;
+      tie = `<line x1="${hx}" y1="${hy}" x2="${x}" y2="${y}" stroke="${GD_GOLD}" stroke-width="${1.8 * u}" stroke-dasharray="${5 * u} ${4 * u}" stroke-linecap="round"/>`;
       mark = `<circle cx="${x}" cy="${y}" r="${12 * u}" fill="${GD_GOLD}" fill-opacity=".25"/>
         <circle cx="${x}" cy="${y}" r="${6 * u}" fill="${GD_GOLD}" stroke="${GD_GROUND}" stroke-width="${1.6 * u}"/>`
         + label(x, y, target.name, gdMi(target.mi) + " " + target.dir, GD_GOLD);
     }
     el.querySelector(".tie").innerHTML = tie;
     el.querySelector(".mark").innerHTML = mark;
+    el.querySelector(".names").innerHTML = gdNames(key, vb, u, avoid);
+  }
+
+  function gdMark() {
+    if (!gd || !gd.map) return;
+    const target = gdTarget();
+    gd.view = target ? (gdOnMap("near", target) ? (gd.pick === "city" ? "city" : "near") : "city") : gd.pick;
+    $$("#gd-map .gdsvg").forEach(s => s.classList.toggle("on", s.dataset.map === gd.view));
+    $$("[data-gd^='map|']").forEach(b => b.classList.toggle("on", b.dataset.gd === "map|" + gd.view));
+    const key = gd.view, m = gd.map[key], el = gdSvg(key);
+    // the camera moves only when what it should hold has changed, so a hand
+    // that zoomed or dragged keeps its view through an ordinary redraw
+    const holds = key + "|" + (target ? target.id : "");
+    if (holds !== gd.framed) {
+      gdCamera(key, target ? gdFrame(key, target, el) : [0, 0, m.w, m.h], gd.framed === "");
+      gd.framed = holds;
+    }
+    gdOverlay(key);
     $("#gd-mapnote").textContent = target ? `${target.name} · ${gdProx(target)}`
-      : key === "near" ? "About 1.3 miles each way. Point at a place to see where it sits."
-        : "All of San Francisco. Point at a place to see where it sits.";
+      : key === "near" ? "About 1.3 miles each way. Choose a place and the map moves in on it."
+        : "All of San Francisco. Choose a place and the map moves in on it.";
     $$("#gd-list .gdcard").forEach(c => c.classList.toggle("on", c.dataset.gdcard === gd.active));
   }
+  function gdZoom(how) {
+    const key = gd.view, m = gd.map[key], el = gdSvg(key), vb = gd.vb[key];
+    if (how === "all") { gd.active = null; gd.hover = null; gd.hoverWant = null; gd.framed = "~"; gdMark(); return; }
+    const f = how === "in" ? 0.62 : 1.6, w = Math.max(120, vb[2] * f), h = vb[3] * (w / vb[2]);
+    gdCamera(key, gdFit(key, [vb[0] + vb[2] / 2 - w / 2, vb[1] + vb[3] / 2 - h / 2, w, h], el));
+    gdOverlay(key);
+  }
+  // A drag with the mouse slides the map; a finger is left alone so the page
+  // still scrolls on a tablet.
+  let gdDrag = null;
+  document.addEventListener("pointerdown", ev => {
+    const s = gd && ev.pointerType !== "touch" && ev.target.closest && ev.target.closest(".gdsvg");
+    if (s) gdDrag = { key: s.dataset.map, el: s, x: ev.clientX, y: ev.clientY, vb: gd.vb[s.dataset.map].slice(), moved: false };
+  });
+  document.addEventListener("pointermove", ev => {
+    if (!gdDrag) return;
+    const dx = ev.clientX - gdDrag.x, dy = ev.clientY - gdDrag.y;
+    if (!gdDrag.moved && Math.hypot(dx, dy) < 5) return;
+    gdDrag.moved = true;
+    const { key, el, vb } = gdDrag, m = gd.map[key], u = Math.max(vb[2] / el.clientWidth, vb[3] / el.clientHeight);
+    gdCamera(key, [Math.max(0, Math.min(vb[0] - dx * u, m.w - vb[2])), Math.max(0, Math.min(vb[1] - dy * u, m.h - vb[3])), vb[2], vb[3]], true);
+  });
+  document.addEventListener("pointerup", () => {
+    if (gdDrag && gdDrag.moved) { gd.dragged = Date.now(); gdOverlay(gdDrag.key); }
+    gdDrag = null;
+  });
 
   // ---- what leaves the desk: an email draft, or paper. Both carry the same
   // facts and neither carries the house's own notes.
@@ -4045,20 +4155,28 @@
 
   document.addEventListener("change", ev => { if (ev.target.id === "s-guide" && ev.target.checked) gdBoot(); });
   document.addEventListener("input", ev => { if (ev.target.id === "gd-q" && gd) { gd.q = ev.target.value; gd.active = null; gdRender(); } });
+  // Pointing at a card lights its place once the hand has rested there a
+  // moment, so running down the list does not swing the map about.
+  let gdHoverT = 0;
   document.addEventListener("mouseover", ev => {
-    if (!gd) return;
+    if (!gd || !ev.target.closest) return;
     const c = ev.target.closest("[data-gdcard]"), id = c ? c.dataset.gdcard : null;
-    if (id !== gd.hover && (c || gd.hover) && (c || !ev.target.closest("#gd-map"))) { gd.hover = id; gdMark(); }
+    if (!c && ev.target.closest(".gdmap")) return;      // moving onto the map changes nothing
+    if (id === gd.hoverWant) return;
+    gd.hoverWant = id; clearTimeout(gdHoverT);
+    gdHoverT = setTimeout(() => { if (gd.hover !== gd.hoverWant) { gd.hover = gd.hoverWant; gdMark(); } }, id ? 260 : 450);
   });
   document.addEventListener("click", ev => {
     if (!gd) return;
+    if (gd.dragged && Date.now() - gd.dragged < 80) return;       // the end of a drag is not a click
     const b = ev.target.closest("[data-gd]");
     if (b) {
       const [verb, arg, arg2] = b.dataset.gd.split("|");
       const p = gd.places.find(x => x.id === arg);
       if (verb === "quick") { const on = gdPlain(arg) === gdTokens(gd.q).join(" "); gd.q = on ? "" : arg; $("#gd-q").value = gd.q; gd.active = null; gdRender(); }
       else if (verb === "flag") { if (gd.flags.has(arg)) gd.flags.delete(arg); else gd.flags.add(arg); gd.active = null; gdRender(); }
-      else if (verb === "map") { gd.pick = arg; gd.hover = null; if (gd.active && !gdOnMap("near", gd.places.find(x => x.id === gd.active))) gd.active = arg === "near" ? null : gd.active; gdMark(); }
+      else if (verb === "zoom") gdZoom(arg);
+      else if (verb === "map") { gd.pick = arg; gd.hover = null; gd.hoverWant = null; gd.framed = "~"; if (gd.active && !gdOnMap("near", gd.places.find(x => x.id === gd.active))) gd.active = arg === "near" ? null : gd.active; gdMark(); }
       else if (verb === "pick" && p) { gd.active = p.id; gd.hover = null; gdMark(); const c = $(`[data-gdcard="${p.id}"]`); if (c) c.scrollIntoView({ block: "center", behavior: "smooth" }); }
       else if (verb === "mail" && p) gdMail(p);
       else if (verb === "print" && p) gdPrint([p]);
@@ -4078,7 +4196,7 @@
     const c = ev.target.closest("[data-gdcard]");
     if (c && !gd.editing && !ev.target.closest("a, button, summary, details, input, textarea, select, label")) { gd.active = gd.active === c.dataset.gdcard ? null : c.dataset.gdcard; gdMark(); }
   });
-  window.addEventListener("resize", () => { if (gd && $("#s-guide") && $("#s-guide").checked) gdMark(); });
+  window.addEventListener("resize", () => { if (gd && $("#s-guide") && $("#s-guide").checked) { gd.framed = ""; gdMark(); } });
 
   async function boot() {
     try { status = await api("/api/status"); } catch (e) { status = {}; }

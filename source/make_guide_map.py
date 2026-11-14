@@ -12,7 +12,9 @@ Two maps, both north up:
   near  every street and alley about 1.3 miles each way from the tower
   city  the main streets and shoreline of all San Francisco
 Each carries its projection, so the admin can place any latitude and
-longitude on it: x = (lon - west) * kx, y = (north - lat) * ky.
+longitude on it: x = (lon - west) * kx, y = (north - lat) * ky. Each also
+carries its street names (text, position, angle, importance); the admin shows
+more of them the closer the map is zoomed.
 """
 import json, math, os, sys
 
@@ -105,12 +107,70 @@ def draw(raw, box, classes, with_piers, tol=0.35, step=0.5):
             "layers": {k: "".join(v) for k, v in layers.items() if v}}
 
 
+SHORT = {"Street": "St", "Avenue": "Ave", "Boulevard": "Blvd", "Place": "Pl", "Alley": "Aly", "Drive": "Dr", "Court": "Ct",
+         "Terrace": "Ter", "Road": "Rd", "Lane": "Ln", "Highway": "Hwy", "Parkway": "Pkwy", "Freeway": "Fwy"}
+
+
+def names(raw, box, rank, every, apart):
+    """Street names for the zoomed-in map: [text, x, y, angle, rank], most
+    important first. One candidate at the middle of each named way (ways run
+    about a block), thinned so the same name does not repeat within `apart`
+    units; the admin picks which to show for the zoom it is at."""
+    kx, ky, height = projector(box)
+    out = []
+    for e in raw["elements"]:
+        t = e.get("tags", {}); name = t.get("name"); hw = t.get("highway"); g = e.get("geometry")
+        if hw == "service": hw = "alley" if t.get("service") == "alley" else None
+        if not name or hw not in rank or not g or t.get("tunnel") == "yes": continue
+        if hw == "pedestrian" and (t.get("area") == "yes" or g[0] == g[-1]): continue
+        pts = [((q["lon"] - box["west"]) * kx, (box["north"] - q["lat"]) * ky) for q in g]
+        seg = [math.hypot(pts[i + 1][0] - pts[i][0], pts[i + 1][1] - pts[i][1]) for i in range(len(pts) - 1)]
+        total = sum(seg)
+        if total < 26: continue                      # too short a stretch to carry a name
+        text = " ".join(SHORT.get(w, w) for w in name.split())
+        if len(text) > 26: continue
+        n = max(1, int(total // every))
+        for k in range(n):
+            want, run = (k + 0.5) * total / n, 0
+            for i, L in enumerate(seg):
+                if run + L >= want and L > 0:
+                    f = (want - run) / L
+                    x = pts[i][0] + f * (pts[i + 1][0] - pts[i][0]); y = pts[i][1] + f * (pts[i + 1][1] - pts[i][1])
+                    a = math.degrees(math.atan2(pts[i + 1][1] - pts[i][1], pts[i + 1][0] - pts[i][0]))
+                    if a > 90: a -= 180
+                    if a < -90: a += 180
+                    if 8 <= x <= box["width"] - 8 and 8 <= y <= height - 8:
+                        out.append([text, round(x), round(y), round(a), rank[hw]])
+                    break
+                run += L
+    out.sort(key=lambda c: c[4])
+    kept = []
+    grid = {}
+    for c in out:
+        cell = (c[1] // apart, c[2] // apart)
+        clash = False
+        for dx in (-1, 0, 1):
+            for dy in (-1, 0, 1):
+                for o in grid.get((cell[0] + dx, cell[1] + dy), ()):
+                    if o[0] == c[0] and math.hypot(o[1] - c[1], o[2] - c[2]) < apart: clash = True
+        if clash: continue
+        grid.setdefault(cell, []).append(c); kept.append(c)
+    return kept
+
+
+NEAR_RANK = {"primary": 0, "trunk": 0, "secondary": 0, "tertiary": 1, "residential": 2, "unclassified": 2,
+             "living_street": 3, "pedestrian": 3, "alley": 3}
+CITY_RANK = {"primary": 0, "trunk": 0, "secondary": 1, "tertiary": 2}
+
+
 def main():
     src = sys.argv[1]
     load = lambda n: json.load(open(os.path.join(src, n), encoding="utf-8"))
     near = draw(load("osm_near.json"), NEAR, NEAR_CLASS, True)
     city = draw(load("osm_city.json"), CITY, CITY_CLASS, False, tol=0.5, step=1)
     near["widths"], city["widths"] = WIDTHS["near"], WIDTHS["city"]
+    near["labels"] = names(load("osm_near.json"), NEAR, NEAR_RANK, every=150, apart=70)
+    city["labels"] = names(load("osm_city.json"), CITY, CITY_RANK, every=170, apart=75)
     home = next(e for e in load("osm_home.json")["elements"] if e["type"] == "way" and e["id"] == HOME_WAY)["geometry"]
     lat = sum(p["lat"] for p in home[:-1]) / (len(home) - 1)
     lon = sum(p["lon"] for p in home[:-1]) / (len(home) - 1)
@@ -121,7 +181,7 @@ def main():
     dest = os.path.join(HERE, "guide_map.json")
     json.dump(out, open(dest, "w", encoding="utf-8"), separators=(",", ":"))
     print("wrote", dest, os.path.getsize(dest), "bytes; near", near["w"], "x", near["h"], "city", city["w"], "x", city["h"],
-          "home", out["home"])
+          "home", out["home"], "names", len(near["labels"]), len(city["labels"]))
 
 
 if __name__ == "__main__":
