@@ -422,6 +422,12 @@ export async function ensureResidentTables(env) {
   if (tablesEnsured) return;
   await env.DB.batch(RESIDENT_TABLES.map(s => env.DB.prepare(s)));
   try { await env.DB.prepare("ALTER TABLE residents ADD COLUMN feed_token TEXT").run(); } catch (e) {}
+  // When a calendar app last fetched this resident's own RSVP feed, and which
+  // family of app. It lets their pages say "already on its way to your
+  // calendar" instead of offering a subscription they already hold. Kept in
+  // house, shown only to the resident; the admin's counter stays counts only.
+  try { await env.DB.prepare("ALTER TABLE residents ADD COLUMN feed_last TEXT").run(); } catch (e) {}
+  try { await env.DB.prepare("ALTER TABLE residents ADD COLUMN feed_agent TEXT").run(); } catch (e) {}
   try { await env.DB.prepare("ALTER TABLE residents ADD COLUMN tenure TEXT").run(); } catch (e) {}
   for (const col of ["event_name TEXT", "host TEXT", "reg_token TEXT",
                      "reg_open INTEGER DEFAULT 0", "guest_cap INTEGER", "reg_slug TEXT", "details TEXT",

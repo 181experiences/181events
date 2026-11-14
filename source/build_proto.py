@@ -95,6 +95,13 @@ SUB_MY = subscribe_box(
     "Every event you say yes to appears in your calendar by itself, moves when a date moves, and slips away if it is cancelled.",
     "{{FEEDWEBCAL}}", "{{FEEDURL}}",
     note="This address is yours alone, so keep it to yourself; anyone holding it sees your RSVPs.")
+SUB_RSVP = subscribe_box(
+    "Put your RSVPs on your calendar",
+    "Subscribe once, and every event you say yes to lives in your own calendar and keeps itself current:",
+    "This RSVP and every one after it appears by itself, moves when a date moves, and slips away if it is cancelled. "
+    "Calendar apps check in on their own schedule, so allow a new RSVP a little while to arrive.",
+    "{{FEEDWEBCAL}}", "{{FEEDURL}}",
+    note="This address is yours alone, so keep it to yourself; anyone holding it sees your RSVPs.")
 SUB_BOARD = subscribe_box(
     "Keep these in your calendar on their own",
     "Add the Board calendar once, and every change reaches you by itself:",
@@ -394,6 +401,30 @@ for m in MONTHS:
 LIST = "".join(list_html)
 
 # ------------------------------------------------------------------ event screens
+def cal_menu(e):
+    # Add to My Calendar no longer hands over a copy at the first tap. It opens
+    # the choice, with the one that stays current first: for an event that
+    # takes an RSVP, the resident's own RSVP calendar (offered on their
+    # confirmation); for everything else, the whole calendar. The one-time
+    # copy stays, small, and says what it is.
+    once = (f'<div class="cp-once">Or <a href="{ics_href(e)}" download="{e["on"].isoformat()}_{e["slug"]}.ics">add this one event '
+            'as a one-time copy</a>. A copy does not update if the event moves or is cancelled.</div>')
+    if e["rsvp"] in ("standard", "paid"):
+        body = ('<div class="cp-t">RSVP, and it arrives on its own</div>'
+                '<div class="cp-s">Your RSVPs can live in your own calendar and keep themselves current: a moved date moves, '
+                'and a cancelled one slips away. Your confirmation shows you how, once.</div>')
+    else:
+        body = ('<div class="cp-t">Subscribe, and it stays current</div>'
+                '<div class="cp-s">Once, for the whole calendar: new dates appear, changes follow along, and anything '
+                'cancelled slips away on its own.</div>'
+                '<div class="subrow"><div class="sublab">iPhone or iPad</div>'
+                '<a class="rlink" href="webcal://181residents.com/calendar/feed">Tap here to subscribe</a></div>'
+                '<div class="subrow"><div class="sublab">Google Calendar or Outlook</div>'
+                '<div class="urlline"><span class="url">https://181residents.com/calendar/feed</span>'
+                f'<button type="button" class="copybtn" data-copy aria-label="Copy this address">{COPY_ICON}Copy</button></div></div>')
+    return ('<details class="calmenu"><summary class="btn ghost">Add to My Calendar</summary>'
+            f'<div class="calpanel subbox">{body}{once}</div></details>')
+
 def event_screen(e):
     i = e["id"]
     # The uploaded kit hero outranks the record's Image: uploading it is the
@@ -524,8 +555,7 @@ def event_screen(e):
         note = ("Sign in once with your resident code, and your RSVP saves under My RSVPs, "
                 "where you can change or cancel anytime." + cutoff_line)
 
-    cta += (f'<a class="btn ghost" href="{ics_href(e)}" download="{e["on"].isoformat()}_{e["slug"]}.ics">'
-            'Add to My Calendar</a></div>')
+    cta += cal_menu(e) + '</div>'
     if note:
         box = f'<div class="note" style="margin-top:14px">{note}</div>'
 
@@ -543,7 +573,6 @@ def event_screen(e):
         {guest_ui}
         {box}
         {cta}
-        <div class="note">Adding to your calendar works with Apple, Google, and Outlook. It adds a one-time copy: if this event moves or is cancelled, that copy will not update on its own. To stay current, <a href="/#subscribe">subscribe to the calendar</a> instead, once, at the foot of the calendar.</div>
       </div>
     </div>
   </section>'''
@@ -853,6 +882,16 @@ HTML = f'''<!DOCTYPE html>
   .gchip:hover{{border-color:var(--red)}}
 
   .cta{{display:flex;flex-wrap:wrap;gap:14px;margin:30px 0 14px}}
+  .calmenu{{flex:0 1 auto}}
+  .calmenu[open]{{flex:1 1 100%}}
+  .calmenu summary{{list-style:none;cursor:pointer;user-select:none;-webkit-user-select:none}}
+  .calmenu summary::-webkit-details-marker{{display:none}}
+  .calmenu[open] summary{{border-color:var(--ink)}}
+  .calpanel{{margin-top:14px;background:var(--paper-2);border:1px solid var(--line);border-radius:var(--radius);padding:22px 24px;max-width:36em}}
+  .cp-t{{font-family:var(--fd);font-size:clamp(19px,4.8vw,22px);color:var(--ink);line-height:1.25}}
+  .cp-s{{font-size:16px;color:var(--ink-soft);margin-top:6px}}
+  .cp-once{{font-size:15px;color:var(--stone);margin-top:18px;padding-top:14px;border-top:1px solid var(--line)}}
+  .cp-once a{{color:var(--ink-soft);text-decoration:underline;text-underline-offset:2px}}
   .btn{{display:inline-flex;align-items:center;justify-content:center;gap:10px;padding:20px 30px;min-height:62px;
     border-radius:var(--radius);font-size:16px;letter-spacing:.12em;text-transform:uppercase;font-weight:600;
     background:var(--red);color:#fff;border:1px solid var(--red);flex:1 1 auto;text-align:center}}
@@ -1245,6 +1284,10 @@ SHELL_CSS = '''
   .msgsent h1{font-size:clamp(30px,6.4vw,40px)}
   .msgsent p{font-size:19px;color:var(--ink-soft);max-width:30em;margin:16px auto 0}
   .cta2{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;margin-top:32px}
+  .calbox{max-width:34em;margin:26px auto 0}
+  .msgsent + .calbox{margin-bottom:70px}
+  .calonce{font-size:15px;color:var(--stone);margin:14px 0 0}
+  .calonce a{color:var(--ink-soft);text-decoration:underline;text-underline-offset:2px}
   footer{border-top:1px solid var(--line);padding:34px 0 60px;color:var(--stone);font-size:15px;text-align:center}
   .stafflink{color:var(--stone);border-bottom:1px solid var(--line);padding:14px 2px}
   .stafflink:hover{color:var(--ink)}
@@ -1308,6 +1351,7 @@ T_MY = '''<a class="back" href="/">&larr; Back to the calendar</a>
 </div>
 <p class="note">Tap any RSVP to change your party or cancel.</p><!--/ROWS-->
 ''' + SUB_MY + '''
+<!--FOLLOWING--><p class="note">{{FOLLOWLINE}}</p><!--/FOLLOWING-->
 <form method="post" action="/signout" class="signoutform"><button type="submit">Sign out of this device</button></form>'''
 
 # Parties self-serve to three: just me, plus one, plus two. The fourth chip is
@@ -1368,6 +1412,7 @@ T_RSVP = '''<a class="back" href="/">&larr; Back to the calendar</a>
 <input type="hidden" name="action" value="cancel">
 <button class="btn ghost" type="submit">Cancel This RSVP</button>
 </form><!--/EXISTING-->
+<!--CAL--><!--/CAL-->
 <!--FORM--><!--STANDARD--><div class="pagehead"><h2>Will you join us?</h2>
 <p>Count yourself and anyone coming with you: your household, or a guest staying with you.</p></div><!--/STANDARD-->
 <!--GUEST--><div class="guestbox"><div class="gq">Bringing someone from outside the building?</div>
@@ -1427,6 +1472,19 @@ T_DONE = '''<div class="msgsent">
 <h1>{{HEAD}}</h1>
 <p>{{SUB}}</p>
 <div class="cta2"><!--LINK--><a class="btn" href="{{LINKHREF}}">{{LINKTEXT}}</a><!--/LINK--></div>
+</div>'''
+
+# The calendar block under a held RSVP, on its confirmation and on its own
+# page. ON when this resident's calendar app has fetched their RSVP feed in the
+# last few days: nothing to do, and the page says so. OFF otherwise: the
+# subscribe box, once. The one-time copy stays beneath either, small.
+T_CAL = '''<div class="calbox">
+<!--ON--><div class="guestbox"><div class="gq">On its way to your calendar</div>
+<div class="gh">Your calendar follows your RSVPs, so this one arrives on its own and keeps itself current.
+Calendar apps check in on their own schedule; allow it a little while.</div></div><!--/ON-->
+<!--OFF-->''' + SUB_RSVP + '''<!--/OFF-->
+<p class="calonce">Need it this minute? <a href="/ics/{{KEY}}.ics">Add a one-time copy</a>.
+A copy does not update if the event moves or is cancelled.</p>
 </div>'''
 
 T_MSGSTEP = '''<a class="back" href="/">&larr; Back to the calendar</a>
@@ -1530,6 +1588,7 @@ TEMPLATES = {
     "rsvp": T_RSVP,
     "register": T_REGISTER,
     "done": T_DONE,
+    "cal": T_CAL,
     "msgstep": T_MSGSTEP,
     "board": T_BOARD,
     "spaces": T_SPACES,

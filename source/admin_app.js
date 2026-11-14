@@ -1104,7 +1104,7 @@
     const first = changed[0].n;
     const body = `Hello,\n\nA change to an event you RSVP'd for:\n\n${lines.join("\n")}\n\n`
       + `If you added it to your calendar, that copy will not update by itself: delete the old entry, then open the event and tap Add to My Calendar again. `
-      + `If you subscribe to the calendar, it updates on its own.\n\n`
+      + `If your calendar follows your RSVPs or the whole calendar, it updates on its own.\n\n`
       + `https://181residents.com/rsvp/${stem(first)}\n\nWarmly,\nResident Experiences\n181 Fremont`;
     toast("Saved. A note to everyone signed up is opening; send it so nobody arrives at the wrong hour.");
     openBccDraft(`Update: ${first.Title}`, body, emails);

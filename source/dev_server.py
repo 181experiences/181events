@@ -193,11 +193,28 @@ def shell_page(title, content, resident, status=200):
         WHO=esc(resident["label"]) if resident else "Residents&rsquo; Club", CONTENT=content))
     return status, html
 
-def done_page(resident, head, sub, href, text, status=200):
+def done_page(resident, head, sub, href, text, status=200, extra=""):
     tpl = template("done")
     body = fill(cut(tpl, "LINK", inner(tpl, "LINK")),
                 dict(HEAD=head, SUB=sub, LINKHREF=href, LINKTEXT=text))
-    return shell_page(re.sub(r"&[a-z]+;", "'", head), body, resident, status)
+    return shell_page(re.sub(r"&[a-z]+;", "'", head), body + extra, resident, status)
+
+# Mirrors functions/_resident.js feedState and calBox.
+def feed_state(me):
+    last = (me or {}).get("feed_last")
+    if not last: return dict(last="", follows=False, when="")
+    d = datetime.datetime.fromisoformat(last)
+    loc = d.astimezone()
+    when = f"{loc.strftime('%A, %b')} {loc.day} at {loc.hour % 12 or 12}:{loc.minute:02d} {'AM' if loc.hour < 12 else 'PM'}"
+    return dict(last=last, when=when,
+                follows=(datetime.datetime.now(datetime.timezone.utc) - d).total_seconds() < 4 * 86400)
+
+def cal_box(me, key):
+    tpl = template("cal"); on = feed_state(me)["follows"]
+    html = cut(cut(tpl, "ON", inner(tpl, "ON") if on else None), "OFF", None if on else inner(tpl, "OFF"))
+    token = "" if on else feed_token_of(me)
+    return fill(html, dict(KEY=key, FEEDURL=f"http://localhost:{PORT}/calendar/my/{token}",
+                           FEEDWEBCAL=f"webcal://localhost:{PORT}/calendar/my/{token}"))
 
 def signin_page(to, error, status=200):
     tpl = template("signin")
@@ -392,6 +409,7 @@ def rsvp_page(e, key, me):
         body = cut(body, "EXISTING", fill(section, dict(KEY=key, STATE=state_line(active),
             NAMES=esc(active.get("names") or ""), BRINGS=esc(active.get("brings") or ""),
             COUNTLABEL="Outside guests" if rsvp_type == "guest" else "Your party")))
+        body = cut(body, "CAL", cal_box(me, key) if active["status"] == "Confirmed" else None)
         return shell_page(e["Title"], body, me)
 
     section = inner(tpl, "FORM")
@@ -450,6 +468,10 @@ def my_page(me):
     else:
         body = cut(cut(tpl, "ROWS", None), "EMPTY", inner(tpl, "EMPTY"))
     token = feed_token_of(me)
+    st = feed_state(me)
+    body = cut(body, "FOLLOWING", fill(inner(tpl, "FOLLOWING"), dict(FOLLOWLINE=
+        f"Your calendar is following this page. It last checked in {st['when']}." if st["follows"] else
+        f"Your calendar last checked in {st['when']} and has not been back since. If entries there look out of date, remove the subscription and add it again from the box above.")) if st["last"] else None)
     return shell_page("My RSVPs", fill(body, dict(
         LABEL=esc(me["label"]),
         FEEDURL=f"http://localhost:{PORT}/calendar/my/{token}",
@@ -1139,6 +1161,12 @@ class H(SimpleHTTPRequestHandler):
                    "X-WR-CALNAME:My 181 Fremont RSVPs"] + ICS_REFRESH
             if me2:
                 log_feed_hit("my", self.headers.get("User-Agent"))
+                agent = feed_agent(self.headers.get("User-Agent"))
+                if agent in ("Google", "Outlook", "Apple"):
+                    everyone = load_store("residents", [])
+                    for r in everyone:
+                        if r["id"] == me2["id"]: r["feed_last"] = now_iso(); r["feed_agent"] = agent
+                    save_store("residents", everyone)
                 by_key = {f"{e['Date']}_{e.get('Slug')}": e for e in load_events() if e.get("Status") == "Live"}
                 for r in sorted(load_store("rsvps", []), key=lambda r: r["event_date"]):
                     e = by_key.get(r["event_key"])
@@ -1728,7 +1756,7 @@ class H(SimpleHTTPRequestHandler):
             else:
                 sub = "You&rsquo;re on the list, and it now appears under My RSVPs, where you can change or cancel anytime."
             return self._html(done_page(me, "Request received" if rsvp_type == "paid" else "You&rsquo;re in",
-                                        sub, "/my", "My RSVPs"))
+                                        sub, "/my", "My RSVPs", 200, cal_box(me, key)))
         return self._json({"error": "not found"}, 404)
 
     # ------------------------------------------------------------ PUT

@@ -2,7 +2,7 @@
 import { esc } from "./_lib.js";
 import {
   currentResident, upcomingRsvps, template, fill, cut, inner, page, seeOther, notReady,
-  feedTokenOf, slideSession, MONTHS_S, DOW_S,
+  feedTokenOf, feedState, slideSession, MONTHS_S, DOW_S,
 } from "./_resident.js";
 
 function rowSlots(r) {
@@ -43,6 +43,14 @@ export async function onRequestGet(context) {
     body = cut(cut(tpl, "ROWS", null), "EMPTY", inner(tpl, "EMPTY"));
   }
   const token = await feedTokenOf(env, me);
+  // Once a calendar app has come for their feed, say when it last did: the
+  // answer to "is my calendar still following this?" before it is asked.
+  const st = feedState(me);
+  body = cut(body, "FOLLOWING", st.last ? fill(inner(tpl, "FOLLOWING"), {
+    FOLLOWLINE: st.follows
+      ? `Your calendar is following this page. It last checked in ${st.when}.`
+      : `Your calendar last checked in ${st.when} and has not been back since. If entries there look out of date, remove the subscription and add it again from the box above.`,
+  }) : null);
   body = fill(body, {
     LABEL: esc(me.label),
     FEEDURL: `https://181residents.com/calendar/my/${token}`,

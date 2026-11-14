@@ -260,7 +260,7 @@ LEAD_COL2 = [
     ("b", "Change a Live event\u2019s date, time, or place while people are signed up, and one BCC email opens to all of them, old and new spelled out, web or desktop Outlook. Read it, send it."),
     ("b", "**Cancel this date** pulls the event, holds the RSVPs, then asks whether the note opens; nothing sends itself."),
     ("b", "**Link** copies a date’s page; **Short link** copies the standing **/e/** address that always lands on the next date, made for QR and print."),
-    ("b", "Calendar subscribers update on their own; anyone who used **Add to My Calendar** re-taps it after a change. The drafts say so."),
+    ("b", "Calendar subscribers update on their own; anyone holding a one-time copy adds it again after a change. The drafts say so."),
     ("h", "7 · RSVPs from the Dashboard"),
     ("b", "**Edit** on a row changes the party or **moves the RSVP to another event**, under the new event’s own rules. **Cancel** asks first, then asks whether a note goes."),
     ("b", "On the day, **Check in** works the door: a whole party in one tap, a number when fewer came, a note on the row. RSVPed and came stay two numbers in the CSV."),
@@ -286,7 +286,7 @@ RES_SECTIONS_L = [
 ]
 RES_SECTIONS_R = [
     ("Changing your mind", "**My RSVPs** keeps everything saved to your name. Change the party or cancel any time; seats already confirmed stay yours."),
-    ("Your own calendar", "**Add to My Calendar** puts any event in your calendar app; if a date or time changes, tap it once more and the entry rights itself. Better still, subscribe once at the foot of the calendar and every event keeps itself current."),
+    ("Your own calendar", "**Add to My Calendar** shows the way: subscribe once and every event keeps itself current. After you RSVP, your confirmation can put your RSVPs in your calendar, where they follow any change on their own."),
     ("Notes to neighbors", "**Neighbor Notes**, on the home screen, is the building&rsquo;s board: pin a signed note, see the hands go up, and each note fades after three days. The **Message** line below it reaches Resident Experiences directly, with a reply within one business day."),
 ]
 

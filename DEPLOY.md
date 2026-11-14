@@ -134,8 +134,24 @@ Uploads cap at about 95 MB per file; keep video masters in Canva and upload the 
   unguessable address: subscribe once and their calendar carries what they said yes to,
   follows dates when staff move them, and lets go of cancellations. Disabling the person
   quiets their feed.
-- Calendar files carry version stamps, so re-tapping Add to My Calendar after a change
+- Calendar files carry version stamps, so adding a one-time copy again after a change
   updates the entry in place instead of duplicating it.
+- **Add to My Calendar leads with the subscription.** On an event page the button opens
+  a small panel instead of handing over a file. For an event that takes an RSVP it says
+  the RSVP will arrive on its own and that the confirmation shows how; for everything
+  else it offers the whole-calendar subscription. The one-time copy (`/ics/...`) stays
+  beneath, small, and says it will not update. Outside-guest pages, the Board page and
+  the coded pages (/gala, /friendsgiving) keep their one-time links as they were.
+- **The confirmation is where a resident subscribes.** After a confirmed RSVP, and on the
+  page of any RSVP they hold, a block offers their private RSVP feed once ("Put your RSVPs
+  on your calendar"). Template `cal`, rendered by `calBox` in `functions/_resident.js`.
+- **Knowing who already follows.** When a calendar app (Google, Outlook, Apple; never a
+  browser) fetches a resident's private feed, the feed route stamps `residents.feed_last`
+  and `feed_agent`. A stamp inside four days means their calendar is following: the block
+  then says "On its way to your calendar" and offers nothing, and My RSVPs says when the
+  calendar last checked in (or that it has gone quiet, with what to do). This is the one
+  per-resident record about feeds; it is shown only to that resident, never in the admin,
+  whose Calendar subscriptions counter stays counts only.
 - When a Live event with sign-ups changes date, time, or place, or is cancelled with the
   editor's Cancel button, the admin opens one email BCC'd to everyone signed up, pre-written.
 - `https://181residents.com/board/feed` is the same for Board meetings.

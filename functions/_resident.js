@@ -214,6 +214,33 @@ export async function upcomingRsvps(env, residentId) {
   return results;
 }
 
+// Whether this resident's own calendar is following their RSVPs: a calendar
+// app fetched their private feed within the last four days (the feed route
+// stamps residents.feed_last). Apps come back hourly to daily, so four days
+// of silence means the subscription is gone or stuck.
+const FOLLOW_DAYS = 4;
+export function feedState(me) {
+  const t = me && me.feed_last ? Date.parse(me.feed_last) : NaN;
+  if (!Number.isFinite(t)) return { last: "", follows: false, when: "" };
+  const d = new Date(t), tz = { timeZone: "America/Los_Angeles" };
+  const when = d.toLocaleDateString("en-US", { ...tz, weekday: "long", month: "short", day: "numeric" })
+    + " at " + d.toLocaleTimeString("en-US", { ...tz, hour: "numeric", minute: "2-digit" });
+  return { last: me.feed_last, follows: Date.now() - t < FOLLOW_DAYS * 86400000, when };
+}
+
+// The calendar block under a held RSVP. Following already: it says so and
+// offers nothing. Not yet: the subscribe box for their own RSVP feed. Either
+// way the one-time copy of this event stays beneath, small.
+export async function calBox(context, me, key) {
+  const tpl = await template(context, "cal");
+  const on = feedState(me).follows;
+  const html = cut(cut(tpl, "ON", on ? inner(tpl, "ON") : null), "OFF", on ? null : inner(tpl, "OFF"));
+  const token = on ? "" : await feedTokenOf(context.env, me);
+  return fill(html, { KEY: key,
+    FEEDURL: `https://181residents.com/calendar/my/${token}`,
+    FEEDWEBCAL: `webcal://181residents.com/calendar/my/${token}` });
+}
+
 // The resident's private feed address, minted the first time it is needed.
 export async function feedTokenOf(env, me) {
   if (me.feed_token) return me.feed_token;

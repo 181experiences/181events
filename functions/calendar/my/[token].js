@@ -10,7 +10,7 @@
 // STATUS:CANCELLED under the UID their calendar already holds, since Google
 // and Outlook are slow to notice an entry that silently disappears.
 
-import { ensureResidentTables, todayPacific, to24, icsStamp, icsHead, logFeedHit } from "../../_lib.js";
+import { ensureResidentTables, todayPacific, to24, icsStamp, icsHead, logFeedHit, feedAgent } from "../../_lib.js";
 
 export async function onRequestGet(context) {
   const { env, params } = context;
@@ -25,6 +25,15 @@ export async function onRequestGet(context) {
       .bind(token, todayPacific()).first();
     if (me) {
       logFeedHit(context, "my");
+      // A calendar app coming back is the sign their calendar follows this
+      // feed; a browser opening the address is not. The stamp is what lets
+      // their own pages stop offering a subscription they already hold.
+      const agent = feedAgent(context.request);
+      if (agent === "Google" || agent === "Outlook" || agent === "Apple") {
+        const p = env.DB.prepare("UPDATE residents SET feed_last=?, feed_agent=? WHERE id=?")
+          .bind(new Date().toISOString(), agent, me.id).run().catch(() => {});
+        if (context.waitUntil) context.waitUntil(p);
+      }
       const { results } = await env.DB.prepare(
         `SELECT r.count, r.status AS rstatus, e.* FROM rsvps r
          JOIN events e ON e.date || '_' || e.slug = r.event_key AND e.status = 'Live'

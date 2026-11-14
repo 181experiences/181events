@@ -11,7 +11,7 @@ import { esc, ensureResidentTables, ensureEventTables, todayPacific,
          getWindow, detailEnd, notifyStaff } from "../_lib.js";
 import {
   currentResident, liveEvent, seatsTaken, myRsvp, unitMates, othersWaiting, confirmedHeads,
-  template, fill, cut, inner, page, seeOther, notReady, slideSession,
+  template, fill, cut, inner, page, seeOther, notReady, slideSession, calBox,
   MONTHS_S, DOW,
 } from "../_resident.js";
 
@@ -119,12 +119,12 @@ function mateLine(m) {
   return `${esc(m.name)} &middot; ${m.count === 1 ? "going" : "party of " + m.count}`;
 }
 
-async function donePage(context, me, head, sub, href, text, status = 200) {
+async function donePage(context, me, head, sub, href, text, status = 200, extra = "") {
   const tpl = await template(context, "done");
   const body = fill(cut(tpl, "LINK", inner(tpl, "LINK")), {
     HEAD: head, SUB: sub, LINKHREF: href, LINKTEXT: text,
   });
-  return page(context, head.replace(/&[a-z]+;/g, "'"), body, me, status);
+  return page(context, head.replace(/&[a-z]+;/g, "'"), body + extra, me, status);
 }
 
 function stateLine(r) {
@@ -233,6 +233,8 @@ async function rsvpPage(context, ev, key, me) {
       BRINGS: esc(active.brings || ""),
       COUNTLABEL: type === "guest" ? "Outside guests" : "Your party",
     }));
+    // A held seat belongs in their calendar; a place in line does not yet.
+    body = cut(body, "CAL", active.status === "Confirmed" ? await calBox(context, me, key) : null);
     return page(context, ev.title, body, me);
   }
 
@@ -416,6 +418,9 @@ export async function onRequestPost(context) {
     : type === "paid"
       ? "Your seats are requested. Resident Experiences confirms them in the order requests arrive, and payment is arranged with your confirmation."
       : "You&rsquo;re on the list, and it now appears under My RSVPs, where you can change or cancel anytime.";
+  // The confirmation leads the way to the calendar: their own RSVP feed first
+  // (or the word that it is already following), the one-time copy second.
   return donePage(context, me,
-    type === "paid" ? "Request received" : "You&rsquo;re in", sub, "/my", "My RSVPs");
+    type === "paid" ? "Request received" : "You&rsquo;re in", sub, "/my", "My RSVPs", 200,
+    await calBox(context, me, key));
 }
