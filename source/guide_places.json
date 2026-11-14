@@ -1820,6 +1820,849 @@
      "changes": null
     }
    ]
+  },
+  {
+   "id": "7-adams",
+   "name": "7 Adams",
+   "kind": "Restaurant",
+   "cuisines": [
+    "Californian",
+    "Tasting Menu",
+    "Contemporary"
+   ],
+   "neighborhood": "Japantown",
+   "address": "1963 Sutter Street, San Francisco, CA 94115",
+   "lat": 37.786082,
+   "lon": -122.432639,
+   "hours": {
+    "mon": "5:30 PM to 9:00 PM",
+    "tue": "5:30 PM to 9:00 PM",
+    "wed": "5:30 PM to 9:00 PM",
+    "thu": "5:30 PM to 9:00 PM",
+    "fri": "5:00 PM to 10:00 PM",
+    "sat": "5:00 PM to 10:00 PM",
+    "sun": "5:00 PM to 9:00 PM"
+   },
+   "hours_note": null,
+   "phone": "(415) 655-9154",
+   "website": "https://www.7adamsrestaurant.com/",
+   "email": null,
+   "book": {
+    "how": "Resy",
+    "url": "https://resy.com/cities/san-francisco-ca/venues/7-adams"
+   },
+   "price": "$$$$",
+   "michelin": "1",
+   "good_for": [
+    "Celebration",
+    "Date Night"
+   ],
+   "description": "A neighborhood restaurant from chefs David and Serena Fisher, serving polished Californian cooking in the main room, on the terrace, or at a chef's counter. A good pick for a starred dinner that still feels relaxed.",
+   "desk_note": "Tables open 28 days ahead. A cancellation fee of $65 to $95 a person applies.",
+   "sources": [
+    "https://www.7adamsrestaurant.com/",
+    "https://www.7adamsrestaurant.com/visit",
+    "https://guide.michelin.com/us/en/california/san-francisco/restaurant/7-adams"
+   ],
+   "auto_updated": "2026-11-13",
+   "history": [
+    {
+     "at": "2026-11-13",
+     "action": "Added to the book, checked against its own website",
+     "changes": null
+    }
+   ]
+  },
+  {
+   "id": "acquerello",
+   "name": "Acquerello",
+   "kind": "Restaurant",
+   "cuisines": [
+    "Italian",
+    "Fine Dining",
+    "Tasting Menu"
+   ],
+   "neighborhood": "Nob Hill",
+   "address": "1722 Sacramento Street, San Francisco, CA 94109",
+   "lat": 37.791695,
+   "lon": -122.421525,
+   "hours": {
+    "mon": "Closed",
+    "tue": "5:30 PM to 9:45 PM",
+    "wed": "5:30 PM to 9:45 PM",
+    "thu": "5:30 PM to 9:45 PM",
+    "fri": "5:30 PM to 9:45 PM",
+    "sat": "5:30 PM to 9:45 PM",
+    "sun": "Closed"
+   },
+   "hours_note": "Closed Thursday November 26 (Thanksgiving) and December 24 to 28; closed January 1 and 2. Phones answered 2 PM to 10 PM Tuesday to Saturday.",
+   "phone": "(415) 567-5432",
+   "website": "https://www.acquerellosf.com",
+   "email": "info@acquerellosf.com",
+   "book": {
+    "how": "OpenTable",
+    "url": "https://www.opentable.com/r/acquerello-reservations-san-francisco"
+   },
+   "price": "$$$$",
+   "michelin": "2",
+   "good_for": [
+    "Celebration",
+    "Special Occasion"
+   ],
+   "description": "A long-running, formal Italian dining room known for refined tasting menus and deep Italian wine service. It suits a resident planning a quiet, traditional celebration dinner.",
+   "desk_note": "The hours are from the Michelin Guide; its own site confirms only that it is closed Sunday and Monday. A $100 per person deposit is taken on booking.",
+   "sources": [
+    "https://www.acquerellosf.com",
+    "https://www.acquerellosf.com/reservations",
+    "https://guide.michelin.com/us/en/california/san-francisco/restaurant/acquerello"
+   ],
+   "auto_updated": "2026-11-13",
+   "history": [
+    {
+     "at": "2026-11-13",
+     "action": "Added to the book, from its own website and the Michelin Guide",
+     "changes": null
+    }
+   ]
+  },
+  {
+   "id": "benu",
+   "name": "Benu",
+   "kind": "Restaurant",
+   "cuisines": [
+    "Asian",
+    "Tasting Menu",
+    "Fine Dining"
+   ],
+   "neighborhood": "SoMa",
+   "address": "22 Hawthorne Street, San Francisco, CA 94105",
+   "lat": 37.785462,
+   "lon": -122.39908,
+   "hours": {
+    "mon": "Closed",
+    "tue": "Closed",
+    "wed": "5:00 PM to 8:00 PM",
+    "thu": "5:00 PM to 8:00 PM",
+    "fri": "5:00 PM to 8:30 PM",
+    "sat": "5:00 PM to 8:30 PM",
+    "sun": "Closed"
+   },
+   "hours_note": null,
+   "phone": "(415) 685-4860",
+   "website": "https://www.benusf.com/",
+   "email": "contact@benusf.com",
+   "book": {
+    "how": "SevenRooms",
+    "url": "https://www.sevenrooms.com/explore/benusf/reservations/create/search"
+   },
+   "price": "$$$$",
+   "michelin": "3",
+   "good_for": [
+    "Special Occasion",
+    "Celebration"
+   ],
+   "description": "Corey Lee's tasting-menu restaurant blends Asian technique and flavor with Californian ingredients in a calm, serene setting. It is one of the city's most serious special-occasion dinners, with a strict cancellation policy to keep in mind.",
+   "desk_note": "The hours are from the Michelin Guide; its own site shows none. Its reservations page says SevenRooms while its home page still links to Tock, so confirm which before quoting. A full refund needs 72 hours' notice.",
+   "sources": [
+    "https://www.benusf.com/",
+    "https://www.benusf.com/reservations",
+    "https://guide.michelin.com/us/en/california/san-francisco/restaurant/benu"
+   ],
+   "auto_updated": "2026-11-13",
+   "history": [
+    {
+     "at": "2026-11-13",
+     "action": "Added to the book, from its own website and the Michelin Guide",
+     "changes": null
+    }
+   ]
+  },
+  {
+   "id": "birdsong",
+   "name": "Birdsong",
+   "kind": "Restaurant",
+   "cuisines": [
+    "American",
+    "Tasting Menu",
+    "Contemporary"
+   ],
+   "neighborhood": "SoMa",
+   "address": "1085 Mission Street, San Francisco, CA 94103",
+   "lat": 37.779377,
+   "lon": -122.41034,
+   "hours": {
+    "mon": "Closed",
+    "tue": "5:30 PM to 8:00 PM",
+    "wed": "5:30 PM to 8:00 PM",
+    "thu": "5:30 PM to 8:00 PM",
+    "fri": "5:00 PM to 8:30 PM",
+    "sat": "5:00 PM to 8:30 PM",
+    "sun": "Closed"
+   },
+   "hours_note": "Dinner only, by tasting menu.",
+   "phone": "(415) 369-9161",
+   "website": "https://www.birdsongsf.com/",
+   "email": null,
+   "book": {
+    "how": "OpenTable",
+    "url": "https://www.opentable.com/r/birdsong-reservations-san-francisco"
+   },
+   "price": "$$$$",
+   "michelin": "2",
+   "good_for": [
+    "Special Occasion",
+    "Foodies"
+   ],
+   "description": "Chef Christopher Bleidorn's tasting menu centers on whole ingredients from small producers and a heritage-minded approach to cooking. It is a thoughtful dinner for guests who like to know where their food comes from.",
+   "desk_note": "The hours are from the Michelin Guide. Tables for the following month open on the 1st, for parties of one to four.",
+   "sources": [
+    "https://www.birdsongsf.com/",
+    "https://www.birdsongsf.com/info",
+    "https://guide.michelin.com/us/en/california/san-francisco/restaurant/birdsong"
+   ],
+   "auto_updated": "2026-11-13",
+   "history": [
+    {
+     "at": "2026-11-13",
+     "action": "Added to the book, from its own website and the Michelin Guide",
+     "changes": null
+    }
+   ]
+  },
+  {
+   "id": "californios",
+   "name": "Californios",
+   "kind": "Restaurant",
+   "cuisines": [
+    "Mexican",
+    "Tasting Menu",
+    "Fine Dining"
+   ],
+   "neighborhood": "SoMa",
+   "address": "355 11th Street, San Francisco, CA 94103",
+   "lat": 37.771282,
+   "lon": -122.413053,
+   "hours": {
+    "mon": "Closed",
+    "tue": "5:00 PM to 10:00 PM",
+    "wed": "5:00 PM to 10:00 PM",
+    "thu": "5:00 PM to 10:00 PM",
+    "fri": "5:00 PM to 10:00 PM",
+    "sat": "5:00 PM to 10:00 PM",
+    "sun": "Closed"
+   },
+   "hours_note": null,
+   "phone": "(415) 757-0994",
+   "website": "https://www.californiossf.com",
+   "email": null,
+   "book": {
+    "how": "OpenTable",
+    "url": null
+   },
+   "price": "$$$$",
+   "michelin": "3",
+   "good_for": [
+    "Special Occasion",
+    "Celebration"
+   ],
+   "description": "A modern Mexican tasting-menu restaurant from chef Val Cantu, newly promoted to three Michelin stars in 2026. It offers refined, ingredient-driven cooking and an elevated celebration dinner in SoMa.",
+   "desk_note": "Its own site could not be read, so the address, phone and hours are from the Michelin Guide. Confirm by phone before quoting, and ask how they are taking bookings.",
+   "sources": [
+    "https://www.californiossf.com",
+    "https://guide.michelin.com/us/en/california/san-francisco/restaurant/californios",
+    "https://www.opentable.com.au/r/californios-san-francisco"
+   ],
+   "auto_updated": "2026-11-13",
+   "history": [
+    {
+     "at": "2026-11-13",
+     "action": "Added to the book, from its own website and the Michelin Guide",
+     "changes": null
+    }
+   ]
+  },
+  {
+   "id": "hilda-and-jesse",
+   "name": "Hilda and Jesse",
+   "kind": "Restaurant",
+   "cuisines": [
+    "American",
+    "Brunch",
+    "Tasting Menu"
+   ],
+   "neighborhood": "North Beach",
+   "address": "701 Union Street, San Francisco, CA 94133",
+   "lat": 37.800075,
+   "lon": -122.411038,
+   "hours": {
+    "mon": "5:30 PM to 9:00 PM",
+    "tue": "Closed",
+    "wed": "Closed",
+    "thu": "5:30 PM to 9:00 PM",
+    "fri": "5:30 PM to 9:00 PM",
+    "sat": "10:00 AM to 2:00 PM",
+    "sun": "10:00 AM to 2:00 PM"
+   },
+   "hours_note": "Dinner Monday, Thursday and Friday; brunch Saturday and Sunday.",
+   "phone": "(415) 872-7023",
+   "website": "https://www.hildaandjessesf.com",
+   "email": "greetings@hildaandjessesf.com",
+   "book": {
+    "how": "OpenTable",
+    "url": "https://www.opentable.com/r/hilda-and-jesse-reservations-san-francisco"
+   },
+   "price": "$$$",
+   "michelin": "1",
+   "good_for": [
+    "Brunch",
+    "Date Night"
+   ],
+   "description": "A playful North Beach spot serving a five-course dinner menu and a weekend brunch with fine-dining technique. A relaxed choice for a starred meal, and one of the few that serves brunch.",
+   "desk_note": "Its site gives the days only; the clock times are from the Michelin Guide. Dinner is a set five-course menu.",
+   "sources": [
+    "https://www.hildaandjessesf.com",
+    "https://www.hildaandjessesf.com/reservations",
+    "https://guide.michelin.com/us/en/california/san-francisco/restaurant/hilda-and-jesse"
+   ],
+   "auto_updated": "2026-11-13",
+   "history": [
+    {
+     "at": "2026-11-13",
+     "action": "Added to the book, from its own website and the Michelin Guide",
+     "changes": null
+    }
+   ]
+  },
+  {
+   "id": "kiln",
+   "name": "Kiln",
+   "kind": "Restaurant",
+   "cuisines": [
+    "Contemporary",
+    "Tasting Menu",
+    "Nordic"
+   ],
+   "neighborhood": "Hayes Valley",
+   "address": "149 Fell Street, San Francisco, CA 94102",
+   "lat": 37.776008,
+   "lon": -122.420382,
+   "hours": {
+    "mon": "Closed",
+    "tue": "6:00 PM to 8:30 PM",
+    "wed": "6:00 PM to 8:30 PM",
+    "thu": "6:00 PM to 8:30 PM",
+    "fri": "5:00 PM to 8:30 PM",
+    "sat": "5:00 PM to 8:30 PM",
+    "sun": "Closed"
+   },
+   "hours_note": "Dinner only. No walk-ins.",
+   "phone": "(415) 982-9722",
+   "website": "https://www.kilnsf.com/",
+   "email": "concierge@kilnsf.com",
+   "book": {
+    "how": "Tock",
+    "url": "https://www.exploretock.com/kiln"
+   },
+   "price": "$$$$",
+   "michelin": "2",
+   "good_for": [
+    "Celebration",
+    "Special Occasion",
+    "Tasting Menu"
+   ],
+   "description": "A tasting-menu restaurant on Fell Street built around preservation techniques such as curing, drying and fermentation, with a Nordic lean. It suits a resident who wants a serious, chef-led dinner and is willing to plan ahead, since tables are released monthly.",
+   "desk_note": "Tables for the following month open at noon on the 1st. Same-day openings are by text to the restaurant.",
+   "sources": [
+    "https://www.kilnsf.com/",
+    "https://www.kilnsf.com/information",
+    "https://guide.michelin.com/us/en/california/san-francisco/restaurant/kiln-1210355",
+    "https://guide.michelin.com/us/en/california/san-francisco/restaurants/all-starred"
+   ],
+   "auto_updated": "2026-11-13",
+   "history": [
+    {
+     "at": "2026-11-13",
+     "action": "Added to the book, checked against its own website",
+     "changes": null
+    }
+   ]
+  },
+  {
+   "id": "restaurant-naides",
+   "name": "Restaurant Naides",
+   "kind": "Restaurant",
+   "cuisines": [
+    "Filipino",
+    "Contemporary",
+    "Tasting Menu"
+   ],
+   "neighborhood": "Lower Nob Hill",
+   "address": "708 Bush Street, San Francisco, CA 94108",
+   "lat": 37.79023,
+   "lon": -122.409129,
+   "hours": {
+    "mon": "Closed",
+    "tue": "Closed",
+    "wed": "Closed",
+    "thu": "5:30 PM to 8:30 PM",
+    "fri": "5:30 PM to 8:30 PM",
+    "sat": "5:30 PM to 8:30 PM",
+    "sun": "5:30 PM to 8:30 PM"
+   },
+   "hours_note": "Dinner only, by tasting menu.",
+   "phone": null,
+   "website": "https://www.restaurantnaides.com/",
+   "email": null,
+   "book": {
+    "how": "Tock",
+    "url": "https://www.exploretock.com/restaurant-naides-san-francisco/"
+   },
+   "price": "$$$$",
+   "michelin": "1",
+   "good_for": [
+    "Celebration",
+    "Tasting Menu",
+    "Special Occasion"
+   ],
+   "description": "A new Filipino fine-dining tasting menu that reads the cuisine through Californian ingredients, named for the chef's mother. A discerning resident would book it for a long, personal dinner that few other restaurants in the city are doing.",
+   "desk_note": "New this year, and its own site gives no hours or phone. The hours are from the Michelin Guide and other sites disagree, so confirm before quoting a time. Books on Tock.",
+   "sources": [
+    "https://www.restaurantnaides.com/",
+    "https://guide.michelin.com/us/en/california/san-francisco/restaurant/naides",
+    "https://guide.michelin.com/us/en/california/san-francisco/restaurants/all-starred"
+   ],
+   "auto_updated": "2026-11-13",
+   "history": [
+    {
+     "at": "2026-11-13",
+     "action": "Added to the book, from its own website and the Michelin Guide",
+     "changes": null
+    }
+   ]
+  },
+  {
+   "id": "nari",
+   "name": "Nari",
+   "kind": "Restaurant",
+   "cuisines": [
+    "Thai",
+    "Contemporary",
+    "Californian"
+   ],
+   "neighborhood": "Japantown",
+   "address": "1625 Post Street, San Francisco, CA 94115",
+   "lat": 37.785386,
+   "lon": -122.428624,
+   "hours": {
+    "mon": "5:30 PM to 9:00 PM",
+    "tue": "5:30 PM to 9:00 PM",
+    "wed": "5:30 PM to 9:00 PM",
+    "thu": "5:30 PM to 9:00 PM",
+    "fri": "5:30 PM to 9:30 PM",
+    "sat": "5:30 PM to 9:30 PM",
+    "sun": "5:30 PM to 9:00 PM"
+   },
+   "hours_note": "Dinner only, inside Hotel Kabuki. Valet parking is noted by Michelin.",
+   "phone": "(415) 868-6274",
+   "website": "https://www.narisf.com/",
+   "email": "info@narisf.com",
+   "book": {
+    "how": "Resy",
+    "url": "https://resy.com/cities/san-francisco-ca/venues/nari"
+   },
+   "price": "$$$",
+   "michelin": "1",
+   "good_for": [
+    "Date Night",
+    "Group Dinner",
+    "Celebration"
+   ],
+   "description": "A Thai-influenced dining room in Hotel Kabuki that brings Californian ingredients to dishes served family style with polish. An easy choice for a refined but relaxed group dinner.",
+   "desk_note": null,
+   "sources": [
+    "https://www.narisf.com/",
+    "https://www.narisf.com/reservations",
+    "https://guide.michelin.com/us/en/california/san-francisco/restaurant/nari",
+    "https://guide.michelin.com/us/en/california/san-francisco/restaurants/all-starred"
+   ],
+   "auto_updated": "2026-11-13",
+   "history": [
+    {
+     "at": "2026-11-13",
+     "action": "Added to the book, checked against its own website",
+     "changes": null
+    }
+   ]
+  },
+  {
+   "id": "nisei",
+   "name": "Nisei",
+   "kind": "Restaurant",
+   "cuisines": [
+    "Japanese",
+    "Contemporary",
+    "Tasting Menu"
+   ],
+   "neighborhood": "Russian Hill",
+   "address": "2316 Polk Street, San Francisco, CA 94109",
+   "lat": 37.798161,
+   "lon": -122.422004,
+   "hours": {
+    "mon": "Closed",
+    "tue": "Closed",
+    "wed": "5:00 PM to 9:00 PM",
+    "thu": "5:00 PM to 9:00 PM",
+    "fri": "5:00 PM to 9:00 PM",
+    "sat": "5:00 PM to 9:00 PM",
+    "sun": "5:00 PM to 9:00 PM"
+   },
+   "hours_note": "Dinner only, Wednesday to Sunday.",
+   "phone": "(415) 827-6898",
+   "website": "https://www.restaurantnisei.com/",
+   "email": "info@restaurantnisei.com",
+   "book": {
+    "how": "OpenTable",
+    "url": "https://www.opentable.com/r/nisei-san-francisco"
+   },
+   "price": "$$$$",
+   "michelin": "1",
+   "good_for": [
+    "Date Night",
+    "Celebration",
+    "Tasting Menu"
+   ],
+   "description": "A Japanese American tasting menu on Polk Street where the chef pairs traditional dishes with inventive ones, finishing with a wagashi sweets cart. It is a good pick for a resident who wants an intimate, thoughtful omakase-style evening.",
+   "desk_note": "Its site gives the days only; the clock times are from the Michelin Guide.",
+   "sources": [
+    "https://www.restaurantnisei.com/",
+    "https://guide.michelin.com/us/en/california/san-francisco/restaurant/nisei",
+    "https://guide.michelin.com/us/en/california/san-francisco/restaurants/all-starred"
+   ],
+   "auto_updated": "2026-11-13",
+   "history": [
+    {
+     "at": "2026-11-13",
+     "action": "Added to the book, from its own website and the Michelin Guide",
+     "changes": null
+    }
+   ]
+  },
+  {
+   "id": "the-progress",
+   "name": "The Progress",
+   "kind": "Restaurant",
+   "cuisines": [
+    "Californian",
+    "Nordic",
+    "Shared Plates"
+   ],
+   "neighborhood": "Fillmore",
+   "address": "1525 Fillmore Street, San Francisco, CA 94115",
+   "lat": 37.783663,
+   "lon": -122.43308,
+   "hours": {
+    "mon": "5:30 PM to 10:00 PM",
+    "tue": "5:30 PM to 10:00 PM",
+    "wed": "5:30 PM to 10:00 PM",
+    "thu": "5:30 PM to 10:00 PM",
+    "fri": "5:30 PM to 10:00 PM",
+    "sat": "5:30 PM to 10:00 PM",
+    "sun": "5:30 PM to 10:00 PM"
+   },
+   "hours_note": "Dinner daily.",
+   "phone": "(415) 673-1294",
+   "website": "https://theprogress-sf.com/",
+   "email": "info@theprogress-sf.com",
+   "book": {
+    "how": "OpenTable",
+    "url": "https://www.opentable.com/r/the-progress-san-francisco-1"
+   },
+   "price": "$$$",
+   "michelin": "1",
+   "good_for": [
+    "Group Dinner",
+    "Date Night",
+    "Celebration"
+   ],
+   "description": "A two-story room near the Fillmore Auditorium serving colorful, shareable plates that blend Northern California produce with a Nordic sensibility. It works well for a resident hosting friends or family who want a lively but polished dinner.",
+   "desk_note": "Closed Nov 26, Dec 18, Dec 24 and 25, Jan 1 and Jan 12. Online booking takes up to six; larger parties call.",
+   "sources": [
+    "https://theprogress-sf.com/",
+    "https://guide.michelin.com/us/en/california/san-francisco/restaurant/the-progress",
+    "https://guide.michelin.com/us/en/california/san-francisco/restaurants/all-starred"
+   ],
+   "auto_updated": "2026-11-13",
+   "history": [
+    {
+     "at": "2026-11-13",
+     "action": "Added to the book, checked against its own website",
+     "changes": null
+    }
+   ]
+  },
+  {
+   "id": "sons-daughters",
+   "name": "Sons & Daughters",
+   "kind": "Restaurant",
+   "cuisines": [
+    "Contemporary",
+    "American",
+    "Tasting Menu"
+   ],
+   "neighborhood": "Mission",
+   "address": "2875 18th Street, San Francisco, CA 94110",
+   "lat": 37.761668,
+   "lon": -122.410753,
+   "hours": {
+    "mon": "Closed",
+    "tue": "5:30 PM to 8:30 PM",
+    "wed": "5:30 PM to 8:30 PM",
+    "thu": "5:30 PM to 8:30 PM",
+    "fri": "5:30 PM to 8:30 PM",
+    "sat": "5:30 PM to 8:30 PM",
+    "sun": "Closed"
+   },
+   "hours_note": "Tasting menu only; allow three to four hours.",
+   "phone": "(415) 994-7933",
+   "website": "https://www.sonsanddaughterssf.com/",
+   "email": "info@sonsanddaughterssf.com",
+   "book": {
+    "how": "OpenTable",
+    "url": "https://www.opentable.com/r/sons-and-daughters"
+   },
+   "price": "$$$$",
+   "michelin": "2",
+   "good_for": [
+    "Celebration",
+    "Special Occasion"
+   ],
+   "description": "A Mission District tasting-menu restaurant that holds two Michelin stars and serves a long, carefully paced contemporary dinner. A discerning resident would book it for a true splurge evening, planned well ahead.",
+   "desk_note": "Now on 18th Street in the Mission; older guides show Bush Street. Reservations are final and non-refundable, though they can pass to another guest.",
+   "sources": [
+    "https://guide.michelin.com/us/en/california/san-francisco/restaurant/sons-daughters",
+    "https://www.sonsanddaughterssf.com/",
+    "https://www.sonsanddaughterssf.com/faqs",
+    "https://guide.michelin.com/us/en/california/san-francisco/restaurants/3-stars-michelin/2-stars-michelin/1-star-michelin"
+   ],
+   "auto_updated": "2026-11-13",
+   "history": [
+    {
+     "at": "2026-11-13",
+     "action": "Added to the book, checked against its own website",
+     "changes": null
+    }
+   ]
+  },
+  {
+   "id": "sorrel",
+   "name": "Sorrel",
+   "kind": "Restaurant",
+   "cuisines": [
+    "Italian",
+    "Contemporary",
+    "Californian"
+   ],
+   "neighborhood": "Presidio Heights",
+   "address": "3228 Sacramento Street, San Francisco, CA 94115",
+   "lat": 37.788586,
+   "lon": -122.446202,
+   "hours": {
+    "mon": "Closed",
+    "tue": "Closed",
+    "wed": "5:00 PM to 9:00 PM",
+    "thu": "5:00 PM to 9:00 PM",
+    "fri": "5:00 PM to 9:00 PM",
+    "sat": "5:00 PM to 9:00 PM",
+    "sun": "5:00 PM to 9:00 PM"
+   },
+   "hours_note": "Dinner only. Street parking is free after 6 PM per the restaurant.",
+   "phone": "(415) 525-3765",
+   "website": "https://www.sorrelrestaurant.com/",
+   "email": "info@sorrelrestaurant.com",
+   "book": {
+    "how": "SevenRooms",
+    "url": null
+   },
+   "price": "$$$$",
+   "michelin": "1",
+   "good_for": [
+    "Date Night",
+    "Special Occasion"
+   ],
+   "description": "A neighborhood dinner restaurant cooking Italian-leaning contemporary food with a Californian eye, recognized with a Michelin star. It suits a polished evening in a quiet part of the city.",
+   "desk_note": "Its own site says SevenRooms, the Michelin Guide says Tock. Confirm how they are booking.",
+   "sources": [
+    "https://www.sorrelrestaurant.com/",
+    "https://www.sorrelrestaurant.com/location/sorrel/",
+    "https://guide.michelin.com/us/en/california/san-francisco/restaurant/sorrel",
+    "https://guide.michelin.com/us/en/california/san-francisco/restaurants/3-stars-michelin/2-stars-michelin/1-star-michelin"
+   ],
+   "auto_updated": "2026-11-13",
+   "history": [
+    {
+     "at": "2026-11-13",
+     "action": "Added to the book, checked against its own website",
+     "changes": null
+    }
+   ]
+  },
+  {
+   "id": "ssal",
+   "name": "Ssal",
+   "kind": "Restaurant",
+   "cuisines": [
+    "Korean",
+    "Contemporary",
+    "Tasting Menu"
+   ],
+   "neighborhood": "Russian Hill",
+   "address": "2226 Polk Street, San Francisco, CA 94109",
+   "lat": 37.797323,
+   "lon": -122.421932,
+   "hours": {
+    "mon": "Closed",
+    "tue": "Closed",
+    "wed": "5:30 PM to 8:30 PM",
+    "thu": "5:30 PM to 8:30 PM",
+    "fri": "5:30 PM to 8:30 PM",
+    "sat": "5:30 PM to 8:30 PM",
+    "sun": "5:30 PM to 8:30 PM"
+   },
+   "hours_note": "Dinner only, Wednesday through Sunday.",
+   "phone": "(415) 814-2704",
+   "website": "https://ssalsf.com",
+   "email": "info@ssalsf.com",
+   "book": {
+    "how": "OpenTable",
+    "url": null
+   },
+   "price": "$$$$",
+   "michelin": "1",
+   "good_for": [
+    "Date Night",
+    "Special Occasion"
+   ],
+   "description": "A Polk Street Korean tasting-menu restaurant, starred by Michelin, that reinterprets Korean flavors in a refined, reservation-only format. A resident would choose it for a quiet, special dinner that is a change from the usual fine-dining styles.",
+   "desk_note": "The phone number is from the Michelin Guide. Its site says it closes at 8:30 PM, Michelin says 9:00 PM: confirm by phone. Deposits are non-refundable, and infants are not seated in the dining room.",
+   "sources": [
+    "https://ssalsf.com",
+    "https://ssalsf.com/contact",
+    "https://ssalsf.com/information",
+    "https://guide.michelin.com/us/en/california/san-francisco/restaurant/ssal",
+    "https://guide.michelin.com/us/en/california/san-francisco/restaurants/3-stars-michelin/2-stars-michelin/1-star-michelin"
+   ],
+   "auto_updated": "2026-11-13",
+   "history": [
+    {
+     "at": "2026-11-13",
+     "action": "Added to the book, from its own website and the Michelin Guide",
+     "changes": null
+    }
+   ]
+  },
+  {
+   "id": "state-bird-provisions",
+   "name": "State Bird Provisions",
+   "kind": "Restaurant",
+   "cuisines": [
+    "Californian",
+    "Contemporary",
+    "Small Plates"
+   ],
+   "neighborhood": "Fillmore",
+   "address": "1529 Fillmore Street, San Francisco, CA 94115",
+   "lat": 37.783706,
+   "lon": -122.432948,
+   "hours": {
+    "mon": "5:30 PM to 10:00 PM",
+    "tue": "5:30 PM to 10:00 PM",
+    "wed": "5:30 PM to 10:00 PM",
+    "thu": "5:30 PM to 10:00 PM",
+    "fri": "5:30 PM to 10:30 PM",
+    "sat": "5:30 PM to 10:30 PM",
+    "sun": "5:30 PM to 10:00 PM"
+   },
+   "hours_note": "Dinner only.",
+   "phone": "(415) 795-1272",
+   "website": "https://www.statebirdsf.com/",
+   "email": "info@statebirdsf.com",
+   "book": {
+    "how": "OpenTable",
+    "url": "https://www.opentable.com/r/state-bird-provisions-san-francisco"
+   },
+   "price": "$$$",
+   "michelin": "1",
+   "good_for": [
+    "Group Dinner",
+    "Casual Night Out"
+   ],
+   "description": "A lively Fillmore restaurant known for its dim-sum style service, where small plates arrive on carts and trays alongside a menu to order from. A resident would go for a relaxed, inventive Californian dinner with friends or visiting family.",
+   "desk_note": "Several closures ahead: Nov 17, 21 and 26, Dec 3, 9 to 11, 17, 24 and 25, and Jan 1. Check the date before booking. Michelin shows Friday closed; its own site shows Friday open.",
+   "sources": [
+    "https://www.statebirdsf.com/",
+    "https://guide.michelin.com/us/en/california/san-francisco/restaurant/state-bird-provisions",
+    "https://guide.michelin.com/us/en/california/san-francisco/restaurants/3-stars-michelin/2-stars-michelin/1-star-michelin"
+   ],
+   "auto_updated": "2026-11-13",
+   "history": [
+    {
+     "at": "2026-11-13",
+     "action": "Added to the book, checked against its own website",
+     "changes": null
+    }
+   ]
+  },
+  {
+   "id": "wolfsbane",
+   "name": "Wolfsbane",
+   "kind": "Restaurant",
+   "cuisines": [
+    "Californian",
+    "Contemporary",
+    "Tasting Menu"
+   ],
+   "neighborhood": "Dogpatch",
+   "address": "2495 3rd Street, San Francisco, CA 94107",
+   "lat": 37.758087,
+   "lon": -122.388511,
+   "hours": {
+    "mon": "Closed",
+    "tue": "5:30 PM to 10:00 PM",
+    "wed": "5:30 PM to 10:00 PM",
+    "thu": "5:30 PM to 10:00 PM",
+    "fri": "5:30 PM to 10:00 PM",
+    "sat": "5:30 PM to 10:00 PM",
+    "sun": "Closed"
+   },
+   "hours_note": "Walk-ins accepted nightly at the bar table for the a la carte bar menu.",
+   "phone": "(415) 961-4017",
+   "website": "https://wolfsbanesf.com/",
+   "email": "info@wolfsbanesf.com",
+   "book": {
+    "how": "OpenTable",
+    "url": "https://www.opentable.com/r/wolfsbane-san-francisco"
+   },
+   "price": "$$$$",
+   "michelin": "1",
+   "good_for": [
+    "Celebration",
+    "Special Occasion"
+   ],
+   "description": "A new Dogpatch restaurant from the team behind Lord Stanley, offering a multi-course Californian tasting menu in a small dining room. It earned a first Michelin star in the 2026 guide, which makes it a current choice for a special dinner.",
+   "desk_note": null,
+   "sources": [
+    "https://wolfsbanesf.com/",
+    "https://guide.michelin.com/us/en/california/san-francisco/restaurant/wolfsbane",
+    "https://guide.michelin.com/us/en/california/san-francisco/restaurants/3-stars-michelin/2-stars-michelin/1-star-michelin"
+   ],
+   "auto_updated": "2026-11-13",
+   "history": [
+    {
+     "at": "2026-11-13",
+     "action": "Added to the book, checked against its own website",
+     "changes": null
+    }
+   ]
   }
  ],
  "auto_updated": "2026-11-13"

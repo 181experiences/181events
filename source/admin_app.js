@@ -3723,9 +3723,13 @@
 
   function gdTokens(q) { return gdPlain(q).replace(/[^a-z0-9$]+/g, " ").split(" ").filter(t => t && !GD_STOP.has(t)); }
   function gdFind() {
-    const tokens = gdTokens(gd.q);
+    // "three stars", "2 star", "one michelin star" ask for an exact count
+    let stars = null;
+    const asked = gdPlain(gd.q).replace(/\b(one|two|three|1|2|3)[\s-]*(michelin[\s-]*)?stars?\b/, (m, n) => { stars = { one: "1", two: "2", three: "3" }[n] || n; return " "; });
+    const tokens = gdTokens(asked);
     const word = (p, t) => p.hay.includes(" " + t) || (t.length > 3 && t.endsWith("s") && p.hay.includes(" " + t.slice(0, -1)));
     return gd.places.filter(p => {
+      if (stars && p.michelin !== stars) return false;
       if (gd.flags.has("michelin") && !p.michelin) return false;
       if (gd.flags.has("open") && !gdStatus(p).open) return false;
       if (gd.flags.has("walk") && p.mi > 0.8) return false;
