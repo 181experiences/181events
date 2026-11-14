@@ -1,5 +1,5 @@
 import { json, noDb, adminRole, forbidden, ensureResidentTables, accessEmail, logChange } from "../../_lib.js";
-import { noteView } from "../guide.js";
+import { noteView, FIELDS, LIMIT, clip, spot } from "../guide.js";
 
 // PUT /api/guide/<place id> -> one of four acts on one place, each signed and
 // written to the change log (kind 'guide', label = the place id). Every tier
@@ -18,11 +18,11 @@ import { noteView } from "../guide.js";
 //       and remembers the file's new value as seen.
 //   { action: "connection", connected, contact, phone, note }
 //       The house's own line: do we know someone there.
-const FIELDS = ["name", "cuisines", "neighborhood", "address", "phone", "website", "email", "book_how", "book_url",
-  "price", "michelin", "description", "hours_note", "desk_note",
-  "hours_mon", "hours_tue", "hours_wed", "hours_thu", "hours_fri", "hours_sat", "hours_sun"];
-const LIMIT = { description: 700, desk_note: 400, hours_note: 300, book_url: 400, website: 300 };
-const clip = (v, n) => String(v == null ? "" : v).trim().slice(0, n);
+// latlon is the dot on the map, "lat,lon": moved by hand when an address
+// changes, and an edit like any other.
+//
+// DELETE /api/guide/<place id> -> takes a place the team added out of the
+// book. Only "t-" places; one from the file leaves through the weekly check.
 
 export async function onRequestPut({ request, env, params }) {
   const err = noDb(env); if (err) return err;
@@ -54,6 +54,7 @@ export async function onRequestPut({ request, env, params }) {
     for (const f of FIELDS) {
       const e = b.edits && b.edits[f]; if (!e) continue;
       const v = clip(e.v, LIMIT[f] || 200), base = clip(e.base, LIMIT[f] || 200);
+      if (f === "latlon" && !spot(v)) continue;
       const before = row.edits[f] ? row.edits[f].v : base;
       if (v === before) continue;
       if (v === base) delete row.edits[f]; else row.edits[f] = { v, base };
@@ -82,4 +83,21 @@ export async function onRequestPut({ request, env, params }) {
       row.verified_at, row.verified_by, JSON.stringify(row.edits)).run();
   for (const [action, changes] of logs) await logChange(env, request, "guide", null, id, action, changes || {});
   return json({ ok: true, note: row, logged: logs.map(([action, changes]) => ({ place: id, at, who: by, action, changes: changes || null })) });
+}
+
+export async function onRequestDelete({ request, env, params }) {
+  const err = noDb(env); if (err) return err;
+  const role = await adminRole(request, env);
+  if (!role) return forbidden();
+  const id = String(params.id || "").toLowerCase();
+  await ensureResidentTables(env);
+  const have = /^t-[a-z0-9-]{1,80}$/.test(id)
+    ? await env.DB.prepare("SELECT place FROM guide_added WHERE place_id = ? AND removed IS NULL").bind(id).first() : null;
+  if (!have) return json({ error: "Only a place the team added can be removed here." }, 400);
+  const by = (await accessEmail(request)) || env.DEV_ROLE || role;
+  const at = new Date().toISOString();
+  let name = id; try { name = JSON.parse(have.place).name || id; } catch (e) {}
+  await env.DB.prepare("UPDATE guide_added SET removed = ?, removed_by = ? WHERE place_id = ?").bind(at, by, id).run();
+  await logChange(env, request, "guide", null, id, "Removed from the book", { name: [name, ""] });
+  return json({ ok: true });
 }

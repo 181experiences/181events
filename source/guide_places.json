@@ -45,11 +45,27 @@
    "auto_updated": "2026-11-13",
    "history": [
     {
+     "at": "2026-11-14",
+     "action": "Crowd ratings added, read from Google and from Yelp",
+     "changes": null
+    },
+    {
      "at": "2026-11-13",
      "action": "Added to the book, checked against its own website",
      "changes": null
     }
-   ]
+   ],
+   "ratings": {
+    "google": {
+     "score": 4.1,
+     "count": 1767
+    },
+    "yelp": {
+     "score": 3.4,
+     "count": 1900
+    },
+    "at": "2026-11-14"
+   }
   },
   {
    "id": "joujou",
@@ -97,11 +113,27 @@
    "auto_updated": "2026-11-13",
    "history": [
     {
+     "at": "2026-11-14",
+     "action": "Crowd ratings added, read from Google and from Yelp",
+     "changes": null
+    },
+    {
      "at": "2026-11-13",
      "action": "Added to the book, checked against its own website",
      "changes": null
     }
-   ]
+   ],
+   "ratings": {
+    "google": {
+     "score": 4.2,
+     "count": 138
+    },
+    "yelp": {
+     "score": 4.0,
+     "count": 69
+    },
+    "at": "2026-11-14"
+   }
   },
   {
    "id": "verjus",
@@ -149,11 +181,27 @@
    "auto_updated": "2026-11-13",
    "history": [
     {
+     "at": "2026-11-14",
+     "action": "Crowd ratings added, read from Google and from Yelp",
+     "changes": null
+    },
+    {
      "at": "2026-11-13",
      "action": "Added to the book, checked against its own website",
      "changes": null
     }
-   ]
+   ],
+   "ratings": {
+    "google": {
+     "score": 4.4,
+     "count": 318
+    },
+    "yelp": {
+     "score": 4.0,
+     "count": 232
+    },
+    "at": "2026-11-14"
+   }
   },
   {
    "id": "bon-delire",
@@ -200,11 +248,27 @@
    "auto_updated": "2026-11-13",
    "history": [
     {
+     "at": "2026-11-14",
+     "action": "Crowd ratings added, read from Google and from Yelp",
+     "changes": null
+    },
+    {
      "at": "2026-11-13",
      "action": "Added to the book, checked against its own website",
      "changes": null
     }
-   ]
+   ],
+   "ratings": {
+    "google": {
+     "score": 4.3,
+     "count": 211
+    },
+    "yelp": {
+     "score": 4.1,
+     "count": 191
+    },
+    "at": "2026-11-14"
+   }
   },
   {
    "id": "atelier-crenn",
@@ -246,11 +310,27 @@
    "auto_updated": "2026-11-13",
    "history": [
     {
+     "at": "2026-11-14",
+     "action": "Crowd ratings added, read from Google and from Yelp",
+     "changes": null
+    },
+    {
      "at": "2026-11-13",
      "action": "Added to the book, checked against its own website",
      "changes": null
     }
-   ]
+   ],
+   "ratings": {
+    "google": {
+     "score": 4.6,
+     "count": 799
+    },
+    "yelp": {
+     "score": 4.3,
+     "count": 981
+    },
+    "at": "2026-11-14"
+   }
   },
   {
    "id": "chapeau",
@@ -296,11 +376,27 @@
    "auto_updated": "2026-11-13",
    "history": [
     {
+     "at": "2026-11-14",
+     "action": "Crowd ratings added, read from Google and from Yelp",
+     "changes": null
+    },
+    {
      "at": "2026-11-13",
      "action": "Added to the book, checked against its own website",
      "changes": null
     }
-   ]
+   ],
+   "ratings": {
+    "google": {
+     "score": 4.7,
+     "count": 793
+    },
+    "yelp": {
+     "score": 4.3,
+     "count": 3000
+    },
+    "at": "2026-11-14"
+   }
   },
   {
    "id": "routier",
@@ -346,11 +442,27 @@
    "auto_updated": "2026-11-13",
    "history": [
     {
+     "at": "2026-11-14",
+     "action": "Crowd ratings added, read from Google and from Yelp",
+     "changes": null
+    },
+    {
      "at": "2026-11-13",
      "action": "Added to the book, checked against its own website",
      "changes": null
     }
-   ]
+   ],
+   "ratings": {
+    "google": {
+     "score": 4.6,
+     "count": 350
+    },
+    "yelp": {
+     "score": 4.5,
+     "count": 248
+    },
+    "at": "2026-11-14"
+   }
   },
   {
    "id": "boulevard",
@@ -398,11 +510,27 @@
    "auto_updated": "2026-11-13",
    "history": [
     {
+     "at": "2026-11-14",
+     "action": "Crowd ratings added, read from Google and from Yelp",
+     "changes": null
+    },
+    {
      "at": "2026-11-13",
      "action": "Added to the book, checked against its own website",
      "changes": null
     }
-   ]
+   ],
+   "ratings": {
+    "google": {
+     "score": 4.6,
+     "count": 1737
+    },
+    "yelp": {
+     "score": 4.1,
+     "count": 3000
+    },
+    "at": "2026-11-14"
+   }
   },
   {
    "id": "angler",
@@ -450,11 +578,27 @@
    "auto_updated": "2026-11-13",
    "history": [
     {
+     "at": "2026-11-14",
+     "action": "Crowd ratings added, read from Google and from Yelp",
+     "changes": null
+    },
+    {
      "at": "2026-11-13",
      "action": "Added to the book, checked against its own website",
      "changes": null
     }
-   ]
+   ],
+   "ratings": {
+    "google": {
+     "score": 4.5,
+     "count": 1216
+    },
+    "yelp": {
+     "score": 3.9,
+     "count": 814
+    },
+    "at": "2026-11-14"
+   }
   },
   {
    "id": "quince",
@@ -503,11 +647,27 @@
    "auto_updated": "2026-11-13",
    "history": [
     {
+     "at": "2026-11-14",
+     "action": "Crowd ratings added, read from Google and from Yelp",
+     "changes": null
+    },
+    {
      "at": "2026-11-13",
      "action": "Added to the book, checked against its own website",
      "changes": null
     }
-   ]
+   ],
+   "ratings": {
+    "google": {
+     "score": 4.6,
+     "count": 810
+    },
+    "yelp": {
+     "score": 4.2,
+     "count": 1700
+    },
+    "at": "2026-11-14"
+   }
   },
   {
    "id": "saison",
@@ -557,11 +717,27 @@
    "auto_updated": "2026-11-13",
    "history": [
     {
+     "at": "2026-11-14",
+     "action": "Crowd ratings added, read from Google and from Yelp",
+     "changes": null
+    },
+    {
      "at": "2026-11-13",
      "action": "Added to the book, checked against its own website",
      "changes": null
     }
-   ]
+   ],
+   "ratings": {
+    "google": {
+     "score": 4.6,
+     "count": 659
+    },
+    "yelp": {
+     "score": 4.3,
+     "count": 748
+    },
+    "at": "2026-11-14"
+   }
   },
   {
    "id": "lazy-bear",
@@ -608,11 +784,27 @@
    "auto_updated": "2026-11-13",
    "history": [
     {
+     "at": "2026-11-14",
+     "action": "Crowd ratings added, read from Google and from Yelp",
+     "changes": null
+    },
+    {
      "at": "2026-11-13",
      "action": "Added to the book, checked against its own website",
      "changes": null
     }
-   ]
+   ],
+   "ratings": {
+    "google": {
+     "score": 4.7,
+     "count": 1218
+    },
+    "yelp": {
+     "score": 4.4,
+     "count": 911
+    },
+    "at": "2026-11-14"
+   }
   },
   {
    "id": "cotogna",
@@ -659,11 +851,27 @@
    "auto_updated": "2026-11-13",
    "history": [
     {
+     "at": "2026-11-14",
+     "action": "Crowd ratings added, read from Google and from Yelp",
+     "changes": null
+    },
+    {
      "at": "2026-11-13",
      "action": "Added to the book, checked against its own website",
      "changes": null
     }
-   ]
+   ],
+   "ratings": {
+    "google": {
+     "score": 4.5,
+     "count": 2300
+    },
+    "yelp": {
+     "score": 4.1,
+     "count": 2300
+    },
+    "at": "2026-11-14"
+   }
   },
   {
    "id": "perbacco",
@@ -709,11 +917,27 @@
    "auto_updated": "2026-11-13",
    "history": [
     {
+     "at": "2026-11-14",
+     "action": "Crowd ratings added, read from Google and from Yelp",
+     "changes": null
+    },
+    {
      "at": "2026-11-13",
      "action": "Added to the book, checked against its own website",
      "changes": null
     }
-   ]
+   ],
+   "ratings": {
+    "google": {
+     "score": 4.5,
+     "count": 1067
+    },
+    "yelp": {
+     "score": 4.0,
+     "count": 2300
+    },
+    "at": "2026-11-14"
+   }
   },
   {
    "id": "delfina",
@@ -758,11 +982,27 @@
    "auto_updated": "2026-11-13",
    "history": [
     {
+     "at": "2026-11-14",
+     "action": "Crowd ratings added, read from Google and from Yelp",
+     "changes": null
+    },
+    {
      "at": "2026-11-13",
      "action": "Added to the book, checked against its own website",
      "changes": null
     }
-   ]
+   ],
+   "ratings": {
+    "google": {
+     "score": 4.4,
+     "count": 404
+    },
+    "yelp": {
+     "score": 4.0,
+     "count": 2300
+    },
+    "at": "2026-11-14"
+   }
   },
   {
    "id": "a16",
@@ -809,11 +1049,27 @@
    "auto_updated": "2026-11-13",
    "history": [
     {
+     "at": "2026-11-14",
+     "action": "Crowd ratings added, read from Google and from Yelp",
+     "changes": null
+    },
+    {
      "at": "2026-11-13",
      "action": "Added to the book, checked against its own website",
      "changes": null
     }
-   ]
+   ],
+   "ratings": {
+    "google": {
+     "score": 4.2,
+     "count": 1423
+    },
+    "yelp": {
+     "score": 3.5,
+     "count": 2400
+    },
+    "at": "2026-11-14"
+   }
   },
   {
    "id": "epic-steak",
@@ -859,11 +1115,27 @@
    "auto_updated": "2026-11-13",
    "history": [
     {
+     "at": "2026-11-14",
+     "action": "Crowd ratings added, read from Google and from Yelp",
+     "changes": null
+    },
+    {
      "at": "2026-11-13",
      "action": "Added to the book, checked against its own website",
      "changes": null
     }
-   ]
+   ],
+   "ratings": {
+    "google": {
+     "score": 4.4,
+     "count": 3110
+    },
+    "yelp": {
+     "score": 3.7,
+     "count": 3100
+    },
+    "at": "2026-11-14"
+   }
   },
   {
    "id": "alexander-s-steakhouse",
@@ -909,11 +1181,27 @@
    "auto_updated": "2026-11-13",
    "history": [
     {
+     "at": "2026-11-14",
+     "action": "Crowd ratings added, read from Google and from Yelp",
+     "changes": null
+    },
+    {
      "at": "2026-11-13",
      "action": "Added to the book, checked against its own website",
      "changes": null
     }
-   ]
+   ],
+   "ratings": {
+    "google": {
+     "score": 4.5,
+     "count": 1111
+    },
+    "yelp": {
+     "score": 4.1,
+     "count": 2000
+    },
+    "at": "2026-11-14"
+   }
   },
   {
    "id": "niku-steakhouse",
@@ -960,11 +1248,27 @@
    "auto_updated": "2026-11-13",
    "history": [
     {
+     "at": "2026-11-14",
+     "action": "Crowd ratings added, read from Google and from Yelp",
+     "changes": null
+    },
+    {
      "at": "2026-11-13",
      "action": "Added to the book, checked against its own website",
      "changes": null
     }
-   ]
+   ],
+   "ratings": {
+    "google": {
+     "score": 4.5,
+     "count": 913
+    },
+    "yelp": {
+     "score": 4.3,
+     "count": 1000
+    },
+    "at": "2026-11-14"
+   }
   },
   {
    "id": "waterbar",
@@ -1010,11 +1314,27 @@
    "auto_updated": "2026-11-13",
    "history": [
     {
+     "at": "2026-11-14",
+     "action": "Crowd ratings added, read from Google and from Yelp",
+     "changes": null
+    },
+    {
      "at": "2026-11-13",
      "action": "Added to the book, checked against its own website",
      "changes": null
     }
-   ]
+   ],
+   "ratings": {
+    "google": {
+     "score": 4.5,
+     "count": 4627
+    },
+    "yelp": {
+     "score": 3.8,
+     "count": 4200
+    },
+    "at": "2026-11-14"
+   }
   },
   {
    "id": "tadich-grill",
@@ -1060,11 +1380,27 @@
    "auto_updated": "2026-11-13",
    "history": [
     {
+     "at": "2026-11-14",
+     "action": "Crowd ratings added, read from Google and from Yelp",
+     "changes": null
+    },
+    {
      "at": "2026-11-13",
      "action": "Added to the book, checked against its own website",
      "changes": null
     }
-   ]
+   ],
+   "ratings": {
+    "google": {
+     "score": 4.5,
+     "count": 3255
+    },
+    "yelp": {
+     "score": 4.0,
+     "count": 3200
+    },
+    "at": "2026-11-14"
+   }
   },
   {
    "id": "hog-island-oyster-co",
@@ -1110,11 +1446,27 @@
    "auto_updated": "2026-11-13",
    "history": [
     {
+     "at": "2026-11-14",
+     "action": "Crowd ratings added, read from Google and from Yelp",
+     "changes": null
+    },
+    {
      "at": "2026-11-13",
      "action": "Added to the book, checked against its own website",
      "changes": null
     }
-   ]
+   ],
+   "ratings": {
+    "google": {
+     "score": 4.6,
+     "count": 4252
+    },
+    "yelp": {
+     "score": 4.4,
+     "count": 7800
+    },
+    "at": "2026-11-14"
+   }
   },
   {
    "id": "wayfare-tavern",
@@ -1161,11 +1513,27 @@
    "auto_updated": "2026-11-13",
    "history": [
     {
+     "at": "2026-11-14",
+     "action": "Crowd ratings added, read from Google and from Yelp",
+     "changes": null
+    },
+    {
      "at": "2026-11-13",
      "action": "Added to the book, checked against its own website",
      "changes": null
     }
-   ]
+   ],
+   "ratings": {
+    "google": {
+     "score": 4.5,
+     "count": 3128
+    },
+    "yelp": {
+     "score": 3.9,
+     "count": 4800
+    },
+    "at": "2026-11-14"
+   }
   },
   {
    "id": "zuni-cafe",
@@ -1212,11 +1580,27 @@
    "auto_updated": "2026-11-13",
    "history": [
     {
+     "at": "2026-11-14",
+     "action": "Crowd ratings added, read from Google and from Yelp",
+     "changes": null
+    },
+    {
      "at": "2026-11-13",
      "action": "Added to the book, checked against its own website",
      "changes": null
     }
-   ]
+   ],
+   "ratings": {
+    "google": {
+     "score": 4.3,
+     "count": 2676
+    },
+    "yelp": {
+     "score": 3.7,
+     "count": 3300
+    },
+    "at": "2026-11-14"
+   }
   },
   {
    "id": "akikos",
@@ -1264,11 +1648,27 @@
    "auto_updated": "2026-11-13",
    "history": [
     {
+     "at": "2026-11-14",
+     "action": "Crowd ratings added, read from Google and from Yelp",
+     "changes": null
+    },
+    {
      "at": "2026-11-13",
      "action": "Added to the book, checked against its own website",
      "changes": null
     }
-   ]
+   ],
+   "ratings": {
+    "google": {
+     "score": 4.4,
+     "count": 824
+    },
+    "yelp": {
+     "score": 4.0,
+     "count": 2100
+    },
+    "at": "2026-11-14"
+   }
   },
   {
    "id": "pabu-izakaya",
@@ -1313,11 +1713,27 @@
    "auto_updated": "2026-11-13",
    "history": [
     {
+     "at": "2026-11-14",
+     "action": "Crowd ratings added, read from Google and from Yelp",
+     "changes": null
+    },
+    {
      "at": "2026-11-13",
      "action": "Added to the book, checked against its own website",
      "changes": null
     }
-   ]
+   ],
+   "ratings": {
+    "google": {
+     "score": 4.4,
+     "count": 1657
+    },
+    "yelp": {
+     "score": 4.2,
+     "count": 1700
+    },
+    "at": "2026-11-14"
+   }
   },
   {
    "id": "kusakabe",
@@ -1365,6 +1781,11 @@
    "auto_updated": "2026-11-13",
    "history": [
     {
+     "at": "2026-11-14",
+     "action": "Crowd ratings added, read from Google and from Yelp",
+     "changes": null
+    },
+    {
      "at": "2026-11-13T22:44:02-08:00",
      "action": "Correction",
      "changes": {
@@ -1379,7 +1800,18 @@
      "action": "Added to the book, checked against its own website",
      "changes": null
     }
-   ]
+   ],
+   "ratings": {
+    "google": {
+     "score": 4.7,
+     "count": 806
+    },
+    "yelp": {
+     "score": 4.6,
+     "count": 1200
+    },
+    "at": "2026-11-14"
+   }
   },
   {
    "id": "yank-sing",
@@ -1426,6 +1858,11 @@
    "auto_updated": "2026-11-13",
    "history": [
     {
+     "at": "2026-11-14",
+     "action": "Crowd ratings added, read from Google and from Yelp",
+     "changes": null
+    },
+    {
      "at": "2026-11-13T22:44:02-08:00",
      "action": "Correction",
      "changes": {
@@ -1440,7 +1877,18 @@
      "action": "Added to the book, checked against its own website",
      "changes": null
     }
-   ]
+   ],
+   "ratings": {
+    "google": {
+     "score": 4.3,
+     "count": 1951
+    },
+    "yelp": {
+     "score": 3.6,
+     "count": 1900
+    },
+    "at": "2026-11-14"
+   }
   },
   {
    "id": "mister-jiu-s",
@@ -1487,11 +1935,27 @@
    "auto_updated": "2026-11-13",
    "history": [
     {
+     "at": "2026-11-14",
+     "action": "Crowd ratings added, read from Google and from Yelp",
+     "changes": null
+    },
+    {
      "at": "2026-11-13",
      "action": "Added to the book, checked against its own website",
      "changes": null
     }
-   ]
+   ],
+   "ratings": {
+    "google": {
+     "score": 4.3,
+     "count": 1236
+    },
+    "yelp": {
+     "score": 3.7,
+     "count": 1200
+    },
+    "at": "2026-11-14"
+   }
   },
   {
    "id": "kin-khao",
@@ -1536,11 +2000,27 @@
    "auto_updated": "2026-11-13",
    "history": [
     {
+     "at": "2026-11-14",
+     "action": "Crowd ratings added, read from Google and from Yelp",
+     "changes": null
+    },
+    {
      "at": "2026-11-13",
      "action": "Added to the book, checked against its own website",
      "changes": null
     }
-   ]
+   ],
+   "ratings": {
+    "google": {
+     "score": 4.2,
+     "count": 2233
+    },
+    "yelp": {
+     "score": 3.8,
+     "count": 2800
+    },
+    "at": "2026-11-14"
+   }
   },
   {
    "id": "san-ho-won",
@@ -1586,11 +2066,27 @@
    "auto_updated": "2026-11-13",
    "history": [
     {
+     "at": "2026-11-14",
+     "action": "Crowd ratings added, read from Google and from Yelp",
+     "changes": null
+    },
+    {
      "at": "2026-11-13",
      "action": "Added to the book, checked against its own website",
      "changes": null
     }
-   ]
+   ],
+   "ratings": {
+    "google": {
+     "score": 4.6,
+     "count": 771
+    },
+    "yelp": {
+     "score": 4.6,
+     "count": 972
+    },
+    "at": "2026-11-14"
+   }
   },
   {
    "id": "la-mar-cocina-peruana",
@@ -1636,11 +2132,27 @@
    "auto_updated": "2026-11-13",
    "history": [
     {
+     "at": "2026-11-14",
+     "action": "Crowd ratings added, read from Google and from Yelp",
+     "changes": null
+    },
+    {
      "at": "2026-11-13",
      "action": "Added to the book, checked against its own website",
      "changes": null
     }
-   ]
+   ],
+   "ratings": {
+    "google": {
+     "score": 4.5,
+     "count": 5074
+    },
+    "yelp": {
+     "score": 3.9,
+     "count": 5100
+    },
+    "at": "2026-11-14"
+   }
   },
   {
    "id": "coqueta",
@@ -1686,11 +2198,27 @@
    "auto_updated": "2026-11-13",
    "history": [
     {
+     "at": "2026-11-14",
+     "action": "Crowd ratings added, read from Google and from Yelp",
+     "changes": null
+    },
+    {
      "at": "2026-11-13",
      "action": "Added to the book, checked against its own website",
      "changes": null
     }
-   ]
+   ],
+   "ratings": {
+    "google": {
+     "score": 4.4,
+     "count": 2910
+    },
+    "yelp": {
+     "score": 4.0,
+     "count": 2800
+    },
+    "at": "2026-11-14"
+   }
   },
   {
    "id": "rooh",
@@ -1736,6 +2264,11 @@
    "auto_updated": "2026-11-13",
    "history": [
     {
+     "at": "2026-11-14",
+     "action": "Crowd ratings added, read from Google and from Yelp",
+     "changes": null
+    },
+    {
      "at": "2026-11-13T22:44:02-08:00",
      "action": "Correction",
      "changes": {
@@ -1750,7 +2283,18 @@
      "action": "Added to the book, checked against its own website",
      "changes": null
     }
-   ]
+   ],
+   "ratings": {
+    "google": {
+     "score": 4.2,
+     "count": 2058
+    },
+    "yelp": {
+     "score": 4.0,
+     "count": 1400
+    },
+    "at": "2026-11-14"
+   }
   },
   {
    "id": "barcha",
@@ -1794,11 +2338,27 @@
    "auto_updated": "2026-11-13",
    "history": [
     {
+     "at": "2026-11-14",
+     "action": "Crowd ratings added, read from Google and from Yelp",
+     "changes": null
+    },
+    {
      "at": "2026-11-13",
      "action": "Added to the book, checked against its own website",
      "changes": null
     }
-   ]
+   ],
+   "ratings": {
+    "google": {
+     "score": 4.4,
+     "count": 1518
+    },
+    "yelp": {
+     "score": 4.1,
+     "count": 950
+    },
+    "at": "2026-11-14"
+   }
   },
   {
    "id": "dalida",
@@ -1845,6 +2405,11 @@
    "auto_updated": "2026-11-13",
    "history": [
     {
+     "at": "2026-11-14",
+     "action": "Crowd ratings added, read from Google and from Yelp",
+     "changes": null
+    },
+    {
      "at": "2026-11-13T22:44:02-08:00",
      "action": "Correction",
      "changes": {
@@ -1859,7 +2424,18 @@
      "action": "Added to the book, checked against its own website",
      "changes": null
     }
-   ]
+   ],
+   "ratings": {
+    "google": {
+     "score": 4.5,
+     "count": 853
+    },
+    "yelp": {
+     "score": 4.4,
+     "count": 632
+    },
+    "at": "2026-11-14"
+   }
   },
   {
    "id": "7-adams",
@@ -1907,11 +2483,27 @@
    "auto_updated": "2026-11-13",
    "history": [
     {
+     "at": "2026-11-14",
+     "action": "Crowd ratings added, read from Google and from Yelp",
+     "changes": null
+    },
+    {
      "at": "2026-11-13",
      "action": "Added to the book, checked against its own website",
      "changes": null
     }
-   ]
+   ],
+   "ratings": {
+    "google": {
+     "score": 4.4,
+     "count": 509
+    },
+    "yelp": {
+     "score": 4.2,
+     "count": 363
+    },
+    "at": "2026-11-14"
+   }
   },
   {
    "id": "acquerello",
@@ -1959,11 +2551,27 @@
    "auto_updated": "2026-11-13",
    "history": [
     {
+     "at": "2026-11-14",
+     "action": "Crowd ratings added, read from Google and from Yelp",
+     "changes": null
+    },
+    {
      "at": "2026-11-13",
      "action": "Added to the book, from its own website and the Michelin Guide",
      "changes": null
     }
-   ]
+   ],
+   "ratings": {
+    "google": {
+     "score": 4.6,
+     "count": 676
+    },
+    "yelp": {
+     "score": 4.4,
+     "count": 1400
+    },
+    "at": "2026-11-14"
+   }
   },
   {
    "id": "benu",
@@ -2011,11 +2619,27 @@
    "auto_updated": "2026-11-13",
    "history": [
     {
+     "at": "2026-11-14",
+     "action": "Crowd ratings added, read from Google and from Yelp",
+     "changes": null
+    },
+    {
      "at": "2026-11-13",
      "action": "Added to the book, from its own website and the Michelin Guide",
      "changes": null
     }
-   ]
+   ],
+   "ratings": {
+    "google": {
+     "score": 4.6,
+     "count": 753
+    },
+    "yelp": {
+     "score": 4.3,
+     "count": 1300
+    },
+    "at": "2026-11-14"
+   }
   },
   {
    "id": "birdsong",
@@ -2063,11 +2687,27 @@
    "auto_updated": "2026-11-13",
    "history": [
     {
+     "at": "2026-11-14",
+     "action": "Crowd ratings added, read from Google and from Yelp",
+     "changes": null
+    },
+    {
      "at": "2026-11-13",
      "action": "Added to the book, from its own website and the Michelin Guide",
      "changes": null
     }
-   ]
+   ],
+   "ratings": {
+    "google": {
+     "score": 4.6,
+     "count": 494
+    },
+    "yelp": {
+     "score": 4.4,
+     "count": 506
+    },
+    "at": "2026-11-14"
+   }
   },
   {
    "id": "californios",
@@ -2115,11 +2755,27 @@
    "auto_updated": "2026-11-13",
    "history": [
     {
+     "at": "2026-11-14",
+     "action": "Crowd ratings added, read from Google and from Yelp",
+     "changes": null
+    },
+    {
      "at": "2026-11-13",
      "action": "Added to the book, from its own website and the Michelin Guide",
      "changes": null
     }
-   ]
+   ],
+   "ratings": {
+    "google": {
+     "score": 4.7,
+     "count": 608
+    },
+    "yelp": {
+     "score": 4.6,
+     "count": 505
+    },
+    "at": "2026-11-14"
+   }
   },
   {
    "id": "hilda-and-jesse",
@@ -2167,11 +2823,27 @@
    "auto_updated": "2026-11-13",
    "history": [
     {
+     "at": "2026-11-14",
+     "action": "Crowd ratings added, read from Google and from Yelp",
+     "changes": null
+    },
+    {
      "at": "2026-11-13",
      "action": "Added to the book, from its own website and the Michelin Guide",
      "changes": null
     }
-   ]
+   ],
+   "ratings": {
+    "google": {
+     "score": 4.0,
+     "count": 572
+    },
+    "yelp": {
+     "score": 4.0,
+     "count": 212
+    },
+    "at": "2026-11-14"
+   }
   },
   {
    "id": "kiln",
@@ -2221,11 +2893,27 @@
    "auto_updated": "2026-11-13",
    "history": [
     {
+     "at": "2026-11-14",
+     "action": "Crowd ratings added, read from Google and from Yelp",
+     "changes": null
+    },
+    {
      "at": "2026-11-13",
      "action": "Added to the book, checked against its own website",
      "changes": null
     }
-   ]
+   ],
+   "ratings": {
+    "google": {
+     "score": 4.7,
+     "count": 171
+    },
+    "yelp": {
+     "score": 4.6,
+     "count": 130
+    },
+    "at": "2026-11-14"
+   }
   },
   {
    "id": "restaurant-naides",
@@ -2274,11 +2962,27 @@
    "auto_updated": "2026-11-13",
    "history": [
     {
+     "at": "2026-11-14",
+     "action": "Crowd ratings added, read from Google and from Yelp",
+     "changes": null
+    },
+    {
      "at": "2026-11-13",
      "action": "Added to the book, from its own website and the Michelin Guide",
      "changes": null
     }
-   ]
+   ],
+   "ratings": {
+    "google": {
+     "score": 5.0,
+     "count": 51
+    },
+    "yelp": {
+     "score": 4.9,
+     "count": 31
+    },
+    "at": "2026-11-14"
+   }
   },
   {
    "id": "nari",
@@ -2328,11 +3032,27 @@
    "auto_updated": "2026-11-13",
    "history": [
     {
+     "at": "2026-11-14",
+     "action": "Crowd ratings added, read from Google and from Yelp",
+     "changes": null
+    },
+    {
      "at": "2026-11-13",
      "action": "Added to the book, checked against its own website",
      "changes": null
     }
-   ]
+   ],
+   "ratings": {
+    "google": {
+     "score": 4.2,
+     "count": 614
+    },
+    "yelp": {
+     "score": 4.0,
+     "count": 645
+    },
+    "at": "2026-11-14"
+   }
   },
   {
    "id": "nisei",
@@ -2381,11 +3101,27 @@
    "auto_updated": "2026-11-13",
    "history": [
     {
+     "at": "2026-11-14",
+     "action": "Crowd ratings added, read from Google and from Yelp",
+     "changes": null
+    },
+    {
      "at": "2026-11-13",
      "action": "Added to the book, from its own website and the Michelin Guide",
      "changes": null
     }
-   ]
+   ],
+   "ratings": {
+    "google": {
+     "score": 4.6,
+     "count": 247
+    },
+    "yelp": {
+     "score": 4.4,
+     "count": 193
+    },
+    "at": "2026-11-14"
+   }
   },
   {
    "id": "the-progress",
@@ -2434,11 +3170,27 @@
    "auto_updated": "2026-11-13",
    "history": [
     {
+     "at": "2026-11-14",
+     "action": "Crowd ratings added, read from Google and from Yelp",
+     "changes": null
+    },
+    {
      "at": "2026-11-13",
      "action": "Added to the book, checked against its own website",
      "changes": null
     }
-   ]
+   ],
+   "ratings": {
+    "google": {
+     "score": 4.6,
+     "count": 1369
+    },
+    "yelp": {
+     "score": 4.1,
+     "count": 1400
+    },
+    "at": "2026-11-14"
+   }
   },
   {
    "id": "sons-daughters",
@@ -2487,11 +3239,27 @@
    "auto_updated": "2026-11-13",
    "history": [
     {
+     "at": "2026-11-14",
+     "action": "Crowd ratings added, read from Google and from Yelp",
+     "changes": null
+    },
+    {
      "at": "2026-11-13",
      "action": "Added to the book, checked against its own website",
      "changes": null
     }
-   ]
+   ],
+   "ratings": {
+    "google": {
+     "score": 4.6,
+     "count": 408
+    },
+    "yelp": {
+     "score": 4.2,
+     "count": 839
+    },
+    "at": "2026-11-14"
+   }
   },
   {
    "id": "sorrel",
@@ -2540,11 +3308,27 @@
    "auto_updated": "2026-11-13",
    "history": [
     {
+     "at": "2026-11-14",
+     "action": "Crowd ratings added, read from Google and from Yelp",
+     "changes": null
+    },
+    {
      "at": "2026-11-13",
      "action": "Added to the book, checked against its own website",
      "changes": null
     }
-   ]
+   ],
+   "ratings": {
+    "google": {
+     "score": 4.5,
+     "count": 546
+    },
+    "yelp": {
+     "score": 4.1,
+     "count": 416
+    },
+    "at": "2026-11-14"
+   }
   },
   {
    "id": "ssal",
@@ -2594,11 +3378,27 @@
    "auto_updated": "2026-11-13",
    "history": [
     {
+     "at": "2026-11-14",
+     "action": "Crowd ratings added, read from Google and from Yelp",
+     "changes": null
+    },
+    {
      "at": "2026-11-13",
      "action": "Added to the book, from its own website and the Michelin Guide",
      "changes": null
     }
-   ]
+   ],
+   "ratings": {
+    "google": {
+     "score": 4.7,
+     "count": 236
+    },
+    "yelp": {
+     "score": 4.5,
+     "count": 297
+    },
+    "at": "2026-11-14"
+   }
   },
   {
    "id": "state-bird-provisions",
@@ -2646,11 +3446,27 @@
    "auto_updated": "2026-11-13",
    "history": [
     {
+     "at": "2026-11-14",
+     "action": "Crowd ratings added, read from Google and from Yelp",
+     "changes": null
+    },
+    {
      "at": "2026-11-13",
      "action": "Added to the book, checked against its own website",
      "changes": null
     }
-   ]
+   ],
+   "ratings": {
+    "google": {
+     "score": 4.5,
+     "count": 2534
+    },
+    "yelp": {
+     "score": 4.2,
+     "count": 3600
+    },
+    "at": "2026-11-14"
+   }
   },
   {
    "id": "wolfsbane",
@@ -2698,11 +3514,27 @@
    "auto_updated": "2026-11-13",
    "history": [
     {
+     "at": "2026-11-14",
+     "action": "Crowd ratings added, read from Google and from Yelp",
+     "changes": null
+    },
+    {
      "at": "2026-11-13",
      "action": "Added to the book, checked against its own website",
      "changes": null
     }
-   ]
+   ],
+   "ratings": {
+    "google": {
+     "score": 4.5,
+     "count": 42
+    },
+    "yelp": {
+     "score": 4.7,
+     "count": 38
+    },
+    "at": "2026-11-14"
+   }
   },
   {
    "id": "anchor-oyster-bar",
@@ -2749,11 +3581,27 @@
    "auto_updated": "2026-11-13",
    "history": [
     {
+     "at": "2026-11-14",
+     "action": "Crowd ratings added, read from Google and from Yelp",
+     "changes": null
+    },
+    {
      "at": "2026-11-13",
      "action": "Added to the book, from the Michelin Guide; its own website could not be read",
      "changes": null
     }
-   ]
+   ],
+   "ratings": {
+    "google": {
+     "score": 4.7,
+     "count": 1309
+    },
+    "yelp": {
+     "score": 4.5,
+     "count": 1800
+    },
+    "at": "2026-11-14"
+   }
   },
   {
    "id": "bansang",
@@ -2802,11 +3650,27 @@
    "auto_updated": "2026-11-13",
    "history": [
     {
+     "at": "2026-11-14",
+     "action": "Crowd ratings added, read from Google and from Yelp",
+     "changes": null
+    },
+    {
      "at": "2026-11-13",
      "action": "Added to the book, checked against its own website",
      "changes": null
     }
-   ]
+   ],
+   "ratings": {
+    "google": {
+     "score": 4.3,
+     "count": 384
+    },
+    "yelp": {
+     "score": 4.1,
+     "count": 626
+    },
+    "at": "2026-11-14"
+   }
   },
   {
    "id": "dumpling-home",
@@ -2853,11 +3717,27 @@
    "auto_updated": "2026-11-13",
    "history": [
     {
+     "at": "2026-11-14",
+     "action": "Crowd ratings added, read from Google and from Yelp",
+     "changes": null
+    },
+    {
      "at": "2026-11-13",
      "action": "Added to the book, from the Michelin Guide; its own website could not be read",
      "changes": null
     }
-   ]
+   ],
+   "ratings": {
+    "google": {
+     "score": 4.5,
+     "count": 1743
+    },
+    "yelp": {
+     "score": 4.5,
+     "count": 2200
+    },
+    "at": "2026-11-14"
+   }
   },
   {
    "id": "good-good-culture-club",
@@ -2908,11 +3788,27 @@
    "auto_updated": "2026-11-13",
    "history": [
     {
+     "at": "2026-11-14",
+     "action": "Crowd ratings added, read from Google and from Yelp",
+     "changes": null
+    },
+    {
      "at": "2026-11-13",
      "action": "Added to the book, checked against its own website",
      "changes": null
     }
-   ]
+   ],
+   "ratings": {
+    "google": {
+     "score": 4.4,
+     "count": 492
+    },
+    "yelp": {
+     "score": 4.2,
+     "count": 579
+    },
+    "at": "2026-11-14"
+   }
   },
   {
    "id": "izakaya-rintaro",
@@ -2961,11 +3857,27 @@
    "auto_updated": "2026-11-13",
    "history": [
     {
+     "at": "2026-11-14",
+     "action": "Crowd ratings added, read from Google and from Yelp",
+     "changes": null
+    },
+    {
      "at": "2026-11-13",
      "action": "Added to the book, from the Michelin Guide; its own website could not be read",
      "changes": null
     }
-   ]
+   ],
+   "ratings": {
+    "google": {
+     "score": 4.5,
+     "count": 1444
+    },
+    "yelp": {
+     "score": 4.2,
+     "count": 1200
+    },
+    "at": "2026-11-14"
+   }
   },
   {
    "id": "kitchen-istanbul",
@@ -3014,11 +3926,27 @@
    "auto_updated": "2026-11-13",
    "history": [
     {
+     "at": "2026-11-14",
+     "action": "Crowd ratings added, read from Google and from Yelp",
+     "changes": null
+    },
+    {
      "at": "2026-11-13",
      "action": "Added to the book, checked against its own website",
      "changes": null
     }
-   ]
+   ],
+   "ratings": {
+    "google": {
+     "score": 4.5,
+     "count": 489
+    },
+    "yelp": {
+     "score": 4.4,
+     "count": 602
+    },
+    "at": "2026-11-14"
+   }
   },
   {
    "id": "okane",
@@ -3067,11 +3995,27 @@
    "auto_updated": "2026-11-13",
    "history": [
     {
+     "at": "2026-11-14",
+     "action": "Crowd ratings added, read from Google and from Yelp",
+     "changes": null
+    },
+    {
      "at": "2026-11-13",
      "action": "Added to the book, checked against its own website",
      "changes": null
     }
-   ]
+   ],
+   "ratings": {
+    "google": {
+     "score": 4.3,
+     "count": 409
+    },
+    "yelp": {
+     "score": 4.0,
+     "count": 536
+    },
+    "at": "2026-11-14"
+   }
   },
   {
    "id": "outerlands",
@@ -3118,11 +4062,27 @@
    "auto_updated": "2026-11-13",
    "history": [
     {
+     "at": "2026-11-14",
+     "action": "Crowd ratings added, read from Google and from Yelp",
+     "changes": null
+    },
+    {
      "at": "2026-11-13",
      "action": "Added to the book, checked against its own website",
      "changes": null
     }
-   ]
+   ],
+   "ratings": {
+    "google": {
+     "score": 4.3,
+     "count": 1741
+    },
+    "yelp": {
+     "score": 3.8,
+     "count": 2600
+    },
+    "at": "2026-11-14"
+   }
   },
   {
    "id": "trestle",
@@ -3169,11 +4129,27 @@
    "auto_updated": "2026-11-13",
    "history": [
     {
+     "at": "2026-11-14",
+     "action": "Crowd ratings added, read from Google and from Yelp",
+     "changes": null
+    },
+    {
      "at": "2026-11-13",
      "action": "Added to the book, checked against its own website",
      "changes": null
     }
-   ]
+   ],
+   "ratings": {
+    "google": {
+     "score": 4.6,
+     "count": 1424
+    },
+    "yelp": {
+     "score": 4.4,
+     "count": 1400
+    },
+    "at": "2026-11-14"
+   }
   },
   {
    "id": "z-y",
@@ -3219,11 +4195,27 @@
    "auto_updated": "2026-11-13",
    "history": [
     {
+     "at": "2026-11-14",
+     "action": "Crowd ratings added, read from Google and from Yelp",
+     "changes": null
+    },
+    {
      "at": "2026-11-13",
      "action": "Added to the book, checked against its own website",
      "changes": null
     }
-   ]
+   ],
+   "ratings": {
+    "google": {
+     "score": 4.1,
+     "count": 3880
+    },
+    "yelp": {
+     "score": 3.8,
+     "count": 3000
+    },
+    "at": "2026-11-14"
+   }
   }
  ],
  "auto_updated": "2026-11-13"

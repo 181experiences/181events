@@ -429,6 +429,11 @@ HTML = f'''<!DOCTYPE html>
   .gdnote{{font-size:12.5px;background:#fbf3df;border:1px solid #ecdcae;color:#5e4a12;border-radius:3px;padding:7px 10px;margin:0 0 10px;line-height:1.45}}
   .gdfoot{{display:flex;gap:8px;align-items:center;flex-wrap:wrap;border-top:1px solid var(--line-2);padding-top:10px}}
   .gdprov{{font-size:12px;color:var(--ink-soft);line-height:1.6;margin:2px 0 10px}}
+  .gdrate{{font-size:11.5px;color:var(--stone);align-self:center;margin-left:4px;letter-spacing:.01em}}
+  .gdpos{{display:flex;align-items:center;gap:12px;flex-wrap:wrap;font-size:13px;color:var(--ink-soft)}}
+  .gdmap.placing{{border-color:#e8b23a;box-shadow:0 0 0 2px #e8b23a}}
+  .gdmap.placing .gdsvg,.gdmap.placing .gddot{{cursor:crosshair}}
+  #gd-count .acts{{display:inline-flex;gap:8px;flex-wrap:wrap}}
   .gdprov b{{color:var(--ink);font-weight:600}}
   .gdnote.alt{{background:#eef1f6;border-color:#cfd6e2;color:#2f3b52}}
   .gdnote .acts{{display:flex;gap:8px;margin-top:7px}}
@@ -1177,7 +1182,7 @@ HTML = f'''<!DOCTYPE html>
 
 <!-- ================= THE BLACK BOOK ================= -->
 <section class="screen" id="scr-guide"><div class="wrap">
-  <div class="phead" style="display:flex;align-items:center;justify-content:flex-start;gap:10px"><h1>The Black Book</h1>{info("The front desk&rsquo;s own city guide, for the moment a resident calls down asking where to eat. Type what they asked for; every card answers with the address, today&rsquo;s hours, the phone, how to book, how far it is from the tower, and what kind of place it is. Choose a card and the map moves in on the streets between the tower and that place, with their names; the buttons in its corner zoom by hand, and the square shows the whole map again. Email to a resident writes the note in Outlook; Print makes a clean page of one place or the whole list. Our connection is the team&rsquo;s own line, saved here by anyone on the team and never sent to a resident. Every card carries two dates. Information automatically updated on is the weekly check of each restaurant&rsquo;s own website. Location information last verified on is a person on the team who phoned the place: press Mark verified by phone after the call, and your name goes beside the date. Edit corrects anything on a card, and History lists every change to a listing, by whom, and when.")}</div>
+  <div class="phead" style="display:flex;align-items:center;justify-content:flex-start;gap:10px"><h1>The Black Book</h1>{info("The front desk&rsquo;s own city guide, for the moment a resident calls down asking where to eat. Type what they asked for; every card answers with the address, today&rsquo;s hours, the phone, how to book, how far it is from the tower, and what kind of place it is. Choose a card and the map moves in on the streets between the tower and that place, with their names; the buttons in its corner zoom by hand, and the square shows the whole map again. Email to a resident writes the note in Outlook; Print makes a clean page of one place or the whole list. Our connection is the team&rsquo;s own line, saved here by anyone on the team and never sent to a resident. Every card carries two dates. Information automatically updated on is the weekly check of each restaurant&rsquo;s own website. Location information last verified on is a person on the team who phoned the place: press Mark verified by phone after the call, and your name goes beside the date. Edit corrects anything on a card, and History lists every change to a listing, by whom, and when. Add a place puts a restaurant of the team&rsquo;s own into the book: fill in the card, choose Set on the map, and click the spot where it stands. The small grey line of Google and Yelp scores is for reference only; the weekly check refreshes it.")}</div>
   <div class="psub" id="gd-sub">Loading&hellip;</div>
   <div class="gd">
     <div class="gdmap">

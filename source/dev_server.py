@@ -974,7 +974,8 @@ class H(SimpleHTTPRequestHandler):
         if p.path == "/api/guide":
             log = [dict(place=h["label"], at=h["at"], who=h["who"], action=h["action"], changes=h.get("changes"))
                    for h in reversed(load_store("changelog", [])) if h["kind"] == "guide"][:2000]
-            return self._json({"notes": load_store("guide", {}), "log": log})
+            return self._json({"notes": load_store("guide", {}), "log": log,
+                               "added": [a["place"] for a in load_store("guide_added", []) if not a.get("removed")]})
         if p.path == "/api/feeds":
             if self._role() == "desk": return self._json({"error": "forbidden"}, 403)
             since = (datetime.date.today() - datetime.timedelta(days=13)).isoformat()
@@ -1261,6 +1262,42 @@ class H(SimpleHTTPRequestHandler):
         ip = self.client_address[0]
 
         # ---- admin api
+        # The Black Book: the team adds a place. Mirrors functions/api/guide.js.
+        if p.path == "/api/guide":
+            b = self._body_json(); limit = dict(description=700, desk_note=400, hours_note=300, book_url=400, website=300)
+            days = "mon tue wed thu fri sat sun".split()
+            names = ["name", "cuisines", "neighborhood", "address", "phone", "website", "email", "book_how", "book_url",
+                     "price", "michelin", "description", "hours_note", "desk_note", "latlon"] + ["hours_" + d for d in days]
+            f = {k: str((b.get("fields") or {}).get(k) or "").strip()[:limit.get(k, 200)] for k in names}
+            if not f["name"]: return self._json({"error": "A place needs a name."}, 400)
+            if not f["address"]: return self._json({"error": "A place needs an address."}, 400)
+            m = re.fullmatch(r"\s*(-?\d{1,3}(?:\.\d+)?)\s*,\s*(-?\d{1,3}(?:\.\d+)?)\s*", f["latlon"])
+            if not m or not (37.2 < float(m[1]) < 38.2 and -123.2 < float(m[2]) < -121.8):
+                return self._json({"error": "Set the place on the map first."}, 400)
+            by, at = f"{self._role()}@local.dev", now_iso()
+            rows = load_store("guide_added", [])
+            slug = "t-" + (re.sub(r"[^a-z0-9]+", "-", f["name"].lower()).strip("-")[:60] or "place")
+            pid, n = slug, 2
+            while any(a["place"]["id"] == pid for a in rows): pid, n = f"{slug}-{n}", n + 1
+            place = dict(id=pid, name=f["name"], kind="Restaurant", team=True, added_at=at, added_by=by,
+                cuisines=[c.strip() for c in f["cuisines"].split(",") if c.strip()], neighborhood=f["neighborhood"],
+                address=f["address"], lat=round(float(m[1]), 6), lon=round(float(m[2]), 6),
+                hours={d: (f["hours_" + d] or None) for d in days} if any(f["hours_" + d] for d in days) else None,
+                hours_note=f["hours_note"] or None, phone=f["phone"] or None, website=f["website"] or None, email=f["email"] or None,
+                book=dict(how=f["book_how"] or None, url=f["book_url"] or None), price=f["price"] or None, michelin=f["michelin"] or None,
+                good_for=[], description=f["description"], desk_note=f["desk_note"] or None)
+            rows.append(dict(place=place)); save_store("guide_added", rows)
+            changes = {k: ["", v] for k, v in f.items() if v and k != "latlon"}
+            log_change(self._role(), "guide", None, pid, "Added by the team", changes)
+            logged = [dict(place=pid, at=at, who=by, action="Added by the team", changes=changes)]
+            note = None
+            if b.get("verify"):
+                notes = load_store("guide", {})
+                note = dict(connected=False, contact="", phone="", note="", updated="", updated_by="", verified_at=at, verified_by=by, edits={})
+                notes[pid] = note; save_store("guide", notes)
+                log_change(self._role(), "guide", None, pid, "Verified by phone", None)
+                logged.append(dict(place=pid, at=at, who=by, action="Verified by phone", changes=None))
+            return self._json({"ok": True, "place": place, "note": note, "logged": logged}, 201)
         if p.path == "/api/events":
             if self._role() == "desk": return self._json({"error": "forbidden"}, 403)
             events = load_events(); body = self._body_json()
@@ -1704,7 +1741,7 @@ class H(SimpleHTTPRequestHandler):
             if not re.fullmatch(r"[a-z0-9-]{1,80}", pid): return self._json({"error": "Unknown place."}, 400)
             b = self._body_json()
             fields = ["name", "cuisines", "neighborhood", "address", "phone", "website", "email", "book_how", "book_url",
-                      "price", "michelin", "description", "hours_note", "desk_note"] + ["hours_" + d for d in "mon tue wed thu fri sat sun".split()]
+                      "price", "michelin", "description", "hours_note", "desk_note", "latlon"] + ["hours_" + d for d in "mon tue wed thu fri sat sun".split()]
             limit = dict(description=700, desk_note=400, hours_note=300, book_url=400, website=300)
             clip = lambda v, n: str("" if v is None else v).strip()[:n]
             by, at = f"{self._role()}@local.dev", now_iso()
@@ -1728,6 +1765,7 @@ class H(SimpleHTTPRequestHandler):
                     e = (b.get("edits") or {}).get(f)
                     if not e: continue
                     v, base = clip(e.get("v"), limit.get(f, 200)), clip(e.get("base"), limit.get(f, 200))
+                    if f == "latlon" and not re.fullmatch(r"-?\d{1,3}\.\d+,-?\d{1,3}\.\d+", v): continue
                     before = row["edits"][f]["v"] if f in row["edits"] else base
                     if v == before: continue
                     if v == base: row["edits"].pop(f, None)
@@ -2055,6 +2093,16 @@ class H(SimpleHTTPRequestHandler):
     def do_DELETE(self):
         p = urlparse(self.path)
         parts = p.path.split("/")
+        # The Black Book: a place the team added leaves the book; the row stays.
+        if p.path.startswith("/api/guide/"):
+            pid = p.path.rsplit("/", 1)[1].lower()
+            rows = load_store("guide_added", [])
+            row = next((a for a in rows if a["place"]["id"] == pid and not a.get("removed")), None)
+            if not row: return self._json({"error": "Only a place the team added can be removed here."}, 400)
+            row["removed"] = now_iso(); row["removed_by"] = f"{self._role()}@local.dev"
+            save_store("guide_added", rows)
+            log_change(self._role(), "guide", None, pid, "Removed from the book", {"name": [row["place"]["name"], ""]})
+            return self._json({"ok": True})
         if p.path.startswith("/api/assets/") and len(parts) == 5 and parts[4] in ASSET_KINDS:
             fp = os.path.join(ASSET_DIR, f"{parts[3]}__{parts[4]}")
             if os.path.exists(fp): os.remove(fp)

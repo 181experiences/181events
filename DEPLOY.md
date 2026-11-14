@@ -276,9 +276,33 @@ can say when it last spoke:
 - **The house**: our connection there (a name, a number, a note), same table.
 
 Every write goes through `PUT /api/guide/<place id>` (actions `edit`,
-`verify`, `resolve`, `connection`) and lands in `change_log` with kind
+`verify`, `resolve`, `connection`), `POST /api/guide` (a place added) or
+`DELETE /api/guide/<place id>` (a team place removed), and lands in `change_log` with kind
 `guide`. A listing's History merges those rows with the file's own `history`,
 so it reads as one record: who or System, the date and time, and what changed.
+
+**Places the team adds.** Add a place (beside the count, and offered when a
+search finds nothing) opens the same form as Edit, empty. A place needs a name,
+an address, and a dot on the map: choose Set on the map and click where it
+stands. `POST /api/guide` stores the whole record in the table `guide_added`,
+shaped like an entry of the file, with an id that starts `t-`. From then on it
+is corrected, verified and connected like any other place; its card reads
+"Added by the team on, by" where a file place reads "Information automatically
+updated on". The weekly check does not cover it: the team keeps it current
+until it is folded into the file. Remove from the book (inside Edit, team
+places only) is `DELETE /api/guide/<id>`: the row is stamped, not deleted.
+
+**The dot.** Every place's position is the field `latlon` ("lat,lon"). Move
+the dot in Edit is an edit like any other, logged as "the dot was moved". No
+address is ever sent to a geocoder; the click on our own drawing is the
+position.
+
+**Crowd ratings.** Each file place carries `ratings`: Google's and Yelp's
+score and review count, and the date read. They show as one small grey line
+on the card and one line in the email and the printout. Only the two sites'
+own pages count as a source (Google's results panel or Maps page, Yelp's own
+listing); a number from an aggregator is never entered. The team cannot edit
+them; the weekly check refreshes them.
 
 Applying a weekly check: copy its `guide_places.proposed.json` over
 `source/guide_places.json`, rebuild, commit, and push on the owner's word.

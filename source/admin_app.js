@@ -3598,6 +3598,8 @@
   //              field, and the stamp of whoever phoned to verify the listing
   //              ("Location information last verified on, by")
   //   the house  our connection there
+  // The team can also add a place of its own: a whole record kept beside the
+  // file's, set on the map by a click, and corrected like any other.
   // Every change by anyone, the system included, is in the listing's History.
   // The map is our own two-tone drawing, never a map service: the tower in
   // red at the center, and whichever place is under the hand lit in gold.
@@ -3614,18 +3616,21 @@
     ["address", "Address"], ...GD_WEEK.map(([k, n]) => ["hours_" + k, n + " hours"]), ["hours_note", "Hours note"],
     ["phone", "Phone"], ["website", "Website"], ["email", "Email"], ["book_how", "Reservations"], ["book_url", "Booking link"],
     ["description", "Description"], ["desk_note", "Before you quote it"]];
-  const GD_LABEL = { ...Object.fromEntries(GD_FIELDS), connection: "Our connection", connection_note: "Connection note" };
+  const GD_LABEL = { ...Object.fromEntries(GD_FIELDS), latlon: "Map position", connection: "Our connection", connection_note: "Connection note" };
+  // The dot on the map travels as "lat,lon" text, so moving it is an edit like any other.
+  const gdSpot = s => { const m = /^(-?\d+(?:\.\d+)?),(-?\d+(?:\.\d+)?)$/.exec(String(s || "").trim()); return m ? { lat: Number(m[1]), lon: Number(m[2]) } : null; };
   function gdFlat(p) {
     const b = p.book || {};
     const f = { name: p.name || "", cuisines: (p.cuisines || []).join(", "), neighborhood: p.neighborhood || "", price: p.price || "",
       michelin: p.michelin || "", address: p.address || "", hours_note: p.hours_note || "", phone: p.phone || "", website: p.website || "",
-      email: p.email || "", book_how: b.how || "", book_url: b.url || "", description: p.description || "", desk_note: p.desk_note || "" };
+      email: p.email || "", book_how: b.how || "", book_url: b.url || "", description: p.description || "", desk_note: p.desk_note || "",
+      latlon: p.lat != null && p.lon != null ? `${p.lat},${p.lon}` : "" };
     for (const [k] of GD_WEEK) f["hours_" + k] = (p.hours && p.hours[k]) || "";
     return f;
   }
   function gdUnflat(base, f) {
-    const anyHours = GD_WEEK.some(([k]) => f["hours_" + k]);
-    return { ...base, name: f.name, cuisines: f.cuisines.split(",").map(s => s.trim()).filter(Boolean), neighborhood: f.neighborhood,
+    const anyHours = GD_WEEK.some(([k]) => f["hours_" + k]), at = gdSpot(f.latlon) || { lat: base.lat, lon: base.lon };
+    return { ...base, lat: at.lat, lon: at.lon, name: f.name, cuisines: f.cuisines.split(",").map(s => s.trim()).filter(Boolean), neighborhood: f.neighborhood,
       price: f.price || null, michelin: f.michelin || null, address: f.address, hours_note: f.hours_note || null,
       phone: f.phone || null, website: f.website || null, email: f.email || null, book: { how: f.book_how || null, url: f.book_url || null },
       description: f.description, desk_note: f.desk_note || null,
@@ -3697,20 +3702,20 @@
     try { const j = JSON.parse($("#guide-places").textContent); places = j.places || []; verified = j.auto_updated || ""; } catch (e) {}
     try { map = JSON.parse($("#guide-map").textContent); } catch (e) {}
     const home = map ? map.home : { lat: 37.789788, lon: -122.395356 };
-    gd = { base: places, places: [], map, home, verified, notes: {}, log: [], q: "", flags: new Set(), active: null, hover: null,
-      pick: "near", view: "near", shown: [], editing: null, history: null };
+    gd = { base: places, added: [], places: [], map, home, verified, notes: {}, log: [], q: "", flags: new Set(), active: null, hover: null,
+      pick: "near", view: "near", shown: [], editing: null, history: null, placing: false, draft: null };
     gdBuild(); gdDrawMaps(); gdRender();
-    api("/api/guide").then(r => { gd.notes = (r && r.notes) || {}; gd.log = (r && r.log) || []; gdBuild(); gdRender(); }).catch(() => {});
+    api("/api/guide").then(r => { gd.notes = (r && r.notes) || {}; gd.log = (r && r.log) || []; gd.added = (r && r.added) || []; gdBuild(); gdRender(); }).catch(() => {});
   }
   // The listing the desk sees: the file's record with the team's edits laid
   // over it. A team edit wins until someone settles it; when the weekly check
   // later changes a field the team had corrected, both readings are shown.
   function gdBuild() {
-    gd.places = gd.base.map(b => {
+    gd.places = [...gd.base, ...gd.added].map(b => {
       const file = gdFlat(b), flat = { ...file }, n = gd.notes[b.id], conflicts = [];
       for (const [k, e] of Object.entries((n && n.edits) || {})) {
         if (!(k in flat) || e.v === file[k]) continue;
-        if (e.base !== file[k]) conflicts.push({ field: k, ours: e.v, theirs: file[k] });
+        if (e.base !== file[k] && k !== "latlon") conflicts.push({ field: k, ours: e.v, theirs: file[k] });
         flat[k] = e.v;
       }
       const p = gdUnflat(b, flat);
@@ -3759,13 +3764,15 @@
   function gdProv(p) {
     const n = gd.notes[p.id] || {};
     return `<div class="gdprov">
-      <div>Information automatically updated on: <b>${esc(gdDate(p.auto_updated))}</b></div>
+      ${p.team ? `<div>Added by the team on: <b>${esc(gdDate(p.added_at))}</b> by: <b>${esc(gdWho(p.added_by))}</b> · kept current by the team</div>`
+        : `<div>Information automatically updated on: <b>${esc(gdDate(p.auto_updated))}</b></div>`}
       <div>Location information last verified on: ${n.verified_at ? `<b>${esc(gdDate(n.verified_at))}</b> by: <b>${esc(gdWho(n.verified_by))}</b>` : "<b>not yet verified by phone</b>"}</div>
     </div>`;
   }
   function gdHistory(p) {
     const say = c => !c ? "" : Object.entries(c).map(([k, v]) => {
       const [a, b] = Array.isArray(v) ? v : ["", v];
+      if (k === "latlon") return `<div class="c"><i>Map position</i> the dot was moved</div>`;
       return `<div class="c"><i>${esc(GD_LABEL[k] || k)}</i> ${a ? `&ldquo;${esc(a)}&rdquo;` : "<em>empty</em>"} &rarr; ${b ? `&ldquo;${esc(b)}&rdquo;` : "<em>empty</em>"}</div>`;
     }).join("");
     const rows = [...gd.log.filter(h => h.place === p.id).map(h => ({ at: h.at, who: gdWho(h.who), action: h.action, changes: h.changes })),
@@ -3783,7 +3790,7 @@
     const sel = (k, label, opts) => `<div class="field"><label class="fl" for="gde-${k}">${label}</label><select class="inp" id="gde-${k}" data-gdf="${k}">${opts.map(([v, t]) => `<option value="${v}"${f[k] === v ? " selected" : ""}>${t}</option>`).join("")}</select></div>`;
     const area = (k, label, rows) => `<div class="field wide"><label class="fl" for="gde-${k}">${label}</label><textarea class="inp" id="gde-${k}" data-gdf="${k}" rows="${rows}">${esc(f[k])}</textarea></div>`;
     return `<article class="gdcard gdedit on" data-gdcard="${p.id}">
-      <div class="gdedhead">Editing <strong>${esc(p.name)}</strong></div>
+      <div class="gdedhead">${p.isNew ? "Adding a place to the book" : `Editing <strong>${esc(p.name)}</strong>`}</div>
       <div class="gdform">
         ${inp("name", "Name", { cls: "wide", attrs: 'autocapitalize="words"' })}
         ${inp("cuisines", "Cuisine, comma between", { attrs: 'autocapitalize="words"' })}
@@ -3791,6 +3798,9 @@
         ${sel("price", "Price", [["", "Not shown"], ["$", "$"], ["$$", "$$"], ["$$$", "$$$"], ["$$$$", "$$$$"]])}
         ${sel("michelin", "Michelin", [["", "None"], ["guide", "In the Michelin Guide"], ["bib", "Bib Gourmand"], ["1", "One star"], ["2", "Two stars"], ["3", "Three stars"]])}
         ${inp("address", "Address", { cls: "wide", attrs: 'autocapitalize="words"' })}
+        <div class="field wide"><div class="flrow"><label class="fl">On the map</label>${i("Every distance in the book is measured from this dot. Choose <strong>Set on the map</strong>, then click the spot where the place stands. Zoom in first and the street names appear. When an address changes, move the dot too.")}</div>
+          <div class="gdpos"><span id="gde-posline"></span><button type="button" class="mini ghost" data-gd="place|${p.id}">Set on the map</button></div>
+          <input type="hidden" id="gde-latlon" data-gdf="latlon" value="${esc(f.latlon)}"></div>
         <div class="field wide"><div class="flrow"><label class="fl">Hours</label>${i("Write a day as <strong>Closed</strong>, or as times exactly like <strong>11:30 AM to 2:30 PM, 5:00 PM to 9:30 PM</strong>. Written that way, the card can say Open now or Closed on its own. Anything looser, such as Seatings at 5:00 PM and 8:00 PM, is shown just as typed. Leave a day empty when the place gives no hours for it.")}</div>
           <div class="gdhours">${GD_WEEK.map(([k, n]) => `<label for="gde-hours_${k}">${n}</label><input class="inp" id="gde-hours_${k}" data-gdf="hours_${k}" value="${esc(f["hours_" + k])}" autocapitalize="none" placeholder="Closed, or 5:00 PM to 9:30 PM">`).join("")}</div></div>
         ${inp("hours_note", "Hours note", { cls: "wide" })}
@@ -3803,9 +3813,29 @@
         <div class="field wide"><div class="flrow"><label class="fl" for="gde-desk_note">Before you quote it</label>${i("A line for the team only: what to confirm or mention before reading this listing to a resident. It never goes into an email or onto a printout.")}</div><textarea class="inp" id="gde-desk_note" data-gdf="desk_note" rows="2">${esc(f.desk_note)}</textarea></div>
       </div>
       <label class="gdcheck"><input type="checkbox" id="gde-verify"> I confirmed these details by phone just now</label>
-      <div class="gdfoot"><span class="ver">Saved under your name, with the date and what changed.</span>
-        <button class="btn" data-gd="save|${p.id}">Save changes</button><button class="mini ghost" data-gd="cancel|${p.id}">Cancel</button></div>
+      <div class="gdfoot"><span class="ver">${p.isNew ? "Added under your name, with the date." : "Saved under your name, with the date and what changed."}</span>
+        ${p.team && !p.isNew ? `<button class="mini ghost" data-gd="remove|${p.id}">Remove from the book</button>` : ""}
+        <button class="btn" data-gd="save|${p.id}">${p.isNew ? "Add to the book" : "Save changes"}</button><button class="mini ghost" data-gd="cancel|${p.id}">Cancel</button></div>
     </article>`;
+  }
+  // The empty card the add form is drawn from.
+  function gdBlank() {
+    const b = { id: "new", name: "", kind: "Restaurant", team: true, cuisines: [], neighborhood: "", address: "", lat: null, lon: null,
+      hours: null, book: {}, description: "", good_for: [] };
+    const flat = gdFlat(b);
+    return { ...b, flat, file: flat, conflicts: [], isNew: true };
+  }
+  // The line beside "Set on the map": where the dot is, in the book's own terms.
+  function gdPosLine() {
+    const el = $("#gde-posline"), inp = $("#gde-latlon"); if (!el || !inp) return;
+    const at = gdSpot(inp.value);
+    el.textContent = gd.placing ? "Click the map where it stands." : at ? `${gdMi(gdMiles(gd.home, at))} ${gdCompass(gd.home, at)} of 181 Fremont` : "Not on the map yet.";
+    const b = $("#gd-list [data-gd^='place|']"); if (b) b.textContent = gd.placing ? "Never mind" : at ? "Move the dot" : "Set on the map";
+  }
+  // Crowd ratings, kept quiet: a small grey line, never a badge.
+  function gdRate(p) {
+    const r = p.ratings || {}, one = (name, x) => x && x.score ? `${name} ${Number(x.score).toFixed(1)}` : "";
+    return [one("Google", r.google), one("Yelp", r.yelp)].filter(Boolean);
   }
   function gdCard(p) {
     if (gd.editing === p.id) return gdEditCard(p);
@@ -3820,7 +3850,7 @@
     return `<article class="gdcard${gd.active === p.id ? " on" : ""}" data-gdcard="${p.id}">
       <div class="top"><h3>${esc(p.name)}</h3><div class="dist">${esc(gdMi(p.mi))} ${esc(p.dir)}<br>${esc(gdTravel(p.mi))}</div></div>
       <div class="tags">${esc([(p.cuisines || []).join(", "), p.neighborhood, p.price].filter(Boolean).join(" · "))}</div>
-      <div class="badges"><span class="gdb ${st.cls}">${esc(st.text)}</span>${p.michelin ? `<span class="gdb mich">${esc(GD_MICH[p.michelin])}</span>` : ""}</div>
+      <div class="badges"><span class="gdb ${st.cls}">${esc(st.text)}</span>${p.michelin ? `<span class="gdb mich">${esc(GD_MICH[p.michelin])}</span>` : ""}${gdRate(p).length ? `<span class="gdrate" title="As found ${esc(gdDate((p.ratings || {}).at))}. Crowd ratings drift; the weekly check refreshes them.">${esc(gdRate(p).join(" · "))}</span>` : ""}</div>
       <p class="desc">${esc(p.description)}</p>
       <dl class="gdfacts">
         <dt>Address</dt><dd>${esc(p.address)}</dd>
@@ -3843,26 +3873,28 @@
 
   function gdRender() {
     if (!gd) return;
-    const list = gd.shown = gdFind();
-    // a listing being edited stays on screen whatever is typed or filtered
-    if (gd.editing && !list.some(p => p.id === gd.editing)) { const e = gd.places.find(p => p.id === gd.editing); if (e) list.unshift(e); else gd.editing = null; }
+    const found = gd.shown = gdFind(), list = found.slice();
+    // a listing being edited, or the one being added, stays on screen whatever is typed or filtered
+    if (gd.editing && !list.some(p => p.id === gd.editing)) { const e = gd.editing === "new" ? gdBlank() : gd.places.find(p => p.id === gd.editing); if (e) list.unshift(e); else gd.editing = null; }
+    if (!gd.editing) { gd.placing = false; gd.draft = null; }
     if (gd.active && !list.some(p => p.id === gd.active)) gd.active = null;
     gd.hover = null; gd.hoverWant = null;
     const qWord = gdTokens(gd.q).join(" ");
     $("#gd-chips").innerHTML = GD_QUICK.map(c => `<span class="chip${gdPlain(c) === qWord ? " done" : ""}" data-gd="quick|${c}">${c}</span>`).join("")
       + GD_FLAGS.map(([k, label]) => `<span class="chip${gd.flags.has(k) ? " done" : ""}" data-gd="flag|${k}">${label}</span>`).join("");
     const asked = gd.q.trim() || gd.flags.size;
-    $("#gd-count").innerHTML = list.length
-      ? `<span><strong>${list.length}</strong> ${list.length === 1 ? "place" : "places"}${gd.q.trim() ? ` for &ldquo;${esc(gd.q.trim())}&rdquo;` : ""} · nearest first</span>
-         <button class="mini ghost" data-gd="print-all|">Print ${asked ? "these" : "the whole book"}</button>`
-      : `<span>Nothing in the book for &ldquo;${esc(gd.q.trim())}&rdquo;${gd.flags.size ? " with those filters" : ""}. The book holds restaurants for now; try a cuisine, a neighborhood, or a name.</span>`;
+    const adder = gd.editing === "new" ? "" : `<button class="mini ghost" data-gd="add|">Add a place</button>`;
+    $("#gd-count").innerHTML = found.length
+      ? `<span><strong>${found.length}</strong> ${found.length === 1 ? "place" : "places"}${gd.q.trim() ? ` for &ldquo;${esc(gd.q.trim())}&rdquo;` : ""} · nearest first</span>
+         <span class="acts">${adder}<button class="mini ghost" data-gd="print-all|">Print ${asked ? "these" : "the whole book"}</button></span>`
+      : `<span>Nothing in the book for &ldquo;${esc(gd.q.trim())}&rdquo;${gd.flags.size ? " with those filters" : ""}. The book holds restaurants for now; try a cuisine, a neighborhood, or a name. Know the place they mean? Add it.</span><span class="acts">${adder}</span>`;
     // a redraw must never eat what someone is halfway through typing
     const typed = {}; let ticked = false;
     if (gd.editing) { $$("#gd-list [data-gdf]").forEach(el => { typed[el.dataset.gdf] = el.value; }); const t = $("#gde-verify"); ticked = !!(t && t.checked); }
     $("#gd-list").innerHTML = list.map(gdCard).join("");
-    if (gd.editing) { $$("#gd-list [data-gdf]").forEach(el => { if (el.dataset.gdf in typed) el.value = typed[el.dataset.gdf]; }); const t = $("#gde-verify"); if (t) t.checked = ticked; }
-    const called = gd.places.filter(p => (gd.notes[p.id] || {}).verified_at).length;
-    $("#gd-sub").textContent = `${gd.places.length} restaurants. Checked against their own websites ${gdDate(gd.verified)}; ${called ? called : "none"} verified by phone so far. Type what the resident asked for.`;
+    if (gd.editing) { $$("#gd-list [data-gdf]").forEach(el => { if (el.dataset.gdf in typed) el.value = typed[el.dataset.gdf]; }); const t = $("#gde-verify"); if (t) t.checked = ticked; gdPosLine(); }
+    const called = gd.places.filter(p => (gd.notes[p.id] || {}).verified_at).length, ours = gd.places.filter(p => p.team).length;
+    $("#gd-sub").textContent = `${gd.places.length} restaurants${ours ? `, ${ours} added by the team` : ""}. Checked against their own websites ${gdDate(gd.verified)}; ${called ? called : "none"} verified by phone so far. Type what the resident asked for.`;
     gdMark();
   }
 
@@ -3978,6 +4010,11 @@
         <circle cx="${x}" cy="${y}" r="${6 * u}" fill="${GD_GOLD}" stroke="${GD_GROUND}" stroke-width="${1.6 * u}"/>`
         + label(x, y, target.name, gdMi(target.mi) + " " + target.dir, GD_GOLD);
     }
+    if (gd.draft && gdOnMap(key, gd.draft)) {
+      const [x, y] = gdXY(key, gd.draft);
+      mark += `<circle cx="${x}" cy="${y}" r="${11 * u}" fill="none" stroke="${GD_GOLD}" stroke-width="${1.6 * u}" stroke-dasharray="${3 * u} ${3 * u}"/>
+        <circle cx="${x}" cy="${y}" r="${4.5 * u}" fill="${GD_GOLD}" stroke="${GD_GROUND}" stroke-width="${1.4 * u}"/>` + label(x, y, "The dot goes here", "", GD_GOLD);
+    }
     el.querySelector(".tie").innerHTML = tie;
     el.querySelector(".mark").innerHTML = mark;
     el.querySelector(".names").innerHTML = gdNames(key, vb, u, avoid);
@@ -3998,7 +4035,9 @@
       gd.framed = holds;
     }
     gdOverlay(key);
-    $("#gd-mapnote").textContent = target ? `${target.name} · ${gdProx(target)}`
+    const frame = $(".gdmap"); if (frame) frame.classList.toggle("placing", !!gd.placing);
+    $("#gd-mapnote").textContent = gd.placing ? "Click the spot where it stands. Zoom in and the street names appear."
+      : target ? `${target.name} · ${gdProx(target)}`
       : key === "near" ? "About 1.3 miles each way. Choose a place and the map moves in on it."
         : "All of San Francisco. Choose a place and the map moves in on it.";
     $$("#gd-list .gdcard").forEach(c => c.classList.toggle("on", c.dataset.gdcard === gd.active));
@@ -4035,6 +4074,7 @@
   function gdLines(p) {
     const out = [p.name, [(p.cuisines || []).join(", "), p.neighborhood, p.price].filter(Boolean).join(" · ")];
     if (p.michelin) out.push(GD_MICH[p.michelin]);
+    if (gdRate(p).length) out.push("Ratings: " + gdRate(p).join(" · "));
     out.push("", p.address, `${gdMi(p.mi)} ${p.dir} of 181 Fremont, ${gdTravel(p.mi)}`, "");
     if (p.hours) { out.push("Hours"); for (const [k, name] of GD_WEEK) out.push(`${name}: ${p.hours[k] || "by phone"}`); }
     else out.push("Hours: kindly confirm by phone");
@@ -4070,7 +4110,7 @@
     const who = withMail.find(x => m && x.email === m[1]);
     const first = who ? String(who.name).split(" ")[0] : "";
     const body = `Hello${first ? " " + first : ""},\n\nAs promised, here are the details for ${p.name}.\n\n${gdLines(p).join("\n")}\n\n`
-      + `If you would like us to arrange the reservation, say the word and we will take care of it.\n\nWarmly,\nThe Front Desk\n181 Fremont`;
+      + `If you would like us to arrange the reservation, say the word and we will take care of it.`;
     openMail({ to: m ? m[1] : "", subject: `${p.name}: the details, from the front desk`, body,
       title: "The note is written", text: `Everything on the card for ${esc(p.name)}, addressed${m ? " to " + esc(m[1]) : " to nobody yet"}.` });
   }
@@ -4079,7 +4119,7 @@
     const block = p => {
       const b = p.book || {};
       return `<section><div class="h"><h2>${esc(p.name)}</h2><div class="d">${esc(gdProx(p))}</div></div>
-        <div class="t">${esc([(p.cuisines || []).join(", "), p.neighborhood, p.price].filter(Boolean).join(" · "))}${p.michelin ? ` · <b>${esc(GD_MICH[p.michelin])}</b>` : ""}</div>
+        <div class="t">${esc([(p.cuisines || []).join(", "), p.neighborhood, p.price].filter(Boolean).join(" · "))}${p.michelin ? ` · <b>${esc(GD_MICH[p.michelin])}</b>` : ""}${gdRate(p).length ? ` · ${esc(gdRate(p).join(" · "))}` : ""}</div>
         <p>${esc(p.description)}</p>
         <table><tr><td>Address</td><td>${esc(p.address)}</td></tr>
         <tr><td>Hours</td><td>${p.hours ? GD_WEEK.map(([k, n]) => `<span class="dy"><i>${n.slice(0, 3)}</i> ${esc(p.hours[k] || "by phone")}</span>`).join("") : "Kindly confirm by phone"}${p.hours_note ? `<div class="n">${esc(p.hours_note)}</div>` : ""}</td></tr>
@@ -4152,6 +4192,34 @@
     const ok = await gdPut(p, { action: "edit", edits, verify }, verify ? "Saved, and marked verified by phone." : "Saved. It is in this listing's history.");
     if (!ok) { gd.editing = p.id; gdRender(); }
   }
+  async function gdAddSave() {
+    const card = $('[data-gdcard="new"]'), fields = {};
+    for (const el of $$("[data-gdf]", card)) fields[el.dataset.gdf] = el.value.trim().replace(/\s+/g, " ");
+    if (!fields.name) { toast("A place needs a name.", "warn"); return; }
+    if (!fields.address) { toast("A place needs an address.", "warn"); return; }
+    if (!gdSpot(fields.latlon)) { toast("Set it on the map first: choose Set on the map, then click where it stands.", "warn"); return; }
+    try {
+      const res = await api("/api/guide", { method: "POST", body: JSON.stringify({ fields, verify: $("#gde-verify", card).checked }) });
+      gd.added.push(res.place);
+      if (res.note) gd.notes[res.place.id] = res.note;
+      if (res.logged) gd.log.unshift(...res.logged.slice().reverse());
+      gd.editing = null; gd.q = ""; $("#gd-q").value = ""; gd.flags.clear();
+      gdBuild(); gd.active = res.place.id; gdRender(); gd.active = res.place.id; gdMark();
+      const c = $(`[data-gdcard="${res.place.id}"]`); if (c) c.scrollIntoView({ block: "center", behavior: "smooth" });
+      toast("Added to the book.");
+    } catch (e) { toast(e.message, "warn"); }
+  }
+  async function gdRemove(p) {
+    const v = await dialog(`Take ${p.name} out of the book?`,
+      "It leaves the list and the map for everyone at the desk. The record of it is kept.",
+      [{ label: "Remove it", kind: "primary", value: "yes" }, { label: "Keep it", kind: "quiet", value: null }]);
+    if (!v) return;
+    try {
+      await api("/api/guide/" + encodeURIComponent(p.id), { method: "DELETE" });
+      gd.added = gd.added.filter(a => a.id !== p.id); gd.editing = null; gd.active = null;
+      gdBuild(); gdRender(); toast("Removed from the book.");
+    } catch (e) { toast(e.message, "warn"); }
+  }
   async function gdVerify(p) {
     const v = await dialog(`You called ${p.name}?`,
       "Marking it verified says you spoke with them and the card is right as it stands. Your name and today&rsquo;s date go on the listing. If something was wrong, use Edit and tick the box there instead.",
@@ -4175,6 +4243,17 @@
   document.addEventListener("click", ev => {
     if (!gd) return;
     if (gd.dragged && Date.now() - gd.dragged < 80) return;       // the end of a drag is not a click
+    // setting the dot: the next click on the map is where the place stands
+    const onMap = gd.placing && ev.target.closest(".gdsvg");
+    if (onMap) {
+      const pt = onMap.createSVGPoint(); pt.x = ev.clientX; pt.y = ev.clientY;
+      const q = pt.matrixTransform(onMap.getScreenCTM().inverse()), m = gd.map[onMap.dataset.map];
+      const lat = +(m.north - q.y / m.ky).toFixed(6), lon = +(q.x / m.kx + m.west).toFixed(6);
+      const inp = $("#gde-latlon"); if (inp) inp.value = `${lat},${lon}`;
+      gd.draft = { lat, lon }; gd.placing = false; gdPosLine(); gdMark();
+      const c = $(`[data-gdcard="${gd.editing}"]`); if (c && window.matchMedia("(max-width: 900px)").matches) c.scrollIntoView({ block: "start", behavior: "smooth" });
+      return;
+    }
     const b = ev.target.closest("[data-gd]");
     if (b) {
       const [verb, arg, arg2] = b.dataset.gd.split("|");
@@ -4188,8 +4267,12 @@
       else if (verb === "print" && p) gdPrint([p]);
       else if (verb === "print-all") gdPrint(gd.shown);
       else if (verb === "conn" && p) gdEditConn(p);
-      else if (verb === "edit" && p) { gd.editing = p.id; gd.active = p.id; gdRender(); gd.active = p.id; gdMark(); const c = $(`[data-gdcard="${p.id}"]`); if (c) c.scrollIntoView({ block: "start", behavior: "smooth" }); }
-      else if (verb === "cancel") { gd.editing = null; const keep = gd.active; gdRender(); gd.active = keep; gdMark(); }
+      else if (verb === "add") { gd.editing = "new"; gd.placing = false; gd.draft = null; gd.active = null; gdRender(); const c = $('[data-gdcard="new"]'); if (c) { c.scrollIntoView({ block: "start", behavior: "smooth" }); const n = $("#gde-name"); if (n) n.focus({ preventScroll: true }); } }
+      else if (verb === "place") { gd.placing = !gd.placing; gdPosLine(); gdMark(); if (gd.placing && window.matchMedia("(max-width: 900px)").matches) $(".gdmap").scrollIntoView({ block: "start", behavior: "smooth" }); }
+      else if (verb === "save" && arg === "new") gdAddSave();
+      else if (verb === "remove" && p) gdRemove(p);
+      else if (verb === "edit" && p) { gd.placing = false; gd.draft = null; gd.editing = p.id; gd.active = p.id; gdRender(); gd.active = p.id; gdMark(); const c = $(`[data-gdcard="${p.id}"]`); if (c) c.scrollIntoView({ block: "start", behavior: "smooth" }); }
+      else if (verb === "cancel") { gd.editing = null; gd.placing = false; gd.draft = null; const keep = gd.active; gdRender(); gd.active = keep; gdMark(); }
       else if (verb === "save" && p) gdSaveEdit(p);
       else if (verb === "verify" && p) gdVerify(p);
       else if (verb === "hist" && p) { gd.history = gd.history === p.id ? null : p.id; const keep = gd.active; gdRender(); gd.active = keep; gdMark(); }

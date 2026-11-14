@@ -144,6 +144,14 @@ export const RESIDENT_TABLES = [
     contact TEXT, phone TEXT, note TEXT, updated TEXT, updated_by TEXT,
     verified_at TEXT, verified_by TEXT, edits TEXT
   )`,
+  // Places the team added to the Black Book themselves. place = the whole
+  // record as JSON, in the same shape as an entry of guide_places.json, so
+  // the page treats it exactly like a place from the file. Removing one
+  // stamps it; the row stays for the record.
+  `CREATE TABLE IF NOT EXISTS guide_added (
+    place_id TEXT PRIMARY KEY, place TEXT NOT NULL, added TEXT, added_by TEXT,
+    removed TEXT, removed_by TEXT
+  )`,
   `CREATE TABLE IF NOT EXISTS notes (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     resident_id INTEGER NOT NULL,
