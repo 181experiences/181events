@@ -11,11 +11,11 @@ CATEGORIES = ["Morning Offering", "Happy Hour", "Community Dinner", "Culinary Ex
 STATUSES = ["Draft", "Live", "Unpublished", "Archived"]
 RSVP_TYPES = ["None", "Guest count only", "Seat", "Paid seat", "Partner email"]
 
-SCREENS = ["dash", "events", "editor", "cal", "pages", "pageedit", "assets", "arch", "res", "spaces", "inv", "invcount", "invitems",
+SCREENS = ["dash", "events", "editor", "cal", "pages", "pageedit", "assets", "arch", "res", "spaces", "guide", "inv", "invcount", "invitems",
            "msgs", "inst", "inst-events", "inst-brand", "inst-email", "inst-screens", "inst-private", "inst-inventory"]
 NAV_OF = {"dash": "dash", "events": "events", "editor": "events", "cal": "cal",
           "pages": "pages", "pageedit": "pages", "assets": "assets",
-          "res": "res", "spaces": "spaces", "inv": "inv", "invcount": "inv", "invitems": "inv",
+          "res": "res", "spaces": "spaces", "guide": "guide", "inv": "inv", "invcount": "inv", "invitems": "inv",
           "msgs": "msgs", "inst": "inst", "inst-inventory": "inst",
           "inst-events": "inst", "inst-brand": "inst", "inst-email": "inst",
           "inst-screens": "inst", "inst-private": "inst"}
@@ -24,7 +24,7 @@ NAV_OF = {"dash": "dash", "events": "events", "editor": "events", "cal": "cal",
 # short and nothing hides in a menu a finger has to hover over.
 NAV = [("dash", "Dashboard"), ("events", "Events"), ("cal", "Calendar"),
        ("Residents", [("res", "Roster"), ("msgs", "Messages")]),
-       ("Services", [("spaces", "181 Spaces")]),
+       ("Services", [("spaces", "181 Spaces"), ("guide", "Black Book")]),
        ("Operations", [("inv", "Inventory")]),
        ("Developer", [("pages", "Pages"), ("assets", "Assets")]),
        ("inst", "Settings")]
@@ -50,6 +50,12 @@ NAV_TOP, NAV_SUBS = nav_rows()
 # needs no extra request and no build-time database access.
 INV_CATALOG = open(os.path.join(HERE, "inventory_catalog.json"), encoding="utf-8").read().replace("</", "<\\/")
 CODED_PAGES = open(os.path.join(HERE, "coded_pages.json"), encoding="utf-8").read().replace("</", "<\\/")
+# The Black Book rides the page the same way: the places (checked facts) and
+# our own street drawing, both plain JSON, so the screen needs no map service.
+import json as _json
+GUIDE_PLACES = _json.dumps(_json.load(open(os.path.join(HERE, "guide_places.json"), encoding="utf-8")),
+                           ensure_ascii=False, separators=(",", ":")).replace("</", "<\\/")
+GUIDE_MAP = open(os.path.join(HERE, "guide_map.json"), encoding="utf-8").read().replace("</", "<\\/")
 
 rules = [f'#s-{s}:checked ~ .body #scr-{s}{{display:block}}' for s in SCREENS]
 for s, nav in NAV_OF.items():
@@ -370,6 +376,60 @@ HTML = f'''<!DOCTYPE html>
   body.role-desk .navbar label.g-developer,
   body.role-desk .subnav.g-developer,
   body.role-desk .navbar label[for="s-inst"]{{display:none}}
+
+
+  /* ---------- the Black Book ---------- */
+  .gd{{display:grid;grid-template-columns:minmax(0,5fr) minmax(0,6fr);gap:22px;align-items:start}}
+  .gdmap{{position:sticky;top:calc(var(--chrome-h,128px) + 14px);background:#232220;border:1px solid #232220;border-radius:var(--radius);overflow:hidden}}
+  .gdmapbar{{display:flex;align-items:center;gap:12px;padding:10px 12px;border-bottom:1px solid #3a3835}}
+  .gdtabs{{display:inline-flex;border:1px solid #55524d;border-radius:3px;overflow:hidden;flex:none}}
+  .gdtabs button{{appearance:none;background:none;border:0;color:#b9b2a6;font-family:var(--fb);font-size:11px;letter-spacing:.09em;text-transform:uppercase;font-weight:500;padding:6px 11px;cursor:pointer}}
+  .gdtabs button.on{{background:#e9e3d8;color:#232220}}
+  #gd-mapnote{{color:#d9d2c6;font-size:12.5px;line-height:1.35;min-height:17px}}
+  #gd-map{{aspect-ratio:1/1;max-height:calc(100vh - var(--chrome-h,128px) - 110px);width:100%}}
+  .gdsvg{{display:none;width:100%;height:100%}}
+  .gdsvg.on{{display:block}}
+  .gddot{{cursor:pointer}}
+  .gdcredit{{font-size:10px;color:#8d877c;padding:5px 12px 7px;letter-spacing:.03em}}
+  #gd-q{{font-size:16px;padding:12px 14px;border-color:var(--ink)}}
+  #gd-chips{{margin:10px 0 12px}}
+  #gd-chips .chip{{padding:6px 12px;font-size:12.5px;cursor:pointer;user-select:none;background:var(--paper-2)}}
+  #gd-chips .chip.done{{border-color:var(--ink);background:var(--ink);color:var(--paper-2)}}
+  #gd-count{{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;font-size:13px;color:var(--ink-soft);margin:0 0 12px;min-height:28px}}
+  .gdcard{{background:var(--paper-2);border:1px solid var(--line);border-left:3px solid var(--line);border-radius:var(--radius);padding:16px 18px 12px;margin-bottom:12px}}
+  .gdcard:hover{{border-color:var(--stone);border-left-color:#e8b23a}}
+  .gdcard.on{{border-color:var(--ink);border-left-color:#e8b23a;box-shadow:0 1px 0 var(--ink)}}
+  .gdcard .top{{display:flex;gap:14px;align-items:flex-start;justify-content:space-between}}
+  .gdcard h3{{font-family:var(--fd);font-size:19px;font-weight:600;color:var(--ink);margin:0;line-height:1.25}}
+  .gdcard .dist{{font-size:12px;color:var(--ink-soft);text-align:right;white-space:nowrap;line-height:1.35}}
+  .gdcard .tags{{font-size:12.5px;color:var(--stone);margin:3px 0 9px}}
+  .gdcard .badges{{display:flex;gap:6px;flex-wrap:wrap;margin:0 0 10px}}
+  .gdb{{font-size:10.5px;letter-spacing:.09em;text-transform:uppercase;font-weight:600;padding:3px 8px;border-radius:3px;background:var(--paper);color:var(--ink-soft);border:1px solid var(--line)}}
+  .gdb.open{{background:#e7f0e8;color:#2c5c37;border-color:#cfe0d2}}
+  .gdb.shut{{background:#f0e2e2;color:#8a2b2b;border-color:#e6cfcf}}
+  .gdb.mich{{background:var(--ink);color:var(--paper-2);border-color:var(--ink)}}
+  .gdcard p.desc{{margin:0 0 12px;color:var(--ink-body);font-size:13.5px;line-height:1.5}}
+  .gdfacts{{display:grid;grid-template-columns:122px minmax(0,1fr);gap:6px 12px;font-size:13px;margin:0 0 10px}}
+  .gdfacts dt{{font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--stone);padding-top:2px}}
+  .gdfacts dd{{margin:0;color:var(--ink);overflow-wrap:anywhere}}
+  .gdfacts a{{color:var(--ink);text-decoration:underline;text-decoration-color:#c9c0b3;text-underline-offset:2px}}
+  .gdsub{{font-size:12px;color:var(--ink-soft);margin-top:2px}}
+  .gdweek{{margin-top:3px}}
+  .gdweek summary{{cursor:pointer;color:var(--stone);font-size:12px}}
+  .gdweek table{{border-collapse:collapse;margin-top:4px;font-size:12.5px}}
+  .gdweek td{{padding:1px 14px 1px 0;vertical-align:top}}
+  .gdweek tr.today td{{font-weight:600}}
+  .gdlink{{appearance:none;background:none;border:0;padding:0 0 0 6px;font-family:var(--fb);font-size:12px;color:var(--stone);text-decoration:underline;cursor:pointer}}
+  .gdnote{{font-size:12.5px;background:#fbf3df;border:1px solid #ecdcae;color:#5e4a12;border-radius:3px;padding:7px 10px;margin:0 0 10px;line-height:1.45}}
+  .gdfoot{{display:flex;gap:8px;align-items:center;flex-wrap:wrap;border-top:1px solid var(--line-2);padding-top:10px}}
+  .gdfoot .ver{{font-size:11.5px;color:var(--stone);margin-right:auto}}
+  @media(max-width:900px){{
+    .gd{{grid-template-columns:1fr}}
+    .gdmap{{position:static}}
+    #gd-map{{aspect-ratio:4/3;max-height:46vh}}
+    .gdfacts{{grid-template-columns:1fr;gap:1px 0}}
+    .gdfacts dd{{margin-bottom:7px}}
+  }}
 
   /* ---------- pages builder ---------- */
   .pgblk{{background:var(--paper-2);border:1px solid var(--line);border-radius:var(--radius);margin:0 0 12px}}
@@ -1081,6 +1141,25 @@ HTML = f'''<!DOCTYPE html>
   <div id="bklist"></div>
 </div></section>
 
+<!-- ================= THE BLACK BOOK ================= -->
+<section class="screen" id="scr-guide"><div class="wrap">
+  <div class="phead" style="display:flex;align-items:center;justify-content:flex-start;gap:10px"><h1>The Black Book</h1>{info("The front desk&rsquo;s own city guide, for the moment a resident calls down asking where to eat. Type what they asked for; every card answers with the address, today&rsquo;s hours, the phone, how to book, how far it is from the tower, and what kind of place it is. Point at a card and the map shows where it sits. Email to a resident writes the note in Outlook; Print makes a clean page of one place or the whole list. Our connection is the team&rsquo;s own line, saved here by anyone on the team and never sent to a resident. The facts are checked against each restaurant&rsquo;s own website; the date on each card says when.")}</div>
+  <div class="psub" id="gd-sub">Loading&hellip;</div>
+  <div class="gd">
+    <div class="gdmap">
+      <div class="gdmapbar"><span class="gdtabs"><button data-gd="map|near" class="on">Nearby</button><button data-gd="map|city">The city</button></span><span id="gd-mapnote"></span></div>
+      <div id="gd-map"></div>
+      <div class="gdcredit">Our own drawing. Street lines from OpenStreetMap contributors.</div>
+    </div>
+    <div class="gdside">
+      <input class="inp" id="gd-q" type="search" inputmode="search" autocapitalize="none" autocomplete="off" spellcheck="false" placeholder="French restaurant, oysters, steak, Jackson Square&hellip;">
+      <div class="chips" id="gd-chips"></div>
+      <div id="gd-count"></div>
+      <div id="gd-list"></div>
+    </div>
+  </div>
+</div></section>
+
 <!-- ================= INVENTORY ================= -->
 <section class="screen" id="scr-inv"><div class="wrap">
   <div class="phead" style="display:flex;align-items:center;gap:10px;flex-wrap:wrap"><h1>Inventory</h1>{info("Walk the building with your phone, type what is on each shelf, and submit; the department heads get the report by email. Every count ever taken stays below, newest first. A red-edged card is a count somebody had to leave: anyone presses Pick this up and finishes it. Minimums come from the item list. Nothing here is seen by residents.")}
@@ -1583,6 +1662,8 @@ HTML = f'''<!DOCTYPE html>
 <input type="file" id="afile" style="display:none">
 <script id="inv-catalog" type="application/json">__INV_CATALOG__</script>
 <script id="coded-pages" type="application/json">__CODED_PAGES__</script>
+<script id="guide-places" type="application/json">__GUIDE_PLACES__</script>
+<script id="guide-map" type="application/json">__GUIDE_MAP__</script>
 <div id="dlg-wrap"><div id="dlg"><div id="dlg-t"></div><div id="dlg-p"></div><div id="dlg-f"></div><div id="dlg-b"></div></div></div>
 <div class="toast" id="toast"></div>
 <script>
@@ -1593,6 +1674,6 @@ HTML = f'''<!DOCTYPE html>
 '''
 
 import os
-HTML = HTML.replace("__INV_CATALOG__", INV_CATALOG).replace("__CODED_PAGES__", CODED_PAGES)
+HTML = HTML.replace("__INV_CATALOG__", INV_CATALOG).replace("__CODED_PAGES__", CODED_PAGES).replace("__GUIDE_PLACES__", GUIDE_PLACES).replace("__GUIDE_MAP__", GUIDE_MAP)
 open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "181fremont_admin_prototype.html"), "w", encoding="utf-8").write(HTML)
 print("built", len(HTML), "bytes")

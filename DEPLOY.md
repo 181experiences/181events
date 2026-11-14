@@ -253,3 +253,24 @@ The report's From is `reports@181residents.com`; like `rsvps@`, it needs no
 mailbox. Test: start a count, type a few numbers, press Submit; the report
 should reach every verified recipient within a minute, and the count's card
 shows when and to whom it went.
+
+## The Black Book (Services > Black Book)
+
+The front desk's city guide. Two kinds of knowledge, kept apart on purpose:
+
+- **Facts about a place** live in `source/guide_places.json` and ride the admin
+  page as inline JSON. Each listing was checked against the place's own
+  website and carries a `verified` date and its `sources`. A change to a fact
+  is a change to this file, a rebuild, and a push. `desk_note` is the line
+  the desk reads before quoting a listing; it is never emailed or printed.
+- **What the house knows** (our connection there, a name, a number, a note)
+  lives in the database table `guide_notes`, written by any tier through
+  `PUT /api/guide/<place id>`. A fact check never touches it.
+
+The map is our own drawing, not a map service. `source/guide_map.json` holds
+two line drawings (about 1.3 miles around the tower, and the whole city) made
+once by `source/make_guide_map.py` from OpenStreetMap street data (credit:
+OpenStreetMap contributors, shown under the map). To redraw: fetch the three
+Overpass extracts the script's header names, then run it on that folder.
+Places are positioned from the `lat` and `lon` in the facts file; distance is
+straight-line miles from the tower, and the minutes are labelled estimates.

@@ -3588,6 +3588,352 @@
     renderDash();
   }
 
+  // ---------------------------------------------------------------- the Black Book
+  // The front desk's city guide: a resident calls down for a recommendation,
+  // the desk types a word, and every fact needed to answer (and to book) is
+  // on one card. The facts ride the page from source/guide_places.json, each
+  // checked against the place's own website; what the house knows (our
+  // connection there) comes from /api/guide and is written by the team. The
+  // map is our own two-tone drawing, never a map service: the tower in red at
+  // the center, and whichever place is under the hand lit in gold.
+  const GD_DAYS = ["sun", "mon", "tue", "wed", "thu", "fri", "sat"];
+  const GD_WEEK = [["mon", "Monday"], ["tue", "Tuesday"], ["wed", "Wednesday"], ["thu", "Thursday"], ["fri", "Friday"], ["sat", "Saturday"], ["sun", "Sunday"]];
+  const GD_STOP = new Set("restaurant restaurants food foods place places spot spots a an the for with in and of on at good great best nice cuisine near to me somewhere something anything some any want looking".split(" "));
+  const GD_MICH = { "3": "Michelin · three stars", "2": "Michelin · two stars", "1": "Michelin · one star", bib: "Michelin · Bib Gourmand", guide: "In the Michelin Guide" };
+  const GD_QUICK = ["French", "Italian", "Japanese", "Steakhouse", "Seafood", "Chinese"];
+  const GD_FLAGS = [["michelin", "Michelin"], ["open", "Open now"], ["walk", "Walkable"]];
+  const GD_GOLD = "#e8b23a", GD_GROUND = "#232220", GD_STREET = "#e9e3d8";
+  let gd = null;
+
+  const gdUrl = u => /^https?:\/\//i.test(u || "") ? u : "";
+  const gdHost = u => { try { return new URL(u).hostname.replace(/^www\./, ""); } catch (e) { return u || ""; } };
+  const gdPlain = s => String(s || "").normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
+  const gdClock = m => { m = ((m % 1440) + 1440) % 1440; const h = Math.floor(m / 60), mm = m % 60; return `${h % 12 || 12}:${String(mm).padStart(2, "0")} ${h < 12 ? "AM" : "PM"}`; };
+  const gdDate = iso => { const d = new Date(iso + "T12:00:00"); return isNaN(d) ? iso : d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }); };
+
+  function gdMiles(a, b) {
+    const R = 3958.8, rad = x => x * Math.PI / 180;
+    const dLat = rad(b.lat - a.lat), dLon = rad(b.lon - a.lon);
+    const h = Math.sin(dLat / 2) ** 2 + Math.cos(rad(a.lat)) * Math.cos(rad(b.lat)) * Math.sin(dLon / 2) ** 2;
+    return 2 * R * Math.asin(Math.sqrt(h));
+  }
+  function gdCompass(a, b) {
+    const dy = b.lat - a.lat, dx = (b.lon - a.lon) * Math.cos(a.lat * Math.PI / 180);
+    const deg = (Math.atan2(dx, dy) * 180 / Math.PI + 360) % 360;
+    return ["north", "northeast", "east", "southeast", "south", "southwest", "west", "northwest"][Math.round(deg / 45) % 8];
+  }
+  // Straight-line miles are exact; the minutes are an honest estimate (a city
+  // grid adds about a quarter to the walk, a car averages twelve miles an hour
+  // plus the wait for it), and they read as "about" everywhere.
+  function gdTravel(mi) {
+    if (mi < 0.08) return "a few steps away";
+    if (mi <= 1.2) { const m = Math.max(2, Math.round(mi * 1.25 * 20)); return `about a ${m} minute walk`; }
+    const m = Math.round(mi * 1.35 * 5 + 3); return `about ${m} minutes by car`;
+  }
+  const gdMi = mi => mi < 0.1 ? "under 0.1 mi" : `${mi.toFixed(1)} mi`;
+  const gdProx = p => `${gdMi(p.mi)} ${p.dir} · ${gdTravel(p.mi)}`;
+
+  // Hours are kept as words a person can read aloud. When a day is nothing
+  // but clean ranges the card can also say open or closed right now; anything
+  // looser ("Seatings at 5:00 and 8:00") is shown as written, never guessed.
+  function gdRanges(s) {
+    const one = "\\d{1,2}:\\d{2} [AP]M to \\d{1,2}:\\d{2} [AP]M";
+    if (!s || !new RegExp(`^${one}(, ${one})*$`).test(s)) return null;
+    const mins = (h, m, ap) => (Number(h) % 12 + (ap === "P" ? 12 : 0)) * 60 + Number(m);
+    return [...s.matchAll(/(\d{1,2}):(\d{2}) ([AP])M to (\d{1,2}):(\d{2}) ([AP])M/g)].map(x => {
+      const a = mins(x[1], x[2], x[3]); let b = mins(x[4], x[5], x[6]); if (b <= a) b += 1440; return [a, b];
+    });
+  }
+  function gdNow() {
+    const parts = new Intl.DateTimeFormat("en-US", { timeZone: "America/Los_Angeles", weekday: "short", hour: "numeric", minute: "numeric", hour12: false }).formatToParts(new Date());
+    const get = t => (parts.find(x => x.type === t) || {}).value || "";
+    return { day: get("weekday").toLowerCase().slice(0, 3), mins: (Number(get("hour")) % 24) * 60 + Number(get("minute")) };
+  }
+  function gdStatus(p) {
+    const now = gdNow(), t = p.hours && p.hours[now.day];
+    if (!t) return { cls: "", text: "Hours by phone" };
+    if (t === "Closed") return { cls: "shut", text: "Closed today" };
+    const r = gdRanges(t);
+    if (!r) return { cls: "", text: "Today: " + t };
+    for (const [a, b] of r) if (now.mins >= a && now.mins < b) return { cls: "open", open: true, text: "Open now until " + gdClock(b) };
+    const next = r.find(([a]) => a > now.mins);
+    return next ? { cls: "", text: "Opens " + gdClock(next[0]) + " today" } : { cls: "shut", text: "Closed for the day" };
+  }
+
+  function gdBoot() {
+    if (gd) { gdRender(); return; }
+    let places = [], map = null, verified = "";
+    try { const j = JSON.parse($("#guide-places").textContent); places = j.places || []; verified = j.verified || ""; } catch (e) {}
+    try { map = JSON.parse($("#guide-map").textContent); } catch (e) {}
+    const home = map ? map.home : { lat: 37.789788, lon: -122.395356 };
+    for (const p of places) {
+      p.mi = gdMiles(home, p); p.dir = gdCompass(home, p);
+      p.hay = " " + gdPlain([p.name, p.kind, (p.cuisines || []).join(" "), p.neighborhood, (p.good_for || []).join(" "), p.description,
+        p.price, p.michelin ? "michelin " + (p.michelin === "bib" ? "bib gourmand" : p.michelin === "guide" ? "guide" : "star starred") : ""].join(" ")).replace(/[^a-z0-9$]+/g, " ");
+    }
+    places.sort((a, b) => a.mi - b.mi);
+    gd = { places, map, home, verified, notes: {}, q: "", flags: new Set(), active: null, hover: null, pick: "near", view: "near", shown: [] };
+    gdDrawMaps(); gdRender();
+    api("/api/guide").then(r => { gd.notes = (r && r.notes) || {}; gdRender(); }).catch(() => {});
+  }
+
+  function gdTokens(q) { return gdPlain(q).replace(/[^a-z0-9$]+/g, " ").split(" ").filter(t => t && !GD_STOP.has(t)); }
+  function gdFind() {
+    const tokens = gdTokens(gd.q);
+    const word = (p, t) => p.hay.includes(" " + t) || (t.length > 3 && t.endsWith("s") && p.hay.includes(" " + t.slice(0, -1)));
+    return gd.places.filter(p => {
+      if (gd.flags.has("michelin") && !p.michelin) return false;
+      if (gd.flags.has("open") && !gdStatus(p).open) return false;
+      if (gd.flags.has("walk") && p.mi > 0.8) return false;
+      return tokens.every(t => {
+        if (t === "open") return !!gdStatus(p).open;
+        if (["walk", "walkable", "walking", "close", "closest", "nearby"].includes(t)) return p.mi <= 0.8;
+        return word(p, t);
+      });
+    });
+  }
+
+  // ---- the cards
+  function gdConn(p) {
+    const n = gd.notes[p.id];
+    const line = n && n.connected ? `<strong>Yes</strong> · ${esc(n.contact || "name not recorded")}${n.phone ? ` · <a href="tel:${esc(n.phone.replace(/[^0-9+]/g, ""))}">${esc(n.phone)}</a>` : ""}` : "None on file";
+    return `${line} <button class="gdlink" data-gd="conn|${p.id}">${n ? "Edit" : "Add"}</button>${n && n.note ? `<div class="gdsub">${esc(n.note)}</div>` : ""}`;
+  }
+  function gdWeek(p) {
+    if (!p.hours) return "";
+    const today = gdNow().day;
+    return `<details class="gdweek"><summary>The week</summary><table>${GD_WEEK.map(([k, name]) =>
+      `<tr class="${k === today ? "today" : ""}"><td>${name}</td><td>${esc(p.hours[k] || "By phone")}</td></tr>`).join("")}</table></details>`;
+  }
+  function gdCard(p) {
+    const st = gdStatus(p), today = p.hours && p.hours[gdNow().day];
+    const site = gdUrl(p.website), book = p.book || {}, bookUrl = gdUrl(book.url);
+    const contact = [
+      p.phone ? `<a href="tel:${esc(p.phone.replace(/[^0-9+]/g, ""))}">${esc(p.phone)}</a>` : "",
+      site ? `<a href="${esc(site)}" target="_blank" rel="noopener">${esc(gdHost(site))}</a>` : "",
+      p.email ? `<a href="mailto:${esc(p.email)}">${esc(p.email)}</a>` : "",
+    ].filter(Boolean).join(" · ") || "Not published";
+    const reserve = book.how ? `${esc(book.how)}${bookUrl ? ` · <a href="${esc(bookUrl)}" target="_blank" rel="noopener">Open the booking page</a>` : ""}` : "By phone";
+    return `<article class="gdcard${gd.active === p.id ? " on" : ""}" data-gdcard="${p.id}">
+      <div class="top"><h3>${esc(p.name)}</h3><div class="dist">${esc(gdMi(p.mi))} ${esc(p.dir)}<br>${esc(gdTravel(p.mi))}</div></div>
+      <div class="tags">${esc([(p.cuisines || []).join(", "), p.neighborhood, p.price].filter(Boolean).join(" · "))}</div>
+      <div class="badges"><span class="gdb ${st.cls}">${esc(st.text)}</span>${p.michelin ? `<span class="gdb mich">${esc(GD_MICH[p.michelin])}</span>` : ""}</div>
+      <p class="desc">${esc(p.description)}</p>
+      <dl class="gdfacts">
+        <dt>Address</dt><dd>${esc(p.address)}</dd>
+        <dt>Hours</dt><dd>${today ? `<strong>Today</strong> ${esc(today)}` : "Not published; confirm by phone"}${p.hours_note ? `<div class="gdsub">${esc(p.hours_note)}</div>` : ""}${gdWeek(p)}</dd>
+        <dt>Contact</dt><dd>${contact}</dd>
+        <dt>Reservations</dt><dd>${reserve}</dd>
+        <dt>Our connection</dt><dd>${gdConn(p)}</dd>
+      </dl>
+      ${p.desk_note ? `<div class="gdnote"><strong>Before you quote it.</strong> ${esc(p.desk_note)}</div>` : ""}
+      <div class="gdfoot"><span class="ver">Checked ${esc(gdDate(p.verified))}</span>
+        <button class="mini" data-gd="mail|${p.id}">Email to a resident</button><button class="mini ghost" data-gd="print|${p.id}">Print</button></div>
+    </article>`;
+  }
+
+  function gdRender() {
+    if (!gd) return;
+    const list = gd.shown = gdFind();
+    if (gd.active && !list.some(p => p.id === gd.active)) gd.active = null;
+    gd.hover = null;
+    const qWord = gdTokens(gd.q).join(" ");
+    $("#gd-chips").innerHTML = GD_QUICK.map(c => `<span class="chip${gdPlain(c) === qWord ? " done" : ""}" data-gd="quick|${c}">${c}</span>`).join("")
+      + GD_FLAGS.map(([k, label]) => `<span class="chip${gd.flags.has(k) ? " done" : ""}" data-gd="flag|${k}">${label}</span>`).join("");
+    const asked = gd.q.trim() || gd.flags.size;
+    $("#gd-count").innerHTML = list.length
+      ? `<span><strong>${list.length}</strong> ${list.length === 1 ? "place" : "places"}${gd.q.trim() ? ` for &ldquo;${esc(gd.q.trim())}&rdquo;` : ""} · nearest first</span>
+         <button class="mini ghost" data-gd="print-all|">Print ${asked ? "these" : "the whole book"}</button>`
+      : `<span>Nothing in the book for &ldquo;${esc(gd.q.trim())}&rdquo;${gd.flags.size ? " with those filters" : ""}. The book holds restaurants for now; try a cuisine, a neighborhood, or a name.</span>`;
+    $("#gd-list").innerHTML = list.map(gdCard).join("");
+    $("#gd-sub").textContent = `${gd.places.length} restaurants, each checked against its own website. Last full check ${gdDate(gd.verified)}. Type what the resident asked for.`;
+    gdMark();
+  }
+
+  // ---- the map
+  function gdDrawMaps() {
+    const box = $("#gd-map"); if (!box || !gd.map) return;
+    const svg = key => {
+      const m = gd.map[key], w = m.widths;
+      const lay = k => m.layers[k] ? `<path d="${m.layers[k]}" fill="none" stroke="${GD_STREET}" stroke-width="${w[k]}" stroke-linecap="round" stroke-linejoin="round"/>` : "";
+      const pier = m.layers.pier ? `<path d="${m.layers.pier}" fill="none" stroke="${GD_STREET}" stroke-opacity=".5" stroke-width="1"/>` : "";
+      return `<svg class="gdsvg" data-map="${key}" viewBox="0 0 ${m.w} ${m.h}" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Street map, 181 Fremont at the center">
+        ${lay("shore")}${pier}${lay("c")}${lay("b")}${lay("a")}<g class="dots"></g><g class="tie"></g><g class="home"></g><g class="mark"></g></svg>`;
+    };
+    box.innerHTML = svg("near") + svg("city");
+  }
+  const gdXY = (key, p) => { const m = gd.map[key]; return [(p.lon - m.west) * m.kx, (m.north - p.lat) * m.ky]; };
+  const gdOnMap = (key, p) => { const m = gd.map[key], [x, y] = gdXY(key, p); return x >= 14 && x <= m.w - 14 && y >= 14 && y <= m.h - 14; };
+
+  function gdMark() {
+    if (!gd || !gd.map) return;
+    const target = gd.places.find(p => p.id === (gd.hover || gd.active)) || null;
+    gd.view = target ? (gdOnMap("near", target) ? (gd.pick === "city" ? "city" : "near") : "city") : gd.pick;
+    $$("#gd-map .gdsvg").forEach(s => s.classList.toggle("on", s.dataset.map === gd.view));
+    $$("[data-gd^='map|']").forEach(b => b.classList.toggle("on", b.dataset.gd === "map|" + gd.view));
+    const key = gd.view, m = gd.map[key], el = $(`#gd-map .gdsvg[data-map="${key}"]`);
+    const u = m.w / Math.max(240, el.clientWidth || 520);          // drawing units per screen pixel
+    const label = (x, y, text, sub, fill) => {
+      const right = x > m.w * 0.62, tx = x + (right ? -13 : 13) * u, anchor = right ? "end" : "start";
+      const t = (dy, s, size, weight) => `<text x="${tx}" y="${y + dy * u}" text-anchor="${anchor}" font-size="${size * u}" font-weight="${weight}" fill="${fill}" stroke="${GD_GROUND}" stroke-width="${4 * u}" paint-order="stroke" stroke-linejoin="round" style="font-family:var(--fb);letter-spacing:.02em">${esc(s)}</text>`;
+      return t(sub ? -2 : 4, text, 13, 600) + (sub ? t(13, sub, 11, 400) : "");
+    };
+    const [hx, hy] = gdXY(key, gd.home);
+    el.querySelector(".home").innerHTML = (key === "near" && m.home
+      ? `<path d="${m.home}" fill="var(--red)" stroke="var(--red)" stroke-width="${1.5 * u}" stroke-linejoin="round"/>`
+      : `<circle cx="${hx}" cy="${hy}" r="${4.5 * u}" fill="var(--red)"/>`)
+      + `<circle cx="${hx}" cy="${hy}" r="${11 * u}" fill="none" stroke="var(--red)" stroke-width="${1.6 * u}"/>`
+      + (target && Math.hypot(...gdXY(key, target).map((v, i) => v - [hx, hy][i])) < 70 * u ? "" : label(hx, hy, "181 Fremont", "", "#fff"));
+    el.querySelector(".dots").innerHTML = gd.shown.filter(p => gdOnMap(key, p)).map(p => {
+      const [x, y] = gdXY(key, p);
+      return `<circle class="gddot" data-gd="pick|${p.id}" cx="${x}" cy="${y}" r="${3.4 * u}" fill="${GD_STREET}" stroke="${GD_GROUND}" stroke-width="${1.4 * u}"><title>${esc(p.name)}</title></circle>`;
+    }).join("");
+    let tie = "", mark = "";
+    if (target) {
+      const [x, y] = gdXY(key, target);
+      tie = `<line x1="${hx}" y1="${hy}" x2="${x}" y2="${y}" stroke="${GD_GOLD}" stroke-width="${1.6 * u}" stroke-dasharray="${5 * u} ${4 * u}" stroke-linecap="round"/>`;
+      mark = `<circle cx="${x}" cy="${y}" r="${12 * u}" fill="${GD_GOLD}" fill-opacity=".25"/>
+        <circle cx="${x}" cy="${y}" r="${6 * u}" fill="${GD_GOLD}" stroke="${GD_GROUND}" stroke-width="${1.6 * u}"/>`
+        + label(x, y, target.name, gdMi(target.mi) + " " + target.dir, GD_GOLD);
+    }
+    el.querySelector(".tie").innerHTML = tie;
+    el.querySelector(".mark").innerHTML = mark;
+    $("#gd-mapnote").textContent = target ? `${target.name} · ${gdProx(target)}`
+      : key === "near" ? "About 1.3 miles each way. Point at a place to see where it sits."
+        : "All of San Francisco. Point at a place to see where it sits.";
+    $$("#gd-list .gdcard").forEach(c => c.classList.toggle("on", c.dataset.gdcard === gd.active));
+  }
+
+  // ---- what leaves the desk: an email draft, or paper. Both carry the same
+  // facts and neither carries the house's own notes.
+  function gdLines(p) {
+    const out = [p.name, [(p.cuisines || []).join(", "), p.neighborhood, p.price].filter(Boolean).join(" · ")];
+    if (p.michelin) out.push(GD_MICH[p.michelin]);
+    out.push("", p.address, `${gdMi(p.mi)} ${p.dir} of 181 Fremont, ${gdTravel(p.mi)}`, "");
+    if (p.hours) { out.push("Hours"); for (const [k, name] of GD_WEEK) out.push(`${name}: ${p.hours[k] || "by phone"}`); }
+    else out.push("Hours: kindly confirm by phone");
+    if (p.hours_note) out.push(p.hours_note);
+    out.push("");
+    if (p.phone) out.push("Phone: " + p.phone);
+    if (gdUrl(p.website)) out.push("Website: " + p.website);
+    if (p.email) out.push("Email: " + p.email);
+    const b = p.book || {};
+    if (b.how) out.push("Reservations: " + b.how + (gdUrl(b.url) ? ", " + b.url : ""));
+    out.push("", p.description);
+    return out;
+  }
+  async function gdMail(p) {
+    const withMail = residents.filter(r => r.email && r.status !== "Disabled");
+    const opt = r => `${r.name}${r.unit ? ", " + r.unit : ""} <${r.email}>`;
+    const asked = dialog(`Email ${p.name} to a resident`,
+      "Start typing a name or a unit and pick the resident, or type any address. Leave it empty to address the note in Outlook.",
+      [{ label: "Write the note", kind: "primary", value: "go" }, { label: "Cancel", kind: "quiet", value: null }],
+      [{ id: "to", label: "To", placeholder: "Name, unit, or email address" }]);
+    const inp = $("#dlgf-to");
+    if (inp) {
+      let dl = $("#gd-reslist");
+      if (!dl) { dl = document.createElement("datalist"); dl.id = "gd-reslist"; document.body.appendChild(dl); }
+      dl.innerHTML = withMail.map(r => `<option value="${esc(opt(r))}"></option>`).join("");
+      inp.setAttribute("list", "gd-reslist"); inp.setAttribute("autocomplete", "off"); inp.setAttribute("autocapitalize", "none"); inp.focus();
+    }
+    const r = await asked;
+    if (!r || !r.value) return;
+    const typed = (r.fields.to || "").trim();
+    const m = typed.match(/<([^<>\s]+@[^<>\s]+)>/) || typed.match(/^([^\s<>]+@[^\s<>]+)$/);
+    if (typed && !m) { toast("That is not an address yet. Pick the resident from the list, or type the full email.", "warn"); return; }
+    const who = withMail.find(x => m && x.email === m[1]);
+    const first = who ? String(who.name).split(" ")[0] : "";
+    const body = `Hello${first ? " " + first : ""},\n\nAs promised, here are the details for ${p.name}.\n\n${gdLines(p).join("\n")}\n\n`
+      + `If you would like us to arrange the reservation, say the word and we will take care of it.\n\nWarmly,\nThe Front Desk\n181 Fremont`;
+    openMail({ to: m ? m[1] : "", subject: `${p.name}: the details, from the front desk`, body,
+      title: "The note is written", text: `Everything on the card for ${esc(p.name)}, addressed${m ? " to " + esc(m[1]) : " to nobody yet"}.` });
+  }
+  function gdPrint(list) {
+    if (!list.length) { toast("Nothing to print.", "warn"); return; }
+    const block = p => {
+      const b = p.book || {};
+      return `<section><div class="h"><h2>${esc(p.name)}</h2><div class="d">${esc(gdProx(p))}</div></div>
+        <div class="t">${esc([(p.cuisines || []).join(", "), p.neighborhood, p.price].filter(Boolean).join(" · "))}${p.michelin ? ` · <b>${esc(GD_MICH[p.michelin])}</b>` : ""}</div>
+        <p>${esc(p.description)}</p>
+        <table><tr><td>Address</td><td>${esc(p.address)}</td></tr>
+        <tr><td>Hours</td><td>${p.hours ? GD_WEEK.map(([k, n]) => `<span class="dy"><i>${n.slice(0, 3)}</i> ${esc(p.hours[k] || "by phone")}</span>`).join("") : "Kindly confirm by phone"}${p.hours_note ? `<div class="n">${esc(p.hours_note)}</div>` : ""}</td></tr>
+        <tr><td>Contact</td><td>${[p.phone, gdUrl(p.website) ? gdHost(p.website) : "", p.email].filter(Boolean).map(esc).join(" · ") || "Not published"}</td></tr>
+        <tr><td>Reservations</td><td>${esc(b.how || "By phone")}</td></tr></table></section>`;
+    };
+    const title = list.length === 1 ? list[0].name : (gd.q.trim() ? `"${gd.q.trim()}"` : "Restaurants");
+    const w = window.open("", "_blank");
+    if (!w) { toast("The browser blocked the print window; allow pop-ups for this site.", "warn"); return; }
+    w.document.write(`<!DOCTYPE html><html><head><title>${esc(title)} · 181 Fremont</title><style>
+      body{font-family:Georgia,serif;color:#16161a;margin:38px 44px;font-size:12.5px;line-height:1.45}
+      header{border-bottom:2px solid #16161a;padding-bottom:8px;margin-bottom:6px;display:flex;justify-content:space-between;align-items:flex-end}
+      header .k{font-family:Helvetica,Arial,sans-serif;font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:#7a7266}
+      h1{font-size:22px;margin:2px 0 0;font-weight:normal}
+      section{padding:14px 0 12px;border-bottom:1px solid #ddd6cb;break-inside:avoid}
+      .h{display:flex;justify-content:space-between;align-items:baseline;gap:16px} h2{font-size:17px;margin:0;font-weight:bold}
+      .d{font-family:Helvetica,Arial,sans-serif;font-size:10.5px;color:#55555f;white-space:nowrap}
+      .t{font-family:Helvetica,Arial,sans-serif;font-size:10.5px;letter-spacing:.04em;color:#7a7266;margin:2px 0 6px}
+      p{margin:0 0 8px} table{border-collapse:collapse;width:100%} td{padding:2px 0;vertical-align:top}
+      td:first-child{font-family:Helvetica,Arial,sans-serif;font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;color:#7a7266;width:96px;padding-top:4px}
+      .dy{display:inline-block;margin-right:14px;white-space:nowrap} .dy i{font-style:normal;font-family:Helvetica,Arial,sans-serif;font-size:10px;color:#7a7266;text-transform:uppercase;letter-spacing:.06em}
+      .n{color:#55555f;font-style:italic;margin-top:2px}
+      footer{margin-top:14px;font-family:Helvetica,Arial,sans-serif;font-size:9.5px;color:#7a7266}
+      @media print{ body{margin:14px 18px} }
+    </style></head><body>
+    <header><div><div class="k">181 Fremont · From the front desk</div><h1>${esc(list.length === 1 ? list[0].name : "Restaurants" + (gd.q.trim() ? `: ${gd.q.trim()}` : ""))}</h1></div>
+      <div class="k">${list.length === 1 ? "" : list.length + " places · nearest first"}</div></header>
+    ${list.map(block).join("")}
+    <footer>Distances are measured from 181 Fremont; times are estimates. Hours were checked ${esc(gdDate(gd.verified))} and can change, so a call ahead is wise.</footer>
+    </body></html>`);
+    w.document.close(); w.focus(); w.print();
+  }
+  async function gdEditConn(p) {
+    const n = gd.notes[p.id] || {};
+    const r = await dialog(`Our connection at ${p.name}`,
+      "Someone there who knows the building and takes our call. For the team only: it never goes into an email or onto a printout.",
+      [{ label: "Save", kind: "primary", value: "save" }, { label: "No connection here", value: "clear" }, { label: "Cancel", kind: "quiet", value: null }],
+      [{ id: "contact", label: "Who, and their role", value: n.contact, placeholder: "Marco, general manager" },
+        { id: "phone", label: "Their direct number", value: n.phone, placeholder: "(415) 555-0100" },
+        { id: "note", label: "A note for the team, optional", value: n.note, placeholder: "Ask for the corner banquette" }]);
+    if (!r || !r.value) return;
+    const f = r.fields, clear = r.value === "clear";
+    const body = clear ? { connected: false, note: "" }
+      : { connected: !!(f.contact.trim() || f.phone.trim()), contact: f.contact, phone: f.phone, note: f.note };
+    try {
+      const res = await api("/api/guide/" + encodeURIComponent(p.id), { method: "PUT", body: JSON.stringify(body) });
+      if (res.note) gd.notes[p.id] = res.note; else delete gd.notes[p.id];
+      toast(res.note ? "Saved to the book." : "Cleared.");
+      const keep = gd.active; gdRender(); gd.active = keep; gdMark();
+    } catch (e) { toast(e.message, "warn"); }
+  }
+
+  document.addEventListener("change", ev => { if (ev.target.id === "s-guide" && ev.target.checked) gdBoot(); });
+  document.addEventListener("input", ev => { if (ev.target.id === "gd-q" && gd) { gd.q = ev.target.value; gd.active = null; gdRender(); } });
+  document.addEventListener("mouseover", ev => {
+    if (!gd) return;
+    const c = ev.target.closest("[data-gdcard]"), id = c ? c.dataset.gdcard : null;
+    if (id !== gd.hover && (c || gd.hover) && (c || !ev.target.closest("#gd-map"))) { gd.hover = id; gdMark(); }
+  });
+  document.addEventListener("click", ev => {
+    if (!gd) return;
+    const b = ev.target.closest("[data-gd]");
+    if (b) {
+      const [verb, arg] = b.dataset.gd.split("|");
+      const p = gd.places.find(x => x.id === arg);
+      if (verb === "quick") { const on = gdPlain(arg) === gdTokens(gd.q).join(" "); gd.q = on ? "" : arg; $("#gd-q").value = gd.q; gd.active = null; gdRender(); }
+      else if (verb === "flag") { if (gd.flags.has(arg)) gd.flags.delete(arg); else gd.flags.add(arg); gd.active = null; gdRender(); }
+      else if (verb === "map") { gd.pick = arg; gd.hover = null; if (gd.active && !gdOnMap("near", gd.places.find(x => x.id === gd.active))) gd.active = arg === "near" ? null : gd.active; gdMark(); }
+      else if (verb === "pick" && p) { gd.active = p.id; gd.hover = null; gdMark(); const c = $(`[data-gdcard="${p.id}"]`); if (c) c.scrollIntoView({ block: "center", behavior: "smooth" }); }
+      else if (verb === "mail" && p) gdMail(p);
+      else if (verb === "print" && p) gdPrint([p]);
+      else if (verb === "print-all") gdPrint(gd.shown);
+      else if (verb === "conn" && p) gdEditConn(p);
+      return;
+    }
+    const c = ev.target.closest("[data-gdcard]");
+    if (c && !ev.target.closest("a, button, summary, details")) { gd.active = gd.active === c.dataset.gdcard ? null : c.dataset.gdcard; gdMark(); }
+  });
+  window.addEventListener("resize", () => { if (gd && $("#s-guide") && $("#s-guide").checked) gdMark(); });
+
   async function boot() {
     try { status = await api("/api/status"); } catch (e) { status = {}; }
     let whoEmail = "";
@@ -3642,6 +3988,11 @@
     loadNotes();
     loadInventory();
     applyDashFold();
+    // the sticky map sits just under the chrome, whatever its height today
+    const chrome = document.querySelector(".chrome");
+    const setChrome = () => { if (chrome) document.documentElement.style.setProperty("--chrome-h", chrome.offsetHeight + "px"); };
+    setChrome(); window.addEventListener("resize", setChrome);
+    document.addEventListener("change", ev => { if (ev.target.name === "scr") setTimeout(setChrome, 0); });
   }
 
   // The charts fold away so the desk lands nearer the RSVP work. Remembered

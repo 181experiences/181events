@@ -1,0 +1,1574 @@
+{
+ "verified": "2026-11-13",
+ "places": [
+  {
+   "id": "cafe-de-la-presse",
+   "name": "Cafe de la Presse",
+   "kind": "Restaurant",
+   "cuisines": [
+    "French",
+    "Cafe",
+    "Brasserie"
+   ],
+   "neighborhood": "Union Square",
+   "address": "352 Grant Avenue, San Francisco, CA 94108",
+   "lat": 37.790481,
+   "lon": -122.405465,
+   "hours": {
+    "mon": "8:00 AM to 4:00 PM",
+    "tue": "8:00 AM to 6:00 PM",
+    "wed": "8:00 AM to 6:00 PM",
+    "thu": "8:00 AM to 8:00 PM",
+    "fri": "8:00 AM to 8:00 PM",
+    "sat": "8:00 AM to 8:00 PM",
+    "sun": "8:00 AM to 3:00 PM"
+   },
+   "hours_note": null,
+   "phone": "(415) 398-2680",
+   "website": "https://www.cafedelapresse.com",
+   "email": "olivier@cafedelapresse.com",
+   "book": {
+    "how": "OpenTable",
+    "url": "https://www.opentable.com/cafe-de-la-presse"
+   },
+   "price": "$$",
+   "michelin": null,
+   "good_for": [
+    "Casual lunch",
+    "Brunch",
+    "Wine and a bite"
+   ],
+   "description": "A corner brasserie and newsstand facing the Chinatown gate, serving classic and modern French plates from breakfast onward. It suits an easy daytime meal, a glass of French wine on the terrace, or a relaxed early dinner close to Union Square.",
+   "desk_note": null,
+   "verified": "2026-11-13",
+   "sources": [
+    "https://www.cafedelapresse.com/"
+   ]
+  },
+  {
+   "id": "joujou",
+   "name": "JouJou",
+   "kind": "Restaurant",
+   "cuisines": [
+    "French",
+    "Seafood",
+    "Raw Bar"
+   ],
+   "neighborhood": "Design District",
+   "address": "65 Division Street, San Francisco, CA 94103",
+   "lat": 37.769664,
+   "lon": -122.403786,
+   "hours": {
+    "mon": "Closed",
+    "tue": "5:00 PM to 10:00 PM",
+    "wed": "5:00 PM to 10:00 PM",
+    "thu": "5:00 PM to 10:00 PM",
+    "fri": "5:00 PM to 10:00 PM",
+    "sat": "5:00 PM to 10:00 PM",
+    "sun": "5:00 PM to 9:00 PM"
+   },
+   "hours_note": "Bar and raw bar open at 4:00 PM, Tuesday to Sunday, with happy hour until 6:00 PM.",
+   "phone": "(415) 523-8320",
+   "website": "https://www.joujousf.com",
+   "email": "ouioui@joujousf.com",
+   "book": {
+    "how": "Tock",
+    "url": "https://www.exploretock.com/joujousf"
+   },
+   "price": "$$$",
+   "michelin": null,
+   "good_for": [
+    "Date night",
+    "Seafood",
+    "Group dinner"
+   ],
+   "description": "A recently opened French restaurant from the team behind Lazy Bear, built around a seafood and raw bar. A good pick for a polished dinner in the Design District when you want French cooking with a lighter, shellfish-forward bent.",
+   "desk_note": null,
+   "verified": "2026-11-13",
+   "sources": [
+    "https://www.joujousf.com/location/joujou/",
+    "https://www.joujousf.com/"
+   ]
+  },
+  {
+   "id": "verjus",
+   "name": "Verjus",
+   "kind": "Restaurant",
+   "cuisines": [
+    "French",
+    "Wine Bar",
+    "Small Plates"
+   ],
+   "neighborhood": "Jackson Square",
+   "address": "550 Washington Street, San Francisco, CA 94111",
+   "lat": 37.795824,
+   "lon": -122.402528,
+   "hours": {
+    "mon": "Closed",
+    "tue": "4:00 PM to 10:00 PM",
+    "wed": "4:00 PM to 10:00 PM",
+    "thu": "4:00 PM to 10:00 PM",
+    "fri": "4:00 PM to 11:00 PM",
+    "sat": "11:30 AM to 11:00 PM",
+    "sun": "Closed"
+   },
+   "hours_note": "Full menu until 10:00 PM; bar snacks until 11:00 PM Fri and Sat. Closed Thanksgiving, Nov 26. Walk-ins welcome; reservations open one week ahead.",
+   "phone": "(415) 944-4600",
+   "website": "https://www.verjuscave.com",
+   "email": "info@verjuscave.com",
+   "book": {
+    "how": "SevenRooms",
+    "url": "https://www.sevenrooms.com/explore/verjus/reservations/create/search/"
+   },
+   "price": "$$$",
+   "michelin": "guide",
+   "good_for": [
+    "Wine lovers",
+    "After-work drinks",
+    "Date night"
+   ],
+   "description": "A Jackson Square cave a manger pairing a deep French wine list with small plates and plats du jour. It works well for an unhurried evening of wine and French plates a short walk from the Financial District.",
+   "desk_note": null,
+   "verified": "2026-11-13",
+   "sources": [
+    "https://www.verjuscave.com/",
+    "https://guide.michelin.com/us/en/california/san-francisco/restaurant/verjus"
+   ]
+  },
+  {
+   "id": "bon-delire",
+   "name": "Bon Delire",
+   "kind": "Restaurant",
+   "cuisines": [
+    "French",
+    "Bistro",
+    "Waterfront"
+   ],
+   "neighborhood": "Embarcadero",
+   "address": "Pier 3, Suite 102, San Francisco, CA 94111",
+   "lat": 37.79795,
+   "lon": -122.3959,
+   "hours": {
+    "mon": "3:00 PM to 9:00 PM",
+    "tue": "3:00 PM to 9:00 PM",
+    "wed": "3:00 PM to 9:00 PM",
+    "thu": "11:30 AM to 9:00 PM",
+    "fri": "11:30 AM to 9:30 PM",
+    "sat": "11:00 AM to 3:00 PM, 5:00 PM to 9:30 PM",
+    "sun": "11:00 AM to 3:00 PM, 5:00 PM to 9:00 PM"
+   },
+   "hours_note": "Happy hour Monday to Friday, 3:00 to 5:00 PM. Lunch Thursday and Friday; brunch Saturday and Sunday; dinner from 5:00 PM.",
+   "phone": "(415) 969-0655",
+   "website": "https://www.bondeliresf.com",
+   "email": null,
+   "book": {
+    "how": "OpenTable",
+    "url": "https://www.opentable.com/r/bon-delire-san-francisco"
+   },
+   "price": "$$$",
+   "michelin": null,
+   "good_for": [
+    "Business dinner",
+    "Weekend brunch",
+    "Waterfront views"
+   ],
+   "description": "A modern Parisian-style bistro at the water's edge on Pier 3, right by the Ferry Building. The most convenient French dinner or weekend brunch for a resident of 181 Fremont.",
+   "desk_note": "Its site shows lunch on Thursday and Friday only, its booking page shows every weekday. Confirm lunch by phone.",
+   "verified": "2026-11-13",
+   "sources": [
+    "https://www.bondeliresf.com/"
+   ]
+  },
+  {
+   "id": "atelier-crenn",
+   "name": "Atelier Crenn",
+   "kind": "Restaurant",
+   "cuisines": [
+    "French",
+    "Tasting Menu",
+    "Fine Dining"
+   ],
+   "neighborhood": "Cow Hollow",
+   "address": "3127 Fillmore Street, San Francisco, CA 94123",
+   "lat": 37.798322,
+   "lon": -122.435844,
+   "hours": null,
+   "hours_note": "Dinner only, about three hours at the table. Its site does not publish hours.",
+   "phone": "(415) 440-0460",
+   "website": "https://www.ateliercrenn.com",
+   "email": "info@ateliercrenn.com",
+   "book": {
+    "how": "OpenTable",
+    "url": "https://www.opentable.com/r/atelier-crenn"
+   },
+   "price": "$$$$",
+   "michelin": "3",
+   "good_for": [
+    "Celebration",
+    "Special occasion",
+    "Foodies"
+   ],
+   "description": "Dominique Crenn's poetic, seafood-forward French tasting-menu restaurant, the city's most celebrated French fine dining. Reserve it for a milestone dinner when the evening itself is the point.",
+   "desk_note": "Hours are not published anywhere official. Confirm the evening and the booking by phone.",
+   "verified": "2026-11-13",
+   "sources": [
+    "https://www.ateliercrenn.com/",
+    "https://www.ateliercrenn.com/faq/",
+    "https://www.ateliercrenn.com/contactus/",
+    "https://guide.michelin.com/us/en/california/san-francisco/restaurant/atelier-crenn"
+   ]
+  },
+  {
+   "id": "chapeau",
+   "name": "Chapeau!",
+   "kind": "Restaurant",
+   "cuisines": [
+    "French",
+    "Bistro"
+   ],
+   "neighborhood": "Inner Richmond",
+   "address": "126 Clement Street, San Francisco, CA 94118",
+   "lat": 37.783384,
+   "lon": -122.460703,
+   "hours": {
+    "mon": "Closed",
+    "tue": "Closed",
+    "wed": "5:00 PM to 9:00 PM",
+    "thu": "5:00 PM to 9:00 PM",
+    "fri": "5:00 PM to 9:00 PM",
+    "sat": "5:00 PM to 9:00 PM",
+    "sun": "5:00 PM to 9:00 PM"
+   },
+   "hours_note": "Times shown are the reservation window. Open Thanksgiving Day, Nov 26, noon to 8:30 PM. Closed July 4, Dec 25, Jan 1.",
+   "phone": "(415) 750-9787",
+   "website": "https://www.chapeausf.com",
+   "email": null,
+   "book": {
+    "how": "OpenTable",
+    "url": "https://www.opentable.com/chapeau-reservations-san-francisco?restref=5881"
+   },
+   "price": "$$$",
+   "michelin": null,
+   "good_for": [
+    "Classic French",
+    "Family dinner",
+    "Date night"
+   ],
+   "description": "A husband-and-wife-run Parisian bistro on Clement Street since 1996, known for escargots, cassoulet and coq au vin. A dependable, warm neighborhood French dinner when you want tradition over novelty.",
+   "desk_note": "The times are when tables can be booked, not when it closes.",
+   "verified": "2026-11-13",
+   "sources": [
+    "https://www.chapeausf.com/"
+   ]
+  },
+  {
+   "id": "routier",
+   "name": "Routier",
+   "kind": "Restaurant",
+   "cuisines": [
+    "French",
+    "Bistro"
+   ],
+   "neighborhood": "Pacific Heights",
+   "address": "2801 California Street, San Francisco, CA 94115",
+   "lat": 37.787843,
+   "lon": -122.440746,
+   "hours": {
+    "mon": "Closed",
+    "tue": "Closed",
+    "wed": "From 5:30 PM, last reservation 8:45 PM",
+    "thu": "From 5:30 PM, last reservation 8:45 PM",
+    "fri": "From 5:30 PM, last reservation 8:45 PM",
+    "sat": "From 5:30 PM, last reservation 8:45 PM",
+    "sun": "From 5:30 PM, last reservation 8:45 PM"
+   },
+   "hours_note": "Walk-ins welcome. Parties over six book by email.",
+   "phone": "(415) 766-9997",
+   "website": "https://www.routiersf.com",
+   "email": "reservationsroutier@gmail.com",
+   "book": {
+    "how": "Resy, or walk in",
+    "url": null
+   },
+   "price": "$$$",
+   "michelin": "guide",
+   "good_for": [
+    "Date night",
+    "Neighborhood dinner"
+   ],
+   "description": "A stylish neighborhood bistro at California and Divisadero serving a changing, ingredient-driven French menu. A strong choice for a relaxed French dinner in Pacific Heights, with parties over 6 handled by email.",
+   "desk_note": "The phone number comes from the Michelin Guide, not its own site.",
+   "verified": "2026-11-13",
+   "sources": [
+    "https://www.routiersf.com/",
+    "https://guide.michelin.com/us/en/california/san-francisco/restaurant/routier"
+   ]
+  },
+  {
+   "id": "boulevard",
+   "name": "Boulevard",
+   "kind": "Restaurant",
+   "cuisines": [
+    "American",
+    "Californian",
+    "Fine Dining"
+   ],
+   "neighborhood": "Embarcadero",
+   "address": "1 Mission Street, San Francisco, CA 94105",
+   "lat": 37.793236,
+   "lon": -122.392891,
+   "hours": {
+    "mon": "5:00 PM to 9:30 PM",
+    "tue": "5:00 PM to 9:30 PM",
+    "wed": "5:00 PM to 9:30 PM",
+    "thu": "5:00 PM to 9:30 PM",
+    "fri": "5:00 PM to 9:30 PM",
+    "sat": "5:00 PM to 9:30 PM",
+    "sun": "Closed"
+   },
+   "hours_note": null,
+   "phone": "(415) 543-6084",
+   "website": "https://www.boulevardrestaurant.com",
+   "email": null,
+   "book": {
+    "how": "OpenTable",
+    "url": "https://www.opentable.com/r/boulevard-san-francisco"
+   },
+   "price": "$$$",
+   "michelin": null,
+   "good_for": [
+    "Business dinner",
+    "Celebration",
+    "Waterfront"
+   ],
+   "description": "Nancy Oakes' long-running Belle Epoque dining room on the Embarcadero, serving seasonal Californian cooking with a classic polish. Among the easiest upscale dinners to reach from 181 Fremont, and a natural business dinner.",
+   "desk_note": "The phone number comes from the Michelin Guide; its own site lists none. Its hours are printed without AM or PM and read here as evening.",
+   "verified": "2026-11-13",
+   "sources": [
+    "https://www.boulevardrestaurant.com/location/boulevard-restaurant/",
+    "https://www.boulevardrestaurant.com/"
+   ]
+  },
+  {
+   "id": "angler",
+   "name": "Angler",
+   "kind": "Restaurant",
+   "cuisines": [
+    "Seafood",
+    "Californian",
+    "Fine Dining"
+   ],
+   "neighborhood": "Embarcadero",
+   "address": "132 The Embarcadero, San Francisco, CA 94105",
+   "lat": 37.793083,
+   "lon": -122.392177,
+   "hours": {
+    "mon": "5:00 PM to 9:00 PM",
+    "tue": "11:30 AM to 2:00 PM, 5:00 PM to 9:00 PM",
+    "wed": "11:30 AM to 2:00 PM, 5:00 PM to 9:00 PM",
+    "thu": "11:30 AM to 2:00 PM, 5:00 PM to 9:00 PM",
+    "fri": "11:30 AM to 2:00 PM, 5:00 PM to 9:00 PM",
+    "sat": "11:30 AM to 2:00 PM, 5:00 PM to 9:00 PM",
+    "sun": "5:00 PM to 9:00 PM"
+   },
+   "hours_note": "Golden Hour Tuesday to Saturday, 5:00 to 6:30 PM.",
+   "phone": "(415) 872-9442",
+   "website": "https://anglerrestaurants.com",
+   "email": "info@anglersf.com",
+   "book": {
+    "how": "OpenTable",
+    "url": "https://www.opentable.com/r/angler-san-francisco"
+   },
+   "price": "$$$$",
+   "michelin": "1",
+   "good_for": [
+    "Business lunch",
+    "Celebration",
+    "Bay views"
+   ],
+   "description": "A wood-fired seafood restaurant on the Embarcadero waterfront where nearly every dish is touched by the hearth. A top choice for a special dinner or a business lunch with bay views, a short walk from the East Cut.",
+   "desk_note": "Its site still carries last winter's notices, so the hours may be stale. Confirm by phone.",
+   "verified": "2026-11-13",
+   "sources": [
+    "https://anglerrestaurants.com/",
+    "https://guide.michelin.com/us/en/california/san-francisco/restaurant/angler-sf"
+   ]
+  },
+  {
+   "id": "quince",
+   "name": "Quince",
+   "kind": "Restaurant",
+   "cuisines": [
+    "Californian",
+    "Tasting Menu",
+    "Fine Dining"
+   ],
+   "neighborhood": "Jackson Square",
+   "address": "470 Pacific Avenue, San Francisco, CA 94133",
+   "lat": 37.797432,
+   "lon": -122.403269,
+   "hours": {
+    "mon": "Closed",
+    "tue": "Dinner, reservations 5:00 to 8:00 PM",
+    "wed": "Dinner, reservations 5:00 to 8:00 PM",
+    "thu": "Dinner, reservations 5:00 to 8:00 PM",
+    "fri": "Lunch 11:30 AM to 1:00 PM; dinner, reservations 5:00 to 8:00 PM",
+    "sat": "Lunch 11:30 AM to 1:00 PM; dinner, reservations 5:00 to 8:00 PM",
+    "sun": "Closed"
+   },
+   "hours_note": "Bolinas Bar seats walk-ins first come, first served. Closed Nov 26 and Dec 25 to 26; open Christmas Eve lunch and New Year's Eve dinner.",
+   "phone": "(415) 775-8500",
+   "website": "https://www.quincerestaurant.com",
+   "email": "info@quincerestaurant.com",
+   "book": {
+    "how": "SevenRooms",
+    "url": "https://www.sevenrooms.com/explore/quince/reservations/create/search/"
+   },
+   "price": "$$$$",
+   "michelin": "3",
+   "good_for": [
+    "Celebration",
+    "Special occasion",
+    "Foodies"
+   ],
+   "description": "Michael Tusk's three-star Jackson Square restaurant, an ever-changing menu built on ingredients from its own Fresh Run Farm. The pick for the most serious special-occasion dinner within a short ride of downtown.",
+   "desk_note": "The times are when tables can be booked, not when it closes. The bar seats walk-ins.",
+   "verified": "2026-11-13",
+   "sources": [
+    "https://www.quincerestaurant.com/",
+    "https://www.quincerestaurant.com/join-us-for-lunch",
+    "https://guide.michelin.com/us/en/california/san-francisco/restaurant/quince"
+   ]
+  },
+  {
+   "id": "saison",
+   "name": "Saison",
+   "kind": "Restaurant",
+   "cuisines": [
+    "American",
+    "Californian",
+    "Tasting Menu"
+   ],
+   "neighborhood": "SoMa",
+   "address": "178 Townsend Street, San Francisco, CA 94107",
+   "lat": 37.7791,
+   "lon": -122.3922,
+   "hours": {
+    "mon": "Closed",
+    "tue": "Dinner from 5:00 PM",
+    "wed": "Dinner from 5:00 PM",
+    "thu": "Dinner from 5:00 PM",
+    "fri": "Dinner from 5:00 PM",
+    "sat": "Dinner from 5:00 PM",
+    "sun": "Closed"
+   },
+   "hours_note": "Bar Experience Tue to Thu, walk-ins welcome when seats are free. Dinner reservations release by the 1st of the prior month.",
+   "phone": "(415) 828-7990",
+   "website": "https://saisonsf.com",
+   "email": "info@saisonsf.com",
+   "book": {
+    "how": "OpenTable",
+    "url": "https://www.opentable.com/restref/client/?restref=1373257"
+   },
+   "price": "$$$$",
+   "michelin": "2",
+   "good_for": [
+    "Celebration",
+    "Wine lovers",
+    "Special occasion"
+   ],
+   "description": "A two-star tasting-menu restaurant in SoMa with a dedicated wine program and an optional bar experience. A strong choice for a long, elegant dinner in SoMa.",
+   "desk_note": "No closing time is published. Confirm the schedule by phone.",
+   "verified": "2026-11-13",
+   "sources": [
+    "https://saisonsf.com/",
+    "https://saisonsf.com/faq/",
+    "https://saisonsf.com/contact/",
+    "https://guide.michelin.com/us/en/california/san-francisco/restaurant/saison"
+   ]
+  },
+  {
+   "id": "lazy-bear",
+   "name": "Lazy Bear",
+   "kind": "Restaurant",
+   "cuisines": [
+    "American",
+    "Tasting Menu",
+    "Fine Dining"
+   ],
+   "neighborhood": "Mission",
+   "address": "3416 19th Street, San Francisco, CA 94110",
+   "lat": 37.760351,
+   "lon": -122.419703,
+   "hours": {
+    "mon": "Closed",
+    "tue": "5:00 PM to 11:00 PM",
+    "wed": "5:00 PM to 11:00 PM",
+    "thu": "5:00 PM to 11:00 PM",
+    "fri": "5:00 PM to 11:00 PM",
+    "sat": "5:00 PM to 11:00 PM",
+    "sun": "Closed"
+   },
+   "hours_note": "Dinner seating by ticket; no phone reservations.",
+   "phone": "(415) 874-9921",
+   "website": "https://www.lazybearsf.com",
+   "email": null,
+   "book": {
+    "how": "Tock, by ticket",
+    "url": null
+   },
+   "price": "$$$$",
+   "michelin": "2",
+   "good_for": [
+    "Celebration",
+    "Group dinner"
+   ],
+   "description": "A two-star tasting-menu dinner in the Mission, sold as tickets for set seatings. A strong special-occasion night out for a group.",
+   "desk_note": "Sold as tickets on Tock for set seatings. No phone reservations.",
+   "verified": "2026-11-13",
+   "sources": [
+    "https://www.lazybearsf.com/contact-info",
+    "https://guide.michelin.com/us/en/california/san-francisco/restaurant/lazy-bear"
+   ]
+  },
+  {
+   "id": "cotogna",
+   "name": "Cotogna",
+   "kind": "Restaurant",
+   "cuisines": [
+    "Italian",
+    "Pasta",
+    "Wood-fired"
+   ],
+   "neighborhood": "Jackson Square",
+   "address": "490 Pacific Avenue, San Francisco, CA 94133",
+   "lat": 37.797511,
+   "lon": -122.403384,
+   "hours": {
+    "mon": "4:30 PM to 9:00 PM",
+    "tue": "4:30 PM to 9:00 PM",
+    "wed": "11:30 AM to 9:00 PM",
+    "thu": "11:30 AM to 9:00 PM",
+    "fri": "11:30 AM to 9:30 PM",
+    "sat": "11:30 AM to 9:30 PM",
+    "sun": "Closed"
+   },
+   "hours_note": "Closed Thursday, November 26 (Thanksgiving).",
+   "phone": "(415) 775-8508",
+   "website": "https://www.cotognasf.com",
+   "email": "info@cotognasf.com",
+   "book": {
+    "how": "Phone or email",
+    "url": null
+   },
+   "price": "$$$",
+   "michelin": "guide",
+   "good_for": [
+    "Business dinner",
+    "Date night"
+   ],
+   "description": "A rustic Italian dining room a short walk from the Financial District, known for hand-rolled pasta, rotisserie meats and a wood-fired oven. A dependable choice for a polished but relaxed dinner or a weekday lunch.",
+   "desk_note": "Books by phone or email; the buttons on its site do not work.",
+   "verified": "2026-11-13",
+   "sources": [
+    "https://www.cotognasf.com",
+    "https://guide.michelin.com/us/en/california/san-francisco/restaurant/cotogna"
+   ]
+  },
+  {
+   "id": "perbacco",
+   "name": "Perbacco",
+   "kind": "Restaurant",
+   "cuisines": [
+    "Italian",
+    "Piedmontese",
+    "Pasta"
+   ],
+   "neighborhood": "Financial District",
+   "address": "230 California Street, San Francisco, CA 94111",
+   "lat": 37.793607,
+   "lon": -122.399344,
+   "hours": {
+    "mon": "Closed",
+    "tue": "11:30 AM to 9:00 PM",
+    "wed": "11:30 AM to 9:00 PM",
+    "thu": "11:30 AM to 9:00 PM",
+    "fri": "11:30 AM to 9:00 PM",
+    "sat": "5:30 PM to 9:00 PM",
+    "sun": "Closed"
+   },
+   "hours_note": "Site says Monday service opens in December.",
+   "phone": "(415) 955-0663",
+   "website": "https://www.perbaccosf.com",
+   "email": null,
+   "book": {
+    "how": "OpenTable",
+    "url": "https://www.opentable.com/r/perbacco-san-francisco"
+   },
+   "price": null,
+   "michelin": null,
+   "good_for": [
+    "Business lunch",
+    "Dinner"
+   ],
+   "description": "A long-running Financial District Italian restaurant focused on the cooking of Piedmont, with house-made pasta and cured meats. Convenient for a business lunch or a dinner before an evening downtown.",
+   "desk_note": "Closed Mondays for now. Its site says Monday service returns in December.",
+   "verified": "2026-11-13",
+   "sources": [
+    "https://www.perbaccosf.com"
+   ]
+  },
+  {
+   "id": "delfina",
+   "name": "Delfina",
+   "kind": "Restaurant",
+   "cuisines": [
+    "Italian",
+    "Pasta"
+   ],
+   "neighborhood": "Mission",
+   "address": "3621 18th Street, San Francisco, CA 94110",
+   "lat": 37.761415,
+   "lon": -122.424342,
+   "hours": {
+    "mon": "5:15 PM to 10:00 PM",
+    "tue": "5:15 PM to 10:00 PM",
+    "wed": "5:15 PM to 10:00 PM",
+    "thu": "5:15 PM to 10:00 PM",
+    "fri": "5:15 PM to 10:00 PM",
+    "sat": "5:15 PM to 10:00 PM",
+    "sun": "5:00 PM to 9:00 PM"
+   },
+   "hours_note": null,
+   "phone": "(415) 552-4055",
+   "website": "https://www.delfinasf.com",
+   "email": null,
+   "book": {
+    "how": "OpenTable",
+    "url": "https://www.opentable.com/r/delfina-restaurant-san-francisco"
+   },
+   "price": null,
+   "michelin": null,
+   "good_for": [
+    "Casual dinner",
+    "Groups"
+   ],
+   "description": "A neighborhood Italian restaurant in the Mission that has been a local standard for simple, well-made Tuscan-leaning cooking, including its signature spaghetti. Good when you want an unfussy, lively dinner outside downtown.",
+   "desk_note": null,
+   "verified": "2026-11-13",
+   "sources": [
+    "https://www.delfinasf.com"
+   ]
+  },
+  {
+   "id": "a16",
+   "name": "A16",
+   "kind": "Restaurant",
+   "cuisines": [
+    "Italian",
+    "Pizza",
+    "Southern Italian"
+   ],
+   "neighborhood": "Marina",
+   "address": "2355 Chestnut Street, San Francisco, CA 94123",
+   "lat": 37.79996,
+   "lon": -122.442104,
+   "hours": {
+    "mon": "5:00 PM to 9:30 PM",
+    "tue": "5:00 PM to 9:30 PM",
+    "wed": "5:00 PM to 9:30 PM",
+    "thu": "5:00 PM to 9:30 PM",
+    "fri": "12:00 PM to 10:00 PM",
+    "sat": "12:00 PM to 10:00 PM",
+    "sun": "12:00 PM to 9:30 PM"
+   },
+   "hours_note": "This listing is the Chestnut Street restaurant, not the Ferry Building counter.",
+   "phone": "(415) 598-2252",
+   "website": "https://www.a16pizza.com",
+   "email": null,
+   "book": {
+    "how": "Online",
+    "url": "https://www.a16pizza.com/san-francisco/reservations"
+   },
+   "price": "$$",
+   "michelin": "bib",
+   "good_for": [
+    "Group dinner",
+    "Casual dinner"
+   ],
+   "description": "A Southern Italian restaurant with a wood-fired pizza oven and a strong pasta and wine program, centered on Campania. A lively, good-value choice for a group dinner.",
+   "desk_note": "Two numbers are in circulation. This is the one on its own site.",
+   "verified": "2026-11-13",
+   "sources": [
+    "https://www.a16pizza.com",
+    "https://guide.michelin.com/us/en/california/san-francisco/restaurant/a16"
+   ]
+  },
+  {
+   "id": "epic-steak",
+   "name": "EPIC Steak",
+   "kind": "Restaurant",
+   "cuisines": [
+    "Steakhouse",
+    "Seafood"
+   ],
+   "neighborhood": "Embarcadero",
+   "address": "369 The Embarcadero, San Francisco, CA 94105",
+   "lat": 37.790749,
+   "lon": -122.389353,
+   "hours": {
+    "mon": "4:00 PM to 9:00 PM",
+    "tue": "4:00 PM to 9:00 PM",
+    "wed": "4:00 PM to 9:00 PM",
+    "thu": "4:00 PM to 9:00 PM",
+    "fri": "4:00 PM to 9:30 PM",
+    "sat": "11:30 AM to 9:30 PM",
+    "sun": "11:30 AM to 9:00 PM"
+   },
+   "hours_note": "Weekend brunch Sat and Sun 11:30 AM to 2:30 PM. Happy hour Mon to Fri 4:00 PM to 6:00 PM.",
+   "phone": "(415) 369-9955",
+   "website": "https://www.epicsteak.com",
+   "email": "reservations@epicsteak.com",
+   "book": {
+    "how": "Online or email",
+    "url": "https://www.epicsteak.com"
+   },
+   "price": null,
+   "michelin": null,
+   "good_for": [
+    "Business dinner",
+    "Celebration",
+    "Views"
+   ],
+   "description": "A steakhouse on the Embarcadero waterfront with bay views, serving prime cuts and seafood. A natural pick for a client dinner or celebration close to the East Cut.",
+   "desk_note": null,
+   "verified": "2026-11-13",
+   "sources": [
+    "https://www.epicsteak.com"
+   ]
+  },
+  {
+   "id": "alexander-s-steakhouse",
+   "name": "Alexander's Steakhouse",
+   "kind": "Restaurant",
+   "cuisines": [
+    "Steakhouse",
+    "Japanese-influenced",
+    "Wagyu"
+   ],
+   "neighborhood": "Union Square",
+   "address": "165 O'Farrell Street, 3rd Floor, San Francisco, CA 94102",
+   "lat": 37.786203,
+   "lon": -122.407328,
+   "hours": {
+    "mon": "Closed",
+    "tue": "5:00 PM to 9:00 PM",
+    "wed": "5:00 PM to 9:00 PM",
+    "thu": "5:00 PM to 9:00 PM",
+    "fri": "5:00 PM to 9:00 PM",
+    "sat": "5:00 PM to 9:00 PM",
+    "sun": "Closed"
+   },
+   "hours_note": "Closed Nov 26, Dec 25, 2026 and Jan 1, 2027.",
+   "phone": "(415) 495-1111",
+   "website": "https://alexanderssteakhousesf.com",
+   "email": null,
+   "book": {
+    "how": "SevenRooms",
+    "url": "https://alexanderssteakhousesf.com/going-to-sevenrooms/"
+   },
+   "price": null,
+   "michelin": null,
+   "good_for": [
+    "Celebration",
+    "Special occasion"
+   ],
+   "description": "A luxury steakhouse on an upper floor near Union Square, known for Wagyu and Japanese-influenced touches. Suited to a special-occasion dinner.",
+   "desk_note": "Holiday hours conflict on its site. Confirm by phone near a holiday.",
+   "verified": "2026-11-13",
+   "sources": [
+    "https://alexanderssteakhousesf.com"
+   ]
+  },
+  {
+   "id": "niku-steakhouse",
+   "name": "Niku Steakhouse",
+   "kind": "Restaurant",
+   "cuisines": [
+    "Steakhouse",
+    "Japanese",
+    "Wagyu"
+   ],
+   "neighborhood": "SoMa",
+   "address": "61 Division Street, San Francisco, CA 94103",
+   "lat": 37.769696,
+   "lon": -122.403501,
+   "hours": {
+    "mon": "5:00 PM to 9:00 PM",
+    "tue": "5:00 PM to 9:00 PM",
+    "wed": "5:00 PM to 9:00 PM",
+    "thu": "5:00 PM to 9:00 PM",
+    "fri": "5:00 PM to 10:00 PM",
+    "sat": "5:00 PM to 10:00 PM",
+    "sun": "5:00 PM to 9:00 PM"
+   },
+   "hours_note": null,
+   "phone": "(415) 829-7817",
+   "website": "https://www.nikusteakhouse.com",
+   "email": null,
+   "book": {
+    "how": "OpenTable",
+    "url": "https://www.opentable.com/r/niku-steakhouse-reservations-san-francisco?restref=1072537&lang=en-US&ot_source=Restaurant%20website"
+   },
+   "price": "$$$$",
+   "michelin": "1",
+   "good_for": [
+    "Celebration",
+    "Business dinner"
+   ],
+   "description": "A Japanese-influenced steakhouse in SoMa focused on high-grade Wagyu, with a tasting-style approach to the meal. A strong choice for a serious steak dinner with a Michelin-recognized kitchen.",
+   "desk_note": null,
+   "verified": "2026-11-13",
+   "sources": [
+    "https://www.nikusteakhouse.com",
+    "https://guide.michelin.com/us/en/california/san-francisco/restaurant/niku-steakhouse"
+   ]
+  },
+  {
+   "id": "waterbar",
+   "name": "Waterbar",
+   "kind": "Restaurant",
+   "cuisines": [
+    "Seafood",
+    "Oysters"
+   ],
+   "neighborhood": "Embarcadero",
+   "address": "399 The Embarcadero, San Francisco, CA 94105",
+   "lat": 37.791073,
+   "lon": -122.389922,
+   "hours": {
+    "mon": "11:30 AM to 9:00 PM",
+    "tue": "11:30 AM to 9:00 PM",
+    "wed": "11:30 AM to 9:00 PM",
+    "thu": "11:30 AM to 9:00 PM",
+    "fri": "11:30 AM to 9:15 PM",
+    "sat": "11:30 AM to 9:15 PM",
+    "sun": "11:30 AM to 9:00 PM"
+   },
+   "hours_note": "Lunch 11:30 AM to 2:15 PM; bar menu 2:30 PM to 5:00 PM; dinner from 5:00 PM. No valet parking.",
+   "phone": "(415) 284-9922",
+   "website": "https://www.waterbarsf.com",
+   "email": "info@waterbarsf.com",
+   "book": {
+    "how": "OpenTable",
+    "url": "https://www.opentable.com/restaurant/profile/17035/reserve?rid=17035&restref=17035"
+   },
+   "price": null,
+   "michelin": null,
+   "good_for": [
+    "Business lunch",
+    "Views",
+    "Celebration"
+   ],
+   "description": "A seafood restaurant under the Bay Bridge with floor-to-ceiling views and a large fish tank, serving oysters and sustainably sourced fish. One of the closest good seafood rooms to 181 Fremont.",
+   "desk_note": null,
+   "verified": "2026-11-13",
+   "sources": [
+    "https://www.waterbarsf.com"
+   ]
+  },
+  {
+   "id": "tadich-grill",
+   "name": "Tadich Grill",
+   "kind": "Restaurant",
+   "cuisines": [
+    "Seafood",
+    "Classic",
+    "American"
+   ],
+   "neighborhood": "Financial District",
+   "address": "240 California Street, San Francisco, CA 94111",
+   "lat": 37.79342,
+   "lon": -122.399472,
+   "hours": {
+    "mon": "11:00 AM to 9:00 PM",
+    "tue": "11:00 AM to 9:00 PM",
+    "wed": "11:00 AM to 9:00 PM",
+    "thu": "11:00 AM to 9:00 PM",
+    "fri": "11:00 AM to 9:00 PM",
+    "sat": "4:00 PM to 9:00 PM",
+    "sun": "Closed"
+   },
+   "hours_note": "Sunday closed to regular dining (buyouts only). Walk-ins seated first come, first served.",
+   "phone": "(415) 391-1849",
+   "website": "https://www.tadichgrillsf.com",
+   "email": null,
+   "book": {
+    "how": "Online; walk-ins welcome",
+    "url": "https://tadichgrillsf.com/reservations/"
+   },
+   "price": null,
+   "michelin": null,
+   "good_for": [
+    "Business lunch",
+    "Classic SF"
+   ],
+   "description": "The city's old-school grill, in business since the 1800s, with a counter, booths and classics like cioppino and sand dabs. A true San Francisco experience for visiting family or colleagues.",
+   "desk_note": null,
+   "verified": "2026-11-13",
+   "sources": [
+    "https://www.tadichgrillsf.com/"
+   ]
+  },
+  {
+   "id": "hog-island-oyster-co",
+   "name": "Hog Island Oyster Co.",
+   "kind": "Restaurant",
+   "cuisines": [
+    "Oysters",
+    "Seafood"
+   ],
+   "neighborhood": "Embarcadero",
+   "address": "1 Ferry Building, San Francisco, CA 94105",
+   "lat": 37.795549,
+   "lon": -122.393475,
+   "hours": {
+    "mon": "11:30 AM to 8:00 PM",
+    "tue": "11:30 AM to 8:00 PM",
+    "wed": "11:30 AM to 8:00 PM",
+    "thu": "11:30 AM to 8:00 PM",
+    "fri": "11:00 AM to 8:00 PM",
+    "sat": "11:00 AM to 8:00 PM",
+    "sun": "11:00 AM to 8:00 PM"
+   },
+   "hours_note": "No reservations; casual dine-in and oysters to go.",
+   "phone": "(415) 391-7117",
+   "website": "https://www.hogislandoysters.com",
+   "email": null,
+   "book": {
+    "how": "Walk-in only",
+    "url": null
+   },
+   "price": null,
+   "michelin": "guide",
+   "good_for": [
+    "Casual lunch",
+    "Views"
+   ],
+   "description": "A casual oyster bar inside the Ferry Building with bay views, serving oysters from its own farm, chowder and grilled cheese. Best for a quick, high-quality seafood meal or a drink on the waterfront.",
+   "desk_note": null,
+   "verified": "2026-11-13",
+   "sources": [
+    "https://www.hogislandoysters.com/visit/san-francisco/",
+    "https://guide.michelin.com/us/en/california/san-francisco/restaurant/hog-island-oyster-co"
+   ]
+  },
+  {
+   "id": "wayfare-tavern",
+   "name": "Wayfare Tavern",
+   "kind": "Restaurant",
+   "cuisines": [
+    "American",
+    "Tavern",
+    "Fried chicken"
+   ],
+   "neighborhood": "Financial District",
+   "address": "201 Pine Street, San Francisco, CA 94104",
+   "lat": 37.792131,
+   "lon": -122.399966,
+   "hours": {
+    "mon": "11:30 AM to 9:00 PM",
+    "tue": "11:30 AM to 9:00 PM",
+    "wed": "11:30 AM to 9:00 PM",
+    "thu": "11:30 AM to 10:00 PM",
+    "fri": "11:30 AM to 10:00 PM",
+    "sat": "11:30 AM to 10:00 PM",
+    "sun": "11:30 AM to 9:00 PM"
+   },
+   "hours_note": null,
+   "phone": "(415) 772-9060",
+   "website": "https://www.wayfaretavern.com",
+   "email": "contact@wayfaretavern.com",
+   "book": {
+    "how": "Online",
+    "url": "https://www.wayfaretavern.com/reservation"
+   },
+   "price": "$$$",
+   "michelin": null,
+   "good_for": [
+    "Business lunch",
+    "Dinner"
+   ],
+   "description": "Tyler Florence's tavern in a handsome Financial District space, known for popovers and buttermilk fried chicken. Reliable for client lunches and dinners within a few blocks of downtown offices.",
+   "desk_note": "Moved to 201 Pine Street in 2025; older guides still show Sacramento Street. Its site looks dated, so confirm hours by phone.",
+   "verified": "2026-11-13",
+   "sources": [
+    "https://www.wayfaretavern.com",
+    "https://www.wayfaretavern.com/about-us"
+   ]
+  },
+  {
+   "id": "zuni-cafe",
+   "name": "Zuni Cafe",
+   "kind": "Restaurant",
+   "cuisines": [
+    "Californian",
+    "American",
+    "Mediterranean"
+   ],
+   "neighborhood": "Hayes Valley",
+   "address": "1658 Market Street, San Francisco, CA 94102",
+   "lat": 37.773564,
+   "lon": -122.421646,
+   "hours": {
+    "mon": "Closed",
+    "tue": "5:00 PM to 9:30 PM",
+    "wed": "5:00 PM to 9:30 PM",
+    "thu": "5:00 PM to 9:30 PM",
+    "fri": "11:00 AM to 3:00 PM, 5:00 PM to 9:30 PM",
+    "sat": "11:00 AM to 3:00 PM, 5:00 PM to 9:30 PM",
+    "sun": "11:00 AM to 3:00 PM, 5:00 PM to 9:30 PM"
+   },
+   "hours_note": "Last seating 9:30 PM. Closed Nov 26, Dec 24, 25 and 31. Parties of 7 or more must call.",
+   "phone": "(415) 552-2522",
+   "website": "https://zunicafe.com",
+   "email": null,
+   "book": {
+    "how": "OpenTable",
+    "url": "https://www.opentable.com/zuni-cafe-reservations-san-francisco?restref=4485&lang=en-US&ot_source=Restaurant%20website"
+   },
+   "price": "$$$",
+   "michelin": "guide",
+   "good_for": [
+    "Classic SF",
+    "Lunch"
+   ],
+   "description": "A long-standing Market Street restaurant famous for its wood-oven roast chicken with bread salad and its oysters. A classic San Francisco meal that suits a leisurely lunch or dinner.",
+   "desk_note": null,
+   "verified": "2026-11-13",
+   "sources": [
+    "https://zunicafe.com",
+    "https://guide.michelin.com/us/en/california/san-francisco/restaurant/zuni-cafe"
+   ]
+  },
+  {
+   "id": "akikos",
+   "name": "Akikos",
+   "kind": "Restaurant",
+   "cuisines": [
+    "Japanese",
+    "Sushi",
+    "Omakase"
+   ],
+   "neighborhood": "East Cut",
+   "address": "430 Folsom Street, San Francisco, CA 94105",
+   "lat": 37.787679,
+   "lon": -122.394146,
+   "hours": {
+    "mon": "Closed",
+    "tue": "11:30 AM to 1:30 PM, 5:30 PM to 8:30 PM",
+    "wed": "11:30 AM to 1:30 PM, 5:30 PM to 8:30 PM",
+    "thu": "11:30 AM to 1:30 PM, 5:30 PM to 8:30 PM",
+    "fri": "11:30 AM to 1:30 PM, 5:30 PM to 8:30 PM",
+    "sat": "5:30 PM to 8:30 PM",
+    "sun": "Closed"
+   },
+   "hours_note": "Lunch Tuesday to Friday, dinner Tuesday to Saturday. On Folsom between First and Fremont.",
+   "phone": "(415) 397-3218",
+   "website": "https://akikosrestaurant.com",
+   "email": "reso@akikosrestaurant.com",
+   "book": {
+    "how": "OpenTable",
+    "url": "https://akikosrestaurant.com/reservations/"
+   },
+   "price": "$$$$",
+   "michelin": null,
+   "good_for": [
+    "Celebration",
+    "Business lunch"
+   ],
+   "description": "A long-running sushi counter that now sits a few steps from Fremont Street, serving omakase at lunch and dinner. Its early, tightly timed service and focus on nigiri suit a resident who wants a serious sushi meal close to home.",
+   "desk_note": "Does not take or change reservations by phone. Parties over four book by email.",
+   "verified": "2026-11-13",
+   "sources": [
+    "https://akikosrestaurant.com",
+    "https://akikosrestaurant.com/contact/",
+    "https://akikosrestaurant.com/reservations/"
+   ]
+  },
+  {
+   "id": "pabu-izakaya",
+   "name": "PABU Izakaya",
+   "kind": "Restaurant",
+   "cuisines": [
+    "Japanese",
+    "Izakaya"
+   ],
+   "neighborhood": "Financial District",
+   "address": "101 California Street, San Francisco, CA 94111",
+   "lat": 37.792905,
+   "lon": -122.398113,
+   "hours": {
+    "mon": "11:00 AM to 2:00 PM, 4:00 PM to 9:00 PM",
+    "tue": "11:00 AM to 2:00 PM, 4:00 PM to 9:00 PM",
+    "wed": "11:00 AM to 2:00 PM, 4:00 PM to 9:00 PM",
+    "thu": "11:00 AM to 2:00 PM, 4:00 PM to 9:00 PM",
+    "fri": "11:00 AM to 2:00 PM, 4:00 PM to 9:00 PM",
+    "sat": "4:00 PM to 9:00 PM",
+    "sun": "Closed"
+   },
+   "hours_note": "Happy hour Monday to Saturday 4:00 PM to 5:30 PM. Lunch is Monday to Friday. A separate sake bar, Pabu-Chan, opened beside it in November 2025.",
+   "phone": "(415) 535-0184",
+   "website": "https://theminagroup.com/restaurants/pabu-izakaya/",
+   "email": null,
+   "book": {
+    "how": "SevenRooms",
+    "url": "https://www.sevenrooms.com/explore/pabusf/reservations/create/search?tracking=mina"
+   },
+   "price": "$$$",
+   "michelin": null,
+   "good_for": [
+    "Business lunch",
+    "Group dinner"
+   ],
+   "description": "A Michael Mina izakaya in the 101 California tower, built around shared small plates and sushi with a sake list to match. An easy, polished choice for a weekday lunch or a group dinner near the Embarcadero.",
+   "desk_note": "Hours are from the owner group's page. Other sites show a later closing; confirm by phone.",
+   "verified": "2026-11-13",
+   "sources": [
+    "https://theminagroup.com/restaurants/pabu-izakaya/"
+   ]
+  },
+  {
+   "id": "kusakabe",
+   "name": "Kusakabe",
+   "kind": "Restaurant",
+   "cuisines": [
+    "Japanese",
+    "Sushi",
+    "Omakase"
+   ],
+   "neighborhood": "Financial District",
+   "address": "584 Washington Street, San Francisco, CA 94111",
+   "lat": 37.79569,
+   "lon": -122.402884,
+   "hours": {
+    "mon": "Closed",
+    "tue": "Seatings at 5:00 PM and 8:00 PM",
+    "wed": "Seatings at 5:00 PM and 8:00 PM",
+    "thu": "Seatings at 5:00 PM and 8:00 PM",
+    "fri": "Seatings at 5:00 PM and 8:00 PM",
+    "sat": "Seatings at 5:00 PM and 8:00 PM",
+    "sun": "Seatings at 5:00 PM and 8:00 PM"
+   },
+   "hours_note": "Two fixed seatings, Tuesday to Sunday. Reservation line is staffed Tuesday to Sunday 12:30 PM to 4:00 PM. A credit card is required to hold a table.",
+   "phone": "(415) 757-0155",
+   "website": "https://www.kusakabe-sf.com",
+   "email": "info@kusakabe-sf.com",
+   "book": {
+    "how": "SevenRooms",
+    "url": "https://kusakabe-sf.com/reservations/"
+   },
+   "price": "$$$$",
+   "michelin": "bib",
+   "good_for": [
+    "Celebration",
+    "Omakase"
+   ],
+   "description": "An omakase sushi counter near Chinatown and the Financial District, with a full multi-course menu and a shorter petite option. Suits a quiet, focused sushi dinner for a small party.",
+   "desk_note": "Two seatings a night, nothing between. The reservation line is staffed Tuesday to Sunday, 12:30 to 4:00 PM.",
+   "verified": "2026-11-13",
+   "sources": [
+    "https://www.kusakabe-sf.com",
+    "https://kusakabe-sf.com/reservations/",
+    "https://guide.michelin.com/us/en/california/san-francisco/restaurant/kusakabe"
+   ]
+  },
+  {
+   "id": "yank-sing",
+   "name": "Yank Sing",
+   "kind": "Restaurant",
+   "cuisines": [
+    "Chinese",
+    "Dim Sum"
+   ],
+   "neighborhood": "Financial District",
+   "address": "49 Stevenson Street, San Francisco, CA 94105",
+   "lat": 37.789709,
+   "lon": -122.399394,
+   "hours": {
+    "mon": "Closed",
+    "tue": "11:00 AM to 3:00 PM",
+    "wed": "11:00 AM to 3:00 PM",
+    "thu": "11:00 AM to 3:00 PM",
+    "fri": "11:00 AM to 3:00 PM",
+    "sat": "10:00 AM to 3:00 PM",
+    "sun": "10:00 AM to 3:00 PM"
+   },
+   "hours_note": "Daytime only.",
+   "phone": "(415) 541-4949",
+   "website": "https://yanksing.com",
+   "email": null,
+   "book": {
+    "how": "OpenTable",
+    "url": "https://www.opentable.com/yank-sing-stevenson-street"
+   },
+   "price": "$$",
+   "michelin": "bib",
+   "good_for": [
+    "Business lunch",
+    "Weekend brunch",
+    "Family"
+   ],
+   "description": "A family-run dim sum house a few blocks from 181 Fremont, with a daytime-only service of dumplings and small plates. A dependable choice for a business lunch or a weekend family meal.",
+   "desk_note": "The Rincon Center room has closed. Stevenson Street is the only location now.",
+   "verified": "2026-11-13",
+   "sources": [
+    "https://yanksing.com",
+    "https://guide.michelin.com/us/en/california/san-francisco/restaurant/yank-sing"
+   ]
+  },
+  {
+   "id": "mister-jiu-s",
+   "name": "Mister Jiu's",
+   "kind": "Restaurant",
+   "cuisines": [
+    "Chinese",
+    "Cantonese",
+    "Californian"
+   ],
+   "neighborhood": "Chinatown",
+   "address": "28 Waverly Place, San Francisco, CA 94108",
+   "lat": 37.793672,
+   "lon": -122.406576,
+   "hours": {
+    "mon": "Closed",
+    "tue": "5:00 PM to 9:00 PM",
+    "wed": "5:00 PM to 9:00 PM",
+    "thu": "5:00 PM to 9:00 PM",
+    "fri": "5:00 PM to 9:30 PM",
+    "sat": "5:00 PM to 9:30 PM",
+    "sun": "Closed"
+   },
+   "hours_note": "Dinner only. Tock bookings open 30 days ahead at 10 AM Pacific; a per-guest deposit is required and credited to the bill.",
+   "phone": "(415) 857-9688",
+   "website": "https://www.misterjius.com",
+   "email": "reservations@misterjius.com",
+   "book": {
+    "how": "Tock",
+    "url": "https://www.exploretock.com/mister-jius/"
+   },
+   "price": "$$$",
+   "michelin": "1",
+   "good_for": [
+    "Celebration",
+    "Group dinner"
+   ],
+   "description": "Brandon Jew's Chinatown dining room, where Cantonese banquet cooking meets Californian produce. A strong pick for a celebration or when guests want a Chinese meal with some ceremony.",
+   "desk_note": "Books on Tock only, never by phone or email. The phone number comes from the Michelin Guide.",
+   "verified": "2026-11-13",
+   "sources": [
+    "https://www.misterjius.com/reservations",
+    "https://guide.michelin.com/us/en/california/san-francisco/restaurants/all-starred"
+   ]
+  },
+  {
+   "id": "kin-khao",
+   "name": "Kin Khao",
+   "kind": "Restaurant",
+   "cuisines": [
+    "Thai"
+   ],
+   "neighborhood": "Union Square",
+   "address": "55 Cyril Magnin Street, San Francisco, CA 94102",
+   "lat": 37.784878,
+   "lon": -122.408856,
+   "hours": {
+    "mon": "11:30 AM to 2:00 PM, 5:30 PM to 9:00 PM",
+    "tue": "11:30 AM to 2:00 PM, 5:30 PM to 9:00 PM",
+    "wed": "11:30 AM to 2:00 PM, 5:30 PM to 9:00 PM",
+    "thu": "11:30 AM to 2:00 PM, 5:30 PM to 9:00 PM",
+    "fri": "11:30 AM to 2:00 PM, 5:30 PM to 10:00 PM",
+    "sat": "11:30 AM to 2:00 PM, 5:30 PM to 10:00 PM",
+    "sun": "11:30 AM to 2:00 PM, 5:30 PM to 9:00 PM"
+   },
+   "hours_note": "At the corner of Mason and Ellis Streets, in the Parc 55 hotel. Lunch daily; dinner to 9:00 PM Sunday to Thursday, 10:00 PM Friday and Saturday.",
+   "phone": "(415) 362-7456",
+   "website": "https://kinkhao.com",
+   "email": null,
+   "book": {
+    "how": "Resy",
+    "url": "https://resy.com/cities/san-francisco-ca/venues/kin-khao"
+   },
+   "price": "$$$",
+   "michelin": "1",
+   "good_for": [
+    "Group dinner",
+    "Casual lunch"
+   ],
+   "description": "Pim Techamuanvivit's Thai restaurant, known for bold regional cooking that does not tone down the heat. Good for guests who want a lively, flavorful dinner or a quick serious lunch.",
+   "desk_note": null,
+   "verified": "2026-11-13",
+   "sources": [
+    "https://kinkhao.com",
+    "https://guide.michelin.com/us/en/california/san-francisco/restaurants/all-starred"
+   ]
+  },
+  {
+   "id": "san-ho-won",
+   "name": "San Ho Won",
+   "kind": "Restaurant",
+   "cuisines": [
+    "Korean",
+    "Barbecue"
+   ],
+   "neighborhood": "Mission",
+   "address": "2170 Bryant Street, San Francisco, CA 94110",
+   "lat": 37.759577,
+   "lon": -122.41021,
+   "hours": {
+    "mon": "Closed",
+    "tue": "5:00 PM to 10:00 PM",
+    "wed": "5:00 PM to 10:00 PM",
+    "thu": "5:00 PM to 10:00 PM",
+    "fri": "5:00 PM to 10:00 PM",
+    "sat": "4:30 PM to 10:00 PM",
+    "sun": "4:30 PM to 10:00 PM"
+   },
+   "hours_note": "Closed Thanksgiving Day and the Friday after. Reservations release at 10:00 AM, 29 days ahead.",
+   "phone": "(415) 868-4479",
+   "website": "https://www.sanhowon.com",
+   "email": null,
+   "book": {
+    "how": "SevenRooms",
+    "url": "https://www.sevenrooms.com/explore/sanhowon/reservations/create/search/"
+   },
+   "price": "$$$",
+   "michelin": "1",
+   "good_for": [
+    "Group dinner",
+    "Celebration"
+   ],
+   "description": "A Korean charcoal-grill restaurant from Corey Lee's team, centered on tabletop barbecue and home-style dishes. Worth the ride to the Mission for a group that wants a lively, high-quality dinner.",
+   "desk_note": null,
+   "verified": "2026-11-13",
+   "sources": [
+    "https://www.sanhowon.com/visit",
+    "https://guide.michelin.com/us/en/california/san-francisco/restaurants/all-starred"
+   ]
+  },
+  {
+   "id": "la-mar-cocina-peruana",
+   "name": "La Mar Cocina Peruana",
+   "kind": "Restaurant",
+   "cuisines": [
+    "Peruvian",
+    "Latin American",
+    "Seafood"
+   ],
+   "neighborhood": "Embarcadero",
+   "address": "Pier 1 1/2, The Embarcadero North, San Francisco, CA 94111",
+   "lat": 37.797377,
+   "lon": -122.39524,
+   "hours": {
+    "mon": "11:30 AM to 2:30 PM, 5:00 PM to 9:00 PM",
+    "tue": "11:30 AM to 2:30 PM, 5:00 PM to 9:00 PM",
+    "wed": "11:30 AM to 2:30 PM, 5:00 PM to 9:00 PM",
+    "thu": "11:30 AM to 2:30 PM, 5:00 PM to 9:00 PM",
+    "fri": "11:30 AM to 2:30 PM, 5:00 PM to 9:30 PM",
+    "sat": "11:30 AM to 2:30 PM, 5:00 PM to 9:30 PM",
+    "sun": "11:30 AM to 2:30 PM, 5:00 PM to 9:00 PM"
+   },
+   "hours_note": "Happy hour Monday to Friday 3:00 PM to 5:00 PM.",
+   "phone": "(415) 397-8880",
+   "website": "https://lamarcebicheria.com/san-francisco/",
+   "email": null,
+   "book": {
+    "how": "OpenTable",
+    "url": "https://www.opentable.com/r/la-mar-cocina-peruana-reservations-san-francisco?restref=25198"
+   },
+   "price": "$$$",
+   "michelin": null,
+   "good_for": [
+    "Business lunch",
+    "Waterfront dinner"
+   ],
+   "description": "A Peruvian restaurant on the Embarcadero waterfront, known for ceviche and pisco drinks. A bright, easy place for lunch by the bay or a relaxed dinner.",
+   "desk_note": null,
+   "verified": "2026-11-13",
+   "sources": [
+    "https://lamarcebicheria.com/san-francisco/"
+   ]
+  },
+  {
+   "id": "coqueta",
+   "name": "Coqueta",
+   "kind": "Restaurant",
+   "cuisines": [
+    "Spanish",
+    "Tapas"
+   ],
+   "neighborhood": "Embarcadero",
+   "address": "Pier 5, The Embarcadero, San Francisco, CA 94111",
+   "lat": 37.798504,
+   "lon": -122.396577,
+   "hours": {
+    "mon": "12:00 PM to 9:00 PM",
+    "tue": "12:00 PM to 9:00 PM",
+    "wed": "12:00 PM to 9:00 PM",
+    "thu": "12:00 PM to 9:00 PM",
+    "fri": "12:00 PM to 9:00 PM",
+    "sat": "11:00 AM to 10:00 PM",
+    "sun": "11:00 AM to 10:00 PM"
+   },
+   "hours_note": "Phone reservations taken daily 11:00 AM to 8:00 PM. Reservations open 30 days ahead.",
+   "phone": "(415) 704-8866",
+   "website": "https://www.coquetasf.com",
+   "email": null,
+   "book": {
+    "how": "OpenTable",
+    "url": "https://www.coquetasf.com/reservations"
+   },
+   "price": "$$$",
+   "michelin": null,
+   "good_for": [
+    "Group dinner",
+    "Waterfront dinner"
+   ],
+   "description": "A Spanish tapas restaurant on Pier 5, with a grill and a long list of small plates for sharing. Good for a group that wants a long, casual meal on the water.",
+   "desk_note": null,
+   "verified": "2026-11-13",
+   "sources": [
+    "https://www.coquetasf.com",
+    "https://www.coquetasf.com/reservations"
+   ]
+  },
+  {
+   "id": "rooh",
+   "name": "Rooh",
+   "kind": "Restaurant",
+   "cuisines": [
+    "Indian",
+    "Contemporary"
+   ],
+   "neighborhood": "South Beach",
+   "address": "333 Brannan Street, San Francisco, CA 94107",
+   "lat": 37.780856,
+   "lon": -122.392529,
+   "hours": {
+    "mon": "11:30 AM to 2:30 PM, 5:00 PM to 9:30 PM",
+    "tue": "11:30 AM to 2:30 PM, 5:00 PM to 9:30 PM",
+    "wed": "11:30 AM to 2:30 PM, 5:00 PM to 9:30 PM",
+    "thu": "11:30 AM to 2:30 PM, 5:00 PM to 9:30 PM",
+    "fri": "11:30 AM to 2:30 PM, 5:30 PM to 10:00 PM",
+    "sat": "5:30 PM to 10:00 PM",
+    "sun": "5:00 PM to 9:30 PM"
+   },
+   "hours_note": null,
+   "phone": "(415) 525-4174",
+   "website": "https://www.roohrestaurants.com/san-francisco",
+   "email": null,
+   "book": {
+    "how": "OpenTable",
+    "url": "https://www.opentable.com/r/rooh-san-francisco"
+   },
+   "price": "$$$",
+   "michelin": "bib",
+   "good_for": [
+    "Business dinner",
+    "Group dinner"
+   ],
+   "description": "A modern Indian restaurant that reworks regional dishes with a contemporary eye, in a roomy space south of Market. A good pick for guests who want something more adventurous than a standard Indian menu.",
+   "desk_note": "Its own site could not be read; hours are from the Michelin Guide and match its booking page. The number is the takeout line.",
+   "verified": "2026-11-13",
+   "sources": [
+    "https://guide.michelin.com/us/en/california/san-francisco/restaurant/rooh",
+    "https://www.roohrestaurants.com/"
+   ]
+  },
+  {
+   "id": "barcha",
+   "name": "Barcha",
+   "kind": "Restaurant",
+   "cuisines": [
+    "Mediterranean"
+   ],
+   "neighborhood": "Financial District",
+   "address": "28 Fremont Street, San Francisco, CA 94105",
+   "lat": 37.791252,
+   "lon": -122.39783,
+   "hours": {
+    "mon": "11:30 AM to 2:00 PM, 5:00 PM to 9:00 PM",
+    "tue": "11:30 AM to 2:00 PM, 5:00 PM to 9:00 PM",
+    "wed": "11:30 AM to 2:00 PM, 5:00 PM to 9:00 PM",
+    "thu": "11:30 AM to 2:00 PM, 5:00 PM to 9:00 PM",
+    "fri": "11:30 AM to 2:00 PM, 5:00 PM to 9:00 PM",
+    "sat": "5:30 PM to 9:00 PM",
+    "sun": "Closed"
+   },
+   "hours_note": "Happy hour Monday to Thursday 3:30 PM to 5:45 PM. Takeout hours are shorter (dinner to 8:30 PM).",
+   "phone": "(415) 757-0781",
+   "website": "https://barcha-sf.com",
+   "email": null,
+   "book": {
+    "how": "OpenTable",
+    "url": "https://www.opentable.com/booking/restref/availability?lang=en-US&ot_source=Restaurant+website&restref=187489"
+   },
+   "price": "$$$",
+   "michelin": null,
+   "good_for": [
+    "Business lunch",
+    "Early dinner"
+   ],
+   "description": "A Mediterranean restaurant on Fremont Street itself, with a menu that changes regularly. The closest option in this guide for a weekday lunch or an early dinner.",
+   "desk_note": null,
+   "verified": "2026-11-13",
+   "sources": [
+    "https://barcha-sf.com"
+   ]
+  },
+  {
+   "id": "dalida",
+   "name": "Dalida",
+   "kind": "Restaurant",
+   "cuisines": [
+    "Mediterranean",
+    "Turkish",
+    "Middle Eastern"
+   ],
+   "neighborhood": "Presidio",
+   "address": "101 Montgomery Street, Suite 100, San Francisco, CA 94129",
+   "lat": 37.799999,
+   "lon": -122.459616,
+   "hours": {
+    "mon": "Closed",
+    "tue": "11:30 AM to 2:00 PM, 5:00 PM to 9:00 PM",
+    "wed": "11:30 AM to 2:00 PM, 5:00 PM to 9:00 PM",
+    "thu": "11:30 AM to 2:00 PM, 5:00 PM to 9:00 PM",
+    "fri": "11:30 AM to 2:00 PM, 5:00 PM to 9:00 PM",
+    "sat": "11:00 AM to 2:30 PM, 5:00 PM to 9:00 PM",
+    "sun": "11:00 AM to 2:30 PM, 5:00 PM to 9:00 PM"
+   },
+   "hours_note": "In the Presidio. Closed Thanksgiving Day, December 24 and 25, and January 1.",
+   "phone": null,
+   "website": "https://www.dalidasf.com",
+   "email": null,
+   "book": {
+    "how": "OpenTable",
+    "url": "https://www.opentable.com/r/dalida-san-francisco"
+   },
+   "price": "$$$",
+   "michelin": "bib",
+   "good_for": [
+    "Weekend brunch",
+    "Dinner out"
+   ],
+   "description": "A Mediterranean and Turkish restaurant in the Presidio, run by co-chefs Laura and Sayat Ozyilmaz, with a lounge and bar that take walk-ins. Worth the drive for a relaxed brunch or dinner outside the downtown grid.",
+   "desk_note": "No main phone line. This is the Presidio's Montgomery Street, not downtown's. Confirm Tuesday to Thursday dinner.",
+   "verified": "2026-11-13",
+   "sources": [
+    "https://www.dalidasf.com",
+    "https://guide.michelin.com/en/california/san-francisco/restaurant/dalida"
+   ]
+  }
+ ]
+}

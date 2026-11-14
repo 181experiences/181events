@@ -971,6 +971,8 @@ class H(SimpleHTTPRequestHandler):
         if p.path == "/api/analytics":
             days = max(1, min(90, int((q.get("days") or ["30"])[0])))
             return self._json(sample_analytics(days))
+        if p.path == "/api/guide":
+            return self._json({"notes": load_store("guide", {})})
         if p.path == "/api/feeds":
             if self._role() == "desk": return self._json({"error": "forbidden"}, 403)
             since = (datetime.date.today() - datetime.timedelta(days=13)).isoformat()
@@ -1694,6 +1696,22 @@ class H(SimpleHTTPRequestHandler):
     def do_PUT(self):
         p = urlparse(self.path)
         parts = p.path.split("/")
+        # The Black Book's house line on one place; every tier writes.
+        if p.path.startswith("/api/guide/"):
+            pid = p.path.rsplit("/", 1)[1].lower()
+            if not re.fullmatch(r"[a-z0-9-]{1,80}", pid): return self._json({"error": "Unknown place."}, 400)
+            b = self._body_json()
+            clip = lambda v, n: str(v or "").strip()[:n]
+            row = dict(connected=bool(b.get("connected")), contact=clip(b.get("contact"), 80),
+                       phone=clip(b.get("phone"), 40), note=clip(b.get("note"), 240))
+            if not row["connected"]: row["contact"] = row["phone"] = ""
+            notes = load_store("guide", {})
+            if not row["connected"] and not row["note"]:
+                notes.pop(pid, None); save_store("guide", notes)
+                return self._json({"ok": True, "note": None})
+            row.update(updated=now_iso(), updated_by=f"{self._role()}@local.dev")
+            notes[pid] = row; save_store("guide", notes)
+            return self._json({"ok": True, "note": row})
         if p.path == "/api/settings":
             if self._role() == "desk": return self._json({"error": "forbidden"}, 403)
             body = self._body_json()
