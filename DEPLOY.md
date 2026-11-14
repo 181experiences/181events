@@ -256,16 +256,32 @@ shows when and to whom it went.
 
 ## The Black Book (Services > Black Book)
 
-The front desk's city guide. Two kinds of knowledge, kept apart on purpose:
+The front desk's city guide. Three sources, kept apart on purpose so each
+can say when it last spoke:
 
-- **Facts about a place** live in `source/guide_places.json` and ride the admin
-  page as inline JSON. Each listing was checked against the place's own
-  website and carries a `verified` date and its `sources`. A change to a fact
-  is a change to this file, a rebuild, and a push. `desk_note` is the line
-  the desk reads before quoting a listing; it is never emailed or printed.
-- **What the house knows** (our connection there, a name, a number, a note)
-  lives in the database table `guide_notes`, written by any tier through
-  `PUT /api/guide/<place id>`. A fact check never touches it.
+- **The file**: `source/guide_places.json` rides the admin page as inline
+  JSON. It is what the weekly check found on each place's own website. Each
+  listing carries `auto_updated` (shown as "Information automatically updated
+  on"), its `sources`, and `history`, the list of what the system changed and
+  when. A change here is a change to the file, a rebuild, and a push.
+  `desk_note` is the line the desk reads before quoting a listing; it is never
+  emailed or printed.
+- **The team**: anyone signed in, the desk included, can Edit a listing. An
+  edit is stored in the database table `guide_notes` as `edits`, laid over the
+  file field by field (`{ field: { v, base } }`, where `base` is what the file
+  said at the time). The team's entry wins. If the weekly check later changes
+  that same field in the file, the card shows both readings with Keep ours and
+  Take the new one. Mark verified by phone stamps `verified_at` and
+  `verified_by` (shown as "Location information last verified on, by").
+- **The house**: our connection there (a name, a number, a note), same table.
+
+Every write goes through `PUT /api/guide/<place id>` (actions `edit`,
+`verify`, `resolve`, `connection`) and lands in `change_log` with kind
+`guide`. A listing's History merges those rows with the file's own `history`,
+so it reads as one record: who or System, the date and time, and what changed.
+
+Applying a weekly check: copy its `guide_places.proposed.json` over
+`source/guide_places.json`, rebuild, commit, and push on the owner's word.
 
 The map is our own drawing, not a map service. `source/guide_map.json` holds
 two line drawings (about 1.3 miles around the tower, and the whole city) made

@@ -422,6 +422,34 @@ HTML = f'''<!DOCTYPE html>
   .gdlink{{appearance:none;background:none;border:0;padding:0 0 0 6px;font-family:var(--fb);font-size:12px;color:var(--stone);text-decoration:underline;cursor:pointer}}
   .gdnote{{font-size:12.5px;background:#fbf3df;border:1px solid #ecdcae;color:#5e4a12;border-radius:3px;padding:7px 10px;margin:0 0 10px;line-height:1.45}}
   .gdfoot{{display:flex;gap:8px;align-items:center;flex-wrap:wrap;border-top:1px solid var(--line-2);padding-top:10px}}
+  .gdprov{{font-size:12px;color:var(--ink-soft);line-height:1.6;margin:2px 0 10px}}
+  .gdprov b{{color:var(--ink);font-weight:600}}
+  .gdnote.alt{{background:#eef1f6;border-color:#cfd6e2;color:#2f3b52}}
+  .gdnote .acts{{display:flex;gap:8px;margin-top:7px}}
+  .gdhist{{margin-top:12px;border-top:1px solid var(--line-2);padding-top:10px}}
+  .gdhist .hh{{font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--stone);margin-bottom:6px}}
+  .gdhist .h{{display:grid;grid-template-columns:150px 96px minmax(0,1fr);gap:4px 12px;font-size:12.5px;padding:6px 0;border-bottom:1px solid var(--line-2)}}
+  .gdhist .h:last-child{{border-bottom:0}}
+  .gdhist .w{{color:var(--ink-soft)}}
+  .gdhist .who{{color:var(--ink);font-weight:500}}
+  .gdhist .what b{{font-weight:600;color:var(--ink)}}
+  .gdhist .c{{color:var(--ink-body);overflow-wrap:anywhere}}
+  .gdhist .c i{{font-style:normal;font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--stone);margin-right:4px}}
+  .gdedhead{{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--red);font-weight:600;margin-bottom:12px}}
+  .gdedhead strong{{color:var(--ink)}}
+  .gdform{{display:grid;grid-template-columns:1fr 1fr;gap:10px 14px;margin-bottom:12px}}
+  .gdform .wide{{grid-column:1 / -1}}
+  .gdform textarea.inp{{min-height:0}}
+  .gdhours{{display:grid;grid-template-columns:96px minmax(0,1fr);gap:6px 10px;align-items:center}}
+  .gdhours label{{font-size:12.5px;color:var(--ink-soft)}}
+  .gdcheck{{display:flex;gap:9px;align-items:center;font-size:13px;color:var(--ink);margin:0 0 12px;cursor:pointer}}
+  .gdcheck input{{width:18px;height:18px;accent-color:var(--red)}}
+  @media(max-width:620px){{
+    .gdform{{grid-template-columns:1fr}}
+    .gdhist .h{{grid-template-columns:1fr;gap:1px}}
+    .gdhours{{grid-template-columns:1fr}}
+  }}
+
   .gdfoot .ver{{font-size:11.5px;color:var(--stone);margin-right:auto}}
   @media(max-width:900px){{
     .gd{{grid-template-columns:1fr}}
@@ -1143,7 +1171,7 @@ HTML = f'''<!DOCTYPE html>
 
 <!-- ================= THE BLACK BOOK ================= -->
 <section class="screen" id="scr-guide"><div class="wrap">
-  <div class="phead" style="display:flex;align-items:center;justify-content:flex-start;gap:10px"><h1>The Black Book</h1>{info("The front desk&rsquo;s own city guide, for the moment a resident calls down asking where to eat. Type what they asked for; every card answers with the address, today&rsquo;s hours, the phone, how to book, how far it is from the tower, and what kind of place it is. Point at a card and the map shows where it sits. Email to a resident writes the note in Outlook; Print makes a clean page of one place or the whole list. Our connection is the team&rsquo;s own line, saved here by anyone on the team and never sent to a resident. The facts are checked against each restaurant&rsquo;s own website; the date on each card says when.")}</div>
+  <div class="phead" style="display:flex;align-items:center;justify-content:flex-start;gap:10px"><h1>The Black Book</h1>{info("The front desk&rsquo;s own city guide, for the moment a resident calls down asking where to eat. Type what they asked for; every card answers with the address, today&rsquo;s hours, the phone, how to book, how far it is from the tower, and what kind of place it is. Point at a card and the map shows where it sits. Email to a resident writes the note in Outlook; Print makes a clean page of one place or the whole list. Our connection is the team&rsquo;s own line, saved here by anyone on the team and never sent to a resident. Every card carries two dates. Information automatically updated on is the weekly check of each restaurant&rsquo;s own website. Location information last verified on is a person on the team who phoned the place: press Mark verified by phone after the call, and your name goes beside the date. Edit corrects anything on a card, and History lists every change to a listing, by whom, and when.")}</div>
   <div class="psub" id="gd-sub">Loading&hellip;</div>
   <div class="gd">
     <div class="gdmap">

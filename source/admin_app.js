@@ -3591,11 +3591,16 @@
   // ---------------------------------------------------------------- the Black Book
   // The front desk's city guide: a resident calls down for a recommendation,
   // the desk types a word, and every fact needed to answer (and to book) is
-  // on one card. The facts ride the page from source/guide_places.json, each
-  // checked against the place's own website; what the house knows (our
-  // connection there) comes from /api/guide and is written by the team. The
-  // map is our own two-tone drawing, never a map service: the tower in red at
-  // the center, and whichever place is under the hand lit in gold.
+  // on one card. Three sources, each saying when it last spoke:
+  //   the file   source/guide_places.json, what the weekly check found on each
+  //              place's own website ("Information automatically updated on")
+  //   the team   corrections typed at the desk, laid over the file field by
+  //              field, and the stamp of whoever phoned to verify the listing
+  //              ("Location information last verified on, by")
+  //   the house  our connection there
+  // Every change by anyone, the system included, is in the listing's History.
+  // The map is our own two-tone drawing, never a map service: the tower in
+  // red at the center, and whichever place is under the hand lit in gold.
   const GD_DAYS = ["sun", "mon", "tue", "wed", "thu", "fri", "sat"];
   const GD_WEEK = [["mon", "Monday"], ["tue", "Tuesday"], ["wed", "Wednesday"], ["thu", "Thursday"], ["fri", "Friday"], ["sat", "Saturday"], ["sun", "Sunday"]];
   const GD_STOP = new Set("restaurant restaurants food foods place places spot spots a an the for with in and of on at good great best nice cuisine near to me somewhere something anything some any want looking".split(" "));
@@ -3603,13 +3608,37 @@
   const GD_QUICK = ["French", "Italian", "Japanese", "Steakhouse", "Seafood", "Chinese"];
   const GD_FLAGS = [["michelin", "Michelin"], ["open", "Open now"], ["walk", "Walkable"]];
   const GD_GOLD = "#e8b23a", GD_GROUND = "#232220", GD_STREET = "#e9e3d8";
+  // Every fact the team can correct, as one flat list: the edit form, the
+  // edits laid over the file, and the History all speak in these names.
+  const GD_FIELDS = [["name", "Name"], ["cuisines", "Cuisine"], ["neighborhood", "Neighborhood"], ["price", "Price"], ["michelin", "Michelin"],
+    ["address", "Address"], ...GD_WEEK.map(([k, n]) => ["hours_" + k, n + " hours"]), ["hours_note", "Hours note"],
+    ["phone", "Phone"], ["website", "Website"], ["email", "Email"], ["book_how", "Reservations"], ["book_url", "Booking link"],
+    ["description", "Description"], ["desk_note", "Before you quote it"]];
+  const GD_LABEL = { ...Object.fromEntries(GD_FIELDS), connection: "Our connection", connection_note: "Connection note" };
+  function gdFlat(p) {
+    const b = p.book || {};
+    const f = { name: p.name || "", cuisines: (p.cuisines || []).join(", "), neighborhood: p.neighborhood || "", price: p.price || "",
+      michelin: p.michelin || "", address: p.address || "", hours_note: p.hours_note || "", phone: p.phone || "", website: p.website || "",
+      email: p.email || "", book_how: b.how || "", book_url: b.url || "", description: p.description || "", desk_note: p.desk_note || "" };
+    for (const [k] of GD_WEEK) f["hours_" + k] = (p.hours && p.hours[k]) || "";
+    return f;
+  }
+  function gdUnflat(base, f) {
+    const anyHours = GD_WEEK.some(([k]) => f["hours_" + k]);
+    return { ...base, name: f.name, cuisines: f.cuisines.split(",").map(s => s.trim()).filter(Boolean), neighborhood: f.neighborhood,
+      price: f.price || null, michelin: f.michelin || null, address: f.address, hours_note: f.hours_note || null,
+      phone: f.phone || null, website: f.website || null, email: f.email || null, book: { how: f.book_how || null, url: f.book_url || null },
+      description: f.description, desk_note: f.desk_note || null,
+      hours: anyHours ? Object.fromEntries(GD_WEEK.map(([k]) => [k, f["hours_" + k] || null])) : null };
+  }
   let gd = null;
 
   const gdUrl = u => /^https?:\/\//i.test(u || "") ? u : "";
   const gdHost = u => { try { return new URL(u).hostname.replace(/^www\./, ""); } catch (e) { return u || ""; } };
   const gdPlain = s => String(s || "").normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
   const gdClock = m => { m = ((m % 1440) + 1440) % 1440; const h = Math.floor(m / 60), mm = m % 60; return `${h % 12 || 12}:${String(mm).padStart(2, "0")} ${h < 12 ? "AM" : "PM"}`; };
-  const gdDate = iso => { const d = new Date(iso + "T12:00:00"); return isNaN(d) ? iso : d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }); };
+  const gdDate = iso => { if (!iso) return ""; const d = new Date(String(iso).length <= 10 ? iso + "T12:00:00" : iso); return isNaN(d) ? iso : d.toLocaleDateString("en-US", { timeZone: "America/Los_Angeles", month: "short", day: "numeric", year: "numeric" }); };
+  const gdStamp = iso => String(iso).length <= 10 ? gdDate(iso) : gdDate(iso) + ", " + new Date(iso).toLocaleTimeString("en-US", { timeZone: "America/Los_Angeles", hour: "numeric", minute: "2-digit" });
 
   function gdMiles(a, b) {
     const R = 3958.8, rad = x => x * Math.PI / 180;
@@ -3663,18 +3692,33 @@
   function gdBoot() {
     if (gd) { gdRender(); return; }
     let places = [], map = null, verified = "";
-    try { const j = JSON.parse($("#guide-places").textContent); places = j.places || []; verified = j.verified || ""; } catch (e) {}
+    try { const j = JSON.parse($("#guide-places").textContent); places = j.places || []; verified = j.auto_updated || ""; } catch (e) {}
     try { map = JSON.parse($("#guide-map").textContent); } catch (e) {}
     const home = map ? map.home : { lat: 37.789788, lon: -122.395356 };
-    for (const p of places) {
-      p.mi = gdMiles(home, p); p.dir = gdCompass(home, p);
+    gd = { base: places, places: [], map, home, verified, notes: {}, log: [], q: "", flags: new Set(), active: null, hover: null,
+      pick: "near", view: "near", shown: [], editing: null, history: null };
+    gdBuild(); gdDrawMaps(); gdRender();
+    api("/api/guide").then(r => { gd.notes = (r && r.notes) || {}; gd.log = (r && r.log) || []; gdBuild(); gdRender(); }).catch(() => {});
+  }
+  // The listing the desk sees: the file's record with the team's edits laid
+  // over it. A team edit wins until someone settles it; when the weekly check
+  // later changes a field the team had corrected, both readings are shown.
+  function gdBuild() {
+    gd.places = gd.base.map(b => {
+      const file = gdFlat(b), flat = { ...file }, n = gd.notes[b.id], conflicts = [];
+      for (const [k, e] of Object.entries((n && n.edits) || {})) {
+        if (!(k in flat) || e.v === file[k]) continue;
+        if (e.base !== file[k]) conflicts.push({ field: k, ours: e.v, theirs: file[k] });
+        flat[k] = e.v;
+      }
+      const p = gdUnflat(b, flat);
+      p.file = file; p.flat = flat; p.conflicts = conflicts;
+      p.mi = gdMiles(gd.home, p); p.dir = gdCompass(gd.home, p);
       p.hay = " " + gdPlain([p.name, p.kind, (p.cuisines || []).join(" "), p.neighborhood, (p.good_for || []).join(" "), p.description,
         p.price, p.michelin ? "michelin " + (p.michelin === "bib" ? "bib gourmand" : p.michelin === "guide" ? "guide" : "star starred") : ""].join(" ")).replace(/[^a-z0-9$]+/g, " ");
-    }
-    places.sort((a, b) => a.mi - b.mi);
-    gd = { places, map, home, verified, notes: {}, q: "", flags: new Set(), active: null, hover: null, pick: "near", view: "near", shown: [] };
-    gdDrawMaps(); gdRender();
-    api("/api/guide").then(r => { gd.notes = (r && r.notes) || {}; gdRender(); }).catch(() => {});
+      return p;
+    });
+    gd.places.sort((a, b) => a.mi - b.mi);
   }
 
   function gdTokens(q) { return gdPlain(q).replace(/[^a-z0-9$]+/g, " ").split(" ").filter(t => t && !GD_STOP.has(t)); }
@@ -3705,7 +3749,60 @@
     return `<details class="gdweek"><summary>The week</summary><table>${GD_WEEK.map(([k, name]) =>
       `<tr class="${k === today ? "today" : ""}"><td>${name}</td><td>${esc(p.hours[k] || "By phone")}</td></tr>`).join("")}</table></details>`;
   }
+  const gdWho = w => !w ? "the team" : /^system$/i.test(w) ? "System" : invName(w);
+  function gdProv(p) {
+    const n = gd.notes[p.id] || {};
+    return `<div class="gdprov">
+      <div>Information automatically updated on: <b>${esc(gdDate(p.auto_updated))}</b></div>
+      <div>Location information last verified on: ${n.verified_at ? `<b>${esc(gdDate(n.verified_at))}</b> by: <b>${esc(gdWho(n.verified_by))}</b>` : "<b>not yet verified by phone</b>"}</div>
+    </div>`;
+  }
+  function gdHistory(p) {
+    const say = c => !c ? "" : Object.entries(c).map(([k, v]) => {
+      const [a, b] = Array.isArray(v) ? v : ["", v];
+      return `<div class="c"><i>${esc(GD_LABEL[k] || k)}</i> ${a ? `&ldquo;${esc(a)}&rdquo;` : "<em>empty</em>"} &rarr; ${b ? `&ldquo;${esc(b)}&rdquo;` : "<em>empty</em>"}</div>`;
+    }).join("");
+    const rows = [...gd.log.filter(h => h.place === p.id).map(h => ({ at: h.at, who: gdWho(h.who), action: h.action, changes: h.changes })),
+      ...(p.history || []).map(h => ({ at: h.at, who: "System", action: h.action, changes: h.changes }))]
+      .sort((a, b) => String(b.at).localeCompare(String(a.at)));
+    return `<div class="gdhist"><div class="hh">History of this listing · newest first</div>${rows.map(h =>
+      `<div class="h"><span class="w">${esc(gdStamp(h.at))}</span><span class="who">${esc(h.who)}</span><span class="what"><b>${esc(h.action)}</b>${say(h.changes)}</span></div>`).join("")
+      || '<div class="h">Nothing yet.</div>'}</div>`;
+  }
+  // The edit form: every fact on the card, as the team would correct it after
+  // a call. Saving stores only what differs from the card, signed and logged.
+  function gdEditCard(p) {
+    const f = p.flat, i = text => `<span class="iwrap"><button type="button" class="ib" aria-label="What this does">i</button><span class="ipop">${text}</span></span>`;
+    const inp = (k, label, extra) => `<div class="field ${extra && extra.cls || ""}"><label class="fl" for="gde-${k}">${label}</label><input class="inp" id="gde-${k}" data-gdf="${k}" value="${esc(f[k])}" ${extra && extra.attrs || 'autocapitalize="sentences"'}></div>`;
+    const sel = (k, label, opts) => `<div class="field"><label class="fl" for="gde-${k}">${label}</label><select class="inp" id="gde-${k}" data-gdf="${k}">${opts.map(([v, t]) => `<option value="${v}"${f[k] === v ? " selected" : ""}>${t}</option>`).join("")}</select></div>`;
+    const area = (k, label, rows) => `<div class="field wide"><label class="fl" for="gde-${k}">${label}</label><textarea class="inp" id="gde-${k}" data-gdf="${k}" rows="${rows}">${esc(f[k])}</textarea></div>`;
+    return `<article class="gdcard gdedit on" data-gdcard="${p.id}">
+      <div class="gdedhead">Editing <strong>${esc(p.name)}</strong></div>
+      <div class="gdform">
+        ${inp("name", "Name", { cls: "wide", attrs: 'autocapitalize="words"' })}
+        ${inp("cuisines", "Cuisine, comma between", { attrs: 'autocapitalize="words"' })}
+        ${inp("neighborhood", "Neighborhood", { attrs: 'autocapitalize="words"' })}
+        ${sel("price", "Price", [["", "Not shown"], ["$", "$"], ["$$", "$$"], ["$$$", "$$$"], ["$$$$", "$$$$"]])}
+        ${sel("michelin", "Michelin", [["", "None"], ["guide", "In the Michelin Guide"], ["bib", "Bib Gourmand"], ["1", "One star"], ["2", "Two stars"], ["3", "Three stars"]])}
+        ${inp("address", "Address", { cls: "wide", attrs: 'autocapitalize="words"' })}
+        <div class="field wide"><div class="flrow"><label class="fl">Hours</label>${i("Write a day as <strong>Closed</strong>, or as times exactly like <strong>11:30 AM to 2:30 PM, 5:00 PM to 9:30 PM</strong>. Written that way, the card can say Open now or Closed on its own. Anything looser, such as Seatings at 5:00 PM and 8:00 PM, is shown just as typed. Leave a day empty when the place gives no hours for it.")}</div>
+          <div class="gdhours">${GD_WEEK.map(([k, n]) => `<label for="gde-hours_${k}">${n}</label><input class="inp" id="gde-hours_${k}" data-gdf="hours_${k}" value="${esc(f["hours_" + k])}" autocapitalize="none" placeholder="Closed, or 5:00 PM to 9:30 PM">`).join("")}</div></div>
+        ${inp("hours_note", "Hours note", { cls: "wide" })}
+        ${inp("phone", "Phone", { attrs: 'type="tel" inputmode="tel" autocapitalize="none"' })}
+        ${inp("email", "Email", { attrs: 'type="email" inputmode="email" autocapitalize="none" spellcheck="false"' })}
+        ${inp("website", "Website", { cls: "wide", attrs: 'type="url" inputmode="url" autocapitalize="none" spellcheck="false"' })}
+        ${inp("book_how", "Reservations, how")}
+        ${inp("book_url", "Booking link", { attrs: 'type="url" inputmode="url" autocapitalize="none" spellcheck="false"' })}
+        ${area("description", "Description", 3)}
+        <div class="field wide"><div class="flrow"><label class="fl" for="gde-desk_note">Before you quote it</label>${i("A line for the team only: what to confirm or mention before reading this listing to a resident. It never goes into an email or onto a printout.")}</div><textarea class="inp" id="gde-desk_note" data-gdf="desk_note" rows="2">${esc(f.desk_note)}</textarea></div>
+      </div>
+      <label class="gdcheck"><input type="checkbox" id="gde-verify"> I confirmed these details by phone just now</label>
+      <div class="gdfoot"><span class="ver">Saved under your name, with the date and what changed.</span>
+        <button class="btn" data-gd="save|${p.id}">Save changes</button><button class="mini ghost" data-gd="cancel|${p.id}">Cancel</button></div>
+    </article>`;
+  }
   function gdCard(p) {
+    if (gd.editing === p.id) return gdEditCard(p);
     const st = gdStatus(p), today = p.hours && p.hours[gdNow().day];
     const site = gdUrl(p.website), book = p.book || {}, bookUrl = gdUrl(book.url);
     const contact = [
@@ -3727,14 +3824,22 @@
         <dt>Our connection</dt><dd>${gdConn(p)}</dd>
       </dl>
       ${p.desk_note ? `<div class="gdnote"><strong>Before you quote it.</strong> ${esc(p.desk_note)}</div>` : ""}
-      <div class="gdfoot"><span class="ver">Checked ${esc(gdDate(p.verified))}</span>
+      ${p.conflicts.map(c => `<div class="gdnote alt"><strong>The weekly check found something different.</strong> ${esc(GD_LABEL[c.field] || c.field)}: its website now reads ${c.theirs ? `&ldquo;${esc(c.theirs)}&rdquo;` : "nothing"}; the team&rsquo;s entry reads ${c.ours ? `&ldquo;${esc(c.ours)}&rdquo;` : "nothing"}.
+        <span class="acts"><button class="mini" data-gd="keep|${p.id}|${c.field}">Keep ours</button><button class="mini ghost" data-gd="take|${p.id}|${c.field}">Take the new one</button></span></div>`).join("")}
+      ${gdProv(p)}
+      <div class="gdfoot">
+        <button class="mini" data-gd="verify|${p.id}">Mark verified by phone</button><button class="mini ghost" data-gd="edit|${p.id}">Edit</button><button class="mini ghost" data-gd="hist|${p.id}">${gd.history === p.id ? "Hide history" : "History"}</button>
+        <span style="flex:1"></span>
         <button class="mini" data-gd="mail|${p.id}">Email to a resident</button><button class="mini ghost" data-gd="print|${p.id}">Print</button></div>
+      ${gd.history === p.id ? gdHistory(p) : ""}
     </article>`;
   }
 
   function gdRender() {
     if (!gd) return;
     const list = gd.shown = gdFind();
+    // a listing being edited stays on screen whatever is typed or filtered
+    if (gd.editing && !list.some(p => p.id === gd.editing)) { const e = gd.places.find(p => p.id === gd.editing); if (e) list.unshift(e); else gd.editing = null; }
     if (gd.active && !list.some(p => p.id === gd.active)) gd.active = null;
     gd.hover = null;
     const qWord = gdTokens(gd.q).join(" ");
@@ -3745,8 +3850,13 @@
       ? `<span><strong>${list.length}</strong> ${list.length === 1 ? "place" : "places"}${gd.q.trim() ? ` for &ldquo;${esc(gd.q.trim())}&rdquo;` : ""} · nearest first</span>
          <button class="mini ghost" data-gd="print-all|">Print ${asked ? "these" : "the whole book"}</button>`
       : `<span>Nothing in the book for &ldquo;${esc(gd.q.trim())}&rdquo;${gd.flags.size ? " with those filters" : ""}. The book holds restaurants for now; try a cuisine, a neighborhood, or a name.</span>`;
+    // a redraw must never eat what someone is halfway through typing
+    const typed = {}; let ticked = false;
+    if (gd.editing) { $$("#gd-list [data-gdf]").forEach(el => { typed[el.dataset.gdf] = el.value; }); const t = $("#gde-verify"); ticked = !!(t && t.checked); }
     $("#gd-list").innerHTML = list.map(gdCard).join("");
-    $("#gd-sub").textContent = `${gd.places.length} restaurants, each checked against its own website. Last full check ${gdDate(gd.verified)}. Type what the resident asked for.`;
+    if (gd.editing) { $$("#gd-list [data-gdf]").forEach(el => { if (el.dataset.gdf in typed) el.value = typed[el.dataset.gdf]; }); const t = $("#gde-verify"); if (t) t.checked = ticked; }
+    const called = gd.places.filter(p => (gd.notes[p.id] || {}).verified_at).length;
+    $("#gd-sub").textContent = `${gd.places.length} restaurants. Checked against their own websites ${gdDate(gd.verified)}; ${called ? called : "none"} verified by phone so far. Type what the resident asked for.`;
     gdMark();
   }
 
@@ -3882,7 +3992,7 @@
     <header><div><div class="k">181 Fremont · From the front desk</div><h1>${esc(list.length === 1 ? list[0].name : "Restaurants" + (gd.q.trim() ? `: ${gd.q.trim()}` : ""))}</h1></div>
       <div class="k">${list.length === 1 ? "" : list.length + " places · nearest first"}</div></header>
     ${list.map(block).join("")}
-    <footer>Distances are measured from 181 Fremont; times are estimates. Hours were checked ${esc(gdDate(gd.verified))} and can change, so a call ahead is wise.</footer>
+    <footer>Distances are measured from 181 Fremont; times are estimates. Hours can change, so a call ahead is wise.</footer>
     </body></html>`);
     w.document.close(); w.focus(); w.print();
   }
@@ -3896,14 +4006,41 @@
         { id: "note", label: "A note for the team, optional", value: n.note, placeholder: "Ask for the corner banquette" }]);
     if (!r || !r.value) return;
     const f = r.fields, clear = r.value === "clear";
-    const body = clear ? { connected: false, note: "" }
-      : { connected: !!(f.contact.trim() || f.phone.trim()), contact: f.contact, phone: f.phone, note: f.note };
+    const body = clear ? { action: "connection", connected: false, note: "" }
+      : { action: "connection", connected: !!(f.contact.trim() || f.phone.trim()), contact: f.contact, phone: f.phone, note: f.note };
+    gdPut(p, body, clear ? "Cleared." : "Saved to the book.");
+  }
+  // Every write goes through here: save, take back the signed row and the log
+  // lines the server wrote, and redraw without losing the desk's place.
+  async function gdPut(p, body, said) {
     try {
       const res = await api("/api/guide/" + encodeURIComponent(p.id), { method: "PUT", body: JSON.stringify(body) });
-      if (res.note) gd.notes[p.id] = res.note; else delete gd.notes[p.id];
-      toast(res.note ? "Saved to the book." : "Cleared.");
-      const keep = gd.active; gdRender(); gd.active = keep; gdMark();
-    } catch (e) { toast(e.message, "warn"); }
+      if (res.note) gd.notes[p.id] = res.note;
+      if (res.logged) gd.log.unshift(...res.logged.slice().reverse());
+      if (res.unchanged) { toast("Nothing was changed."); return false; }
+      const keep = gd.active; gdBuild(); gdRender(); gd.active = keep; gdMark();
+      toast(said);
+      return true;
+    } catch (e) { toast(e.message, "warn"); return false; }
+  }
+  async function gdSaveEdit(p) {
+    const card = $(`[data-gdcard="${p.id}"]`), edits = {};
+    for (const el of $$("[data-gdf]", card)) {
+      const k = el.dataset.gdf, v = el.value.trim().replace(/\s+/g, " ");
+      if (v !== p.flat[k]) edits[k] = { v, base: p.file[k] };
+    }
+    if ("name" in edits && !edits.name.v) { toast("A listing needs a name.", "warn"); return; }
+    const verify = $("#gde-verify", card).checked;
+    if (!Object.keys(edits).length && !verify) { gd.editing = null; gdRender(); toast("Nothing was changed."); return; }
+    gd.editing = null; gd.history = p.id;
+    const ok = await gdPut(p, { action: "edit", edits, verify }, verify ? "Saved, and marked verified by phone." : "Saved. It is in this listing's history.");
+    if (!ok) { gd.editing = p.id; gdRender(); }
+  }
+  async function gdVerify(p) {
+    const v = await dialog(`You called ${p.name}?`,
+      "Marking it verified says you spoke with them and the card is right as it stands. Your name and today&rsquo;s date go on the listing. If something was wrong, use Edit and tick the box there instead.",
+      [{ label: "Yes, verified by phone", kind: "primary", value: "yes" }, { label: "Not yet", kind: "quiet", value: null }]);
+    if (v) gdPut(p, { action: "verify" }, "Marked verified by phone.");
   }
 
   document.addEventListener("change", ev => { if (ev.target.id === "s-guide" && ev.target.checked) gdBoot(); });
@@ -3917,7 +4054,7 @@
     if (!gd) return;
     const b = ev.target.closest("[data-gd]");
     if (b) {
-      const [verb, arg] = b.dataset.gd.split("|");
+      const [verb, arg, arg2] = b.dataset.gd.split("|");
       const p = gd.places.find(x => x.id === arg);
       if (verb === "quick") { const on = gdPlain(arg) === gdTokens(gd.q).join(" "); gd.q = on ? "" : arg; $("#gd-q").value = gd.q; gd.active = null; gdRender(); }
       else if (verb === "flag") { if (gd.flags.has(arg)) gd.flags.delete(arg); else gd.flags.add(arg); gd.active = null; gdRender(); }
@@ -3927,10 +4064,19 @@
       else if (verb === "print" && p) gdPrint([p]);
       else if (verb === "print-all") gdPrint(gd.shown);
       else if (verb === "conn" && p) gdEditConn(p);
+      else if (verb === "edit" && p) { gd.editing = p.id; gd.active = p.id; gdRender(); gd.active = p.id; gdMark(); const c = $(`[data-gdcard="${p.id}"]`); if (c) c.scrollIntoView({ block: "start", behavior: "smooth" }); }
+      else if (verb === "cancel") { gd.editing = null; const keep = gd.active; gdRender(); gd.active = keep; gdMark(); }
+      else if (verb === "save" && p) gdSaveEdit(p);
+      else if (verb === "verify" && p) gdVerify(p);
+      else if (verb === "hist" && p) { gd.history = gd.history === p.id ? null : p.id; const keep = gd.active; gdRender(); gd.active = keep; gdMark(); }
+      else if ((verb === "keep" || verb === "take") && p) {
+        const c = p.conflicts.find(x => x.field === arg2);
+        if (c) gdPut(p, { action: "resolve", field: arg2, take: verb === "take", base: c.theirs }, verb === "take" ? "Taken. The card now reads what the website says." : "Kept. The team's entry stands.");
+      }
       return;
     }
     const c = ev.target.closest("[data-gdcard]");
-    if (c && !ev.target.closest("a, button, summary, details")) { gd.active = gd.active === c.dataset.gdcard ? null : c.dataset.gdcard; gdMark(); }
+    if (c && !gd.editing && !ev.target.closest("a, button, summary, details, input, textarea, select, label")) { gd.active = gd.active === c.dataset.gdcard ? null : c.dataset.gdcard; gdMark(); }
   });
   window.addEventListener("resize", () => { if (gd && $("#s-guide") && $("#s-guide").checked) gdMark(); });
 

@@ -134,11 +134,15 @@ export const RESIDENT_TABLES = [
     n INTEGER NOT NULL DEFAULT 0, last TEXT,
     PRIMARY KEY (day, feed, agent)
   )`,
-  // The Black Book's house knowledge: one line per place, keyed by the id in
-  // source/guide_places.json. The facts about a place never live here.
+  // The Black Book, one row per place, keyed by the id in
+  // source/guide_places.json: our connection there, who last verified the
+  // listing by phone and when, and the team's corrections laid over the
+  // file (edits = JSON { field: { v, base } }). Every write also lands in
+  // change_log with kind 'guide'.
   `CREATE TABLE IF NOT EXISTS guide_notes (
     place_id TEXT PRIMARY KEY, connected INTEGER NOT NULL DEFAULT 0,
-    contact TEXT, phone TEXT, note TEXT, updated TEXT, updated_by TEXT
+    contact TEXT, phone TEXT, note TEXT, updated TEXT, updated_by TEXT,
+    verified_at TEXT, verified_by TEXT, edits TEXT
   )`,
   `CREATE TABLE IF NOT EXISTS notes (
     id INTEGER PRIMARY KEY AUTOINCREMENT,

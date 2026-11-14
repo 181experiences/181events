@@ -1,5 +1,4 @@
 {
- "verified": "2026-11-13",
  "places": [
   {
    "id": "cafe-de-la-presse",
@@ -40,9 +39,16 @@
    ],
    "description": "A corner brasserie and newsstand facing the Chinatown gate, serving classic and modern French plates from breakfast onward. It suits an easy daytime meal, a glass of French wine on the terrace, or a relaxed early dinner close to Union Square.",
    "desk_note": null,
-   "verified": "2026-11-13",
    "sources": [
     "https://www.cafedelapresse.com/"
+   ],
+   "auto_updated": "2026-11-13",
+   "history": [
+    {
+     "at": "2026-11-13",
+     "action": "Added to the book, checked against its own website",
+     "changes": null
+    }
    ]
   },
   {
@@ -84,10 +90,17 @@
    ],
    "description": "A recently opened French restaurant from the team behind Lazy Bear, built around a seafood and raw bar. A good pick for a polished dinner in the Design District when you want French cooking with a lighter, shellfish-forward bent.",
    "desk_note": null,
-   "verified": "2026-11-13",
    "sources": [
     "https://www.joujousf.com/location/joujou/",
     "https://www.joujousf.com/"
+   ],
+   "auto_updated": "2026-11-13",
+   "history": [
+    {
+     "at": "2026-11-13",
+     "action": "Added to the book, checked against its own website",
+     "changes": null
+    }
    ]
   },
   {
@@ -129,10 +142,17 @@
    ],
    "description": "A Jackson Square cave a manger pairing a deep French wine list with small plates and plats du jour. It works well for an unhurried evening of wine and French plates a short walk from the Financial District.",
    "desk_note": null,
-   "verified": "2026-11-13",
    "sources": [
     "https://www.verjuscave.com/",
     "https://guide.michelin.com/us/en/california/san-francisco/restaurant/verjus"
+   ],
+   "auto_updated": "2026-11-13",
+   "history": [
+    {
+     "at": "2026-11-13",
+     "action": "Added to the book, checked against its own website",
+     "changes": null
+    }
    ]
   },
   {
@@ -174,9 +194,16 @@
    ],
    "description": "A modern Parisian-style bistro at the water's edge on Pier 3, right by the Ferry Building. The most convenient French dinner or weekend brunch for a resident of 181 Fremont.",
    "desk_note": "Its site shows lunch on Thursday and Friday only, its booking page shows every weekday. Confirm lunch by phone.",
-   "verified": "2026-11-13",
    "sources": [
     "https://www.bondeliresf.com/"
+   ],
+   "auto_updated": "2026-11-13",
+   "history": [
+    {
+     "at": "2026-11-13",
+     "action": "Added to the book, checked against its own website",
+     "changes": null
+    }
    ]
   },
   {
@@ -210,12 +237,19 @@
    ],
    "description": "Dominique Crenn's poetic, seafood-forward French tasting-menu restaurant, the city's most celebrated French fine dining. Reserve it for a milestone dinner when the evening itself is the point.",
    "desk_note": "Hours are not published anywhere official. Confirm the evening and the booking by phone.",
-   "verified": "2026-11-13",
    "sources": [
     "https://www.ateliercrenn.com/",
     "https://www.ateliercrenn.com/faq/",
     "https://www.ateliercrenn.com/contactus/",
     "https://guide.michelin.com/us/en/california/san-francisco/restaurant/atelier-crenn"
+   ],
+   "auto_updated": "2026-11-13",
+   "history": [
+    {
+     "at": "2026-11-13",
+     "action": "Added to the book, checked against its own website",
+     "changes": null
+    }
    ]
   },
   {
@@ -256,9 +290,16 @@
    ],
    "description": "A husband-and-wife-run Parisian bistro on Clement Street since 1996, known for escargots, cassoulet and coq au vin. A dependable, warm neighborhood French dinner when you want tradition over novelty.",
    "desk_note": "The times are when tables can be booked, not when it closes.",
-   "verified": "2026-11-13",
    "sources": [
     "https://www.chapeausf.com/"
+   ],
+   "auto_updated": "2026-11-13",
+   "history": [
+    {
+     "at": "2026-11-13",
+     "action": "Added to the book, checked against its own website",
+     "changes": null
+    }
    ]
   },
   {
@@ -298,10 +339,17 @@
    ],
    "description": "A stylish neighborhood bistro at California and Divisadero serving a changing, ingredient-driven French menu. A strong choice for a relaxed French dinner in Pacific Heights, with parties over 6 handled by email.",
    "desk_note": "The phone number comes from the Michelin Guide, not its own site.",
-   "verified": "2026-11-13",
    "sources": [
     "https://www.routiersf.com/",
     "https://guide.michelin.com/us/en/california/san-francisco/restaurant/routier"
+   ],
+   "auto_updated": "2026-11-13",
+   "history": [
+    {
+     "at": "2026-11-13",
+     "action": "Added to the book, checked against its own website",
+     "changes": null
+    }
    ]
   },
   {
@@ -343,10 +391,17 @@
    ],
    "description": "Nancy Oakes' long-running Belle Epoque dining room on the Embarcadero, serving seasonal Californian cooking with a classic polish. Among the easiest upscale dinners to reach from 181 Fremont, and a natural business dinner.",
    "desk_note": "The phone number comes from the Michelin Guide; its own site lists none. Its hours are printed without AM or PM and read here as evening.",
-   "verified": "2026-11-13",
    "sources": [
     "https://www.boulevardrestaurant.com/location/boulevard-restaurant/",
     "https://www.boulevardrestaurant.com/"
+   ],
+   "auto_updated": "2026-11-13",
+   "history": [
+    {
+     "at": "2026-11-13",
+     "action": "Added to the book, checked against its own website",
+     "changes": null
+    }
    ]
   },
   {
@@ -388,10 +443,17 @@
    ],
    "description": "A wood-fired seafood restaurant on the Embarcadero waterfront where nearly every dish is touched by the hearth. A top choice for a special dinner or a business lunch with bay views, a short walk from the East Cut.",
    "desk_note": "Its site still carries last winter's notices, so the hours may be stale. Confirm by phone.",
-   "verified": "2026-11-13",
    "sources": [
     "https://anglerrestaurants.com/",
     "https://guide.michelin.com/us/en/california/san-francisco/restaurant/angler-sf"
+   ],
+   "auto_updated": "2026-11-13",
+   "history": [
+    {
+     "at": "2026-11-13",
+     "action": "Added to the book, checked against its own website",
+     "changes": null
+    }
    ]
   },
   {
@@ -433,11 +495,18 @@
    ],
    "description": "Michael Tusk's three-star Jackson Square restaurant, an ever-changing menu built on ingredients from its own Fresh Run Farm. The pick for the most serious special-occasion dinner within a short ride of downtown.",
    "desk_note": "The times are when tables can be booked, not when it closes. The bar seats walk-ins.",
-   "verified": "2026-11-13",
    "sources": [
     "https://www.quincerestaurant.com/",
     "https://www.quincerestaurant.com/join-us-for-lunch",
     "https://guide.michelin.com/us/en/california/san-francisco/restaurant/quince"
+   ],
+   "auto_updated": "2026-11-13",
+   "history": [
+    {
+     "at": "2026-11-13",
+     "action": "Added to the book, checked against its own website",
+     "changes": null
+    }
    ]
   },
   {
@@ -479,12 +548,19 @@
    ],
    "description": "A two-star tasting-menu restaurant in SoMa with a dedicated wine program and an optional bar experience. A strong choice for a long, elegant dinner in SoMa.",
    "desk_note": "No closing time is published. Confirm the schedule by phone.",
-   "verified": "2026-11-13",
    "sources": [
     "https://saisonsf.com/",
     "https://saisonsf.com/faq/",
     "https://saisonsf.com/contact/",
     "https://guide.michelin.com/us/en/california/san-francisco/restaurant/saison"
+   ],
+   "auto_updated": "2026-11-13",
+   "history": [
+    {
+     "at": "2026-11-13",
+     "action": "Added to the book, checked against its own website",
+     "changes": null
+    }
    ]
   },
   {
@@ -525,10 +601,17 @@
    ],
    "description": "A two-star tasting-menu dinner in the Mission, sold as tickets for set seatings. A strong special-occasion night out for a group.",
    "desk_note": "Sold as tickets on Tock for set seatings. No phone reservations.",
-   "verified": "2026-11-13",
    "sources": [
     "https://www.lazybearsf.com/contact-info",
     "https://guide.michelin.com/us/en/california/san-francisco/restaurant/lazy-bear"
+   ],
+   "auto_updated": "2026-11-13",
+   "history": [
+    {
+     "at": "2026-11-13",
+     "action": "Added to the book, checked against its own website",
+     "changes": null
+    }
    ]
   },
   {
@@ -569,10 +652,17 @@
    ],
    "description": "A rustic Italian dining room a short walk from the Financial District, known for hand-rolled pasta, rotisserie meats and a wood-fired oven. A dependable choice for a polished but relaxed dinner or a weekday lunch.",
    "desk_note": "Books by phone or email; the buttons on its site do not work.",
-   "verified": "2026-11-13",
    "sources": [
     "https://www.cotognasf.com",
     "https://guide.michelin.com/us/en/california/san-francisco/restaurant/cotogna"
+   ],
+   "auto_updated": "2026-11-13",
+   "history": [
+    {
+     "at": "2026-11-13",
+     "action": "Added to the book, checked against its own website",
+     "changes": null
+    }
    ]
   },
   {
@@ -613,9 +703,16 @@
    ],
    "description": "A long-running Financial District Italian restaurant focused on the cooking of Piedmont, with house-made pasta and cured meats. Convenient for a business lunch or a dinner before an evening downtown.",
    "desk_note": "Closed Mondays for now. Its site says Monday service returns in December.",
-   "verified": "2026-11-13",
    "sources": [
     "https://www.perbaccosf.com"
+   ],
+   "auto_updated": "2026-11-13",
+   "history": [
+    {
+     "at": "2026-11-13",
+     "action": "Added to the book, checked against its own website",
+     "changes": null
+    }
    ]
   },
   {
@@ -655,9 +752,16 @@
    ],
    "description": "A neighborhood Italian restaurant in the Mission that has been a local standard for simple, well-made Tuscan-leaning cooking, including its signature spaghetti. Good when you want an unfussy, lively dinner outside downtown.",
    "desk_note": null,
-   "verified": "2026-11-13",
    "sources": [
     "https://www.delfinasf.com"
+   ],
+   "auto_updated": "2026-11-13",
+   "history": [
+    {
+     "at": "2026-11-13",
+     "action": "Added to the book, checked against its own website",
+     "changes": null
+    }
    ]
   },
   {
@@ -698,10 +802,17 @@
    ],
    "description": "A Southern Italian restaurant with a wood-fired pizza oven and a strong pasta and wine program, centered on Campania. A lively, good-value choice for a group dinner.",
    "desk_note": "Two numbers are in circulation. This is the one on its own site.",
-   "verified": "2026-11-13",
    "sources": [
     "https://www.a16pizza.com",
     "https://guide.michelin.com/us/en/california/san-francisco/restaurant/a16"
+   ],
+   "auto_updated": "2026-11-13",
+   "history": [
+    {
+     "at": "2026-11-13",
+     "action": "Added to the book, checked against its own website",
+     "changes": null
+    }
    ]
   },
   {
@@ -742,9 +853,16 @@
    ],
    "description": "A steakhouse on the Embarcadero waterfront with bay views, serving prime cuts and seafood. A natural pick for a client dinner or celebration close to the East Cut.",
    "desk_note": null,
-   "verified": "2026-11-13",
    "sources": [
     "https://www.epicsteak.com"
+   ],
+   "auto_updated": "2026-11-13",
+   "history": [
+    {
+     "at": "2026-11-13",
+     "action": "Added to the book, checked against its own website",
+     "changes": null
+    }
    ]
   },
   {
@@ -785,9 +903,16 @@
    ],
    "description": "A luxury steakhouse on an upper floor near Union Square, known for Wagyu and Japanese-influenced touches. Suited to a special-occasion dinner.",
    "desk_note": "Holiday hours conflict on its site. Confirm by phone near a holiday.",
-   "verified": "2026-11-13",
    "sources": [
     "https://alexanderssteakhousesf.com"
+   ],
+   "auto_updated": "2026-11-13",
+   "history": [
+    {
+     "at": "2026-11-13",
+     "action": "Added to the book, checked against its own website",
+     "changes": null
+    }
    ]
   },
   {
@@ -828,10 +953,17 @@
    ],
    "description": "A Japanese-influenced steakhouse in SoMa focused on high-grade Wagyu, with a tasting-style approach to the meal. A strong choice for a serious steak dinner with a Michelin-recognized kitchen.",
    "desk_note": null,
-   "verified": "2026-11-13",
    "sources": [
     "https://www.nikusteakhouse.com",
     "https://guide.michelin.com/us/en/california/san-francisco/restaurant/niku-steakhouse"
+   ],
+   "auto_updated": "2026-11-13",
+   "history": [
+    {
+     "at": "2026-11-13",
+     "action": "Added to the book, checked against its own website",
+     "changes": null
+    }
    ]
   },
   {
@@ -872,9 +1004,16 @@
    ],
    "description": "A seafood restaurant under the Bay Bridge with floor-to-ceiling views and a large fish tank, serving oysters and sustainably sourced fish. One of the closest good seafood rooms to 181 Fremont.",
    "desk_note": null,
-   "verified": "2026-11-13",
    "sources": [
     "https://www.waterbarsf.com"
+   ],
+   "auto_updated": "2026-11-13",
+   "history": [
+    {
+     "at": "2026-11-13",
+     "action": "Added to the book, checked against its own website",
+     "changes": null
+    }
    ]
   },
   {
@@ -915,9 +1054,16 @@
    ],
    "description": "The city's old-school grill, in business since the 1800s, with a counter, booths and classics like cioppino and sand dabs. A true San Francisco experience for visiting family or colleagues.",
    "desk_note": null,
-   "verified": "2026-11-13",
    "sources": [
     "https://www.tadichgrillsf.com/"
+   ],
+   "auto_updated": "2026-11-13",
+   "history": [
+    {
+     "at": "2026-11-13",
+     "action": "Added to the book, checked against its own website",
+     "changes": null
+    }
    ]
   },
   {
@@ -957,10 +1103,17 @@
    ],
    "description": "A casual oyster bar inside the Ferry Building with bay views, serving oysters from its own farm, chowder and grilled cheese. Best for a quick, high-quality seafood meal or a drink on the waterfront.",
    "desk_note": null,
-   "verified": "2026-11-13",
    "sources": [
     "https://www.hogislandoysters.com/visit/san-francisco/",
     "https://guide.michelin.com/us/en/california/san-francisco/restaurant/hog-island-oyster-co"
+   ],
+   "auto_updated": "2026-11-13",
+   "history": [
+    {
+     "at": "2026-11-13",
+     "action": "Added to the book, checked against its own website",
+     "changes": null
+    }
    ]
   },
   {
@@ -1001,10 +1154,17 @@
    ],
    "description": "Tyler Florence's tavern in a handsome Financial District space, known for popovers and buttermilk fried chicken. Reliable for client lunches and dinners within a few blocks of downtown offices.",
    "desk_note": "Moved to 201 Pine Street in 2025; older guides still show Sacramento Street. Its site looks dated, so confirm hours by phone.",
-   "verified": "2026-11-13",
    "sources": [
     "https://www.wayfaretavern.com",
     "https://www.wayfaretavern.com/about-us"
+   ],
+   "auto_updated": "2026-11-13",
+   "history": [
+    {
+     "at": "2026-11-13",
+     "action": "Added to the book, checked against its own website",
+     "changes": null
+    }
    ]
   },
   {
@@ -1045,10 +1205,17 @@
    ],
    "description": "A long-standing Market Street restaurant famous for its wood-oven roast chicken with bread salad and its oysters. A classic San Francisco meal that suits a leisurely lunch or dinner.",
    "desk_note": null,
-   "verified": "2026-11-13",
    "sources": [
     "https://zunicafe.com",
     "https://guide.michelin.com/us/en/california/san-francisco/restaurant/zuni-cafe"
+   ],
+   "auto_updated": "2026-11-13",
+   "history": [
+    {
+     "at": "2026-11-13",
+     "action": "Added to the book, checked against its own website",
+     "changes": null
+    }
    ]
   },
   {
@@ -1089,11 +1256,18 @@
    ],
    "description": "A long-running sushi counter that now sits a few steps from Fremont Street, serving omakase at lunch and dinner. Its early, tightly timed service and focus on nigiri suit a resident who wants a serious sushi meal close to home.",
    "desk_note": "Does not take or change reservations by phone. Parties over four book by email.",
-   "verified": "2026-11-13",
    "sources": [
     "https://akikosrestaurant.com",
     "https://akikosrestaurant.com/contact/",
     "https://akikosrestaurant.com/reservations/"
+   ],
+   "auto_updated": "2026-11-13",
+   "history": [
+    {
+     "at": "2026-11-13",
+     "action": "Added to the book, checked against its own website",
+     "changes": null
+    }
    ]
   },
   {
@@ -1133,9 +1307,16 @@
    ],
    "description": "A Michael Mina izakaya in the 101 California tower, built around shared small plates and sushi with a sake list to match. An easy, polished choice for a weekday lunch or a group dinner near the Embarcadero.",
    "desk_note": "Hours are from the owner group's page. Other sites show a later closing; confirm by phone.",
-   "verified": "2026-11-13",
    "sources": [
     "https://theminagroup.com/restaurants/pabu-izakaya/"
+   ],
+   "auto_updated": "2026-11-13",
+   "history": [
+    {
+     "at": "2026-11-13",
+     "action": "Added to the book, checked against its own website",
+     "changes": null
+    }
    ]
   },
   {
@@ -1176,11 +1357,18 @@
    ],
    "description": "An omakase sushi counter near Chinatown and the Financial District, with a full multi-course menu and a shorter petite option. Suits a quiet, focused sushi dinner for a small party.",
    "desk_note": "Two seatings a night, nothing between. The reservation line is staffed Tuesday to Sunday, 12:30 to 4:00 PM.",
-   "verified": "2026-11-13",
    "sources": [
     "https://www.kusakabe-sf.com",
     "https://kusakabe-sf.com/reservations/",
     "https://guide.michelin.com/us/en/california/san-francisco/restaurant/kusakabe"
+   ],
+   "auto_updated": "2026-11-13",
+   "history": [
+    {
+     "at": "2026-11-13",
+     "action": "Added to the book, checked against its own website",
+     "changes": null
+    }
    ]
   },
   {
@@ -1221,10 +1409,17 @@
    ],
    "description": "A family-run dim sum house a few blocks from 181 Fremont, with a daytime-only service of dumplings and small plates. A dependable choice for a business lunch or a weekend family meal.",
    "desk_note": "The Rincon Center room has closed. Stevenson Street is the only location now.",
-   "verified": "2026-11-13",
    "sources": [
     "https://yanksing.com",
     "https://guide.michelin.com/us/en/california/san-francisco/restaurant/yank-sing"
+   ],
+   "auto_updated": "2026-11-13",
+   "history": [
+    {
+     "at": "2026-11-13",
+     "action": "Added to the book, checked against its own website",
+     "changes": null
+    }
    ]
   },
   {
@@ -1265,10 +1460,17 @@
    ],
    "description": "Brandon Jew's Chinatown dining room, where Cantonese banquet cooking meets Californian produce. A strong pick for a celebration or when guests want a Chinese meal with some ceremony.",
    "desk_note": "Books on Tock only, never by phone or email. The phone number comes from the Michelin Guide.",
-   "verified": "2026-11-13",
    "sources": [
     "https://www.misterjius.com/reservations",
     "https://guide.michelin.com/us/en/california/san-francisco/restaurants/all-starred"
+   ],
+   "auto_updated": "2026-11-13",
+   "history": [
+    {
+     "at": "2026-11-13",
+     "action": "Added to the book, checked against its own website",
+     "changes": null
+    }
    ]
   },
   {
@@ -1307,10 +1509,17 @@
    ],
    "description": "Pim Techamuanvivit's Thai restaurant, known for bold regional cooking that does not tone down the heat. Good for guests who want a lively, flavorful dinner or a quick serious lunch.",
    "desk_note": null,
-   "verified": "2026-11-13",
    "sources": [
     "https://kinkhao.com",
     "https://guide.michelin.com/us/en/california/san-francisco/restaurants/all-starred"
+   ],
+   "auto_updated": "2026-11-13",
+   "history": [
+    {
+     "at": "2026-11-13",
+     "action": "Added to the book, checked against its own website",
+     "changes": null
+    }
    ]
   },
   {
@@ -1350,10 +1559,17 @@
    ],
    "description": "A Korean charcoal-grill restaurant from Corey Lee's team, centered on tabletop barbecue and home-style dishes. Worth the ride to the Mission for a group that wants a lively, high-quality dinner.",
    "desk_note": null,
-   "verified": "2026-11-13",
    "sources": [
     "https://www.sanhowon.com/visit",
     "https://guide.michelin.com/us/en/california/san-francisco/restaurants/all-starred"
+   ],
+   "auto_updated": "2026-11-13",
+   "history": [
+    {
+     "at": "2026-11-13",
+     "action": "Added to the book, checked against its own website",
+     "changes": null
+    }
    ]
   },
   {
@@ -1394,9 +1610,16 @@
    ],
    "description": "A Peruvian restaurant on the Embarcadero waterfront, known for ceviche and pisco drinks. A bright, easy place for lunch by the bay or a relaxed dinner.",
    "desk_note": null,
-   "verified": "2026-11-13",
    "sources": [
     "https://lamarcebicheria.com/san-francisco/"
+   ],
+   "auto_updated": "2026-11-13",
+   "history": [
+    {
+     "at": "2026-11-13",
+     "action": "Added to the book, checked against its own website",
+     "changes": null
+    }
    ]
   },
   {
@@ -1436,10 +1659,17 @@
    ],
    "description": "A Spanish tapas restaurant on Pier 5, with a grill and a long list of small plates for sharing. Good for a group that wants a long, casual meal on the water.",
    "desk_note": null,
-   "verified": "2026-11-13",
    "sources": [
     "https://www.coquetasf.com",
     "https://www.coquetasf.com/reservations"
+   ],
+   "auto_updated": "2026-11-13",
+   "history": [
+    {
+     "at": "2026-11-13",
+     "action": "Added to the book, checked against its own website",
+     "changes": null
+    }
    ]
   },
   {
@@ -1479,10 +1709,17 @@
    ],
    "description": "A modern Indian restaurant that reworks regional dishes with a contemporary eye, in a roomy space south of Market. A good pick for guests who want something more adventurous than a standard Indian menu.",
    "desk_note": "Its own site could not be read; hours are from the Michelin Guide and match its booking page. The number is the takeout line.",
-   "verified": "2026-11-13",
    "sources": [
     "https://guide.michelin.com/us/en/california/san-francisco/restaurant/rooh",
     "https://www.roohrestaurants.com/"
+   ],
+   "auto_updated": "2026-11-13",
+   "history": [
+    {
+     "at": "2026-11-13",
+     "action": "Added to the book, checked against its own website",
+     "changes": null
+    }
    ]
   },
   {
@@ -1521,9 +1758,16 @@
    ],
    "description": "A Mediterranean restaurant on Fremont Street itself, with a menu that changes regularly. The closest option in this guide for a weekday lunch or an early dinner.",
    "desk_note": null,
-   "verified": "2026-11-13",
    "sources": [
     "https://barcha-sf.com"
+   ],
+   "auto_updated": "2026-11-13",
+   "history": [
+    {
+     "at": "2026-11-13",
+     "action": "Added to the book, checked against its own website",
+     "changes": null
+    }
    ]
   },
   {
@@ -1564,11 +1808,19 @@
    ],
    "description": "A Mediterranean and Turkish restaurant in the Presidio, run by co-chefs Laura and Sayat Ozyilmaz, with a lounge and bar that take walk-ins. Worth the drive for a relaxed brunch or dinner outside the downtown grid.",
    "desk_note": "No main phone line. This is the Presidio's Montgomery Street, not downtown's. Confirm Tuesday to Thursday dinner.",
-   "verified": "2026-11-13",
    "sources": [
     "https://www.dalidasf.com",
     "https://guide.michelin.com/en/california/san-francisco/restaurant/dalida"
+   ],
+   "auto_updated": "2026-11-13",
+   "history": [
+    {
+     "at": "2026-11-13",
+     "action": "Added to the book, checked against its own website",
+     "changes": null
+    }
    ]
   }
- ]
+ ],
+ "auto_updated": "2026-11-13"
 }

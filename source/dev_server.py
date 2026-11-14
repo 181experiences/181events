@@ -972,7 +972,9 @@ class H(SimpleHTTPRequestHandler):
             days = max(1, min(90, int((q.get("days") or ["30"])[0])))
             return self._json(sample_analytics(days))
         if p.path == "/api/guide":
-            return self._json({"notes": load_store("guide", {})})
+            log = [dict(place=h["label"], at=h["at"], who=h["who"], action=h["action"], changes=h.get("changes"))
+                   for h in reversed(load_store("changelog", [])) if h["kind"] == "guide"][:2000]
+            return self._json({"notes": load_store("guide", {}), "log": log})
         if p.path == "/api/feeds":
             if self._role() == "desk": return self._json({"error": "forbidden"}, 403)
             since = (datetime.date.today() - datetime.timedelta(days=13)).isoformat()
@@ -1696,22 +1698,58 @@ class H(SimpleHTTPRequestHandler):
     def do_PUT(self):
         p = urlparse(self.path)
         parts = p.path.split("/")
-        # The Black Book's house line on one place; every tier writes.
+        # The Black Book: four acts on one place, mirroring functions/api/guide/[id].js.
         if p.path.startswith("/api/guide/"):
             pid = p.path.rsplit("/", 1)[1].lower()
             if not re.fullmatch(r"[a-z0-9-]{1,80}", pid): return self._json({"error": "Unknown place."}, 400)
             b = self._body_json()
-            clip = lambda v, n: str(v or "").strip()[:n]
-            row = dict(connected=bool(b.get("connected")), contact=clip(b.get("contact"), 80),
-                       phone=clip(b.get("phone"), 40), note=clip(b.get("note"), 240))
-            if not row["connected"]: row["contact"] = row["phone"] = ""
+            fields = ["name", "cuisines", "neighborhood", "address", "phone", "website", "email", "book_how", "book_url",
+                      "price", "michelin", "description", "hours_note", "desk_note"] + ["hours_" + d for d in "mon tue wed thu fri sat sun".split()]
+            limit = dict(description=700, desk_note=400, hours_note=300, book_url=400, website=300)
+            clip = lambda v, n: str("" if v is None else v).strip()[:n]
+            by, at = f"{self._role()}@local.dev", now_iso()
             notes = load_store("guide", {})
-            if not row["connected"] and not row["note"]:
-                notes.pop(pid, None); save_store("guide", notes)
-                return self._json({"ok": True, "note": None})
-            row.update(updated=now_iso(), updated_by=f"{self._role()}@local.dev")
+            row = dict(connected=False, contact="", phone="", note="", updated="", updated_by="", verified_at="", verified_by="", edits={})
+            row.update(notes.get(pid) or {})
+            logs = []
+            act = b.get("action")
+            if act == "connection":
+                nxt = dict(connected=bool(b.get("connected")), contact=clip(b.get("contact"), 80), phone=clip(b.get("phone"), 40), note=clip(b.get("note"), 240))
+                if not nxt["connected"]: nxt["contact"] = nxt["phone"] = ""
+                say = lambda r: ("Yes" if r["connected"] else "No") + (", " + r["contact"] if r["contact"] else "") + (", " + r["phone"] if r["phone"] else "")
+                ch = {}
+                if say(row) != say(nxt): ch["connection"] = [say(row), say(nxt)]
+                if row["note"] != nxt["note"]: ch["connection_note"] = [row["note"], nxt["note"]]
+                row.update(nxt)
+                if ch: logs.append(("Connection saved", ch))
+            elif act == "edit":
+                ch = {}
+                for f in fields:
+                    e = (b.get("edits") or {}).get(f)
+                    if not e: continue
+                    v, base = clip(e.get("v"), limit.get(f, 200)), clip(e.get("base"), limit.get(f, 200))
+                    before = row["edits"][f]["v"] if f in row["edits"] else base
+                    if v == before: continue
+                    if v == base: row["edits"].pop(f, None)
+                    else: row["edits"][f] = dict(v=v, base=base)
+                    ch[f] = [before, v]
+                if ch: logs.append(("Edited", ch)); row["updated"] = at; row["updated_by"] = by
+                if b.get("verify"): row["verified_at"] = at; row["verified_by"] = by; logs.append(("Verified by phone", None))
+                if not logs: return self._json({"ok": True, "note": row if pid in notes else None, "unchanged": True})
+            elif act == "verify":
+                row["verified_at"] = at; row["verified_by"] = by; logs.append(("Verified by phone", None))
+            elif act == "resolve":
+                f = str(b.get("field") or ""); e = row["edits"].get(f)
+                if f not in fields or not e: return self._json({"error": "Nothing to settle on that field."}, 400)
+                base = clip(b.get("base"), limit.get(f, 200))
+                if b.get("take"): row["edits"].pop(f); logs.append(("Took the weekly check's value", {f: [e["v"], base]}))
+                else: e["base"] = base; logs.append(("Kept the team's entry over the weekly check", {f: [base, e["v"]]}))
+            else:
+                return self._json({"error": "Unknown action."}, 400)
             notes[pid] = row; save_store("guide", notes)
-            return self._json({"ok": True, "note": row})
+            for action, changes in logs: log_change(self._role(), "guide", None, pid, action, changes)
+            return self._json({"ok": True, "note": row,
+                               "logged": [dict(place=pid, at=at, who=by, action=a, changes=c) for a, c in logs]})
         if p.path == "/api/settings":
             if self._role() == "desk": return self._json({"error": "forbidden"}, 403)
             body = self._body_json()
