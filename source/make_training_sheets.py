@@ -204,7 +204,7 @@ DESK_COL1 = [
     ("b", "The first code often comes back \u201calready been used.\u201d That is the mail scanner opening the link before you can, not a mistake of yours. **Request a new code**; the second one works."),
     ("b", "**Stay signed in** on the desk computer; there is no need to sign out between shifts, and each fresh sign-in costs another emailed code."),
     ("h", "2 · The lost code, any hour"),
-    ("b", "**Residents** tab. Type a name or unit in the **find box**; the household card opens with the person in it."),
+    ("b", "**Residents**, then **Roster**. Type a name or unit in the **find box**; the household card opens with the person in it."),
     ("b", "**Email code** first: a written draft opens in Outlook on the web or the desktop app (the machine remembers which), addressed to the email on file, ready to send."),
     ("b", "In person? **Print** on the row makes one fresh code card at the lobby printer. A lost card that could be found: **Rotate** first, which stops the old code everywhere, then email or print the new one."),
     ("b", "One code per person; couples each have their own. Never share a code between people."),
@@ -224,11 +224,11 @@ DESK_COL2 = [
     ("b", "After any change, a note to the resident is offered: it opens written and addressed from your own mailbox, web or desktop Outlook. No email on file? A call closes the loop."),
     ("b", "On event day it is the door list: **Check in** seats a whole party in one tap, takes a number when fewer came, and holds a short door note on the row."),
     ("h", "6 · Private-party nights"),
-    ("b", "Guests arrive announcing the **event name**. The list: **Spaces** tab, the reservation’s **Guests** panel, or the printed sheet."),
+    ("b", "Guests arrive announcing the **event name**. The list: **181 Spaces**, its **Guests** panel, or the printed sheet."),
     ("b", "Press **Arrived** beside each name; plus-ones have their own lines. A name not listed: check with the host, then **Add**. **Email** and **Edit** sit on every line."),
     ("h", "7 · What the desk view leaves alone"),
     ("b", "Events, publishing, and Assets belong to Resident Experiences. Message text is private to Leo; you see who wrote and when, never the words."),
-    ("b", "A neighbor note that must come down at 2 AM can: **Remove** on the Messages tab, named under **Past notes**; **Restore** puts it back."),
+    ("b", "A neighbor note that must come down at 2 AM can: **Remove** in Messages, named under **Past notes**; **Restore** puts it back."),
     ("b", "The grey bar at the top stays quiet when all is well. If something looks wrong: reload; still wrong, call Leo and read him what the bar says."),
 ]
 

@@ -55,6 +55,12 @@
   .navbar label{white-space:nowrap;padding:11px 14px;font-size:12px;letter-spacing:.09em;text-transform:uppercase;
     font-weight:500;color:var(--stone);border-bottom:2px solid transparent}
   .navbar label:hover{color:var(--ink)}
+  /* a group's own screens, in a quieter row under the bar */
+  .subnav{display:none;background:var(--paper);border-bottom:1px solid var(--line)}
+  .subnav .inner{max-width:1240px;margin:0 auto;padding:0 clamp(18px,4vw,34px);display:flex;gap:2px;overflow-x:auto}
+  .subnav label{white-space:nowrap;padding:9px 14px 8px;font-size:11.5px;letter-spacing:.07em;text-transform:uppercase;
+    font-weight:500;color:var(--stone);border-bottom:2px solid transparent;cursor:pointer}
+  .subnav label:hover{color:var(--ink)}
 
   .screen{display:none;padding:22px 0 70px}
   #s-dash:checked ~ .body #scr-dash{display:block}
@@ -67,7 +73,6 @@
   #s-arch:checked ~ .body #scr-arch{display:block}
   #s-res:checked ~ .body #scr-res{display:block}
   #s-spaces:checked ~ .body #scr-spaces{display:block}
-  #s-ops:checked ~ .body #scr-ops{display:block}
   #s-inv:checked ~ .body #scr-inv{display:block}
   #s-invcount:checked ~ .body #scr-invcount{display:block}
   #s-invitems:checked ~ .body #scr-invitems{display:block}
@@ -83,16 +88,33 @@
   #s-events:checked ~ .chrome .navbar label[for="s-events"]{color:var(--ink);border-bottom-color:var(--red)}
   #s-editor:checked ~ .chrome .navbar label[for="s-events"]{color:var(--ink);border-bottom-color:var(--red)}
   #s-cal:checked ~ .chrome .navbar label[for="s-cal"]{color:var(--ink);border-bottom-color:var(--red)}
-  #s-pages:checked ~ .chrome .navbar label[for="s-pages"]{color:var(--ink);border-bottom-color:var(--red)}
-  #s-pageedit:checked ~ .chrome .navbar label[for="s-pages"]{color:var(--ink);border-bottom-color:var(--red)}
-  #s-assets:checked ~ .chrome .navbar label[for="s-assets"]{color:var(--ink);border-bottom-color:var(--red)}
-  #s-res:checked ~ .chrome .navbar label[for="s-res"]{color:var(--ink);border-bottom-color:var(--red)}
-  #s-spaces:checked ~ .chrome .navbar label[for="s-spaces"]{color:var(--ink);border-bottom-color:var(--red)}
-  #s-ops:checked ~ .chrome .navbar label[for="s-ops"]{color:var(--ink);border-bottom-color:var(--red)}
-  #s-inv:checked ~ .chrome .navbar label[for="s-ops"]{color:var(--ink);border-bottom-color:var(--red)}
-  #s-invcount:checked ~ .chrome .navbar label[for="s-ops"]{color:var(--ink);border-bottom-color:var(--red)}
-  #s-invitems:checked ~ .chrome .navbar label[for="s-ops"]{color:var(--ink);border-bottom-color:var(--red)}
-  #s-msgs:checked ~ .chrome .navbar label[for="s-msgs"]{color:var(--ink);border-bottom-color:var(--red)}
+  #s-pages:checked ~ .chrome .navbar label.g-developer{color:var(--ink);border-bottom-color:var(--red)}
+  #s-pages:checked ~ .chrome .subnav.g-developer{display:block}
+  #s-pages:checked ~ .chrome .subnav label[for="s-pages"]{color:var(--ink);border-bottom-color:var(--red)}
+  #s-pageedit:checked ~ .chrome .navbar label.g-developer{color:var(--ink);border-bottom-color:var(--red)}
+  #s-pageedit:checked ~ .chrome .subnav.g-developer{display:block}
+  #s-pageedit:checked ~ .chrome .subnav label[for="s-pages"]{color:var(--ink);border-bottom-color:var(--red)}
+  #s-assets:checked ~ .chrome .navbar label.g-developer{color:var(--ink);border-bottom-color:var(--red)}
+  #s-assets:checked ~ .chrome .subnav.g-developer{display:block}
+  #s-assets:checked ~ .chrome .subnav label[for="s-assets"]{color:var(--ink);border-bottom-color:var(--red)}
+  #s-res:checked ~ .chrome .navbar label.g-residents{color:var(--ink);border-bottom-color:var(--red)}
+  #s-res:checked ~ .chrome .subnav.g-residents{display:block}
+  #s-res:checked ~ .chrome .subnav label[for="s-res"]{color:var(--ink);border-bottom-color:var(--red)}
+  #s-spaces:checked ~ .chrome .navbar label.g-services{color:var(--ink);border-bottom-color:var(--red)}
+  #s-spaces:checked ~ .chrome .subnav.g-services{display:block}
+  #s-spaces:checked ~ .chrome .subnav label[for="s-spaces"]{color:var(--ink);border-bottom-color:var(--red)}
+  #s-inv:checked ~ .chrome .navbar label.g-operations{color:var(--ink);border-bottom-color:var(--red)}
+  #s-inv:checked ~ .chrome .subnav.g-operations{display:block}
+  #s-inv:checked ~ .chrome .subnav label[for="s-inv"]{color:var(--ink);border-bottom-color:var(--red)}
+  #s-invcount:checked ~ .chrome .navbar label.g-operations{color:var(--ink);border-bottom-color:var(--red)}
+  #s-invcount:checked ~ .chrome .subnav.g-operations{display:block}
+  #s-invcount:checked ~ .chrome .subnav label[for="s-inv"]{color:var(--ink);border-bottom-color:var(--red)}
+  #s-invitems:checked ~ .chrome .navbar label.g-operations{color:var(--ink);border-bottom-color:var(--red)}
+  #s-invitems:checked ~ .chrome .subnav.g-operations{display:block}
+  #s-invitems:checked ~ .chrome .subnav label[for="s-inv"]{color:var(--ink);border-bottom-color:var(--red)}
+  #s-msgs:checked ~ .chrome .navbar label.g-residents{color:var(--ink);border-bottom-color:var(--red)}
+  #s-msgs:checked ~ .chrome .subnav.g-residents{display:block}
+  #s-msgs:checked ~ .chrome .subnav label[for="s-msgs"]{color:var(--ink);border-bottom-color:var(--red)}
   #s-inst:checked ~ .chrome .navbar label[for="s-inst"]{color:var(--ink);border-bottom-color:var(--red)}
   #s-inst-inventory:checked ~ .chrome .navbar label[for="s-inst"]{color:var(--ink);border-bottom-color:var(--red)}
   #s-inst-events:checked ~ .chrome .navbar label[for="s-inst"]{color:var(--ink);border-bottom-color:var(--red)}
@@ -326,12 +348,12 @@
   .asub{display:block;font-size:13px;color:var(--stone);margin-top:5px}
 
   /* ---------- roles ---------- */
-  /* The desk tier (front desk) works the Dashboard, Residents, Spaces, and
-     Messages, and manages RSVPs; the calendar itself stays out of reach. The
+  /* The desk tier (front desk) works the Dashboard, Residents, Services, and
+     Operations, and manages RSVPs; the calendar itself stays out of reach. The
      server enforces this on every endpoint; hiding tabs keeps the view honest. */
   body.role-desk .navbar label[for="s-events"],
-  body.role-desk .navbar label[for="s-pages"],
-  body.role-desk .navbar label[for="s-assets"],
+  body.role-desk .navbar label.g-developer,
+  body.role-desk .subnav.g-developer,
   body.role-desk .navbar label[for="s-inst"]{display:none}
 
   /* ---------- pages builder ---------- */
@@ -350,16 +372,12 @@
 
   /* ---------- operations & inventory ---------- */
   body.role-desk .staffonly{display:none !important}
-  .opsgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px}
-  .opcard{background:var(--paper-2);border:1px solid var(--line);border-radius:var(--radius);padding:22px 20px 18px;
-    display:flex;flex-direction:column;gap:6px;min-height:170px;text-align:left;font-family:var(--fb);cursor:pointer;color:var(--ink)}
-  .opcard:hover{border-color:var(--stone)}
-  .opcard .ic{width:34px;height:34px;border-radius:50%;background:var(--red);color:#fff;display:flex;align-items:center;justify-content:center;font-family:Georgia,serif;font-size:17px}
-  .opcard .t{font-family:var(--fd);font-size:20px;margin-top:4px}
-  .opcard .d{color:var(--ink-soft);font-size:13.5px;line-height:1.45}
-  .opcard .st{margin-top:auto;font-size:12.5px;color:var(--stone);padding-top:10px;border-top:1px solid var(--line-2);line-height:1.5}
-  .opcard.later{border-style:dashed;cursor:default;opacity:.7}
-  .opcard.later .ic{background:var(--paper);color:var(--stone);border:1px solid var(--line)}
+  .invstart{margin-bottom:22px;border-color:var(--ink);padding:20px 22px}
+  .invstart h3{font-family:var(--fd);font-weight:600;font-size:19px;margin:0 0 4px;color:var(--ink)}
+  .invstart p{margin:0 0 14px;color:var(--ink-soft);max-width:62ch}
+  .invstart .bigbtn{font-size:13px;padding:14px 22px}
+  .invstart .or{margin:18px 0 8px;padding-top:14px;border-top:1px solid var(--line-2);font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--stone)}
+  .invstart .row{display:flex;gap:12px;flex-wrap:wrap;align-items:center}
   .invcard{background:var(--paper-2);border:1px solid var(--line);border-radius:var(--radius);padding:14px 18px;margin-bottom:10px;
     display:flex;align-items:center;gap:18px;flex-wrap:wrap}
   .invcard.hot{border-left:5px solid var(--red);background:#fff8f6}
@@ -611,7 +629,7 @@
 <div class="mocknote" id="sysbar">Connecting&hellip;</div>
 
 <input class="state" type="radio" name="scr" id="s-dash" checked>
-<input class="state" type="radio" name="scr" id="s-events"><input class="state" type="radio" name="scr" id="s-editor"><input class="state" type="radio" name="scr" id="s-cal"><input class="state" type="radio" name="scr" id="s-pages"><input class="state" type="radio" name="scr" id="s-pageedit"><input class="state" type="radio" name="scr" id="s-assets"><input class="state" type="radio" name="scr" id="s-arch"><input class="state" type="radio" name="scr" id="s-res"><input class="state" type="radio" name="scr" id="s-spaces"><input class="state" type="radio" name="scr" id="s-ops"><input class="state" type="radio" name="scr" id="s-inv"><input class="state" type="radio" name="scr" id="s-invcount"><input class="state" type="radio" name="scr" id="s-invitems"><input class="state" type="radio" name="scr" id="s-msgs"><input class="state" type="radio" name="scr" id="s-inst"><input class="state" type="radio" name="scr" id="s-inst-events"><input class="state" type="radio" name="scr" id="s-inst-brand"><input class="state" type="radio" name="scr" id="s-inst-email"><input class="state" type="radio" name="scr" id="s-inst-screens"><input class="state" type="radio" name="scr" id="s-inst-private"><input class="state" type="radio" name="scr" id="s-inst-inventory">
+<input class="state" type="radio" name="scr" id="s-events"><input class="state" type="radio" name="scr" id="s-editor"><input class="state" type="radio" name="scr" id="s-cal"><input class="state" type="radio" name="scr" id="s-pages"><input class="state" type="radio" name="scr" id="s-pageedit"><input class="state" type="radio" name="scr" id="s-assets"><input class="state" type="radio" name="scr" id="s-arch"><input class="state" type="radio" name="scr" id="s-res"><input class="state" type="radio" name="scr" id="s-spaces"><input class="state" type="radio" name="scr" id="s-inv"><input class="state" type="radio" name="scr" id="s-invcount"><input class="state" type="radio" name="scr" id="s-invitems"><input class="state" type="radio" name="scr" id="s-msgs"><input class="state" type="radio" name="scr" id="s-inst"><input class="state" type="radio" name="scr" id="s-inst-events"><input class="state" type="radio" name="scr" id="s-inst-brand"><input class="state" type="radio" name="scr" id="s-inst-email"><input class="state" type="radio" name="scr" id="s-inst-screens"><input class="state" type="radio" name="scr" id="s-inst-private"><input class="state" type="radio" name="scr" id="s-inst-inventory">
 
 <div class="chrome">
 <div class="topbar"><div class="inner">
@@ -622,8 +640,9 @@
   </div>
 </div></div>
 <nav class="navbar"><div class="inner">
-  <label for="s-dash">Dashboard</label><label for="s-events">Events</label><label for="s-cal">Calendar</label><label for="s-pages">Pages</label><label for="s-assets">Assets</label><label for="s-res">Residents</label><label for="s-spaces">Spaces</label><label for="s-ops">Operations</label><label for="s-msgs">Messages</label><label for="s-inst">Settings</label>
+  <label for="s-dash">Dashboard</label><label for="s-events">Events</label><label for="s-cal">Calendar</label><label class="grp g-residents" for="s-res">Residents</label><label class="grp g-services" for="s-spaces">Services</label><label class="grp g-operations" for="s-inv">Operations</label><label class="grp g-developer" for="s-pages">Developer</label><label for="s-inst">Settings</label>
 </div></nav>
+<div class="subnav g-residents"><div class="inner"><label for="s-res">Roster</label><label for="s-msgs">Messages</label></div></div><div class="subnav g-services"><div class="inner"><label for="s-spaces">181 Spaces</label></div></div><div class="subnav g-operations"><div class="inner"><label for="s-inv">Inventory</label></div></div><div class="subnav g-developer"><div class="inner"><label for="s-pages">Pages</label><label for="s-assets">Assets</label></div></div>
 </div>
 
 <div class="body">
@@ -1029,7 +1048,7 @@
 
 <!-- ================= SPACES ================= -->
 <section class="screen" id="scr-spaces"><div class="wrap">
-  <div class="phead" style="display:flex;align-items:center;gap:10px"><h1>Spaces</h1><span class="iwrap"><button type="button" class="ib" aria-label="What this does">i</button><span class="ipop">Residents see only &ldquo;Reserved&rdquo;: the public Spaces page shows the room, the date, and the hours, nothing else, so a private reservation stays private; the staff note is for this admin alone. A reservation can also be a private event with outside guests: give it an event name and open its registration, an unguessable link the host sends to invitees. Arrivals are checked off in its guest panel, the printed list is what security runs from, and guests buzz in from the street by giving the event name. Nothing is thrown away after the date: past reservations fold at the foot of this list with their guest lists intact, and an event tied to the calendar keeps its outside guests beside its residents under Past events on the Dashboard.</span></span></div>
+  <div class="phead" style="display:flex;align-items:center;gap:10px"><h1>181 Spaces</h1><span class="iwrap"><button type="button" class="ib" aria-label="What this does">i</button><span class="ipop">Residents see only &ldquo;Reserved&rdquo;: the public Spaces page shows the room, the date, and the hours, nothing else, so a private reservation stays private; the staff note is for this admin alone. A reservation can also be a private event with outside guests: give it an event name and open its registration, an unguessable link the host sends to invitees. Arrivals are checked off in its guest panel, the printed list is what security runs from, and guests buzz in from the street by giving the event name. Nothing is thrown away after the date: past reservations fold at the foot of this list with their guest lists intact, and an event tied to the calendar keeps its outside guests beside its residents under Past events on the Dashboard.</span></span></div>
   <div class="psub" id="bkcount">Loading&hellip;</div>
   <div style="margin:0 0 16px"><button class="btn" id="bk-open" data-bkopen>Reserve a Space</button></div>
   <div class="card" id="bk-card" style="display:none;margin-bottom:18px">
@@ -1057,49 +1076,15 @@
   <div id="bklist"></div>
 </div></section>
 
-<!-- ================= OPERATIONS ================= -->
-<section class="screen" id="scr-ops"><div class="wrap">
-  <div class="phead" style="display:flex;align-items:center;gap:10px"><h1>Operations</h1><span class="iwrap"><button type="button" class="ib" aria-label="What this does">i</button><span class="ipop">The working side of the Club, for every staff tier including the desk: one card per job. Inventory is the first. Nothing on this tab is seen by residents.</span></span></div>
-  <div class="psub">One card per job. Open a card to do the work; the line at its foot says where things stand.</div>
-  <div class="opsgrid">
-    <button class="opcard" data-inv="go|inv">
-      <div class="ic">&#9776;</div>
-      <div class="t">Inventory</div>
-      <div class="d">Walk the building with your phone, count what is on hand, submit. The department heads get the report by email.</div>
-      <div class="st" id="ops-inv-status">Loading&hellip;</div>
-    </button>
-    <div class="opcard later">
-      <div class="ic">&#9636;</div>
-      <div class="t">Receiving</div>
-      <div class="d">Deliveries checked against the packing slip, discrepancies noted the same day.</div>
-      <div class="st">Not built yet &middot; the Receiving Deliveries SOP runs on paper</div>
-    </div>
-    <div class="opcard later">
-      <div class="ic">&#9919;</div>
-      <div class="t">Key control</div>
-      <div class="d">Liquor storage key sign-out and return.</div>
-      <div class="st">Not built yet &middot; the Key Control SOP runs on paper</div>
-    </div>
-  </div>
-</div></section>
-
 <!-- ================= INVENTORY ================= -->
 <section class="screen" id="scr-inv"><div class="wrap">
-  <label class="back" for="s-ops">&larr; Back to Operations</label>
-  <div class="phead" style="display:flex;align-items:center;gap:10px;flex-wrap:wrap"><h1>Inventory</h1><span class="iwrap"><button type="button" class="ib" aria-label="What this does">i</button><span class="ipop">Every count ever taken, newest first. A red-edged card is a count somebody had to leave: anyone presses Pick this up and finishes it. Submitted counts stay here as the record, so nobody counts twice and the department heads can look back. Minimums come from the item list; the report emails itself on Submit.</span></span>
+  <div class="phead" style="display:flex;align-items:center;gap:10px;flex-wrap:wrap"><h1>Inventory</h1><span class="iwrap"><button type="button" class="ib" aria-label="What this does">i</button><span class="ipop">Walk the building with your phone, type what is on each shelf, and submit; the department heads get the report by email. Every count ever taken stays below, newest first. A red-edged card is a count somebody had to leave: anyone presses Pick this up and finishes it. Minimums come from the item list. Nothing here is seen by residents.</span></span>
     <span style="flex:1"></span>
-    <button class="btn" data-inv="starter|">Start a count</button>
-    <button class="btn ghost" data-inv="go|invitems">The item list</button>
-    <a class="btn ghost" href="/api/inventory/sheet" target="_blank" rel="noopener" title="Today&rsquo;s list as a paper count sheet, for anyone who prefers a clipboard">Print a blank sheet</a>
+    <button class="mini ghost" data-inv="go|invitems">The item list</button>
+    <a class="mini ghost" href="/api/inventory/sheet" target="_blank" rel="noopener" title="Today&rsquo;s list as a paper count sheet, for anyone who prefers a clipboard">Print a blank sheet</a>
   </div>
   <div class="psub" id="invcount">Loading&hellip;</div>
-  <div class="card" id="inv-starter" style="display:none;margin-bottom:18px;border-color:var(--ink)">
-    <h3 style="font-family:var(--fd);font-weight:600;font-size:16px;margin:0 0 4px">What are you counting today?</h3>
-    <div class="hint" style="margin:0 0 10px">The full walk is the default. Pick areas for a shorter count, like the Monday Nespresso check.</div>
-    <div class="chips" id="inv-scope" style="margin-bottom:12px"></div>
-    <div class="hint" id="inv-openwarn" style="display:none;margin:0 0 12px;color:var(--red)">A count is already open. Starting another leaves that card red until someone finishes or closes it.</div>
-    <div style="display:flex;gap:10px;flex-wrap:wrap"><button class="btn" data-inv="start|">Begin counting</button><button class="btn ghost" data-inv="starter|">Never mind</button></div>
-  </div>
+  <div class="card invstart" id="inv-start"></div>
   <div id="invlist"></div>
 </div></section>
 
@@ -1132,7 +1117,7 @@
     <button class="btn ghost staffonly" data-inv="area-add|">Add an area</button>
     <a class="btn ghost" href="/api/inventory/sheet" target="_blank" rel="noopener">Print a blank sheet</a>
   </div>
-  <div class="psub">In walk order, top to bottom. Leadership keeps this table; it is the one truth behind every count.</div>
+  <div class="psub"><span id="invitems-n"></span>In walk order, top to bottom. Leadership keeps this table; it is the one truth behind every count.</div>
   <div class="card staffonly" id="inv-seedwrap" style="display:none;margin-bottom:16px">
     <strong>The list is empty.</strong> Load the starting list from the spreadsheet, then edit it here.
     <div style="margin-top:10px"><button class="btn" data-inv="seed|">Load the starting list</button></div>
@@ -1174,16 +1159,18 @@
 <section class="screen" id="scr-inst-inventory"><div class="wrap prose">
   <label class="back" for="s-inst">&larr; Back to Settings</label>
   <h1 style="font-size:34px">Operations &amp; inventory</h1>
-  <p>The <strong>Operations</strong> tab is the working side of the Club, open to every tier including the desk. Its first card is
+  <p><strong>Operations</strong> is the working side of the Club, open to every tier including the desk. Its first screen is
   <strong>Inventory</strong>: the building&rsquo;s supplies are counted on a phone, in walk order, and the submitted count is emailed
   to the department heads, who review it and place their own orders. Ordering is management&rsquo;s job; the count only reports.
   The procedure is SOP-RC-002; the screens are SOP-RC-003; the Nespresso pods keep SOP-RC-001.</p>
 
   <h2>The Inventory screen</h2>
-  <p>One card per count, newest first. <strong>In progress</strong> is a count still being walked. A <strong>red-edged card</strong>
-  is a count somebody had to leave, with their note; anyone presses <strong>Pick this up</strong> and carries on. <strong>Submitted</strong>
-  (green) is complete; <strong>View</strong> opens its report. <strong>Start a count</strong> begins a new one: Everything for the full walk,
-  or tick areas for a shorter count such as the Monday Nespresso check.</p>
+  <p>The card at the top is always the next step. With nothing open it reads <strong>Start a count</strong>: press
+  <strong>Count everything</strong> for the full walk, or tick areas beneath it for a shorter count such as the Monday Nespresso check.
+  With a count left unfinished it reads <strong>A count is waiting to be finished</strong>, and <strong>Pick this up</strong> carries on
+  where it stopped. Below sits one card per count, newest first. <strong>In progress</strong> is a count still being walked. A
+  <strong>red-edged card</strong> is a count somebody had to leave, with their note. <strong>Submitted</strong> (green) is complete;
+  <strong>View</strong> opens its report.</p>
 
   <h2>Counting</h2>
   <ol>
@@ -4453,7 +4440,7 @@
   }
 
   // ---------------------------------------------------------------- inventory
-  // The Operations tab's Inventory door. Every tier counts (the desk does the
+  // Inventory, the first screen under Operations. Every tier counts (the desk does the
   // walking); the item list and the report recipients belong to staff and
   // owner, and the server refuses the desk's writes. Numbers autosave as they
   // are typed, so a hand-off or a sleeping phone loses nothing; Submit is the
@@ -4483,35 +4470,52 @@
     renderOps(); renderInv(); renderInvItems();
   }
 
-  // ---- the Operations tab: one card per job
-  function renderOps() {
-    const st = $("#ops-inv-status"); if (!st) return;
+  // ---- the card at the top of Inventory: whatever the next step is, it is
+  // the first thing on the screen and one press away. Three states: no item
+  // list yet (load it here, no hunting for another screen), a count somebody
+  // left (pick it up), or a clear floor (count everything, or pick areas).
+  let invAnother = false;      // true once someone asks for a second count beside an open one
+  function renderInvStart() {
+    const box = $("#inv-start"); if (!box) return;
+    const areas = activeAreas(), nItems = inv.items.filter(i => i.active).length;
+    if (!inv.areas.length) {
+      box.innerHTML = invStaff()
+        ? `<h3>First, load the item list</h3>
+           <p>Nothing can be counted until the list of items is here. It loads once, in walk order, and is yours to edit afterwards under The item list.</p>
+           <button class="btn bigbtn" data-inv="seed|">Load the item list</button>`
+        : `<h3>The item list is not loaded yet</h3>
+           <p>A manager loads it once. After that, anyone on the team can start a count from this screen.</p>`;
+      return;
+    }
     const open = inv.counts.filter(invEditable);
-    const done = inv.counts.find(c => c.status === "Submitted" && c.complete);
-    let s = "";
-    if (open.length) {
-      const c = open[0];
-      s = `<span class="pill ${c.status === "Open" ? "draft" : "unpublished"}">${c.status === "Open" ? "In progress" : "Needs finishing"}</span> &nbsp; ${esc(invDate(c.started).w)}&rsquo;s count stopped at ${c.counted} of ${c.total}`;
-    } else if (!inv.areas.length) s = "The item list is empty; load the starting list to begin.";
-    else s = "No count open.";
-    if (done) s += ` &middot; last full count ${esc(invWhen(done.submitted).split(" ").slice(0, 3).join(" "))}`;
-    st.innerHTML = s;
+    const chips = areas.map(a => `<span class="chip${invScope.has(a.id) ? " done" : ""}" data-inv="scope|${a.id}">${esc(a.name)}${a.floor ? ` <span style="opacity:.6">&middot; floor ${esc(a.floor)}</span>` : ""}</span>`).join("");
+    const picked = invScope.size;
+    const starter = `<div class="row"><button class="btn bigbtn" data-inv="start-all|">Count everything</button>
+        <span style="color:var(--ink-soft)">The full walk: ${areas.length} area${areas.length === 1 ? "" : "s"}, ${nItems} items, in order.</span></div>
+      <div class="or">Or count only some areas</div>
+      <div class="chips" style="margin-bottom:${picked ? 12 : 0}px">${chips}</div>
+      ${picked ? `<button class="btn" data-inv="start|">Count ${picked === 1 ? "this area" : `these ${picked} areas`}</button>` : ""}`;
+    if (open.length && !invAnother) {
+      const c = open[0], scope = c.scope_names.length ? c.scope_names.join(", ") : "the full walk";
+      box.innerHTML = `<h3>A count is waiting to be finished</h3>
+        <p>${esc(invDate(c.started).w)}&rsquo;s count of ${esc(scope)} stopped at ${c.counted} of ${c.total}, started by ${esc(invName(c.started_by))}. Anyone can pick it up; nothing already typed is lost.</p>
+        <div class="row"><button class="btn bigbtn" data-inv="open|${c.id}">Pick this up</button>
+        <button class="mini ghost" data-inv="another|">Start a separate count instead</button></div>`;
+      return;
+    }
+    box.innerHTML = `<h3>Start a count</h3>
+      <p>${open.length ? "A count is already open; it stays red below until someone finishes or closes it." : "One press and the first shelf is in front of you. Everything saves as you type, and you can hand off or stop partway."}</p>` + starter;
   }
+  const renderOps = renderInvStart;
 
   // ---- the Inventory door: every count, newest first
   function renderInv() {
     const box = $("#invlist"); if (!box) return;
     const n = inv.counts.length;
     $("#invcount").textContent = !inv.areas.length
-      ? "The item list is empty. Staff load the starting list from The item list, then anyone can start a count."
-      : n ? `${n} count${n === 1 ? "" : "s"} on file. A red-edged card is a count somebody had to leave; anyone can pick it up and finish.`
-        : "No counts yet. Start a count walks the building in list order; Submit emails the report.";
-    // the starter's area chips
-    const chips = $("#inv-scope");
-    if (chips) chips.innerHTML = `<span class="chip${invScope.size ? "" : " done"}" data-inv="scope|all">Everything &middot; the full walk</span>`
-      + activeAreas().map(a => `<span class="chip${invScope.has(a.id) ? " done" : ""}" data-inv="scope|${a.id}">${esc(a.name)}${a.floor ? ` <span style="opacity:.6">&middot; floor ${esc(a.floor)}</span>` : ""}</span>`).join("");
-    const openOnes = inv.counts.filter(invEditable);
-    const warn = $("#inv-openwarn"); if (warn) warn.style.display = openOnes.length ? "" : "none";
+      ? "Nothing has been counted yet."
+      : n ? `${n} count${n === 1 ? "" : "s"} on file below. A red-edged card is a count somebody had to leave; anyone can pick it up and finish.`
+        : "No counts yet. Submit emails the report to the department heads.";
     const prog = c => `<div class="invprog"><div class="lab">${c.counted} of ${c.total} counted</div><div class="track"><div class="fill${c.status === "Submitted" && c.complete ? "" : " part"}" style="width:${c.total ? Math.round(c.counted / c.total * 100) : 0}%"></div></div></div>`;
     const card = c => {
       const d = invDate(c.started), hot = invEditable(c);
@@ -4547,10 +4551,10 @@
   }
 
   async function invStart() {
-    if (!inv.areas.length) { toast("The item list is empty; load the starting list first.", "warn"); return; }
+    if (!inv.areas.length) { toast("The item list is empty; load it first.", "warn"); return; }
     try {
       const r = await api("/api/inventory/counts", { method: "POST", body: JSON.stringify({ scope: [...invScope] }) });
-      $("#inv-starter").style.display = "none"; invScope = new Set();
+      invScope = new Set(); invAnother = false;
       await loadInventory();
       invOpen(r.count.id);
     } catch (e) { toast(e.message, "warn"); }
@@ -4691,6 +4695,8 @@
     const box = $("#invitems"); if (!box) return;
     const staff = invStaff();
     const seed = $("#inv-seedwrap"); if (seed) seed.style.display = staff && !inv.areas.length ? "" : "none";
+    const tally = $("#invitems-n");
+    if (tally) { const na = activeAreas().length, ni = inv.items.filter(i => i.active).length; tally.textContent = na ? `${na} area${na === 1 ? "" : "s"}, ${ni} item${ni === 1 ? "" : "s"}. ` : ""; }
     const sel = `<select class="inp" data-invf="orderer" style="width:auto">${["", "Front Desk", "Resident Experiences", "HOA", "Facilities"].map(o => `<option value="${o}">${o || "Nobody set"}</option>`).join("")}</select>`;
     const areaSel = (cur) => `<select class="inp" data-invf="area_id" style="width:auto">${activeAreas().map(a => `<option value="${a.id}"${a.id === cur ? " selected" : ""}>${esc(a.name)}${a.floor ? ` · floor ${esc(a.floor)}` : ""}</option>`).join("")}</select>`;
     const editor = (it, aid) => `<div class="invedit" data-invedit="${it ? it.id : "new"}">
@@ -4773,7 +4779,8 @@
     const b = ev.target.closest("[data-inv]"); if (!b) return;
     const [verb, arg, arg2] = b.dataset.inv.split("|");
     if (verb === "go") { go(arg); if (arg === "inv" || arg === "invitems") loadInventory(); return; }
-    if (verb === "starter") { const s = $("#inv-starter"); s.style.display = s.style.display === "none" ? "" : "none"; return; }
+    if (verb === "another") { invAnother = true; renderInvStart(); return; }
+    if (verb === "start-all") { invScope = new Set(); invStart(); return; }
     if (verb === "scope") {
       if (arg === "all") invScope = new Set(); else { const id = Number(arg); if (invScope.has(id)) invScope.delete(id); else invScope.add(id); }
       renderInv(); return;
@@ -4805,7 +4812,8 @@
       const v = await dialog("Load the starting list?", `${cat.areas.length} areas and ${n} items from the spreadsheet, in walk order. After this the list lives here and is edited on this screen.`,
         [{ label: "Load it", kind: "primary", value: "yes" }, { label: "Not now", kind: "quiet", value: null }]);
       if (!v) return;
-      try { const r = await api("/api/inventory/seed", { method: "POST", body: JSON.stringify(cat) }); toast(`Loaded ${r.areas} areas, ${r.items} items.`); loadInventory(); } catch (e) { toast(e.message, "warn"); }
+      try { const r = await api("/api/inventory/seed", { method: "POST", body: JSON.stringify(cat) }); toast(`Loaded ${r.areas} areas, ${r.items} items. Ready to count.`); await loadInventory(); }
+      catch (e) { toast(e.message, "warn"); await loadInventory(); }
       return;
     }
     if (verb === "item-edit") { invEditItem = Number(arg); invAddTo = null; renderInvItems(); return; }
@@ -5085,8 +5093,10 @@
       ? `${visible.length} message${visible.length === 1 ? "" : "s"}, ${fresh} awaiting a reply. Residents are promised an answer within one business day.`
       : "Nothing yet. Notes from the Message tile land here the moment they are sent.";
     $("#msg-redacted").style.display = role === "owner" || !visible.length ? "none" : "";
-    const msgsLabel = document.querySelector('.navbar label[for="s-msgs"]');
+    const msgsLabel = document.querySelector('.subnav label[for="s-msgs"]');
     if (msgsLabel) msgsLabel.textContent = fresh ? `Messages · ${fresh}` : "Messages";
+    const resGroup = document.querySelector(".navbar label.g-residents");
+    if (resGroup) resGroup.textContent = fresh ? `Residents · ${fresh}` : "Residents";
     box.innerHTML = visible.map(m => {
       const when = (m.created || "").slice(0, 10);
       const state = m.state === "New" ? '<span class="mstate new">New</span>'
@@ -5754,7 +5764,7 @@
     try { const w = await api("/api/whoami"); role = w.role || "none"; whoEmail = w.email || ""; }
     catch (e) { role = "none"; }
     if (role === "none") {
-      const nav = document.querySelector(".navbar"); if (nav) nav.style.display = "none";
+      document.querySelectorAll(".navbar, .subnav").forEach(n => { n.style.display = "none"; });
       document.querySelector(".body").innerHTML = `<div class="wrap" style="max-width:520px;padding:70px 20px;text-align:center">
         <h1 style="font-size:21px">Sign in to continue</h1>
         <p style="color:var(--ink-soft);margin:12px 0 22px">This is the staff side of 181residents.com. Your sign-in

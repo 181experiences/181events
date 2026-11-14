@@ -2272,7 +2272,7 @@
   }
 
   // ---------------------------------------------------------------- inventory
-  // The Operations tab's Inventory door. Every tier counts (the desk does the
+  // Inventory, the first screen under Operations. Every tier counts (the desk does the
   // walking); the item list and the report recipients belong to staff and
   // owner, and the server refuses the desk's writes. Numbers autosave as they
   // are typed, so a hand-off or a sleeping phone loses nothing; Submit is the
@@ -2302,35 +2302,52 @@
     renderOps(); renderInv(); renderInvItems();
   }
 
-  // ---- the Operations tab: one card per job
-  function renderOps() {
-    const st = $("#ops-inv-status"); if (!st) return;
+  // ---- the card at the top of Inventory: whatever the next step is, it is
+  // the first thing on the screen and one press away. Three states: no item
+  // list yet (load it here, no hunting for another screen), a count somebody
+  // left (pick it up), or a clear floor (count everything, or pick areas).
+  let invAnother = false;      // true once someone asks for a second count beside an open one
+  function renderInvStart() {
+    const box = $("#inv-start"); if (!box) return;
+    const areas = activeAreas(), nItems = inv.items.filter(i => i.active).length;
+    if (!inv.areas.length) {
+      box.innerHTML = invStaff()
+        ? `<h3>First, load the item list</h3>
+           <p>Nothing can be counted until the list of items is here. It loads once, in walk order, and is yours to edit afterwards under The item list.</p>
+           <button class="btn bigbtn" data-inv="seed|">Load the item list</button>`
+        : `<h3>The item list is not loaded yet</h3>
+           <p>A manager loads it once. After that, anyone on the team can start a count from this screen.</p>`;
+      return;
+    }
     const open = inv.counts.filter(invEditable);
-    const done = inv.counts.find(c => c.status === "Submitted" && c.complete);
-    let s = "";
-    if (open.length) {
-      const c = open[0];
-      s = `<span class="pill ${c.status === "Open" ? "draft" : "unpublished"}">${c.status === "Open" ? "In progress" : "Needs finishing"}</span> &nbsp; ${esc(invDate(c.started).w)}&rsquo;s count stopped at ${c.counted} of ${c.total}`;
-    } else if (!inv.areas.length) s = "The item list is empty; load the starting list to begin.";
-    else s = "No count open.";
-    if (done) s += ` &middot; last full count ${esc(invWhen(done.submitted).split(" ").slice(0, 3).join(" "))}`;
-    st.innerHTML = s;
+    const chips = areas.map(a => `<span class="chip${invScope.has(a.id) ? " done" : ""}" data-inv="scope|${a.id}">${esc(a.name)}${a.floor ? ` <span style="opacity:.6">&middot; floor ${esc(a.floor)}</span>` : ""}</span>`).join("");
+    const picked = invScope.size;
+    const starter = `<div class="row"><button class="btn bigbtn" data-inv="start-all|">Count everything</button>
+        <span style="color:var(--ink-soft)">The full walk: ${areas.length} area${areas.length === 1 ? "" : "s"}, ${nItems} items, in order.</span></div>
+      <div class="or">Or count only some areas</div>
+      <div class="chips" style="margin-bottom:${picked ? 12 : 0}px">${chips}</div>
+      ${picked ? `<button class="btn" data-inv="start|">Count ${picked === 1 ? "this area" : `these ${picked} areas`}</button>` : ""}`;
+    if (open.length && !invAnother) {
+      const c = open[0], scope = c.scope_names.length ? c.scope_names.join(", ") : "the full walk";
+      box.innerHTML = `<h3>A count is waiting to be finished</h3>
+        <p>${esc(invDate(c.started).w)}&rsquo;s count of ${esc(scope)} stopped at ${c.counted} of ${c.total}, started by ${esc(invName(c.started_by))}. Anyone can pick it up; nothing already typed is lost.</p>
+        <div class="row"><button class="btn bigbtn" data-inv="open|${c.id}">Pick this up</button>
+        <button class="mini ghost" data-inv="another|">Start a separate count instead</button></div>`;
+      return;
+    }
+    box.innerHTML = `<h3>Start a count</h3>
+      <p>${open.length ? "A count is already open; it stays red below until someone finishes or closes it." : "One press and the first shelf is in front of you. Everything saves as you type, and you can hand off or stop partway."}</p>` + starter;
   }
+  const renderOps = renderInvStart;
 
   // ---- the Inventory door: every count, newest first
   function renderInv() {
     const box = $("#invlist"); if (!box) return;
     const n = inv.counts.length;
     $("#invcount").textContent = !inv.areas.length
-      ? "The item list is empty. Staff load the starting list from The item list, then anyone can start a count."
-      : n ? `${n} count${n === 1 ? "" : "s"} on file. A red-edged card is a count somebody had to leave; anyone can pick it up and finish.`
-        : "No counts yet. Start a count walks the building in list order; Submit emails the report.";
-    // the starter's area chips
-    const chips = $("#inv-scope");
-    if (chips) chips.innerHTML = `<span class="chip${invScope.size ? "" : " done"}" data-inv="scope|all">Everything &middot; the full walk</span>`
-      + activeAreas().map(a => `<span class="chip${invScope.has(a.id) ? " done" : ""}" data-inv="scope|${a.id}">${esc(a.name)}${a.floor ? ` <span style="opacity:.6">&middot; floor ${esc(a.floor)}</span>` : ""}</span>`).join("");
-    const openOnes = inv.counts.filter(invEditable);
-    const warn = $("#inv-openwarn"); if (warn) warn.style.display = openOnes.length ? "" : "none";
+      ? "Nothing has been counted yet."
+      : n ? `${n} count${n === 1 ? "" : "s"} on file below. A red-edged card is a count somebody had to leave; anyone can pick it up and finish.`
+        : "No counts yet. Submit emails the report to the department heads.";
     const prog = c => `<div class="invprog"><div class="lab">${c.counted} of ${c.total} counted</div><div class="track"><div class="fill${c.status === "Submitted" && c.complete ? "" : " part"}" style="width:${c.total ? Math.round(c.counted / c.total * 100) : 0}%"></div></div></div>`;
     const card = c => {
       const d = invDate(c.started), hot = invEditable(c);
@@ -2366,10 +2383,10 @@
   }
 
   async function invStart() {
-    if (!inv.areas.length) { toast("The item list is empty; load the starting list first.", "warn"); return; }
+    if (!inv.areas.length) { toast("The item list is empty; load it first.", "warn"); return; }
     try {
       const r = await api("/api/inventory/counts", { method: "POST", body: JSON.stringify({ scope: [...invScope] }) });
-      $("#inv-starter").style.display = "none"; invScope = new Set();
+      invScope = new Set(); invAnother = false;
       await loadInventory();
       invOpen(r.count.id);
     } catch (e) { toast(e.message, "warn"); }
@@ -2510,6 +2527,8 @@
     const box = $("#invitems"); if (!box) return;
     const staff = invStaff();
     const seed = $("#inv-seedwrap"); if (seed) seed.style.display = staff && !inv.areas.length ? "" : "none";
+    const tally = $("#invitems-n");
+    if (tally) { const na = activeAreas().length, ni = inv.items.filter(i => i.active).length; tally.textContent = na ? `${na} area${na === 1 ? "" : "s"}, ${ni} item${ni === 1 ? "" : "s"}. ` : ""; }
     const sel = `<select class="inp" data-invf="orderer" style="width:auto">${["", "Front Desk", "Resident Experiences", "HOA", "Facilities"].map(o => `<option value="${o}">${o || "Nobody set"}</option>`).join("")}</select>`;
     const areaSel = (cur) => `<select class="inp" data-invf="area_id" style="width:auto">${activeAreas().map(a => `<option value="${a.id}"${a.id === cur ? " selected" : ""}>${esc(a.name)}${a.floor ? ` · floor ${esc(a.floor)}` : ""}</option>`).join("")}</select>`;
     const editor = (it, aid) => `<div class="invedit" data-invedit="${it ? it.id : "new"}">
@@ -2592,7 +2611,8 @@
     const b = ev.target.closest("[data-inv]"); if (!b) return;
     const [verb, arg, arg2] = b.dataset.inv.split("|");
     if (verb === "go") { go(arg); if (arg === "inv" || arg === "invitems") loadInventory(); return; }
-    if (verb === "starter") { const s = $("#inv-starter"); s.style.display = s.style.display === "none" ? "" : "none"; return; }
+    if (verb === "another") { invAnother = true; renderInvStart(); return; }
+    if (verb === "start-all") { invScope = new Set(); invStart(); return; }
     if (verb === "scope") {
       if (arg === "all") invScope = new Set(); else { const id = Number(arg); if (invScope.has(id)) invScope.delete(id); else invScope.add(id); }
       renderInv(); return;
@@ -2624,7 +2644,8 @@
       const v = await dialog("Load the starting list?", `${cat.areas.length} areas and ${n} items from the spreadsheet, in walk order. After this the list lives here and is edited on this screen.`,
         [{ label: "Load it", kind: "primary", value: "yes" }, { label: "Not now", kind: "quiet", value: null }]);
       if (!v) return;
-      try { const r = await api("/api/inventory/seed", { method: "POST", body: JSON.stringify(cat) }); toast(`Loaded ${r.areas} areas, ${r.items} items.`); loadInventory(); } catch (e) { toast(e.message, "warn"); }
+      try { const r = await api("/api/inventory/seed", { method: "POST", body: JSON.stringify(cat) }); toast(`Loaded ${r.areas} areas, ${r.items} items. Ready to count.`); await loadInventory(); }
+      catch (e) { toast(e.message, "warn"); await loadInventory(); }
       return;
     }
     if (verb === "item-edit") { invEditItem = Number(arg); invAddTo = null; renderInvItems(); return; }
@@ -2904,8 +2925,10 @@
       ? `${visible.length} message${visible.length === 1 ? "" : "s"}, ${fresh} awaiting a reply. Residents are promised an answer within one business day.`
       : "Nothing yet. Notes from the Message tile land here the moment they are sent.";
     $("#msg-redacted").style.display = role === "owner" || !visible.length ? "none" : "";
-    const msgsLabel = document.querySelector('.navbar label[for="s-msgs"]');
+    const msgsLabel = document.querySelector('.subnav label[for="s-msgs"]');
     if (msgsLabel) msgsLabel.textContent = fresh ? `Messages · ${fresh}` : "Messages";
+    const resGroup = document.querySelector(".navbar label.g-residents");
+    if (resGroup) resGroup.textContent = fresh ? `Residents · ${fresh}` : "Residents";
     box.innerHTML = visible.map(m => {
       const when = (m.created || "").slice(0, 10);
       const state = m.state === "New" ? '<span class="mstate new">New</span>'
@@ -3573,7 +3596,7 @@
     try { const w = await api("/api/whoami"); role = w.role || "none"; whoEmail = w.email || ""; }
     catch (e) { role = "none"; }
     if (role === "none") {
-      const nav = document.querySelector(".navbar"); if (nav) nav.style.display = "none";
+      document.querySelectorAll(".navbar, .subnav").forEach(n => { n.style.display = "none"; });
       document.querySelector(".body").innerHTML = `<div class="wrap" style="max-width:520px;padding:70px 20px;text-align:center">
         <h1 style="font-size:21px">Sign in to continue</h1>
         <p style="color:var(--ink-soft);margin:12px 0 22px">This is the staff side of 181residents.com. Your sign-in

@@ -266,21 +266,33 @@ export async function onRequest(context) {
     const have = await env.DB.prepare("SELECT COUNT(*) AS n FROM inv_areas").first();
     if (have && have.n) return json({ error: "The list already has areas; the starting list loads only into an empty one." }, 400);
     const b = await request.json();
-    const areas = Array.isArray(b.areas) ? b.areas : [];
-    let ai = 0, n = 0;
-    for (const a of areas.slice(0, 60)) {
-      const name = String(a.name || "").trim().slice(0, 80); if (!name) continue;
-      const row = await env.DB.prepare("INSERT INTO inv_areas (name, floor, ord, active, created, updated_by) VALUES (?,?,?,1,?,?) RETURNING id")
-        .bind(name, String(a.floor || "").trim().slice(0, 20) || null, ai++, now(), by).first();
+    // Two round trips, each all-or-nothing: the areas, then every item. The
+    // old way was one write per row, over a hundred in a row, and a stumble
+    // partway left a short list that could not be loaded again.
+    const areas = (Array.isArray(b.areas) ? b.areas : []).slice(0, 60)
+      .map(a => ({ a, name: String(a.name || "").trim().slice(0, 80) })).filter(x => x.name);
+    if (!areas.length) return json({ error: "The starting list is empty." }, 400);
+    const made = await env.DB.batch(areas.map((x, i) => env.DB.prepare(
+      "INSERT INTO inv_areas (name, floor, ord, active, created, updated_by) VALUES (?,?,?,1,?,?) RETURNING id")
+      .bind(x.name, String(x.a.floor || "").trim().slice(0, 20) || null, i, now(), by)));
+    const ids = made.map(r => r.results[0].id);
+    const stmts = [];
+    areas.forEach((x, i) => {
       let ii = 0;
-      for (const it of (Array.isArray(a.items) ? a.items : []).slice(0, 200)) {
+      for (const it of (Array.isArray(x.a.items) ? x.a.items : []).slice(0, 200)) {
         const iname = String(it.name || "").trim().slice(0, 120); if (!iname) continue;
-        await env.DB.prepare("INSERT INTO inv_items (area_id, name, minimum, unit, orderer, hint, variant, ord, active, created, updated_by) VALUES (?,?,?,?,?,?,?,?,1,?,?)")
-          .bind(row.id, iname, num(it.minimum), String(it.unit || "").trim().slice(0, 40) || null,
-            String(it.orderer || a.orderer || "").trim().slice(0, 60) || null, String(it.hint || "").trim().slice(0, 160) || null, it.variant ? 1 : 0, ii++, now(), by).run();
-        n++;
+        stmts.push(env.DB.prepare("INSERT INTO inv_items (area_id, name, minimum, unit, orderer, hint, variant, ord, active, created, updated_by) VALUES (?,?,?,?,?,?,?,?,1,?,?)")
+          .bind(ids[i], iname, num(it.minimum), String(it.unit || "").trim().slice(0, 40) || null,
+            String(it.orderer || x.a.orderer || "").trim().slice(0, 60) || null, String(it.hint || "").trim().slice(0, 160) || null, it.variant ? 1 : 0, ii++, now(), by));
       }
+    });
+    try { if (stmts.length) await env.DB.batch(stmts); }
+    catch (e) {
+      // leave nothing half-loaded: the list must still read as empty
+      await env.DB.prepare(`DELETE FROM inv_areas WHERE id IN (${ids.join(",")})`).run();
+      return json({ error: "The list did not load; nothing was saved. Try once more." }, 500);
     }
+    const ai = areas.length, n = stmts.length;
     return json({ ok: true, areas: ai, items: n }, 201);
   }
 

@@ -11,16 +11,40 @@ CATEGORIES = ["Morning Offering", "Happy Hour", "Community Dinner", "Culinary Ex
 STATUSES = ["Draft", "Live", "Unpublished", "Archived"]
 RSVP_TYPES = ["None", "Guest count only", "Seat", "Paid seat", "Partner email"]
 
-SCREENS = ["dash", "events", "editor", "cal", "pages", "pageedit", "assets", "arch", "res", "spaces", "ops", "inv", "invcount", "invitems",
+SCREENS = ["dash", "events", "editor", "cal", "pages", "pageedit", "assets", "arch", "res", "spaces", "inv", "invcount", "invitems",
            "msgs", "inst", "inst-events", "inst-brand", "inst-email", "inst-screens", "inst-private", "inst-inventory"]
 NAV_OF = {"dash": "dash", "events": "events", "editor": "events", "cal": "cal",
           "pages": "pages", "pageedit": "pages", "assets": "assets",
-          "res": "res", "spaces": "spaces", "ops": "ops", "inv": "ops", "invcount": "ops", "invitems": "ops",
+          "res": "res", "spaces": "spaces", "inv": "inv", "invcount": "inv", "invitems": "inv",
           "msgs": "msgs", "inst": "inst", "inst-inventory": "inst",
           "inst-events": "inst", "inst-brand": "inst", "inst-email": "inst",
           "inst-screens": "inst", "inst-private": "inst"}
-NAV = [("dash", "Dashboard"), ("events", "Events"), ("cal", "Calendar"), ("pages", "Pages"),
-       ("assets", "Assets"), ("res", "Residents"), ("spaces", "Spaces"), ("ops", "Operations"), ("msgs", "Messages"), ("inst", "Settings")]
+# The nav bar. A plain entry is one screen. A group opens on its first screen
+# and lists its screens in a second row beneath the bar, so the top row stays
+# short and nothing hides in a menu a finger has to hover over.
+NAV = [("dash", "Dashboard"), ("events", "Events"), ("cal", "Calendar"),
+       ("Residents", [("res", "Roster"), ("msgs", "Messages")]),
+       ("Services", [("spaces", "181 Spaces")]),
+       ("Operations", [("inv", "Inventory")]),
+       ("Developer", [("pages", "Pages"), ("assets", "Assets")]),
+       ("inst", "Settings")]
+GROUP_OF = {k: g.lower() for g, kids in NAV if isinstance(kids, list) for k, _ in kids}
+
+
+def nav_rows():
+    top, subs = "", ""
+    for k, v in NAV:
+        if isinstance(v, list):
+            g = k.lower()
+            top += f'<label class="grp g-{g}" for="s-{v[0][0]}">{k}</label>'
+            subs += (f'<div class="subnav g-{g}"><div class="inner">'
+                     + "".join(f'<label for="s-{sk}">{sv}</label>' for sk, sv in v) + '</div></div>')
+        else:
+            top += f'<label for="s-{k}">{v}</label>'
+    return top, subs
+
+
+NAV_TOP, NAV_SUBS = nav_rows()
 
 # The starting item list rides the page as JSON, so "Load the starting list"
 # needs no extra request and no build-time database access.
@@ -29,7 +53,13 @@ CODED_PAGES = open(os.path.join(HERE, "coded_pages.json"), encoding="utf-8").rea
 
 rules = [f'#s-{s}:checked ~ .body #scr-{s}{{display:block}}' for s in SCREENS]
 for s, nav in NAV_OF.items():
-    rules.append(f'#s-{s}:checked ~ .chrome .navbar label[for="s-{nav}"]{{color:var(--ink);border-bottom-color:var(--red)}}')
+    g = GROUP_OF.get(nav)
+    if g:
+        rules.append(f'#s-{s}:checked ~ .chrome .navbar label.g-{g}{{color:var(--ink);border-bottom-color:var(--red)}}')
+        rules.append(f'#s-{s}:checked ~ .chrome .subnav.g-{g}{{display:block}}')
+        rules.append(f'#s-{s}:checked ~ .chrome .subnav label[for="s-{nav}"]{{color:var(--ink);border-bottom-color:var(--red)}}')
+    else:
+        rules.append(f'#s-{s}:checked ~ .chrome .navbar label[for="s-{nav}"]{{color:var(--ink);border-bottom-color:var(--red)}}')
 for f in ["all", "live", "draft", "unpublished", "archived"]:
     rules.append(f'#f-{f}:checked ~ .wrap .tabs label[for="f-{f}"]{{background:var(--ink);color:var(--paper-2);border-color:var(--ink)}}')
 for f in ["live", "draft", "unpublished", "archived"]:
@@ -107,6 +137,12 @@ HTML = f'''<!DOCTYPE html>
   .navbar label{{white-space:nowrap;padding:11px 14px;font-size:12px;letter-spacing:.09em;text-transform:uppercase;
     font-weight:500;color:var(--stone);border-bottom:2px solid transparent}}
   .navbar label:hover{{color:var(--ink)}}
+  /* a group's own screens, in a quieter row under the bar */
+  .subnav{{display:none;background:var(--paper);border-bottom:1px solid var(--line)}}
+  .subnav .inner{{max-width:1240px;margin:0 auto;padding:0 clamp(18px,4vw,34px);display:flex;gap:2px;overflow-x:auto}}
+  .subnav label{{white-space:nowrap;padding:9px 14px 8px;font-size:11.5px;letter-spacing:.07em;text-transform:uppercase;
+    font-weight:500;color:var(--stone);border-bottom:2px solid transparent;cursor:pointer}}
+  .subnav label:hover{{color:var(--ink)}}
 
   .screen{{display:none;padding:22px 0 70px}}
   {GEN_CSS}
@@ -327,12 +363,12 @@ HTML = f'''<!DOCTYPE html>
   .asub{{display:block;font-size:13px;color:var(--stone);margin-top:5px}}
 
   /* ---------- roles ---------- */
-  /* The desk tier (front desk) works the Dashboard, Residents, Spaces, and
-     Messages, and manages RSVPs; the calendar itself stays out of reach. The
+  /* The desk tier (front desk) works the Dashboard, Residents, Services, and
+     Operations, and manages RSVPs; the calendar itself stays out of reach. The
      server enforces this on every endpoint; hiding tabs keeps the view honest. */
   body.role-desk .navbar label[for="s-events"],
-  body.role-desk .navbar label[for="s-pages"],
-  body.role-desk .navbar label[for="s-assets"],
+  body.role-desk .navbar label.g-developer,
+  body.role-desk .subnav.g-developer,
   body.role-desk .navbar label[for="s-inst"]{{display:none}}
 
   /* ---------- pages builder ---------- */
@@ -351,16 +387,12 @@ HTML = f'''<!DOCTYPE html>
 
   /* ---------- operations & inventory ---------- */
   body.role-desk .staffonly{{display:none !important}}
-  .opsgrid{{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px}}
-  .opcard{{background:var(--paper-2);border:1px solid var(--line);border-radius:var(--radius);padding:22px 20px 18px;
-    display:flex;flex-direction:column;gap:6px;min-height:170px;text-align:left;font-family:var(--fb);cursor:pointer;color:var(--ink)}}
-  .opcard:hover{{border-color:var(--stone)}}
-  .opcard .ic{{width:34px;height:34px;border-radius:50%;background:var(--red);color:#fff;display:flex;align-items:center;justify-content:center;font-family:Georgia,serif;font-size:17px}}
-  .opcard .t{{font-family:var(--fd);font-size:20px;margin-top:4px}}
-  .opcard .d{{color:var(--ink-soft);font-size:13.5px;line-height:1.45}}
-  .opcard .st{{margin-top:auto;font-size:12.5px;color:var(--stone);padding-top:10px;border-top:1px solid var(--line-2);line-height:1.5}}
-  .opcard.later{{border-style:dashed;cursor:default;opacity:.7}}
-  .opcard.later .ic{{background:var(--paper);color:var(--stone);border:1px solid var(--line)}}
+  .invstart{{margin-bottom:22px;border-color:var(--ink);padding:20px 22px}}
+  .invstart h3{{font-family:var(--fd);font-weight:600;font-size:19px;margin:0 0 4px;color:var(--ink)}}
+  .invstart p{{margin:0 0 14px;color:var(--ink-soft);max-width:62ch}}
+  .invstart .bigbtn{{font-size:13px;padding:14px 22px}}
+  .invstart .or{{margin:18px 0 8px;padding-top:14px;border-top:1px solid var(--line-2);font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--stone)}}
+  .invstart .row{{display:flex;gap:12px;flex-wrap:wrap;align-items:center}}
   .invcard{{background:var(--paper-2);border:1px solid var(--line);border-radius:var(--radius);padding:14px 18px;margin-bottom:10px;
     display:flex;align-items:center;gap:18px;flex-wrap:wrap}}
   .invcard.hot{{border-left:5px solid var(--red);background:#fff8f6}}
@@ -613,8 +645,9 @@ HTML = f'''<!DOCTYPE html>
   </div>
 </div></div>
 <nav class="navbar"><div class="inner">
-  {"".join(f'<label for="s-{k}">{v}</label>' for k, v in NAV)}
+  {NAV_TOP}
 </div></nav>
+{NAV_SUBS}
 </div>
 
 <div class="body">
@@ -1020,7 +1053,7 @@ HTML = f'''<!DOCTYPE html>
 
 <!-- ================= SPACES ================= -->
 <section class="screen" id="scr-spaces"><div class="wrap">
-  <div class="phead" style="display:flex;align-items:center;gap:10px"><h1>Spaces</h1>{info("Residents see only &ldquo;Reserved&rdquo;: the public Spaces page shows the room, the date, and the hours, nothing else, so a private reservation stays private; the staff note is for this admin alone. A reservation can also be a private event with outside guests: give it an event name and open its registration, an unguessable link the host sends to invitees. Arrivals are checked off in its guest panel, the printed list is what security runs from, and guests buzz in from the street by giving the event name. Nothing is thrown away after the date: past reservations fold at the foot of this list with their guest lists intact, and an event tied to the calendar keeps its outside guests beside its residents under Past events on the Dashboard.")}</div>
+  <div class="phead" style="display:flex;align-items:center;gap:10px"><h1>181 Spaces</h1>{info("Residents see only &ldquo;Reserved&rdquo;: the public Spaces page shows the room, the date, and the hours, nothing else, so a private reservation stays private; the staff note is for this admin alone. A reservation can also be a private event with outside guests: give it an event name and open its registration, an unguessable link the host sends to invitees. Arrivals are checked off in its guest panel, the printed list is what security runs from, and guests buzz in from the street by giving the event name. Nothing is thrown away after the date: past reservations fold at the foot of this list with their guest lists intact, and an event tied to the calendar keeps its outside guests beside its residents under Past events on the Dashboard.")}</div>
   <div class="psub" id="bkcount">Loading&hellip;</div>
   <div style="margin:0 0 16px"><button class="btn" id="bk-open" data-bkopen>Reserve a Space</button></div>
   <div class="card" id="bk-card" style="display:none;margin-bottom:18px">
@@ -1048,49 +1081,15 @@ HTML = f'''<!DOCTYPE html>
   <div id="bklist"></div>
 </div></section>
 
-<!-- ================= OPERATIONS ================= -->
-<section class="screen" id="scr-ops"><div class="wrap">
-  <div class="phead" style="display:flex;align-items:center;gap:10px"><h1>Operations</h1>{info("The working side of the Club, for every staff tier including the desk: one card per job. Inventory is the first. Nothing on this tab is seen by residents.")}</div>
-  <div class="psub">One card per job. Open a card to do the work; the line at its foot says where things stand.</div>
-  <div class="opsgrid">
-    <button class="opcard" data-inv="go|inv">
-      <div class="ic">&#9776;</div>
-      <div class="t">Inventory</div>
-      <div class="d">Walk the building with your phone, count what is on hand, submit. The department heads get the report by email.</div>
-      <div class="st" id="ops-inv-status">Loading&hellip;</div>
-    </button>
-    <div class="opcard later">
-      <div class="ic">&#9636;</div>
-      <div class="t">Receiving</div>
-      <div class="d">Deliveries checked against the packing slip, discrepancies noted the same day.</div>
-      <div class="st">Not built yet &middot; the Receiving Deliveries SOP runs on paper</div>
-    </div>
-    <div class="opcard later">
-      <div class="ic">&#9919;</div>
-      <div class="t">Key control</div>
-      <div class="d">Liquor storage key sign-out and return.</div>
-      <div class="st">Not built yet &middot; the Key Control SOP runs on paper</div>
-    </div>
-  </div>
-</div></section>
-
 <!-- ================= INVENTORY ================= -->
 <section class="screen" id="scr-inv"><div class="wrap">
-  <label class="back" for="s-ops">&larr; Back to Operations</label>
-  <div class="phead" style="display:flex;align-items:center;gap:10px;flex-wrap:wrap"><h1>Inventory</h1>{info("Every count ever taken, newest first. A red-edged card is a count somebody had to leave: anyone presses Pick this up and finishes it. Submitted counts stay here as the record, so nobody counts twice and the department heads can look back. Minimums come from the item list; the report emails itself on Submit.")}
+  <div class="phead" style="display:flex;align-items:center;gap:10px;flex-wrap:wrap"><h1>Inventory</h1>{info("Walk the building with your phone, type what is on each shelf, and submit; the department heads get the report by email. Every count ever taken stays below, newest first. A red-edged card is a count somebody had to leave: anyone presses Pick this up and finishes it. Minimums come from the item list. Nothing here is seen by residents.")}
     <span style="flex:1"></span>
-    <button class="btn" data-inv="starter|">Start a count</button>
-    <button class="btn ghost" data-inv="go|invitems">The item list</button>
-    <a class="btn ghost" href="/api/inventory/sheet" target="_blank" rel="noopener" title="Today&rsquo;s list as a paper count sheet, for anyone who prefers a clipboard">Print a blank sheet</a>
+    <button class="mini ghost" data-inv="go|invitems">The item list</button>
+    <a class="mini ghost" href="/api/inventory/sheet" target="_blank" rel="noopener" title="Today&rsquo;s list as a paper count sheet, for anyone who prefers a clipboard">Print a blank sheet</a>
   </div>
   <div class="psub" id="invcount">Loading&hellip;</div>
-  <div class="card" id="inv-starter" style="display:none;margin-bottom:18px;border-color:var(--ink)">
-    <h3 style="font-family:var(--fd);font-weight:600;font-size:16px;margin:0 0 4px">What are you counting today?</h3>
-    <div class="hint" style="margin:0 0 10px">The full walk is the default. Pick areas for a shorter count, like the Monday Nespresso check.</div>
-    <div class="chips" id="inv-scope" style="margin-bottom:12px"></div>
-    <div class="hint" id="inv-openwarn" style="display:none;margin:0 0 12px;color:var(--red)">A count is already open. Starting another leaves that card red until someone finishes or closes it.</div>
-    <div style="display:flex;gap:10px;flex-wrap:wrap"><button class="btn" data-inv="start|">Begin counting</button><button class="btn ghost" data-inv="starter|">Never mind</button></div>
-  </div>
+  <div class="card invstart" id="inv-start"></div>
   <div id="invlist"></div>
 </div></section>
 
@@ -1123,7 +1122,7 @@ HTML = f'''<!DOCTYPE html>
     <button class="btn ghost staffonly" data-inv="area-add|">Add an area</button>
     <a class="btn ghost" href="/api/inventory/sheet" target="_blank" rel="noopener">Print a blank sheet</a>
   </div>
-  <div class="psub">In walk order, top to bottom. Leadership keeps this table; it is the one truth behind every count.</div>
+  <div class="psub"><span id="invitems-n"></span>In walk order, top to bottom. Leadership keeps this table; it is the one truth behind every count.</div>
   <div class="card staffonly" id="inv-seedwrap" style="display:none;margin-bottom:16px">
     <strong>The list is empty.</strong> Load the starting list from the spreadsheet, then edit it here.
     <div style="margin-top:10px"><button class="btn" data-inv="seed|">Load the starting list</button></div>
@@ -1165,16 +1164,18 @@ HTML = f'''<!DOCTYPE html>
 <section class="screen" id="scr-inst-inventory"><div class="wrap prose">
   <label class="back" for="s-inst">&larr; Back to Settings</label>
   <h1 style="font-size:34px">Operations &amp; inventory</h1>
-  <p>The <strong>Operations</strong> tab is the working side of the Club, open to every tier including the desk. Its first card is
+  <p><strong>Operations</strong> is the working side of the Club, open to every tier including the desk. Its first screen is
   <strong>Inventory</strong>: the building&rsquo;s supplies are counted on a phone, in walk order, and the submitted count is emailed
   to the department heads, who review it and place their own orders. Ordering is management&rsquo;s job; the count only reports.
   The procedure is SOP-RC-002; the screens are SOP-RC-003; the Nespresso pods keep SOP-RC-001.</p>
 
   <h2>The Inventory screen</h2>
-  <p>One card per count, newest first. <strong>In progress</strong> is a count still being walked. A <strong>red-edged card</strong>
-  is a count somebody had to leave, with their note; anyone presses <strong>Pick this up</strong> and carries on. <strong>Submitted</strong>
-  (green) is complete; <strong>View</strong> opens its report. <strong>Start a count</strong> begins a new one: Everything for the full walk,
-  or tick areas for a shorter count such as the Monday Nespresso check.</p>
+  <p>The card at the top is always the next step. With nothing open it reads <strong>Start a count</strong>: press
+  <strong>Count everything</strong> for the full walk, or tick areas beneath it for a shorter count such as the Monday Nespresso check.
+  With a count left unfinished it reads <strong>A count is waiting to be finished</strong>, and <strong>Pick this up</strong> carries on
+  where it stopped. Below sits one card per count, newest first. <strong>In progress</strong> is a count still being walked. A
+  <strong>red-edged card</strong> is a count somebody had to leave, with their note. <strong>Submitted</strong> (green) is complete;
+  <strong>View</strong> opens its report.</p>
 
   <h2>Counting</h2>
   <ol>
