@@ -1843,20 +1843,33 @@
     "url": "https://www.opentable.com/yank-sing-stevenson-street"
    },
    "price": "$$",
-   "michelin": "bib",
+   "michelin": null,
    "good_for": [
     "Business lunch",
     "Weekend brunch",
     "Family"
    ],
    "description": "A family-run dim sum house a few blocks from 181 Fremont, with a daytime-only service of dumplings and small plates. A dependable choice for a business lunch or a weekend family meal.",
-   "desk_note": "The Rincon Center room has closed. Stevenson Street is the only location now. Michelin's 2026 announcement names it a Bib Gourmand, but Michelin's live list does not show it.",
+   "desk_note": "The Rincon Center room has closed. Stevenson Street is the only location now.",
    "sources": [
-    "https://yanksing.com",
-    "https://guide.michelin.com/us/en/california/san-francisco/restaurant/yank-sing"
+    "https://yanksing.com"
    ],
    "auto_updated": "2026-11-13",
    "history": [
+    {
+     "at": "2026-11-14T00:40:17-08:00",
+     "action": "Correction",
+     "changes": {
+      "michelin": [
+       "bib",
+       ""
+      ],
+      "desk_note": [
+       "The Rincon Center room has closed. Stevenson Street is the only location now. Michelin's 2026 announcement names it a Bib Gourmand, but Michelin's live list does not show it.",
+       "The Rincon Center room has closed. Stevenson Street is the only location now."
+      ]
+     }
+    },
     {
      "at": "2026-11-14",
      "action": "Crowd ratings added, read from Google and from Yelp",
