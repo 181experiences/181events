@@ -3652,12 +3652,14 @@
     return ["north", "northeast", "east", "southeast", "south", "southwest", "west", "northwest"][Math.round(deg / 45) % 8];
   }
   // Straight-line miles are exact; the minutes are an honest estimate (a city
-  // grid adds about a quarter to the walk, a car averages twelve miles an hour
-  // plus the wait for it), and they read as "about" everywhere.
+  // grid adds about a quarter to the walk; a car averages twelve miles an hour
+  // downtown and twenty beyond, plus the wait for it), and they read as
+  // "about" everywhere.
   function gdTravel(mi) {
     if (mi < 0.08) return "a few steps away";
     if (mi <= 1.2) { const m = Math.max(2, Math.round(mi * 1.25 * 20)); return `about a ${m} minute walk`; }
-    const m = Math.round(mi * 1.35 * 5 + 3); return `about ${m} minutes by car`;
+    // downtown crawls; past the first two miles the streets open up
+    const m = Math.round(3 + 1.35 * (Math.min(mi, 2) * 5 + Math.max(0, mi - 2) * 3)); return `about ${m} minutes by car`;
   }
   const gdMi = mi => mi < 0.1 ? "under 0.1 mi" : `${mi.toFixed(1)} mi`;
   const gdProx = p => `${gdMi(p.mi)} ${p.dir} · ${gdTravel(p.mi)}`;

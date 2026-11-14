@@ -1350,7 +1350,7 @@
     "url": "https://kusakabe-sf.com/reservations/"
    },
    "price": "$$$$",
-   "michelin": "bib",
+   "michelin": "guide",
    "good_for": [
     "Celebration",
     "Omakase"
@@ -1364,6 +1364,16 @@
    ],
    "auto_updated": "2026-11-13",
    "history": [
+    {
+     "at": "2026-11-13T22:44:02-08:00",
+     "action": "Correction",
+     "changes": {
+      "michelin": [
+       "bib",
+       "guide"
+      ]
+     }
+    },
     {
      "at": "2026-11-13",
      "action": "Added to the book, checked against its own website",
@@ -1408,13 +1418,23 @@
     "Family"
    ],
    "description": "A family-run dim sum house a few blocks from 181 Fremont, with a daytime-only service of dumplings and small plates. A dependable choice for a business lunch or a weekend family meal.",
-   "desk_note": "The Rincon Center room has closed. Stevenson Street is the only location now.",
+   "desk_note": "The Rincon Center room has closed. Stevenson Street is the only location now. Michelin's 2026 announcement names it a Bib Gourmand, but Michelin's live list does not show it.",
    "sources": [
     "https://yanksing.com",
     "https://guide.michelin.com/us/en/california/san-francisco/restaurant/yank-sing"
    ],
    "auto_updated": "2026-11-13",
    "history": [
+    {
+     "at": "2026-11-13T22:44:02-08:00",
+     "action": "Correction",
+     "changes": {
+      "desk_note": [
+       "The Rincon Center room has closed. Stevenson Street is the only location now.",
+       "The Rincon Center room has closed. Stevenson Street is the only location now. Michelin's 2026 announcement names it a Bib Gourmand, but Michelin's live list does not show it."
+      ]
+     }
+    },
     {
      "at": "2026-11-13",
      "action": "Added to the book, checked against its own website",
@@ -1702,7 +1722,7 @@
     "url": "https://www.opentable.com/r/rooh-san-francisco"
    },
    "price": "$$$",
-   "michelin": "bib",
+   "michelin": "guide",
    "good_for": [
     "Business dinner",
     "Group dinner"
@@ -1715,6 +1735,16 @@
    ],
    "auto_updated": "2026-11-13",
    "history": [
+    {
+     "at": "2026-11-13T22:44:02-08:00",
+     "action": "Correction",
+     "changes": {
+      "michelin": [
+       "bib",
+       "guide"
+      ]
+     }
+    },
     {
      "at": "2026-11-13",
      "action": "Added to the book, checked against its own website",
@@ -1801,7 +1831,7 @@
     "url": "https://www.opentable.com/r/dalida-san-francisco"
    },
    "price": "$$$",
-   "michelin": "bib",
+   "michelin": "guide",
    "good_for": [
     "Weekend brunch",
     "Dinner out"
@@ -1814,6 +1844,16 @@
    ],
    "auto_updated": "2026-11-13",
    "history": [
+    {
+     "at": "2026-11-13T22:44:02-08:00",
+     "action": "Correction",
+     "changes": {
+      "michelin": [
+       "bib",
+       "guide"
+      ]
+     }
+    },
     {
      "at": "2026-11-13",
      "action": "Added to the book, checked against its own website",
@@ -2654,6 +2694,527 @@
     "https://wolfsbanesf.com/",
     "https://guide.michelin.com/us/en/california/san-francisco/restaurant/wolfsbane",
     "https://guide.michelin.com/us/en/california/san-francisco/restaurants/3-stars-michelin/2-stars-michelin/1-star-michelin"
+   ],
+   "auto_updated": "2026-11-13",
+   "history": [
+    {
+     "at": "2026-11-13",
+     "action": "Added to the book, checked against its own website",
+     "changes": null
+    }
+   ]
+  },
+  {
+   "id": "anchor-oyster-bar",
+   "name": "Anchor Oyster Bar",
+   "kind": "Restaurant",
+   "cuisines": [
+    "Seafood",
+    "Oysters",
+    "Casual"
+   ],
+   "neighborhood": "Castro",
+   "address": "579 Castro Street, San Francisco, CA 94114",
+   "lat": 37.759781,
+   "lon": -122.434672,
+   "hours": {
+    "mon": "2:00 PM to 8:00 PM",
+    "tue": "Closed",
+    "wed": "Closed",
+    "thu": "2:00 PM to 8:00 PM",
+    "fri": "2:00 PM to 8:00 PM",
+    "sat": "2:00 PM to 8:00 PM",
+    "sun": "2:00 PM to 8:00 PM"
+   },
+   "hours_note": "Closed Tuesdays and Wednesdays. Small room with a line at peak times.",
+   "phone": "(415) 431-3990",
+   "website": "https://www.anchoroysterbar.com/",
+   "email": null,
+   "book": {
+    "how": "Walk-in only",
+    "url": null
+   },
+   "price": "$$",
+   "michelin": "bib",
+   "good_for": [
+    "Casual Dinner",
+    "Seafood"
+   ],
+   "description": "A tiny, long-running seafood counter and dining room on Castro Street built around oysters and fresh seafood. A resident would go for a relaxed, no-frills fish dinner in the neighborhood.",
+   "desk_note": "No reservations; expect a line at peak times. Its own site could not be read, so the hours are from the Michelin Guide and older listings differ: confirm by phone.",
+   "sources": [
+    "https://guide.michelin.com/us/en/california/san-francisco/restaurants/bib-gourmand",
+    "https://guide.michelin.com/us/en/california/san-francisco/restaurant/anchor-oyster-bar"
+   ],
+   "auto_updated": "2026-11-13",
+   "history": [
+    {
+     "at": "2026-11-13",
+     "action": "Added to the book, from the Michelin Guide; its own website could not be read",
+     "changes": null
+    }
+   ]
+  },
+  {
+   "id": "bansang",
+   "name": "Bansang",
+   "kind": "Restaurant",
+   "cuisines": [
+    "Korean",
+    "Contemporary"
+   ],
+   "neighborhood": "Fillmore",
+   "address": "1560 Fillmore Street, San Francisco, CA 94115",
+   "lat": 37.784129,
+   "lon": -122.432741,
+   "hours": {
+    "mon": "Closed",
+    "tue": "Closed",
+    "wed": "5:30 PM to 8:30 PM",
+    "thu": "5:30 PM to 8:30 PM",
+    "fri": "5:30 PM to 9:00 PM",
+    "sat": "5:30 PM to 9:00 PM",
+    "sun": "5:30 PM to 8:30 PM"
+   },
+   "hours_note": null,
+   "phone": "(415) 441-9294",
+   "website": "https://www.bansangsf.com/",
+   "email": "info@bansangsf.com",
+   "book": {
+    "how": "OpenTable",
+    "url": "https://www.bansangsf.com/reservation"
+   },
+   "price": "$$",
+   "michelin": "bib",
+   "good_for": [
+    "Group Dinner",
+    "Casual Dinner"
+   ],
+   "description": "A Korean dinner house built around shared, banchan-style spreads with a modern touch. A good choice for a sit-down group meal in the Fillmore with bookable tables.",
+   "desk_note": null,
+   "sources": [
+    "https://guide.michelin.com/us/en/california/san-francisco/restaurants/bib-gourmand",
+    "https://guide.michelin.com/us/en/california/san-francisco/restaurant/bansang",
+    "https://www.bansangsf.com/",
+    "https://www.bansangsf.com/reservation",
+    "https://www.bansangsf.com/contact-4-1"
+   ],
+   "auto_updated": "2026-11-13",
+   "history": [
+    {
+     "at": "2026-11-13",
+     "action": "Added to the book, checked against its own website",
+     "changes": null
+    }
+   ]
+  },
+  {
+   "id": "dumpling-home",
+   "name": "Dumpling Home",
+   "kind": "Restaurant",
+   "cuisines": [
+    "Chinese",
+    "Dumplings",
+    "Noodles"
+   ],
+   "neighborhood": "Hayes Valley",
+   "address": "298 Gough Street, San Francisco, CA 94102",
+   "lat": 37.775869,
+   "lon": -122.422666,
+   "hours": {
+    "mon": "11:30 AM to 2:15 PM, 5:00 PM to 8:15 PM",
+    "tue": "11:30 AM to 2:15 PM, 5:00 PM to 8:15 PM",
+    "wed": "11:30 AM to 2:15 PM, 5:00 PM to 8:15 PM",
+    "thu": "11:30 AM to 2:15 PM, 5:00 PM to 8:15 PM",
+    "fri": "11:30 AM to 2:15 PM, 5:00 PM to 8:45 PM",
+    "sat": "11:30 AM to 2:15 PM, 5:00 PM to 8:45 PM",
+    "sun": "11:30 AM to 2:15 PM, 5:00 PM to 8:15 PM"
+   },
+   "hours_note": null,
+   "phone": "(415) 503-1666",
+   "website": "https://www.dumplinghome.com/",
+   "email": null,
+   "book": {
+    "how": "Walk-in only",
+    "url": null
+   },
+   "price": "$",
+   "michelin": "bib",
+   "good_for": [
+    "Casual Lunch",
+    "Casual Dinner"
+   ],
+   "description": "A casual Chinese spot known for hand-pulled noodles, soup dumplings and cold appetizers. A resident would go for a quick, inexpensive lunch or early dinner.",
+   "desk_note": "No reservations. Its own site only takes orders, so the address, phone and hours are from the Michelin Guide: confirm by phone before sending anyone.",
+   "sources": [
+    "https://guide.michelin.com/us/en/california/san-francisco/restaurants/bib-gourmand",
+    "https://guide.michelin.com/us/en/california/san-francisco/restaurant/dumpling-home"
+   ],
+   "auto_updated": "2026-11-13",
+   "history": [
+    {
+     "at": "2026-11-13",
+     "action": "Added to the book, from the Michelin Guide; its own website could not be read",
+     "changes": null
+    }
+   ]
+  },
+  {
+   "id": "good-good-culture-club",
+   "name": "Good Good Culture Club",
+   "kind": "Restaurant",
+   "cuisines": [
+    "Southeast Asian",
+    "Casual"
+   ],
+   "neighborhood": "Mission",
+   "address": "3560 18th Street, San Francisco, CA 94110",
+   "lat": 37.76173,
+   "lon": -122.422948,
+   "hours": {
+    "mon": "5:00 PM to 9:00 PM",
+    "tue": "5:00 PM to 9:00 PM",
+    "wed": "5:00 PM to 9:00 PM",
+    "thu": "5:00 PM to 9:00 PM",
+    "fri": "5:00 PM to 9:30 PM",
+    "sat": "5:00 PM to 9:30 PM",
+    "sun": "Closed"
+   },
+   "hours_note": "Times are last seating. Happy hour daily, 5:00 to 6:00 PM.",
+   "phone": null,
+   "website": "https://goodgoodcultureclub.com/",
+   "email": "hello@ggccsf.com",
+   "book": {
+    "how": "Resy",
+    "url": "https://resy.com/cities/san-francisco-ca/venues/good-good-culture-club"
+   },
+   "price": "$$",
+   "michelin": "bib",
+   "good_for": [
+    "Casual Dinner",
+    "Group Dinner",
+    "Outdoor Seating"
+   ],
+   "description": "A family-owned Mission dinner spot serving Southeast Asian cooking in a dining room with a rooftop garden and front patio. Residents go for a lively group meal, and parties of 8 to 20 can book a dedicated large-party table.",
+   "desk_note": "No phone number is published; bookings and changes go through Resy only. Late cancellations are charged per guest.",
+   "sources": [
+    "https://guide.michelin.com/us/en/california/san-francisco/restaurants/bib-gourmand",
+    "https://guide.michelin.com/us/en/california/san-francisco/restaurant/good-good-culture-club",
+    "https://goodgoodcultureclub.com/pages/good-info",
+    "https://goodgoodcultureclub.com/pages/reservations-1",
+    "https://goodgoodcultureclub.com/pages/walk-in",
+    "https://goodgoodcultureclub.com/pages/policies-faqs"
+   ],
+   "auto_updated": "2026-11-13",
+   "history": [
+    {
+     "at": "2026-11-13",
+     "action": "Added to the book, checked against its own website",
+     "changes": null
+    }
+   ]
+  },
+  {
+   "id": "izakaya-rintaro",
+   "name": "Izakaya Rintaro",
+   "kind": "Restaurant",
+   "cuisines": [
+    "Japanese",
+    "Izakaya",
+    "Yakitori"
+   ],
+   "neighborhood": "Mission",
+   "address": "82 14th Street, San Francisco, CA 94103",
+   "lat": 37.768888,
+   "lon": -122.415131,
+   "hours": {
+    "mon": "5:00 PM to 10:00 PM",
+    "tue": "5:00 PM to 10:00 PM",
+    "wed": "5:00 PM to 10:00 PM",
+    "thu": "5:00 PM to 10:00 PM",
+    "fri": "5:00 PM to 10:00 PM",
+    "sat": "5:00 PM to 10:00 PM",
+    "sun": "5:00 PM to 10:00 PM"
+   },
+   "hours_note": null,
+   "phone": "(415) 589-7022",
+   "website": "https://izakayarintaro.com/",
+   "email": null,
+   "book": {
+    "how": "Resy",
+    "url": "https://resy.com/cities/san-francisco-ca/venues/izakaya-rintaro"
+   },
+   "price": "$$",
+   "michelin": "bib",
+   "good_for": [
+    "Casual Dinner",
+    "Date Night"
+   ],
+   "description": "A Japanese izakaya with an open kitchen, known for grilled skewers, simmered oden and seasonal small plates. Residents book it for a relaxed evening of shared dishes and sake.",
+   "desk_note": "Its own site could not be read; the hours are from the Michelin Guide. One listing shows Sunday closed: confirm before booking a Sunday.",
+   "sources": [
+    "https://guide.michelin.com/us/en/california/san-francisco/restaurants/bib-gourmand",
+    "https://guide.michelin.com/us/en/california/san-francisco/restaurant/izakaya-rintaro",
+    "https://resy.com/cities/san-francisco-ca/venues/izakaya-rintaro",
+    "https://izakayarintaro.com/"
+   ],
+   "auto_updated": "2026-11-13",
+   "history": [
+    {
+     "at": "2026-11-13",
+     "action": "Added to the book, from the Michelin Guide; its own website could not be read",
+     "changes": null
+    }
+   ]
+  },
+  {
+   "id": "kitchen-istanbul",
+   "name": "Kitchen Istanbul",
+   "kind": "Restaurant",
+   "cuisines": [
+    "Turkish",
+    "Wine"
+   ],
+   "neighborhood": "Richmond",
+   "address": "349 Clement Street, San Francisco, CA 94118",
+   "lat": 37.782891,
+   "lon": -122.463201,
+   "hours": {
+    "mon": "5:00 PM to 9:30 PM",
+    "tue": "Closed",
+    "wed": "Closed",
+    "thu": "5:00 PM to 9:30 PM",
+    "fri": "5:00 PM to 9:30 PM",
+    "sat": "5:00 PM to 9:30 PM",
+    "sun": "5:00 PM to 9:30 PM"
+   },
+   "hours_note": null,
+   "phone": "(415) 753-9479",
+   "website": "https://www.kitchenistanbulsf.com/",
+   "email": "info@kitchenistanbulsf.com",
+   "book": {
+    "how": "OpenTable",
+    "url": "https://www.opentable.com/kitchen-istanbul-reservations-san-francisco?restref=17095"
+   },
+   "price": "$$",
+   "michelin": "bib",
+   "good_for": [
+    "Casual Dinner",
+    "Group Dinner",
+    "Takeout"
+   ],
+   "description": "A Turkish dinner restaurant on Clement Street serving Turkish cooking with a dedicated wine list. It works for a relaxed family or group dinner and also offers online ordering for takeout.",
+   "desk_note": "The phone number is from the Michelin Guide.",
+   "sources": [
+    "https://guide.michelin.com/us/en/california/san-francisco/restaurants/bib-gourmand",
+    "https://guide.michelin.com/us/en/california/san-francisco/restaurant/kitchen-istanbul",
+    "https://www.kitchenistanbulsf.com/",
+    "https://guide.michelin.com/us/en/article/michelin-guide-ceremony/california-s-most-affordable-restaurants-in-2026"
+   ],
+   "auto_updated": "2026-11-13",
+   "history": [
+    {
+     "at": "2026-11-13",
+     "action": "Added to the book, checked against its own website",
+     "changes": null
+    }
+   ]
+  },
+  {
+   "id": "okane",
+   "name": "Okane",
+   "kind": "Restaurant",
+   "cuisines": [
+    "Japanese",
+    "Izakaya",
+    "Sushi"
+   ],
+   "neighborhood": "SoMa",
+   "address": "669 Townsend Street, San Francisco, CA 94103",
+   "lat": 37.770606,
+   "lon": -122.402961,
+   "hours": {
+    "mon": "11:30 AM to 2:30 PM, 5:00 PM to 9:00 PM",
+    "tue": "11:30 AM to 2:30 PM, 5:00 PM to 9:00 PM",
+    "wed": "11:30 AM to 2:30 PM, 5:00 PM to 9:00 PM",
+    "thu": "11:30 AM to 2:30 PM, 5:00 PM to 9:00 PM",
+    "fri": "11:30 AM to 2:30 PM, 5:00 PM to 10:00 PM",
+    "sat": "5:00 PM to 10:00 PM",
+    "sun": "5:00 PM to 9:00 PM"
+   },
+   "hours_note": "Closed Thanksgiving and Christmas Day. Lunch is weekdays only.",
+   "phone": "(415) 865-9788",
+   "website": "https://www.okanesf.com",
+   "email": null,
+   "book": {
+    "how": "OpenTable",
+    "url": "https://www.opentable.com/okane-reservations-san-francisco"
+   },
+   "price": "$$",
+   "michelin": "bib",
+   "good_for": [
+    "Casual Dinner",
+    "Group Dinner",
+    "Weekday Lunch"
+   ],
+   "description": "A Japanese izakaya with a sushi bar, built around shareable plates, nigiri, rolls, rice and noodle dishes, with sake and Japanese beer to match. It suits a relaxed weekday lunch or a casual group dinner.",
+   "desk_note": "The address and phone are from the Michelin Guide; its own site lists neither.",
+   "sources": [
+    "https://www.okanesf.com",
+    "https://guide.michelin.com/us/en/california/san-francisco/restaurant/okane",
+    "https://www.opentable.com/okane-reservations-san-francisco"
+   ],
+   "auto_updated": "2026-11-13",
+   "history": [
+    {
+     "at": "2026-11-13",
+     "action": "Added to the book, checked against its own website",
+     "changes": null
+    }
+   ]
+  },
+  {
+   "id": "outerlands",
+   "name": "Outerlands",
+   "kind": "Restaurant",
+   "cuisines": [
+    "Californian",
+    "Brunch",
+    "Bakery"
+   ],
+   "neighborhood": "Outer Sunset",
+   "address": "4001 Judah Street, San Francisco, CA 94122",
+   "lat": 37.76035,
+   "lon": -122.505006,
+   "hours": {
+    "mon": "5:00 PM to 9:00 PM",
+    "tue": "5:00 PM to 9:00 PM",
+    "wed": "5:00 PM to 9:00 PM",
+    "thu": "5:00 PM to 9:00 PM",
+    "fri": "5:00 PM to 9:30 PM",
+    "sat": "9:30 AM to 2:00 PM, 4:30 PM to 9:30 PM",
+    "sun": "9:30 AM to 2:00 PM, 4:30 PM to 9:00 PM"
+   },
+   "hours_note": "Saturday and Sunday daytime is brunch. Monday is a smaller special menu and Wednesday is burger night.",
+   "phone": "(415) 661-6140",
+   "website": "https://outerlandssf.com",
+   "email": "hello@outerlandssf.com",
+   "book": {
+    "how": "SevenRooms",
+    "url": "https://www.sevenrooms.com/explore/outerlands/reservations/create/search"
+   },
+   "price": "$$",
+   "michelin": "bib",
+   "good_for": [
+    "Weekend Brunch",
+    "Casual Dinner"
+   ],
+   "description": "A neighborhood Californian restaurant and bakery with a relaxed dining room and patio, a dinner menu with a burger night, and weekend brunch. Residents would go for a weekend brunch or a casual dinner out at the western edge of the city.",
+   "desk_note": "Brunch takes no reservations: first come, first served, up to eight. Dinner books on SevenRooms. The phone number is from the Michelin Guide.",
+   "sources": [
+    "https://outerlandssf.com",
+    "https://guide.michelin.com/us/en/california/san-francisco/restaurant/outerlands"
+   ],
+   "auto_updated": "2026-11-13",
+   "history": [
+    {
+     "at": "2026-11-13",
+     "action": "Added to the book, checked against its own website",
+     "changes": null
+    }
+   ]
+  },
+  {
+   "id": "trestle",
+   "name": "Trestle",
+   "kind": "Restaurant",
+   "cuisines": [
+    "Contemporary",
+    "Prix Fixe",
+    "American"
+   ],
+   "neighborhood": "Jackson Square",
+   "address": "531 Jackson Street, San Francisco, CA 94133",
+   "lat": 37.7962,
+   "lon": -122.404518,
+   "hours": {
+    "mon": "5:30 PM to 9:00 PM",
+    "tue": "5:30 PM to 9:00 PM",
+    "wed": "5:30 PM to 9:00 PM",
+    "thu": "5:30 PM to 9:00 PM",
+    "fri": "5:30 PM to 10:00 PM",
+    "sat": "5:30 PM to 10:00 PM",
+    "sun": "5:30 PM to 9:00 PM"
+   },
+   "hours_note": null,
+   "phone": "(415) 772-0922",
+   "website": "https://www.trestlesf.com",
+   "email": "info@trestlesf.com",
+   "book": {
+    "how": "OpenTable",
+    "url": "https://www.opentable.com/restref/client/?restref=166909&&lang=en-US&ot_source=Restaurant%20website"
+   },
+   "price": "$$",
+   "michelin": "bib",
+   "good_for": [
+    "Casual Dinner",
+    "Date Night"
+   ],
+   "description": "A dinner-only restaurant serving a four-course prix fixe menu that changes weekly with local, seasonal produce. Residents would choose it for a well-priced, unfussy sit-down dinner with a set menu.",
+   "desk_note": "The four-course menu changes weekly; confirm the current price when booking.",
+   "sources": [
+    "https://www.trestlesf.com",
+    "https://guide.michelin.com/us/en/california/san-francisco/restaurant/trestle"
+   ],
+   "auto_updated": "2026-11-13",
+   "history": [
+    {
+     "at": "2026-11-13",
+     "action": "Added to the book, checked against its own website",
+     "changes": null
+    }
+   ]
+  },
+  {
+   "id": "z-y",
+   "name": "Z & Y",
+   "kind": "Restaurant",
+   "cuisines": [
+    "Chinese",
+    "Casual"
+   ],
+   "neighborhood": "Chinatown",
+   "address": "655 Jackson Street, San Francisco, CA 94133",
+   "lat": 37.795941,
+   "lon": -122.406036,
+   "hours": {
+    "mon": "11:30 AM to 3:00 PM, 4:30 PM to 9:00 PM",
+    "tue": "Closed",
+    "wed": "11:30 AM to 3:00 PM, 4:30 PM to 9:00 PM",
+    "thu": "11:30 AM to 3:00 PM, 4:30 PM to 9:00 PM",
+    "fri": "11:30 AM to 3:00 PM, 4:30 PM to 9:00 PM",
+    "sat": "11:30 AM to 3:00 PM, 4:30 PM to 9:00 PM",
+    "sun": "11:30 AM to 3:00 PM, 4:30 PM to 9:00 PM"
+   },
+   "hours_note": "Closed every Tuesday.",
+   "phone": "(415) 981-8988",
+   "website": "https://www.zandyrestaurant.com",
+   "email": null,
+   "book": {
+    "how": "Phone",
+    "url": null
+   },
+   "price": "$$",
+   "michelin": "bib",
+   "good_for": [
+    "Group Dinner",
+    "Casual Lunch"
+   ],
+   "description": "A Chinatown restaurant serving Chinese dishes, open for both lunch and dinner. It suits a group meal with several dishes to share, and takeout is also available.",
+   "desk_note": "Online booking is for four or more, a day ahead. Smaller parties call or walk in.",
+   "sources": [
+    "https://www.zandyrestaurant.com",
+    "https://guide.michelin.com/us/en/california/san-francisco/restaurant/z-y"
    ],
    "auto_updated": "2026-11-13",
    "history": [
