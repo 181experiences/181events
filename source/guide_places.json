@@ -42,7 +42,7 @@
    "sources": [
     "https://www.cafedelapresse.com/"
    ],
-   "auto_updated": "2026-11-16",
+   "auto_updated": "2026-11-23",
    "history": [
     {
      "at": "2026-11-14",
@@ -58,13 +58,13 @@
    "ratings": {
     "google": {
      "score": 4.1,
-     "count": 1767
+     "count": 1769
     },
     "yelp": {
      "score": 3.4,
      "count": 1900
     },
-    "at": "2026-11-16"
+    "at": "2026-11-23"
    }
   },
   {
@@ -110,7 +110,7 @@
     "https://www.joujousf.com/location/joujou/",
     "https://www.joujousf.com/"
    ],
-   "auto_updated": "2026-11-16",
+   "auto_updated": "2026-11-23",
    "history": [
     {
      "at": "2026-11-14",
@@ -126,13 +126,13 @@
    "ratings": {
     "google": {
      "score": 4.2,
-     "count": 138
+     "count": 141
     },
     "yelp": {
      "score": 4.0,
      "count": 69
     },
-    "at": "2026-11-16"
+    "at": "2026-11-23"
    }
   },
   {
@@ -178,7 +178,7 @@
     "https://www.verjuscave.com/",
     "https://guide.michelin.com/us/en/california/san-francisco/restaurant/verjus"
    ],
-   "auto_updated": "2026-11-16",
+   "auto_updated": "2026-11-23",
    "history": [
     {
      "at": "2026-11-14",
@@ -194,13 +194,13 @@
    "ratings": {
     "google": {
      "score": 4.4,
-     "count": 318
+     "count": 319
     },
     "yelp": {
      "score": 4.0,
      "count": 232
     },
-    "at": "2026-11-16"
+    "at": "2026-11-23"
    }
   },
   {
@@ -245,7 +245,7 @@
    "sources": [
     "https://www.bondeliresf.com/"
    ],
-   "auto_updated": "2026-11-16",
+   "auto_updated": "2026-11-23",
    "history": [
     {
      "at": "2026-11-16T08:57:27-08:00",
@@ -271,13 +271,13 @@
    "ratings": {
     "google": {
      "score": 4.3,
-     "count": 211
+     "count": 212
     },
     "yelp": {
      "score": 4.1,
      "count": 191
     },
-    "at": "2026-11-16"
+    "at": "2026-11-23"
    }
   },
   {
@@ -310,15 +310,25 @@
     "Foodies"
    ],
    "description": "Dominique Crenn's poetic, seafood-forward French tasting-menu restaurant, the city's most celebrated French fine dining. Reserve it for a milestone dinner when the evening itself is the point.",
-   "desk_note": "Hours are not published anywhere official. Confirm the evening and the booking by phone.",
+   "desk_note": "Its own site publishes no hours. The Michelin Guide lists Tuesday to Saturday, 4:45 PM to 8:45 PM, closed Sunday and Monday. Confirm the evening and the booking by phone.",
    "sources": [
     "https://www.ateliercrenn.com/",
     "https://www.ateliercrenn.com/faq/",
     "https://www.ateliercrenn.com/contactus/",
     "https://guide.michelin.com/us/en/california/san-francisco/restaurant/atelier-crenn"
    ],
-   "auto_updated": "2026-11-16",
+   "auto_updated": "2026-11-23",
    "history": [
+    {
+     "at": "2026-11-23T16:56:25-08:00",
+     "action": "Weekly check",
+     "changes": {
+      "desk_note": [
+       "Hours are not published anywhere official. Confirm the evening and the booking by phone.",
+       "Its own site publishes no hours. The Michelin Guide lists Tuesday to Saturday, 4:45 PM to 8:45 PM, closed Sunday and Monday. Confirm the evening and the booking by phone."
+      ]
+     }
+    },
     {
      "at": "2026-11-14",
      "action": "Crowd ratings added, read from Google and from Yelp",
@@ -333,13 +343,13 @@
    "ratings": {
     "google": {
      "score": 4.6,
-     "count": 799
+     "count": 800
     },
     "yelp": {
      "score": 4.3,
      "count": 981
     },
-    "at": "2026-11-16"
+    "at": "2026-11-23"
    }
   },
   {
@@ -383,7 +393,7 @@
    "sources": [
     "https://www.chapeausf.com/"
    ],
-   "auto_updated": "2026-11-16",
+   "auto_updated": "2026-11-23",
    "history": [
     {
      "at": "2026-11-14",
@@ -399,13 +409,13 @@
    "ratings": {
     "google": {
      "score": 4.7,
-     "count": 793
+     "count": 795
     },
     "yelp": {
      "score": 4.3,
      "count": 3000
     },
-    "at": "2026-11-16"
+    "at": "2026-11-23"
    }
   },
   {
@@ -449,7 +459,7 @@
     "https://www.routiersf.com/",
     "https://guide.michelin.com/us/en/california/san-francisco/restaurant/routier"
    ],
-   "auto_updated": "2026-11-16",
+   "auto_updated": "2026-11-23",
    "history": [
     {
      "at": "2026-11-14",
@@ -465,13 +475,13 @@
    "ratings": {
     "google": {
      "score": 4.6,
-     "count": 351
+     "count": 352
     },
     "yelp": {
      "score": 4.5,
      "count": 248
     },
-    "at": "2026-11-16"
+    "at": "2026-11-23"
    }
   },
   {
@@ -517,7 +527,7 @@
     "https://www.boulevardrestaurant.com/location/boulevard-restaurant/",
     "https://www.boulevardrestaurant.com/"
    ],
-   "auto_updated": "2026-11-16",
+   "auto_updated": "2026-11-23",
    "history": [
     {
      "at": "2026-11-14",
@@ -533,13 +543,13 @@
    "ratings": {
     "google": {
      "score": 4.6,
-     "count": 1737
+     "count": 1739
     },
     "yelp": {
      "score": 4.1,
      "count": 3000
     },
-    "at": "2026-11-16"
+    "at": "2026-11-23"
    }
   },
   {
@@ -580,13 +590,23 @@
     "Bay views"
    ],
    "description": "A wood-fired seafood restaurant on the Embarcadero waterfront where nearly every dish is touched by the hearth. A top choice for a special dinner or a business lunch with bay views, a short walk from the East Cut.",
-   "desk_note": "Its site still carries last winter's notices, so the hours may be stale. Confirm by phone.",
+   "desk_note": "Its site prints lunch daily 11:30 AM to 2:00 PM, but the Michelin Guide lists lunch Tuesday to Saturday only, and the site still carries last winter's closure notice. Confirm Sunday and Monday lunch, and any holiday, by phone.",
    "sources": [
     "https://anglerrestaurants.com/",
     "https://guide.michelin.com/us/en/california/san-francisco/restaurant/angler-sf"
    ],
-   "auto_updated": "2026-11-16",
+   "auto_updated": "2026-11-23",
    "history": [
+    {
+     "at": "2026-11-23T16:56:25-08:00",
+     "action": "Weekly check",
+     "changes": {
+      "desk_note": [
+       "Its site still carries last winter's notices, so the hours may be stale. Confirm by phone.",
+       "Its site prints lunch daily 11:30 AM to 2:00 PM, but the Michelin Guide lists lunch Tuesday to Saturday only, and the site still carries last winter's closure notice. Confirm Sunday and Monday lunch, and any holiday, by phone."
+      ]
+     }
+    },
     {
      "at": "2026-11-14",
      "action": "Crowd ratings added, read from Google and from Yelp",
@@ -601,13 +621,13 @@
    "ratings": {
     "google": {
      "score": 4.5,
-     "count": 1217
+     "count": 1220
     },
     "yelp": {
      "score": 3.9,
      "count": 814
     },
-    "at": "2026-11-16"
+    "at": "2026-11-23"
    }
   },
   {
@@ -654,7 +674,7 @@
     "https://www.quincerestaurant.com/join-us-for-lunch",
     "https://guide.michelin.com/us/en/california/san-francisco/restaurant/quince"
    ],
-   "auto_updated": "2026-11-16",
+   "auto_updated": "2026-11-23",
    "history": [
     {
      "at": "2026-11-14",
@@ -676,7 +696,7 @@
      "score": 4.2,
      "count": 1700
     },
-    "at": "2026-11-16"
+    "at": "2026-11-23"
    }
   },
   {
@@ -724,7 +744,7 @@
     "https://saisonsf.com/contact/",
     "https://guide.michelin.com/us/en/california/san-francisco/restaurant/saison"
    ],
-   "auto_updated": "2026-11-16",
+   "auto_updated": "2026-11-23",
    "history": [
     {
      "at": "2026-11-14",
@@ -740,13 +760,13 @@
    "ratings": {
     "google": {
      "score": 4.6,
-     "count": 661
+     "count": 662
     },
     "yelp": {
      "score": 4.3,
      "count": 748
     },
-    "at": "2026-11-16"
+    "at": "2026-11-23"
    }
   },
   {
@@ -791,7 +811,7 @@
     "https://www.lazybearsf.com/contact-info",
     "https://guide.michelin.com/us/en/california/san-francisco/restaurant/lazy-bear"
    ],
-   "auto_updated": "2026-11-16",
+   "auto_updated": "2026-11-23",
    "history": [
     {
      "at": "2026-11-16T08:57:27-08:00",
@@ -821,13 +841,13 @@
    "ratings": {
     "google": {
      "score": 4.7,
-     "count": 1219
+     "count": 1222
     },
     "yelp": {
      "score": 4.4,
      "count": 911
     },
-    "at": "2026-11-16"
+    "at": "2026-11-23"
    }
   },
   {
@@ -872,7 +892,7 @@
     "https://www.cotognasf.com",
     "https://guide.michelin.com/us/en/california/san-francisco/restaurant/cotogna"
    ],
-   "auto_updated": "2026-11-16",
+   "auto_updated": "2026-11-23",
    "history": [
     {
      "at": "2026-11-14",
@@ -888,13 +908,13 @@
    "ratings": {
     "google": {
      "score": 4.5,
-     "count": 2302
+     "count": 2307
     },
     "yelp": {
      "score": 4.1,
      "count": 2300
     },
-    "at": "2026-11-16"
+    "at": "2026-11-23"
    }
   },
   {
@@ -938,7 +958,7 @@
    "sources": [
     "https://www.perbaccosf.com"
    ],
-   "auto_updated": "2026-11-16",
+   "auto_updated": "2026-11-23",
    "history": [
     {
      "at": "2026-11-14",
@@ -954,13 +974,13 @@
    "ratings": {
     "google": {
      "score": 4.5,
-     "count": 1068
+     "count": 1071
     },
     "yelp": {
      "score": 4.0,
      "count": 2300
     },
-    "at": "2026-11-16"
+    "at": "2026-11-23"
    }
   },
   {
@@ -1003,7 +1023,7 @@
    "sources": [
     "https://www.delfinasf.com"
    ],
-   "auto_updated": "2026-11-16",
+   "auto_updated": "2026-11-23",
    "history": [
     {
      "at": "2026-11-16T08:57:27-08:00",
@@ -1035,7 +1055,7 @@
      "score": 4.0,
      "count": 2300
     },
-    "at": "2026-11-16"
+    "at": "2026-11-23"
    }
   },
   {
@@ -1080,7 +1100,7 @@
     "https://www.a16pizza.com",
     "https://guide.michelin.com/us/en/california/san-francisco/restaurant/a16"
    ],
-   "auto_updated": "2026-11-16",
+   "auto_updated": "2026-11-23",
    "history": [
     {
      "at": "2026-11-14",
@@ -1096,13 +1116,13 @@
    "ratings": {
     "google": {
      "score": 4.2,
-     "count": 1424
+     "count": 1425
     },
     "yelp": {
      "score": 3.5,
      "count": 2400
     },
-    "at": "2026-11-16"
+    "at": "2026-11-23"
    }
   },
   {
@@ -1146,7 +1166,7 @@
    "sources": [
     "https://www.epicsteak.com"
    ],
-   "auto_updated": "2026-11-16",
+   "auto_updated": "2026-11-23",
    "history": [
     {
      "at": "2026-11-14",
@@ -1162,13 +1182,13 @@
    "ratings": {
     "google": {
      "score": 4.4,
-     "count": 3112
+     "count": 3117
     },
     "yelp": {
      "score": 3.7,
      "count": 3100
     },
-    "at": "2026-11-16"
+    "at": "2026-11-23"
    }
   },
   {
@@ -1212,7 +1232,7 @@
    "sources": [
     "https://alexanderssteakhousesf.com"
    ],
-   "auto_updated": "2026-11-16",
+   "auto_updated": "2026-11-23",
    "history": [
     {
      "at": "2026-11-14",
@@ -1228,13 +1248,13 @@
    "ratings": {
     "google": {
      "score": 4.5,
-     "count": 1111
+     "count": 1112
     },
     "yelp": {
      "score": 4.1,
      "count": 2000
     },
-    "at": "2026-11-16"
+    "at": "2026-11-23"
    }
   },
   {
@@ -1279,7 +1299,7 @@
     "https://www.nikusteakhouse.com",
     "https://guide.michelin.com/us/en/california/san-francisco/restaurant/niku-steakhouse"
    ],
-   "auto_updated": "2026-11-16",
+   "auto_updated": "2026-11-23",
    "history": [
     {
      "at": "2026-11-14",
@@ -1295,13 +1315,13 @@
    "ratings": {
     "google": {
      "score": 4.5,
-     "count": 914
+     "count": 917
     },
     "yelp": {
      "score": 4.3,
      "count": 1000
     },
-    "at": "2026-11-16"
+    "at": "2026-11-23"
    }
   },
   {
@@ -1345,7 +1365,7 @@
    "sources": [
     "https://www.waterbarsf.com"
    ],
-   "auto_updated": "2026-11-16",
+   "auto_updated": "2026-11-23",
    "history": [
     {
      "at": "2026-11-14",
@@ -1360,14 +1380,14 @@
    ],
    "ratings": {
     "google": {
-     "score": 4.5,
-     "count": 4632
+     "score": 4.4,
+     "count": 4635
     },
     "yelp": {
      "score": 3.8,
      "count": 4200
     },
-    "at": "2026-11-16"
+    "at": "2026-11-23"
    }
   },
   {
@@ -1411,7 +1431,7 @@
    "sources": [
     "https://www.tadichgrillsf.com/"
    ],
-   "auto_updated": "2026-11-16",
+   "auto_updated": "2026-11-23",
    "history": [
     {
      "at": "2026-11-16T08:57:27-08:00",
@@ -1437,13 +1457,13 @@
    "ratings": {
     "google": {
      "score": 4.5,
-     "count": 3255
+     "count": 3265
     },
     "yelp": {
      "score": 4.0,
      "count": 3200
     },
-    "at": "2026-11-14"
+    "at": "2026-11-23"
    }
   },
   {
@@ -1467,7 +1487,7 @@
     "sat": "11:00 AM to 8:00 PM",
     "sun": "11:00 AM to 8:00 PM"
    },
-   "hours_note": "No reservations; casual dine-in and oysters to go.",
+   "hours_note": "No reservations; casual dine-in and oysters to go. Closed Thanksgiving (Nov 26) and Christmas Day (Dec 25).",
    "phone": "(415) 391-7117",
    "website": "https://www.hogislandoysters.com",
    "email": null,
@@ -1487,8 +1507,18 @@
     "https://www.hogislandoysters.com/visit/san-francisco/",
     "https://guide.michelin.com/us/en/california/san-francisco/restaurant/hog-island-oyster-co"
    ],
-   "auto_updated": "2026-11-16",
+   "auto_updated": "2026-11-23",
    "history": [
+    {
+     "at": "2026-11-23T16:56:25-08:00",
+     "action": "Weekly check",
+     "changes": {
+      "hours_note": [
+       "No reservations; casual dine-in and oysters to go.",
+       "No reservations; casual dine-in and oysters to go. Closed Thanksgiving (Nov 26) and Christmas Day (Dec 25)."
+      ]
+     }
+    },
     {
      "at": "2026-11-14",
      "action": "Crowd ratings added, read from Google and from Yelp",
@@ -1503,13 +1533,13 @@
    "ratings": {
     "google": {
      "score": 4.6,
-     "count": 4256
+     "count": 4265
     },
     "yelp": {
      "score": 4.4,
      "count": 7800
     },
-    "at": "2026-11-16"
+    "at": "2026-11-23"
    }
   },
   {
@@ -1554,7 +1584,7 @@
     "https://www.wayfaretavern.com",
     "https://www.wayfaretavern.com/about-us"
    ],
-   "auto_updated": "2026-11-16",
+   "auto_updated": "2026-11-23",
    "history": [
     {
      "at": "2026-11-14",
@@ -1570,13 +1600,13 @@
    "ratings": {
     "google": {
      "score": 4.5,
-     "count": 3130
+     "count": 3144
     },
     "yelp": {
      "score": 3.9,
      "count": 4800
     },
-    "at": "2026-11-16"
+    "at": "2026-11-23"
    }
   },
   {
@@ -1621,7 +1651,7 @@
     "https://zunicafe.com",
     "https://guide.michelin.com/us/en/california/san-francisco/restaurant/zuni-cafe"
    ],
-   "auto_updated": "2026-11-16",
+   "auto_updated": "2026-11-23",
    "history": [
     {
      "at": "2026-11-14",
@@ -1637,13 +1667,13 @@
    "ratings": {
     "google": {
      "score": 4.3,
-     "count": 2678
+     "count": 2683
     },
     "yelp": {
      "score": 3.7,
      "count": 3300
     },
-    "at": "2026-11-16"
+    "at": "2026-11-23"
    }
   },
   {
@@ -1689,7 +1719,7 @@
     "https://akikosrestaurant.com/contact/",
     "https://akikosrestaurant.com/reservations/"
    ],
-   "auto_updated": "2026-11-16",
+   "auto_updated": "2026-11-23",
    "history": [
     {
      "at": "2026-11-14",
@@ -1705,13 +1735,13 @@
    "ratings": {
     "google": {
      "score": 4.4,
-     "count": 824
+     "count": 825
     },
     "yelp": {
      "score": 4.0,
      "count": 2100
     },
-    "at": "2026-11-16"
+    "at": "2026-11-23"
    }
   },
   {
@@ -1754,7 +1784,7 @@
    "sources": [
     "https://theminagroup.com/restaurants/pabu-izakaya/"
    ],
-   "auto_updated": "2026-11-16",
+   "auto_updated": "2026-11-23",
    "history": [
     {
      "at": "2026-11-14",
@@ -1770,13 +1800,13 @@
    "ratings": {
     "google": {
      "score": 4.4,
-     "count": 1657
+     "count": 1666
     },
     "yelp": {
      "score": 4.2,
      "count": 1700
     },
-    "at": "2026-11-16"
+    "at": "2026-11-23"
    }
   },
   {
@@ -1822,7 +1852,7 @@
     "https://kusakabe-sf.com/reservations/",
     "https://guide.michelin.com/us/en/california/san-francisco/restaurant/kusakabe"
    ],
-   "auto_updated": "2026-11-16",
+   "auto_updated": "2026-11-23",
    "history": [
     {
      "at": "2026-11-14",
@@ -1848,13 +1878,13 @@
    "ratings": {
     "google": {
      "score": 4.7,
-     "count": 806
+     "count": 807
     },
     "yelp": {
      "score": 4.6,
      "count": 1200
     },
-    "at": "2026-11-16"
+    "at": "2026-11-23"
    }
   },
   {
@@ -1898,7 +1928,7 @@
    "sources": [
     "https://yanksing.com"
    ],
-   "auto_updated": "2026-11-16",
+   "auto_updated": "2026-11-23",
    "history": [
     {
      "at": "2026-11-14T00:40:17-08:00",
@@ -1938,13 +1968,13 @@
    "ratings": {
     "google": {
      "score": 4.3,
-     "count": 1952
+     "count": 1954
     },
     "yelp": {
      "score": 3.6,
      "count": 1900
     },
-    "at": "2026-11-16"
+    "at": "2026-11-23"
    }
   },
   {
@@ -1989,7 +2019,7 @@
     "https://www.misterjius.com/reservations",
     "https://guide.michelin.com/us/en/california/san-francisco/restaurants/all-starred"
    ],
-   "auto_updated": "2026-11-16",
+   "auto_updated": "2026-11-23",
    "history": [
     {
      "at": "2026-11-14",
@@ -2005,13 +2035,13 @@
    "ratings": {
     "google": {
      "score": 4.3,
-     "count": 1236
+     "count": 1235
     },
     "yelp": {
      "score": 3.7,
      "count": 1200
     },
-    "at": "2026-11-16"
+    "at": "2026-11-23"
    }
   },
   {
@@ -2054,7 +2084,7 @@
     "https://kinkhao.com",
     "https://guide.michelin.com/us/en/california/san-francisco/restaurants/all-starred"
    ],
-   "auto_updated": "2026-11-16",
+   "auto_updated": "2026-11-23",
    "history": [
     {
      "at": "2026-11-14",
@@ -2070,13 +2100,13 @@
    "ratings": {
     "google": {
      "score": 4.2,
-     "count": 2235
+     "count": 2237
     },
     "yelp": {
      "score": 3.8,
      "count": 2800
     },
-    "at": "2026-11-16"
+    "at": "2026-11-23"
    }
   },
   {
@@ -2100,7 +2130,7 @@
     "sat": "4:30 PM to 10:00 PM",
     "sun": "4:30 PM to 10:00 PM"
    },
-   "hours_note": "Open Monday November 23. Closed Thanksgiving Day (November 26) and Friday November 27. Reservations release at 10:00 AM, 29 days ahead.",
+   "hours_note": "The visit page says holiday hours are modified in November and December but lists no dates this week, so call before booking a holiday-week table. As read on November 16: closed Thanksgiving Day (November 26) and Friday November 27. Reservations release at 10:00 AM, 29 days ahead.",
    "phone": "(415) 868-4479",
    "website": "https://www.sanhowon.com",
    "email": "hello@sanhowon.com",
@@ -2120,8 +2150,18 @@
     "https://www.sanhowon.com/visit",
     "https://guide.michelin.com/us/en/california/san-francisco/restaurants/all-starred"
    ],
-   "auto_updated": "2026-11-16",
+   "auto_updated": "2026-11-23",
    "history": [
+    {
+     "at": "2026-11-23T16:56:25-08:00",
+     "action": "Weekly check",
+     "changes": {
+      "hours_note": [
+       "Open Monday November 23. Closed Thanksgiving Day (November 26) and Friday November 27. Reservations release at 10:00 AM, 29 days ahead.",
+       "The visit page says holiday hours are modified in November and December but lists no dates this week, so call before booking a holiday-week table. As read on November 16: closed Thanksgiving Day (November 26) and Friday November 27. Reservations release at 10:00 AM, 29 days ahead."
+      ]
+     }
+    },
     {
      "at": "2026-11-16T08:57:27-08:00",
      "action": "Weekly check",
@@ -2150,13 +2190,13 @@
    "ratings": {
     "google": {
      "score": 4.6,
-     "count": 772
+     "count": 773
     },
     "yelp": {
      "score": 4.6,
      "count": 972
     },
-    "at": "2026-11-16"
+    "at": "2026-11-23"
    }
   },
   {
@@ -2200,7 +2240,7 @@
    "sources": [
     "https://lamarcebicheria.com/san-francisco/"
    ],
-   "auto_updated": "2026-11-16",
+   "auto_updated": "2026-11-23",
    "history": [
     {
      "at": "2026-11-14",
@@ -2216,13 +2256,13 @@
    "ratings": {
     "google": {
      "score": 4.5,
-     "count": 5076
+     "count": 5083
     },
     "yelp": {
      "score": 3.9,
      "count": 5100
     },
-    "at": "2026-11-16"
+    "at": "2026-11-23"
    }
   },
   {
@@ -2266,7 +2306,7 @@
     "https://www.coquetasf.com",
     "https://www.coquetasf.com/reservations"
    ],
-   "auto_updated": "2026-11-16",
+   "auto_updated": "2026-11-23",
    "history": [
     {
      "at": "2026-11-16T08:57:27-08:00",
@@ -2292,13 +2332,13 @@
    "ratings": {
     "google": {
      "score": 4.4,
-     "count": 2910
+     "count": 2912
     },
     "yelp": {
      "score": 4.0,
      "count": 2800
     },
-    "at": "2026-11-16"
+    "at": "2026-11-23"
    }
   },
   {
@@ -2337,13 +2377,23 @@
     "Group dinner"
    ],
    "description": "A modern Indian restaurant that reworks regional dishes with a contemporary eye, in a roomy space south of Market. A good pick for guests who want something more adventurous than a standard Indian menu.",
-   "desk_note": "Hours are confirmed on its own site and match the Michelin Guide. The number is the restaurant's own line; parties of 15 or more book by phone.",
+   "desk_note": "Hours are confirmed on its own site and match the Michelin Guide. The number is the restaurant's own line. Online booking takes parties up to 8; 9 or more go through its Private Parties section, and parties of 15 or more book by phone.",
    "sources": [
     "https://guide.michelin.com/us/en/california/san-francisco/restaurant/rooh",
     "https://www.roohrestaurants.com/"
    ],
-   "auto_updated": "2026-11-16",
+   "auto_updated": "2026-11-23",
    "history": [
+    {
+     "at": "2026-11-23T16:56:25-08:00",
+     "action": "Weekly check",
+     "changes": {
+      "desk_note": [
+       "Hours are confirmed on its own site and match the Michelin Guide. The number is the restaurant's own line; parties of 15 or more book by phone.",
+       "Hours are confirmed on its own site and match the Michelin Guide. The number is the restaurant's own line. Online booking takes parties up to 8; 9 or more go through its Private Parties section, and parties of 15 or more book by phone."
+      ]
+     }
+    },
     {
      "at": "2026-11-16T08:57:27-08:00",
      "action": "Weekly check",
@@ -2378,13 +2428,13 @@
    "ratings": {
     "google": {
      "score": 4.2,
-     "count": 2061
+     "count": 2066
     },
     "yelp": {
      "score": 4.0,
      "count": 1400
     },
-    "at": "2026-11-16"
+    "at": "2026-11-23"
    }
   },
   {
@@ -2426,7 +2476,7 @@
    "sources": [
     "https://barcha-sf.com"
    ],
-   "auto_updated": "2026-11-16",
+   "auto_updated": "2026-11-23",
    "history": [
     {
      "at": "2026-11-14",
@@ -2442,13 +2492,13 @@
    "ratings": {
     "google": {
      "score": 4.4,
-     "count": 1518
+     "count": 1519
     },
     "yelp": {
      "score": 4.1,
      "count": 950
     },
-    "at": "2026-11-16"
+    "at": "2026-11-23"
    }
   },
   {
@@ -2493,7 +2543,7 @@
     "https://www.dalidasf.com",
     "https://guide.michelin.com/en/california/san-francisco/restaurant/dalida"
    ],
-   "auto_updated": "2026-11-16",
+   "auto_updated": "2026-11-23",
    "history": [
     {
      "at": "2026-11-16T08:57:27-08:00",
@@ -2529,13 +2579,13 @@
    "ratings": {
     "google": {
      "score": 4.5,
-     "count": 856
+     "count": 859
     },
     "yelp": {
      "score": 4.4,
      "count": 632
     },
-    "at": "2026-11-16"
+    "at": "2026-11-23"
    }
   },
   {
@@ -2575,14 +2625,24 @@
     "Date Night"
    ],
    "description": "A neighborhood restaurant from chefs David and Serena Fisher, serving polished Californian cooking in the main room, on the terrace, or at a chef's counter. A good pick for a starred dinner that still feels relaxed.",
-   "desk_note": "Tables open 28 days ahead. A cancellation fee of $65 to $95 a person applies.",
+   "desk_note": "Tables open 28 days ahead. Cancellation fee: $87 a person inside 48 hours for the dining room and terrace, $95 a person inside 14 days for the chef's counter.",
    "sources": [
     "https://www.7adamsrestaurant.com/",
     "https://www.7adamsrestaurant.com/visit",
     "https://guide.michelin.com/us/en/california/san-francisco/restaurant/7-adams"
    ],
-   "auto_updated": "2026-11-16",
+   "auto_updated": "2026-11-23",
    "history": [
+    {
+     "at": "2026-11-23T16:56:25-08:00",
+     "action": "Weekly check",
+     "changes": {
+      "desk_note": [
+       "Tables open 28 days ahead. A cancellation fee of $65 to $95 a person applies.",
+       "Tables open 28 days ahead. Cancellation fee: $87 a person inside 48 hours for the dining room and terrace, $95 a person inside 14 days for the chef's counter."
+      ]
+     }
+    },
     {
      "at": "2026-11-14",
      "action": "Crowd ratings added, read from Google and from Yelp",
@@ -2597,13 +2657,13 @@
    "ratings": {
     "google": {
      "score": 4.4,
-     "count": 509
+     "count": 512
     },
     "yelp": {
      "score": 4.2,
      "count": 363
     },
-    "at": "2026-11-16"
+    "at": "2026-11-23"
    }
   },
   {
@@ -2649,7 +2709,7 @@
     "https://www.acquerellosf.com/reservations",
     "https://guide.michelin.com/us/en/california/san-francisco/restaurant/acquerello"
    ],
-   "auto_updated": "2026-11-16",
+   "auto_updated": "2026-11-23",
    "history": [
     {
      "at": "2026-11-14",
@@ -2665,13 +2725,13 @@
    "ratings": {
     "google": {
      "score": 4.6,
-     "count": 676
+     "count": 677
     },
     "yelp": {
      "score": 4.4,
      "count": 1400
     },
-    "at": "2026-11-16"
+    "at": "2026-11-23"
    }
   },
   {
@@ -2717,7 +2777,7 @@
     "https://www.benusf.com/reservations",
     "https://guide.michelin.com/us/en/california/san-francisco/restaurant/benu"
    ],
-   "auto_updated": "2026-11-16",
+   "auto_updated": "2026-11-23",
    "history": [
     {
      "at": "2026-11-14",
@@ -2739,7 +2799,7 @@
      "score": 4.3,
      "count": 1300
     },
-    "at": "2026-11-16"
+    "at": "2026-11-23"
    }
   },
   {
@@ -2785,7 +2845,7 @@
     "https://www.birdsongsf.com/info",
     "https://guide.michelin.com/us/en/california/san-francisco/restaurant/birdsong"
    ],
-   "auto_updated": "2026-11-16",
+   "auto_updated": "2026-11-23",
    "history": [
     {
      "at": "2026-11-14",
@@ -2801,13 +2861,13 @@
    "ratings": {
     "google": {
      "score": 4.6,
-     "count": 495
+     "count": 497
     },
     "yelp": {
      "score": 4.4,
      "count": 506
     },
-    "at": "2026-11-16"
+    "at": "2026-11-23"
    }
   },
   {
@@ -2853,7 +2913,7 @@
     "https://guide.michelin.com/us/en/california/san-francisco/restaurant/californios",
     "https://www.opentable.com.au/r/californios-san-francisco"
    ],
-   "auto_updated": "2026-11-16",
+   "auto_updated": "2026-11-23",
    "history": [
     {
      "at": "2026-11-16T08:57:27-08:00",
@@ -2887,13 +2947,13 @@
    "ratings": {
     "google": {
      "score": 4.7,
-     "count": 608
+     "count": 611
     },
     "yelp": {
      "score": 4.6,
      "count": 505
     },
-    "at": "2026-11-16"
+    "at": "2026-11-23"
    }
   },
   {
@@ -2939,7 +2999,7 @@
     "https://www.hildaandjessesf.com/reservations",
     "https://guide.michelin.com/us/en/california/san-francisco/restaurant/hilda-and-jesse"
    ],
-   "auto_updated": "2026-11-16",
+   "auto_updated": "2026-11-23",
    "history": [
     {
      "at": "2026-11-14",
@@ -2955,13 +3015,13 @@
    "ratings": {
     "google": {
      "score": 4.0,
-     "count": 573
+     "count": 579
     },
     "yelp": {
      "score": 4.0,
      "count": 212
     },
-    "at": "2026-11-16"
+    "at": "2026-11-23"
    }
   },
   {
@@ -3009,7 +3069,7 @@
     "https://guide.michelin.com/us/en/california/san-francisco/restaurant/kiln-1210355",
     "https://guide.michelin.com/us/en/california/san-francisco/restaurants/all-starred"
    ],
-   "auto_updated": "2026-11-16",
+   "auto_updated": "2026-11-23",
    "history": [
     {
      "at": "2026-11-14",
@@ -3031,7 +3091,7 @@
      "score": 4.6,
      "count": 130
     },
-    "at": "2026-11-16"
+    "at": "2026-11-23"
    }
   },
   {
@@ -3078,7 +3138,7 @@
     "https://guide.michelin.com/us/en/california/san-francisco/restaurant/naides",
     "https://guide.michelin.com/us/en/california/san-francisco/restaurants/all-starred"
    ],
-   "auto_updated": "2026-11-16",
+   "auto_updated": "2026-11-23",
    "history": [
     {
      "at": "2026-11-14",
@@ -3100,7 +3160,7 @@
      "score": 4.9,
      "count": 31
     },
-    "at": "2026-11-16"
+    "at": "2026-11-23"
    }
   },
   {
@@ -3148,7 +3208,7 @@
     "https://guide.michelin.com/us/en/california/san-francisco/restaurant/nari",
     "https://guide.michelin.com/us/en/california/san-francisco/restaurants/all-starred"
    ],
-   "auto_updated": "2026-11-16",
+   "auto_updated": "2026-11-23",
    "history": [
     {
      "at": "2026-11-14",
@@ -3170,7 +3230,7 @@
      "score": 4.0,
      "count": 645
     },
-    "at": "2026-11-16"
+    "at": "2026-11-23"
    }
   },
   {
@@ -3217,7 +3277,7 @@
     "https://guide.michelin.com/us/en/california/san-francisco/restaurant/nisei",
     "https://guide.michelin.com/us/en/california/san-francisco/restaurants/all-starred"
    ],
-   "auto_updated": "2026-11-16",
+   "auto_updated": "2026-11-23",
    "history": [
     {
      "at": "2026-11-14",
@@ -3239,7 +3299,7 @@
      "score": 4.4,
      "count": 193
     },
-    "at": "2026-11-16"
+    "at": "2026-11-23"
    }
   },
   {
@@ -3286,7 +3346,7 @@
     "https://guide.michelin.com/us/en/california/san-francisco/restaurant/the-progress",
     "https://guide.michelin.com/us/en/california/san-francisco/restaurants/all-starred"
    ],
-   "auto_updated": "2026-11-16",
+   "auto_updated": "2026-11-23",
    "history": [
     {
      "at": "2026-11-14",
@@ -3302,13 +3362,13 @@
    "ratings": {
     "google": {
      "score": 4.6,
-     "count": 1369
+     "count": 1373
     },
     "yelp": {
      "score": 4.1,
      "count": 1400
     },
-    "at": "2026-11-16"
+    "at": "2026-11-23"
    }
   },
   {
@@ -3355,7 +3415,7 @@
     "https://www.sonsanddaughterssf.com/faqs",
     "https://guide.michelin.com/us/en/california/san-francisco/restaurants/3-stars-michelin/2-stars-michelin/1-star-michelin"
    ],
-   "auto_updated": "2026-11-16",
+   "auto_updated": "2026-11-23",
    "history": [
     {
      "at": "2026-11-14",
@@ -3370,14 +3430,14 @@
    ],
    "ratings": {
     "google": {
-     "score": 4.7,
-     "count": 409
+     "score": 4.6,
+     "count": 411
     },
     "yelp": {
      "score": 4.2,
      "count": 839
     },
-    "at": "2026-11-16"
+    "at": "2026-11-23"
    }
   },
   {
@@ -3424,7 +3484,7 @@
     "https://guide.michelin.com/us/en/california/san-francisco/restaurant/sorrel",
     "https://guide.michelin.com/us/en/california/san-francisco/restaurants/3-stars-michelin/2-stars-michelin/1-star-michelin"
    ],
-   "auto_updated": "2026-11-16",
+   "auto_updated": "2026-11-23",
    "history": [
     {
      "at": "2026-11-16T08:57:27-08:00",
@@ -3456,7 +3516,7 @@
      "score": 4.1,
      "count": 416
     },
-    "at": "2026-11-16"
+    "at": "2026-11-23"
    }
   },
   {
@@ -3496,7 +3556,7 @@
     "Special Occasion"
    ],
    "description": "A Polk Street Korean tasting-menu restaurant, starred by Michelin, that reinterprets Korean flavors in a refined, reservation-only format. A resident would choose it for a quiet, special dinner that is a change from the usual fine-dining styles.",
-   "desk_note": "The phone number is from the Michelin Guide. Its site says it closes at 8:30 PM, Michelin says 9:00 PM: confirm by phone. Deposits are non-refundable, and infants are not seated in the dining room.",
+   "desk_note": "The phone number is from the Michelin Guide; its own site lists none. Deposits are non-refundable, and infants are not seated in the dining room.",
    "sources": [
     "https://ssalsf.com",
     "https://ssalsf.com/contact",
@@ -3504,8 +3564,18 @@
     "https://guide.michelin.com/us/en/california/san-francisco/restaurant/ssal",
     "https://guide.michelin.com/us/en/california/san-francisco/restaurants/3-stars-michelin/2-stars-michelin/1-star-michelin"
    ],
-   "auto_updated": "2026-11-16",
+   "auto_updated": "2026-11-23",
    "history": [
+    {
+     "at": "2026-11-23T16:56:25-08:00",
+     "action": "Weekly check",
+     "changes": {
+      "desk_note": [
+       "The phone number is from the Michelin Guide. Its site says it closes at 8:30 PM, Michelin says 9:00 PM: confirm by phone. Deposits are non-refundable, and infants are not seated in the dining room.",
+       "The phone number is from the Michelin Guide; its own site lists none. Deposits are non-refundable, and infants are not seated in the dining room."
+      ]
+     }
+    },
     {
      "at": "2026-11-16T08:57:27-08:00",
      "action": "Weekly check",
@@ -3530,13 +3600,13 @@
    "ratings": {
     "google": {
      "score": 4.7,
-     "count": 237
+     "count": 238
     },
     "yelp": {
      "score": 4.5,
      "count": 297
     },
-    "at": "2026-11-16"
+    "at": "2026-11-23"
    }
   },
   {
@@ -3576,14 +3646,24 @@
     "Casual Night Out"
    ],
    "description": "A lively Fillmore restaurant known for its dim-sum style service, where small plates arrive on carts and trays alongside a menu to order from. A resident would go for a relaxed, inventive Californian dinner with friends or visiting family.",
-   "desk_note": "Several closures ahead: Nov 17, 21 and 26, Dec 3, 9 to 11, 17, 24 and 25, Jan 1 and 10, and Feb 12. Check the date before booking. Michelin shows Friday closed; its own site shows Friday open.",
+   "desk_note": "Several closures ahead: Nov 26, Dec 3, 9 to 11, 17, 24 and 25, Jan 1 and 10, and Feb 12. Check the date before booking. Michelin shows Friday closed; its own site shows Friday open.",
    "sources": [
     "https://www.statebirdsf.com/",
     "https://guide.michelin.com/us/en/california/san-francisco/restaurant/state-bird-provisions",
     "https://guide.michelin.com/us/en/california/san-francisco/restaurants/3-stars-michelin/2-stars-michelin/1-star-michelin"
    ],
-   "auto_updated": "2026-11-16",
+   "auto_updated": "2026-11-23",
    "history": [
+    {
+     "at": "2026-11-23T16:56:25-08:00",
+     "action": "Weekly check",
+     "changes": {
+      "desk_note": [
+       "Several closures ahead: Nov 17, 21 and 26, Dec 3, 9 to 11, 17, 24 and 25, Jan 1 and 10, and Feb 12. Check the date before booking. Michelin shows Friday closed; its own site shows Friday open.",
+       "Several closures ahead: Nov 26, Dec 3, 9 to 11, 17, 24 and 25, Jan 1 and 10, and Feb 12. Check the date before booking. Michelin shows Friday closed; its own site shows Friday open."
+      ]
+     }
+    },
     {
      "at": "2026-11-16T08:57:27-08:00",
      "action": "Weekly check",
@@ -3608,13 +3688,13 @@
    "ratings": {
     "google": {
      "score": 4.5,
-     "count": 2534
+     "count": 2535
     },
     "yelp": {
      "score": 4.2,
      "count": 3600
     },
-    "at": "2026-11-16"
+    "at": "2026-11-23"
    }
   },
   {
@@ -3660,7 +3740,7 @@
     "https://guide.michelin.com/us/en/california/san-francisco/restaurant/wolfsbane",
     "https://guide.michelin.com/us/en/california/san-francisco/restaurants/3-stars-michelin/2-stars-michelin/1-star-michelin"
    ],
-   "auto_updated": "2026-11-16",
+   "auto_updated": "2026-11-23",
    "history": [
     {
      "at": "2026-11-14",
@@ -3682,7 +3762,7 @@
      "score": 4.7,
      "count": 38
     },
-    "at": "2026-11-16"
+    "at": "2026-11-23"
    }
   },
   {
@@ -3727,7 +3807,7 @@
     "https://guide.michelin.com/us/en/california/san-francisco/restaurants/bib-gourmand",
     "https://guide.michelin.com/us/en/california/san-francisco/restaurant/anchor-oyster-bar"
    ],
-   "auto_updated": "2026-11-16",
+   "auto_updated": "2026-11-23",
    "history": [
     {
      "at": "2026-11-16T08:57:27-08:00",
@@ -3753,13 +3833,13 @@
    "ratings": {
     "google": {
      "score": 4.7,
-     "count": 1311
+     "count": 1313
     },
     "yelp": {
      "score": 4.5,
      "count": 1800
     },
-    "at": "2026-11-16"
+    "at": "2026-11-23"
    }
   },
   {
@@ -3806,7 +3886,7 @@
     "https://www.bansangsf.com/reservation",
     "https://www.bansangsf.com/contact-4-1"
    ],
-   "auto_updated": "2026-11-16",
+   "auto_updated": "2026-11-23",
    "history": [
     {
      "at": "2026-11-14",
@@ -3828,7 +3908,7 @@
      "score": 4.1,
      "count": 626
     },
-    "at": "2026-11-16"
+    "at": "2026-11-23"
    }
   },
   {
@@ -3873,7 +3953,7 @@
     "https://guide.michelin.com/us/en/california/san-francisco/restaurants/bib-gourmand",
     "https://guide.michelin.com/us/en/california/san-francisco/restaurant/dumpling-home"
    ],
-   "auto_updated": "2026-11-16",
+   "auto_updated": "2026-11-23",
    "history": [
     {
      "at": "2026-11-14",
@@ -3889,13 +3969,13 @@
    "ratings": {
     "google": {
      "score": 4.5,
-     "count": 1747
+     "count": 1755
     },
     "yelp": {
      "score": 4.5,
      "count": 2200
     },
-    "at": "2026-11-16"
+    "at": "2026-11-23"
    }
   },
   {
@@ -3944,7 +4024,7 @@
     "https://goodgoodcultureclub.com/pages/walk-in",
     "https://goodgoodcultureclub.com/pages/policies-faqs"
    ],
-   "auto_updated": "2026-11-16",
+   "auto_updated": "2026-11-23",
    "history": [
     {
      "at": "2026-11-16T08:57:27-08:00",
@@ -3970,13 +4050,13 @@
    "ratings": {
     "google": {
      "score": 4.4,
-     "count": 492
+     "count": 495
     },
     "yelp": {
      "score": 4.2,
      "count": 579
     },
-    "at": "2026-11-16"
+    "at": "2026-11-23"
    }
   },
   {
@@ -4023,7 +4103,7 @@
     "https://resy.com/cities/san-francisco-ca/venues/izakaya-rintaro",
     "https://izakayarintaro.com/"
    ],
-   "auto_updated": "2026-11-16",
+   "auto_updated": "2026-11-23",
    "history": [
     {
      "at": "2026-11-16T08:57:27-08:00",
@@ -4049,13 +4129,13 @@
    "ratings": {
     "google": {
      "score": 4.5,
-     "count": 1448
+     "count": 1451
     },
     "yelp": {
      "score": 4.2,
      "count": 1200
     },
-    "at": "2026-11-16"
+    "at": "2026-11-23"
    }
   },
   {
@@ -4102,7 +4182,7 @@
     "https://www.kitchenistanbulsf.com/",
     "https://guide.michelin.com/us/en/article/michelin-guide-ceremony/california-s-most-affordable-restaurants-in-2026"
    ],
-   "auto_updated": "2026-11-16",
+   "auto_updated": "2026-11-23",
    "history": [
     {
      "at": "2026-11-14",
@@ -4118,13 +4198,13 @@
    "ratings": {
     "google": {
      "score": 4.5,
-     "count": 489
+     "count": 490
     },
     "yelp": {
      "score": 4.4,
      "count": 602
     },
-    "at": "2026-11-16"
+    "at": "2026-11-23"
    }
   },
   {
@@ -4171,7 +4251,7 @@
     "https://guide.michelin.com/us/en/california/san-francisco/restaurant/okane",
     "https://www.opentable.com/okane-reservations-san-francisco"
    ],
-   "auto_updated": "2026-11-16",
+   "auto_updated": "2026-11-23",
    "history": [
     {
      "at": "2026-11-16T08:57:27-08:00",
@@ -4197,13 +4277,13 @@
    "ratings": {
     "google": {
      "score": 4.3,
-     "count": 409
+     "count": 411
     },
     "yelp": {
      "score": 4.0,
      "count": 536
     },
-    "at": "2026-11-16"
+    "at": "2026-11-23"
    }
   },
   {
@@ -4248,7 +4328,7 @@
     "https://outerlandssf.com",
     "https://guide.michelin.com/us/en/california/san-francisco/restaurant/outerlands"
    ],
-   "auto_updated": "2026-11-16",
+   "auto_updated": "2026-11-23",
    "history": [
     {
      "at": "2026-11-14",
@@ -4264,13 +4344,13 @@
    "ratings": {
     "google": {
      "score": 4.3,
-     "count": 1742
+     "count": 1746
     },
     "yelp": {
      "score": 3.8,
      "count": 2600
     },
-    "at": "2026-11-16"
+    "at": "2026-11-23"
    }
   },
   {
@@ -4315,7 +4395,7 @@
     "https://www.trestlesf.com",
     "https://guide.michelin.com/us/en/california/san-francisco/restaurant/trestle"
    ],
-   "auto_updated": "2026-11-16",
+   "auto_updated": "2026-11-23",
    "history": [
     {
      "at": "2026-11-14",
@@ -4337,7 +4417,7 @@
      "score": 4.4,
      "count": 1400
     },
-    "at": "2026-11-16"
+    "at": "2026-11-23"
    }
   },
   {
@@ -4381,7 +4461,7 @@
     "https://www.zandyrestaurant.com",
     "https://guide.michelin.com/us/en/california/san-francisco/restaurant/z-y"
    ],
-   "auto_updated": "2026-11-16",
+   "auto_updated": "2026-11-23",
    "history": [
     {
      "at": "2026-11-14",
@@ -4397,15 +4477,15 @@
    "ratings": {
     "google": {
      "score": 4.1,
-     "count": 3883
+     "count": 3893
     },
     "yelp": {
      "score": 3.8,
      "count": 3000
     },
-    "at": "2026-11-16"
+    "at": "2026-11-23"
    }
   }
  ],
- "auto_updated": "2026-11-16"
+ "auto_updated": "2026-11-23"
 }
